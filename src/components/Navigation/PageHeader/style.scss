@@ -1,0 +1,73 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  color: var(--elf-text-primary);
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--elf-space-4);
+}
+
+.breadcrumb {
+  flex: 1 0 100%;
+  min-width: 0;
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.breadcrumb:empty {
+  display: none;
+}
+
+.main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--elf-space-3);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--elf-space-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--elf-text-secondary);
+  cursor: pointer;
+  font: inherit;
+}
+
+.back:hover {
+  color: var(--elf-primary);
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--elf-border);
+}
+
+.content {
+  min-width: 0;
+}
+
+.title {
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.heading {
+  color: var(--elf-text-primary);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.extra {
+  flex: 0 0 auto;
+}

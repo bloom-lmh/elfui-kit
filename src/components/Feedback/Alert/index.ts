@@ -1,0 +1,129 @@
+// elf-alert — 警告 / 提示
+//
+//   <elf-alert type="success" title="操作成功" closable />
+//   <elf-alert type="danger" title="错误" description="详情..." />
+
+import {
+  defineEmits,
+  defineProps,
+  defineStyle,
+  html,
+  useHostFlag,
+  useRef,
+  defineHtml
+} from "elfui";
+
+import styles from "./style.scss?inline";
+import type { AlertProps } from "./types";
+
+export type { AlertProps, AlertType, AlertVariant } from "./types";
+
+const props = defineProps({
+  type: { type: String, default: "info" },
+  variant: { type: String, default: "light" },
+  title: { type: String, default: "" },
+  description: { type: String, default: "" },
+  closable: { type: Boolean, default: false },
+  showIcon: { type: Boolean, default: true },
+  center: { type: Boolean, default: false }
+}) as unknown as Readonly<AlertProps>;
+
+const emit = defineEmits(["close"]);
+
+const closed = useRef(false);
+const closing = useRef(false);
+
+useHostFlag("data-closing", () => closing.value);
+useHostFlag("data-closed", () => closed.value);
+
+const onClose = (): void => {
+  closing.set(true);
+  emit("close");
+  setTimeout(() => {
+    closed.set(true);
+    closing.set(false);
+  }, 200);
+};
+
+defineStyle(styles);
+
+const Alert = defineHtml(html`
+  <div v-if=${!closed} class="alert" part="alert" role="alert">
+    <span v-if=${props.showIcon} class="icon" aria-hidden="true">
+      <svg
+        v-if=${props.type === "info"}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+      <svg
+        v-else-if=${props.type === "success"}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="8 12 11 15 16 9" />
+      </svg>
+      <svg
+        v-else-if=${props.type === "warning"}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+        />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+      <svg
+        v-else
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+      </svg>
+    </span>
+    <div class="body">
+      <div class="title" v-if=${props.title}>${props.title}</div>
+      <div class="title" v-if=${!props.title}><slot></slot></div>
+      <div class="description" v-if=${props.description}>${props.description}</div>
+      <div class="description" v-if=${props.title}><slot></slot></div>
+    </div>
+    <button v-if=${props.closable} class="close" type="button" aria-label="关闭" @click=${onClose}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </div>
+`);
+
+export { Alert };

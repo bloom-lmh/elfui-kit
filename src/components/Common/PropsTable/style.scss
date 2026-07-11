@@ -1,0 +1,41 @@
+// elf-props-table 样式
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  margin-block: var(--elf-space-4);
+}
+
+h4 {
+  margin: 0 0 var(--elf-space-2);
+  font-size: var(--elf-font-size-md);
+  font-weight: 500;
+  color: var(--elf-text-primary);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--elf-font-size-sm);
+}
+
+th,
+td {
+  padding: var(--elf-space-2) var(--elf-space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--elf-divider);
+}
+
+th {
+  font-weight: 500;
+  color: var(--elf-text-secondary);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+td code {
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: var(--elf-font-size-xs);
+  background: var(--elf-bg-overlay);
+  padding: 2px 6px;
+  border-radius: var(--elf-radius-sm);
+}

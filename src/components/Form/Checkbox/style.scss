@@ -1,0 +1,84 @@
+@use "../../../styles/reset";
+
+// ── elf-checkbox ──
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--elf-space-2);
+  cursor: pointer;
+  font-size: var(--elf-font-size-sm);
+  color: var(--elf-text-primary);
+  user-select: none;
+}
+
+:host([disabled]) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--elf-border-strong);
+  border-radius: 3px;
+  background: var(--elf-bg-paper);
+  flex-shrink: 0;
+  transition:
+    background-color var(--elf-transition-fast),
+    border-color var(--elf-transition-fast);
+  position: relative;
+}
+
+// 勾选标记（✓ 字符）
+.box::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform var(--elf-transition-fast);
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M2 5L4 7L8 3' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+:host([data-checked]) .box {
+  background: var(--elf-primary);
+  border-color: var(--elf-primary);
+
+  &::after {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+// 半选标记（横线）
+:host([data-indeterminate]) .box {
+  background: var(--elf-primary);
+  border-color: var(--elf-primary);
+
+  &::after {
+    background-image: none;
+    width: 8px;
+    height: 2px;
+    border-radius: 1px;
+    background-color: white;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+:host(:focus-within) .box {
+  outline: 2px solid var(--elf-primary);
+  outline-offset: 2px;
+}
+
+.label {
+  line-height: 1;
+}

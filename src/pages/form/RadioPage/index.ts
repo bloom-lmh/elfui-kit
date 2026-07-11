@@ -1,0 +1,24 @@
+import { defineHtml, html, useComponents } from "elfui";
+import { PageRadioEx1 } from "./ex1";
+import { PageRadioEx2 } from "./ex2";
+import { PageRadioEx3 } from "./ex3";
+import { PageRadioEx4 } from "./props";
+
+useComponents({
+  "page-radio-ex1": PageRadioEx1,
+  "page-radio-ex2": PageRadioEx2,
+  "page-radio-ex3": PageRadioEx3,
+  "page-radio-ex4": PageRadioEx4
+});
+
+const PageRadio = defineHtml(html`
+  <elf-container>
+    <h1>Radio 单选</h1>
+    <page-radio-ex1 />
+    <page-radio-ex2 />
+    <page-radio-ex3 />
+    <page-radio-ex4 />
+  </elf-container>
+`);
+
+export { PageRadio };

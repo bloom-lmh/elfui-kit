@@ -1,0 +1,164 @@
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+
+beforeAll(async () => {
+  await import("../../../components");
+});
+
+afterEach(() => {
+  document.body.innerHTML = "";
+});
+
+const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
+
+interface SliderEl extends HTMLElement {
+  modelValue?: number | [number, number];
+  min?: number;
+  max?: number;
+  step?: number;
+  range?: boolean;
+  disabled?: boolean;
+  showStops?: boolean;
+  segmented?: boolean;
+  marks?: unknown;
+}
+
+const mount = async (patch: Partial<SliderEl> = {}): Promise<SliderEl> => {
+  const el = document.createElement("elf-slider") as SliderEl;
+  Object.assign(el, { modelValue: 20, ...patch });
+  document.body.appendChild(el);
+  await tick();
+  await tick();
+  return el;
+};
+
+const setRangeValue = (input: HTMLInputElement, value: string, type = "input"): void => {
+  input.value = value;
+  input.dispatchEvent(new Event(type, { bubbles: true }));
+};
+
+describe("elf-slider", () => {
+  it("单值滑动触发 update:modelValue 和 input", async () => {
+    const el = await mount();
+    const onUpdate = vi.fn();
+    const onInput = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    el.addEventListener("input", onInput as EventListener);
+
+    setRangeValue(el.shadowRoot!.querySelector(".native-single") as HTMLInputElement, "42");
+    await tick();
+
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(42);
+    expect(onInput).toHaveBeenCalled();
+    expect(el.shadowRoot!.querySelector(".tooltip")?.textContent).toBe("42");
+  });
+
+  it("范围滑块交叉拖动时切换活动 thumb 并保持起止顺序", async () => {
+    const el = await mount({ range: true, modelValue: [20, 80] });
+    const onChange = vi.fn();
+    el.addEventListener("change", onChange as EventListener);
+
+    setRangeValue(
+      el.shadowRoot!.querySelector(".native-start") as HTMLInputElement,
+      "90",
+      "change"
+    );
+    await tick();
+
+    expect((onChange.mock.calls[0]![0] as CustomEvent).detail).toEqual([80, 90]);
+  });
+
+  it("范围滑块支持拖动起始滑块", async () => {
+    const el = await mount({ range: true, modelValue: [20, 80] });
+    const onUpdate = vi.fn();
+    const onChange = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    el.addEventListener("change", onChange as EventListener);
+    const main = el.shadowRoot!.querySelector(".slider-main") as HTMLElement;
+    vi.spyOn(main, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 100,
+      bottom: 32,
+      width: 100,
+      height: 32,
+      toJSON: () => ({})
+    } as DOMRect);
+
+    el.shadowRoot!.querySelector(".thumb-start")!.dispatchEvent(
+      new MouseEvent("pointerdown", { bubbles: true, clientX: 40 })
+    );
+    document.dispatchEvent(new MouseEvent("pointermove", { bubbles: true, clientX: 50 }));
+    document.dispatchEvent(new MouseEvent("pointerup", { bubbles: true, clientX: 50 }));
+    await tick();
+
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual([50, 80]);
+    expect((onChange.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual([50, 80]);
+  });
+
+  it("支持 marks 与 stops", async () => {
+    const el = await mount({
+      min: 0,
+      max: 10,
+      step: 2,
+      showStops: true,
+      marks: [
+        { value: 0, label: "低" },
+        { value: 10, label: "高" }
+      ]
+    });
+
+    expect(el.shadowRoot!.querySelectorAll(".stop")).toHaveLength(4);
+    expect(el.shadowRoot!.textContent).toContain("低");
+    expect(el.shadowRoot!.textContent).toContain("高");
+  });
+
+  it("支持分段展示", async () => {
+    const el = await mount({
+      min: 0,
+      max: 100,
+      step: 25,
+      segmented: true,
+      modelValue: 50
+    });
+
+    expect(el.shadowRoot!.querySelectorAll(".segment")).toHaveLength(4);
+    expect(el.shadowRoot!.querySelectorAll(".segment.is-active")).toHaveLength(2);
+  });
+
+  it("segmented 模式输入会吸附到最近分段点", async () => {
+    const el = await mount({
+      min: 0,
+      max: 100,
+      step: 1,
+      segmented: true,
+      modelValue: 45,
+      marks: [
+        { value: 0, label: "0" },
+        { value: 25, label: "25" },
+        { value: 50, label: "50" },
+        { value: 100, label: "100" }
+      ]
+    });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+
+    setRangeValue(el.shadowRoot!.querySelector(".native-single") as HTMLInputElement, "38");
+    await tick();
+
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(50);
+    expect(el.shadowRoot!.querySelector(".tooltip")?.textContent).toBe("50");
+  });
+
+  it("disabled 时不会提交值", async () => {
+    const el = await mount({ disabled: true });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+
+    setRangeValue(el.shadowRoot!.querySelector(".native-single") as HTMLInputElement, "70");
+    await tick();
+
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+});

@@ -1,0 +1,34 @@
+export interface TimeShortcut {
+  label: string;
+  value: string;
+  endValue?: string;
+}
+
+export type TimePickerModelValue = string | [string, string];
+export type TimePickerSize = "small" | "default" | "large" | "sm" | "md" | "lg" | "";
+
+export interface TimePickerProps {
+  modelValue: TimePickerModelValue;
+  endValue: string;
+  range: boolean;
+  isRange: boolean;
+  min: string;
+  max: string;
+  step: number;
+  readonly: boolean;
+  editable: boolean;
+  size: TimePickerSize;
+  placeholder: string;
+  startPlaceholder: string;
+  endPlaceholder: string;
+  rangeSeparator: string;
+  disabled: boolean;
+  clearable: boolean;
+  id: string | [string, string];
+  name: string;
+  tabindex: string | number;
+  valueOnClear: string | [string, string] | (() => string | [string, string]);
+  emptyValues: unknown[];
+  saveOnBlur: boolean;
+  shortcuts: TimeShortcut[];
+}

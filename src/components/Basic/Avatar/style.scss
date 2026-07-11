@@ -1,0 +1,135 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+
+  font-family: var(--elf-font-family);
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+
+  background: var(--_bg, var(--elf-bg-overlay));
+  color: var(--_color, var(--elf-text-secondary));
+}
+
+// ───── 尺寸 ───────────────────────────────────
+:host([size="sm"]) .avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+
+:host([size="md"]),
+:host(:not([size])) {
+  .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
+:host([size="lg"]) .avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+}
+
+:host([size="xl"]) .avatar {
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+}
+
+// ───── 形状 ───────────────────────────────────
+:host([shape="circle"]),
+:host(:not([shape])) {
+  .avatar {
+    border-radius: 50%;
+  }
+}
+
+:host([shape="square"]) .avatar {
+  border-radius: var(--elf-radius-sm);
+}
+
+// ───── 图片模式 ───────────────────────────────
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+// ───── 图标 ───────────────────────────────────
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+:host([size="sm"]) .icon {
+  font-size: 12px;
+}
+
+:host([size="md"]) .icon,
+:host(:not([size])) .icon {
+  font-size: 18px;
+}
+
+:host([size="lg"]) .icon {
+  font-size: 24px;
+}
+
+:host([size="xl"]) .icon {
+  font-size: 36px;
+}
+
+// ───── 文字 ───────────────────────────────────
+.initials {
+  white-space: nowrap;
+}
+
+// ───── 颜色映射 ───────────────────────────────
+:host([color="#1976d2"]),
+:host([color="primary"]) {
+  --_bg: var(--elf-primary);
+  --_color: var(--elf-text-on-primary);
+}
+
+:host([color="#2e7d32"]),
+:host([color="success"]) {
+  --_bg: var(--elf-success);
+  --_color: var(--elf-text-on-primary);
+}
+
+:host([color="#ed6c02"]),
+:host([color="warning"]) {
+  --_bg: var(--elf-warning);
+  --_color: var(--elf-text-on-primary);
+}
+
+:host([color="#d32f2f"]),
+:host([color="danger"]) {
+  --_bg: var(--elf-danger);
+  --_color: var(--elf-text-on-primary);
+}
+
+:host([color="#0288d1"]),
+:host([color="info"]) {
+  --_bg: var(--elf-info);
+  --_color: var(--elf-text-on-primary);
+}
+
+// ───── 自定义颜色值（#hex）会自动作为背景色 ────
+// 由 inline style 直接设置

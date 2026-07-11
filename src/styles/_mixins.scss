@@ -1,0 +1,42 @@
+// 可复用 mixin
+
+@mixin focus-ring($color: var(--elf-primary)) {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.25);
+}
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--elf-space-2);
+  font-family: var(--elf-font-family);
+  font-size: var(--elf-font-size-sm);
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--elf-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--elf-transition-fast),
+    color var(--elf-transition-fast),
+    box-shadow var(--elf-transition-fast),
+    border-color var(--elf-transition-fast);
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+@mixin elevation($level: 1) {
+  @if $level == 1 {
+    box-shadow: var(--elf-shadow-1);
+  } @else if $level == 2 {
+    box-shadow: var(--elf-shadow-2);
+  } @else if $level == 4 {
+    box-shadow: var(--elf-shadow-4);
+  }
+}

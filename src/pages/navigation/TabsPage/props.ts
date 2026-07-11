@@ -1,0 +1,73 @@
+import { defineHtml, html } from "elfui";
+
+const propsRows = [
+  {
+    name: "items",
+    type: "TabsItem[]",
+    default: "[]",
+    desc: "tab 数据，支持 label/value/icon/badge/content"
+  },
+  { name: "modelValue", type: "string", default: "''", desc: "当前激活值，支持 v-model" },
+  { name: "defaultValue", type: "string", default: "''", desc: "非受控初始激活值" },
+  {
+    name: "alignTabs",
+    type: "start | center | end | title",
+    default: "start",
+    desc: "水平对齐方式"
+  },
+  { name: "density", type: "compact | default | comfortable", default: "default", desc: "密度" },
+  { name: "direction", type: "horizontal | vertical", default: "horizontal", desc: "方向" },
+  { name: "type", type: "line | card | border-card", default: "line", desc: "Element Plus 风格类型" },
+  { name: "closable", type: "boolean", default: "false", desc: "标签是否可关闭" },
+  { name: "addable", type: "boolean", default: "false", desc: "是否显示新增按钮" },
+  { name: "editable", type: "boolean", default: "false", desc: "同时启用新增和关闭交互" },
+  { name: "tabPosition", type: "top | right | bottom | left", default: "top", desc: "标签位置" },
+  { name: "stretch", type: "boolean", default: "false", desc: "标签是否撑满宽度" },
+  { name: "beforeLeave", type: "(newName, oldName) => boolean | Promise", default: "-", desc: "切换前拦截" },
+  { name: "tabindex", type: "number", default: "0", desc: "tab 按钮 tabindex" },
+  { name: "color", type: "string", default: "''", desc: "激活色" },
+  { name: "grow", type: "boolean", default: "false", desc: "等分铺满" },
+  { name: "stacked", type: "boolean", default: "false", desc: "图标和文字上下排列" },
+  { name: "showPanels", type: "boolean", default: "false", desc: "显示内置内容面板" },
+  { name: "hideSlider", type: "boolean", default: "false", desc: "隐藏激活指示条" },
+  {
+    name: "transition",
+    type: "fade | slide | scale | none | custom",
+    default: "fade",
+    desc: "内置面板切换过渡；custom 可通过 CSS 变量自定义"
+  },
+  {
+    name: "transitionDuration",
+    type: "number",
+    default: "180",
+    desc: "面板过渡时长，单位 ms"
+  },
+  { name: "props", type: "TabsFieldNames", default: "内置", desc: "字段别名映射" }
+];
+
+const eventsRows = [
+  { name: "update:modelValue", type: "(value: string) => void", desc: "激活项变化时触发" },
+  { name: "change", type: "(value, item) => void", desc: "激活项变化时触发" },
+  { name: "tab-click", type: "({ name, item, event }) => void", desc: "点击标签时触发" },
+  { name: "tab-change", type: "(name: string) => void", desc: "激活标签变化时触发" },
+  { name: "tab-remove", type: "(name: string) => void", desc: "关闭标签时触发" },
+  { name: "tab-add", type: "() => void", desc: "点击新增按钮时触发" },
+  { name: "edit", type: "(name, action) => void", desc: "新增或移除时触发" }
+];
+
+const methodsRows = [
+  { name: "select(value)", desc: "选择指定 tab" },
+  { name: "setActive(value)", desc: "选择指定 tab" },
+  { name: "removeTab(value)", desc: "触发关闭指定 tab" },
+  { name: "add()", desc: "触发新增 tab" },
+  { name: "currentName()", desc: "读取当前激活名称" }
+];
+
+const PageTabsProps = defineHtml(html`
+  <h2>API</h2>
+  <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>
+  <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
+  <elf-props-table title="Methods" :rows=${methodsRows}></elf-props-table>
+`);
+
+export { PageTabsProps };

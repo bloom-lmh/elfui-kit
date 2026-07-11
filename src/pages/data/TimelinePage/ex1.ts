@@ -1,0 +1,79 @@
+import { defineHtml, html } from "elfui";
+
+const items = [
+  {
+    timestamp: "2024-06-01",
+    title: "项目立项",
+    content: "确定技术方案",
+    color: "primary",
+    icon: "✓"
+  },
+  {
+    timestamp: "2024-07-15",
+    title: "开发阶段",
+    content: "核心模块开发，覆盖率 85%+",
+    color: "info",
+    icon: "⌨"
+  },
+  {
+    timestamp: "2024-09-01",
+    title: "内部测试",
+    content: "Alpha 版本发布",
+    color: "warning",
+    icon: "⚠"
+  },
+  {
+    timestamp: "2024-11-01",
+    title: "正式发布",
+    content: "v1.0.0 上线",
+    color: "success",
+    icon: "★"
+  }
+];
+
+const bothItems = [
+  {
+    timestamp: "08:00",
+    title: "到达",
+    timestamp2: "08:30",
+    title2: "出发",
+    content: "北京南站",
+    content2: "G123 次列车",
+    color: "primary",
+    icon: "🚄",
+    side: "both"
+  },
+  {
+    timestamp: "12:00",
+    title: "到达",
+    timestamp2: "13:00",
+    title2: "出发",
+    content: "上海虹桥",
+    content2: "D456 次列车",
+    color: "info",
+    icon: "🚄",
+    side: "both"
+  },
+  { timestamp: "18:00", title: "抵达酒店", content: "浦东香格里拉", color: "success", icon: "🏨" }
+];
+
+const code1 = `<elf-timeline :items="items" mode="alternate" />`;
+
+const code2 = `<elf-timeline :items="items" mode="alternate">
+  // 每个 item 支持 timestamp/title/content/icon/color
+  // side: 'both' 时节点两侧都有信息
+</elf-timeline>`;
+
+const PageTimelineEx1 = defineHtml(html`
+  <h2>双边交替</h2>
+  <elf-playground title="mode='alternate'：中轴 + 左右交替" :code="code1">
+    <elf-timeline :items="items" mode="alternate"></elf-timeline>
+  </elf-playground>
+
+  <h2>节点双侧信息</h2>
+  <elf-playground title="side='both'：一个节点左右两侧都有内容" :code="code2">
+    <elf-timeline :items="bothItems" mode="alternate"></elf-timeline>
+  </elf-playground>
+`);
+
+export { PageTimelineEx1 };

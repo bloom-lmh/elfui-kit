@@ -1,0 +1,46 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+}
+
+.loading {
+  position: relative;
+  min-height: inherit;
+}
+
+.overlay {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--_loading-bg);
+  color: var(--elf-primary);
+}
+
+:host([fullscreen]) .overlay {
+  position: fixed;
+}
+
+.box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--elf-space-3);
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid color-mix(in srgb, var(--elf-primary) 20%, transparent);
+  border-top-color: var(--elf-primary);
+  border-radius: 999px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

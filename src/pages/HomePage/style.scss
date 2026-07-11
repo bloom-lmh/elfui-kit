@@ -1,0 +1,41 @@
+@use "../../styles/reset";
+
+:host {
+  display: block;
+  padding: var(--elf-space-8) 0;
+}
+
+h1 {
+  font-size: 36px;
+  margin: 0 0 var(--elf-space-4);
+}
+
+p {
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-md);
+  margin: 0 0 var(--elf-space-3);
+}
+
+.stats {
+  display: flex;
+  gap: var(--elf-space-6);
+  margin-top: var(--elf-space-6);
+  flex-wrap: wrap;
+}
+
+.stat {
+  padding: var(--elf-space-4) var(--elf-space-6);
+  border-radius: var(--elf-radius-md);
+  border: 1px solid var(--elf-border);
+
+  .num {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--elf-primary);
+  }
+
+  .lbl {
+    font-size: var(--elf-font-size-sm);
+    color: var(--elf-text-secondary);
+  }
+}

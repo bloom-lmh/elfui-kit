@@ -1,0 +1,88 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline;
+  color: var(--_text-color, var(--elf-text-primary));
+  font-size: var(--_text-size, inherit);
+  line-height: 1.5;
+  --_line-clamp: 1;
+}
+
+:host([type="primary"]) {
+  --_text-color: var(--elf-primary);
+}
+
+:host([type="success"]) {
+  --_text-color: var(--elf-success);
+}
+
+:host([type="warning"]) {
+  --_text-color: var(--elf-warning);
+}
+
+:host([type="danger"]) {
+  --_text-color: var(--elf-danger);
+}
+
+:host([type="info"]) {
+  --_text-color: var(--elf-info);
+}
+
+:host([size="sm"]) {
+  --_text-size: var(--elf-font-size-sm);
+}
+
+:host([size="md"]) {
+  --_text-size: var(--elf-font-size-md);
+}
+
+:host([size="lg"]) {
+  --_text-size: var(--elf-font-size-lg);
+}
+
+.text {
+  color: inherit;
+  font: inherit;
+}
+
+:host([strong]) .text {
+  font-weight: 700;
+}
+
+:host([italic]) .text {
+  font-style: italic;
+}
+
+:host([mark]) .text {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--elf-warning) 24%, transparent);
+  color: inherit;
+}
+
+:host([deleted]) .text {
+  text-decoration: line-through;
+}
+
+:host([inserted]) .text {
+  text-decoration: underline;
+  text-decoration-color: var(--elf-success);
+  text-underline-offset: 3px;
+}
+
+:host([truncated]) .text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+:host([line-clamp]) .text,
+:host([data-line-clamp]) .text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--_line-clamp);
+  white-space: normal;
+}

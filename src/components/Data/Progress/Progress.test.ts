@@ -1,0 +1,85 @@
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
+
+beforeAll(async () => {
+  await import("../../../components");
+});
+
+afterEach(() => {
+  document.body.innerHTML = "";
+});
+
+const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
+
+type ProgressHost = HTMLElement & {
+  value?: number;
+  max?: number;
+  variant?: string;
+  status?: string;
+  color?: string;
+  height?: string;
+  size?: number;
+  strokeWidth?: number;
+  showText?: boolean;
+  textInside?: boolean;
+  striped?: boolean;
+  indeterminate?: boolean;
+  format?: (percent: number, value: number) => string;
+};
+
+const mount = async (patch: Partial<ProgressHost> = {}): Promise<ProgressHost> => {
+  const el = document.createElement("elf-progress") as ProgressHost;
+  Object.assign(el, patch);
+  document.body.appendChild(el);
+  await tick();
+  await tick();
+  return el;
+};
+
+describe("elf-progress", () => {
+  it("渲染条形进度并同步百分比变量", async () => {
+    const el = await mount({ value: 30 });
+
+    expect(el.getAttribute("variant")).toBe("line");
+    expect(el.style.getPropertyValue("--_progress-percent")).toBe("30%");
+    expect(el.shadowRoot!.querySelector(".line-value")).toBeTruthy();
+    expect(el.shadowRoot!.textContent).toContain("30%");
+  });
+
+  it("根据 max 计算百分比并限制到 100%", async () => {
+    const el = await mount({ value: 80, max: 40 });
+
+    expect(el.style.getPropertyValue("--_progress-percent")).toBe("100%");
+    expect(el.shadowRoot!.querySelector(".progress")?.getAttribute("aria-valuenow")).toBe("40");
+  });
+
+  it("支持环形进度", async () => {
+    const el = await mount({ variant: "circle", value: 75, size: 120, strokeWidth: 10 });
+    const circle = el.shadowRoot!.querySelector(".circle-value") as SVGCircleElement;
+
+    expect(el.getAttribute("variant")).toBe("circle");
+    expect(el.style.getPropertyValue("--_progress-size")).toBe("120px");
+    expect(circle.namespaceURI).toBe("http://www.w3.org/2000/svg");
+    expect(circle.getAttribute("stroke-dashoffset")).toBe("25");
+  });
+
+  it("支持 status / color / striped / indeterminate", async () => {
+    const el = await mount({ status: "warning", striped: true, indeterminate: true });
+
+    expect(el.getAttribute("status")).toBe("warning");
+    expect(el.hasAttribute("data-striped")).toBe(true);
+    expect(el.hasAttribute("data-indeterminate")).toBe(true);
+    expect(el.style.getPropertyValue("--_progress-color")).toBe("var(--elf-warning)");
+  });
+
+  it("支持 format 函数与内部文字", async () => {
+    const el = await mount({
+      value: 5,
+      max: 10,
+      textInside: true,
+      format: (percent, value) => `${value} / ${percent}`
+    });
+
+    expect(el.hasAttribute("data-text-inside")).toBe(true);
+    expect(el.shadowRoot!.textContent).toContain("5 / 50");
+  });
+});

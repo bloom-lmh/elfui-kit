@@ -1,0 +1,136 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.anchor {
+  position: relative;
+  display: block;
+  min-width: 160px;
+  padding: 4px 0 4px 12px;
+}
+
+.anchor.is-horizontal {
+  min-width: 0;
+  padding: 0 0 8px;
+}
+
+.track {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--elf-border);
+}
+
+.list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.anchor.is-horizontal .list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.item {
+  position: relative;
+  min-width: 0;
+}
+
+.item::before {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: -13px;
+  width: 4px;
+  border-radius: 999px;
+  background: transparent;
+  content: "";
+  transition: background var(--elf-transition-fast);
+}
+
+.anchor.is-horizontal .item::before {
+  top: auto;
+  right: 10px;
+  bottom: -7px;
+  left: 10px;
+  width: auto;
+  height: 3px;
+}
+
+.item.is-active::before {
+  background: var(--elf-primary);
+}
+
+.anchor.is-marker-hidden .item::before {
+  display: none;
+}
+
+.anchor.is-underline .link {
+  border-radius: 0;
+  background: transparent;
+}
+
+.anchor.is-underline .link:hover {
+  background: transparent;
+  text-decoration: underline;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 10px 6px calc(10px + var(--anchor-level, 0) * 14px);
+  border-radius: var(--elf-radius-sm);
+  color: inherit;
+  line-height: 1.4;
+  text-decoration: none;
+  transition:
+    background var(--elf-transition-fast),
+    color var(--elf-transition-fast);
+}
+
+.anchor.is-horizontal .link {
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.link:hover {
+  background: var(--elf-bg-overlay);
+  color: var(--elf-primary);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--elf-primary);
+  outline-offset: -2px;
+}
+
+.item.is-active .link {
+  color: var(--elf-primary);
+  font-weight: 600;
+}
+
+.item.is-disabled {
+  opacity: 0.48;
+}
+
+.item.is-disabled .link {
+  cursor: not-allowed;
+}
+
+.item.is-disabled .link:hover {
+  background: transparent;
+  color: inherit;
+}

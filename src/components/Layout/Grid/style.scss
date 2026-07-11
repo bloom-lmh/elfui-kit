@@ -1,0 +1,25 @@
+// elf-grid + elf-grid-item 样式
+@use "../../../styles/reset";
+
+:host {
+  display: grid;
+  grid-template-columns: repeat(var(--_cols, 12), 1fr);
+  gap: var(--_gap, 0);
+  box-sizing: border-box;
+}
+
+:host([gap="xs"]) {
+  --_gap: var(--elf-space-1);
+}
+:host([gap="sm"]) {
+  --_gap: var(--elf-space-2);
+}
+:host([gap="md"]) {
+  --_gap: var(--elf-space-4);
+}
+:host([gap="lg"]) {
+  --_gap: var(--elf-space-6);
+}
+:host([gap="xl"]) {
+  --_gap: var(--elf-space-8);
+}

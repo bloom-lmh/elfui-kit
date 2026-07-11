@@ -1,0 +1,256 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  padding: var(--elf-space-4) 0;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+// ───── 单项 ──────────────────────────────────────
+.item {
+  position: relative;
+  display: flex;
+  gap: var(--elf-space-4);
+  padding-bottom: var(--elf-space-6);
+  min-height: 56px;
+}
+.item:last-child {
+  padding-bottom: 0;
+  .line {
+    display: none;
+  }
+}
+
+// ───── 垂直线（left/right 模式）───────────────────
+.line {
+  position: absolute;
+  left: 15px;
+  top: 36px;
+  bottom: 0;
+  width: 2px;
+  background: var(--elf-border);
+}
+
+// ───── 默认：body 在右 ────────────────────────────
+.body-right {
+  flex: 1;
+  min-width: 0;
+}
+.body-left {
+  display: none;
+}
+
+// ═══════════════════════════════════════════════════
+//  alternate 模式：中轴线 + grid 双边
+// ═══════════════════════════════════════════════════
+:host([mode="alternate"]) .timeline {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    bottom: 20px;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--elf-border);
+  }
+}
+
+:host([mode="alternate"]) .item {
+  display: grid;
+  grid-template-columns: 1fr 32px 1fr;
+  gap: 0 var(--elf-space-4);
+  .line {
+    display: none;
+  }
+}
+
+:host([mode="alternate"]) .item:not(.is-right):not(.is-both) {
+  .body-left {
+    display: none;
+  }
+  .body-right {
+    display: block;
+    grid-column: 3;
+    text-align: left;
+  }
+  .node {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+:host([mode="alternate"]) .item.is-right:not(.is-both) {
+  .body-left {
+    display: block;
+    grid-column: 1;
+    text-align: right;
+  }
+  .body-right {
+    display: none;
+  }
+  .node {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+:host([mode="alternate"]) .item.is-both {
+  .body-left {
+    display: block;
+    grid-column: 1;
+    text-align: right;
+  }
+  .body-right {
+    display: block;
+    grid-column: 3;
+    text-align: left;
+  }
+  .node {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  horizontal 模式：横轴 + 上下交替
+// ═══════════════════════════════════════════════════
+:host([mode="horizontal"]) {
+  overflow-x: auto;
+
+  .timeline {
+    position: relative;
+    flex-direction: row;
+    min-width: max-content;
+    padding: var(--elf-space-8) 0;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 50%;
+      height: 2px;
+      margin-top: -1px;
+      background: var(--elf-border);
+    }
+  }
+
+  .item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 140px;
+    padding: 0 var(--elf-space-8) 0 0;
+    min-width: 150px;
+  }
+  .item:not(.is-right) {
+    justify-content: flex-end;
+  }
+  .item.is-right {
+    justify-content: flex-start;
+    padding: 0 var(--elf-space-8) 0 0;
+  }
+  .item:last-child {
+    padding-right: 0;
+  }
+  .item .line {
+    display: none;
+  }
+
+  // 节点绝对定位在横线中央
+  .node {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin-top: 0;
+    z-index: 2;
+  }
+
+  // 内容在节点下方
+  .item:not(.is-right) {
+    .body-right {
+      display: block;
+      text-align: center;
+      max-width: 150px;
+    }
+    .body-left {
+      display: none;
+    }
+  }
+
+  // 内容在节点上方
+  .item.is-right {
+    .body-left {
+      display: block;
+      text-align: center;
+      max-width: 150px;
+    }
+    .body-right {
+      display: none;
+    }
+  }
+}
+
+// ───── 节点 ──────────────────────────────────────
+.node {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  background: var(--_node-bg, var(--elf-primary));
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 0 0 4px var(--elf-bg-paper);
+}
+.node-inner {
+  line-height: 1;
+}
+.is-primary {
+  --_node-bg: var(--elf-primary);
+}
+.is-success {
+  --_node-bg: #2e7d32;
+}
+.is-warning {
+  --_node-bg: #ed6c02;
+}
+.is-danger {
+  --_node-bg: #d32f2f;
+}
+.is-info {
+  --_node-bg: #0288d1;
+}
+
+// ───── 文字 ──────────────────────────────────────
+.timestamp {
+  font-size: var(--elf-font-size-xs);
+  color: var(--elf-text-disabled);
+  line-height: 1.5;
+}
+.title {
+  font-size: var(--elf-font-size-sm);
+  font-weight: 600;
+  color: var(--elf-text-primary);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+.content {
+  font-size: var(--elf-font-size-sm);
+  color: var(--elf-text-secondary);
+  line-height: 1.6;
+  margin-top: 4px;
+}

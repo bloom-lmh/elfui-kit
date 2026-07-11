@@ -1,0 +1,90 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline-flex;
+  min-width: 260px;
+  color: var(--elf-text-primary);
+}
+
+.input-tag {
+  display: flex;
+  width: 100%;
+  min-height: 36px;
+  align-items: center;
+  gap: var(--elf-space-2);
+  flex-wrap: wrap;
+  padding: 3px var(--elf-space-3);
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  background: var(--elf-bg);
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.input-tag:focus-within {
+  border-color: var(--elf-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 14%, transparent);
+}
+
+.tag {
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  gap: var(--elf-space-1);
+  padding: 0 var(--elf-space-2);
+  border-radius: var(--elf-radius-sm);
+  background: var(--elf-bg-muted);
+  color: var(--elf-text-primary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.remove,
+.clear {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--elf-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+}
+
+.remove:hover,
+.clear:hover {
+  background: var(--elf-bg-overlay);
+  color: var(--elf-danger);
+}
+
+input {
+  min-width: 80px;
+  flex: 1 1 80px;
+  height: 28px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+input:disabled {
+  color: var(--elf-text-disabled);
+  cursor: not-allowed;
+}
+
+:host([disabled]) .input-tag {
+  background: var(--elf-bg-muted);
+}
+
+:host([size="sm"]) .input-tag {
+  min-height: 30px;
+}
+
+:host([size="lg"]) .input-tag {
+  min-height: 42px;
+}

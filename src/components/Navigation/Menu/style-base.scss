@@ -1,0 +1,337 @@
+@use "../../../styles/reset";
+
+// ───── host ────────────────────────────────────────
+:host {
+  display: block;
+  min-height: 0;
+  color: var(--elf-text-primary);
+  font-size: var(--elf-font-size-sm);
+}
+
+:host([mode="vertical"]),
+:host(:not([mode])) {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+:host([collapse]) {
+  overflow: visible;
+}
+:host([mode="horizontal"]) {
+  overflow: visible;
+}
+
+// ───── menu 容器 ──────────────────────────────────
+.menu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0;
+  box-sizing: border-box;
+  height: 100%;
+  max-height: inherit;
+  width: var(--m-w, 260px);
+  min-height: 0;
+  min-width: 0;
+  padding: 8px;
+  overflow: hidden;
+  background: var(--m-bg, var(--elf-bg-paper));
+  border: var(--m-border, 0);
+  border-radius: var(--m-radius, var(--elf-radius-md));
+  box-shadow: var(--m-shadow, none);
+  transition: width var(--elf-transition-base);
+}
+
+.menu.is-no-collapse-transition {
+  transition: none;
+}
+
+.menu-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  // 细滚动条
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+
+  &:hover {
+    scrollbar-color: var(--elf-border) transparent;
+    &::-webkit-scrollbar-thumb {
+      background: var(--elf-border);
+    }
+  }
+}
+
+// ───── header / footer 插槽 ───────────────────────
+.menu-header {
+  display: flex;
+  align-items: center;
+  gap: var(--elf-space-2);
+  flex-shrink: 0;
+  min-width: 0;
+  padding: var(--elf-space-3);
+  border-bottom: 1px solid var(--elf-divider);
+}
+
+::slotted([slot="header"]) {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+::slotted([slot="footer"]) {
+  display: block;
+  padding: 0;
+  background: var(--elf-bg-paper);
+}
+
+.menu-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px;
+  background: var(--m-bg, var(--elf-bg-paper));
+}
+
+// ───── 搜索 ────────────────────────────────────────
+.menu-search {
+  padding: 8px 8px 0;
+
+  ::slotted([slot="search"]) {
+    display: block;
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 10px;
+    border: 1px solid var(--elf-border);
+    border-radius: var(--elf-radius-sm);
+    background: var(--elf-bg-default);
+    color: var(--elf-text-primary);
+    font: inherit;
+    font-size: var(--elf-font-size-xs);
+    outline: none;
+    &:focus {
+      border-color: var(--elf-primary);
+    }
+  }
+}
+
+// ───── 菜单项 ────────────────────────────────────
+.menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  outline: none;
+  background: transparent;
+  color: var(--m-color, var(--elf-text-primary));
+  font: inherit;
+  font-size: var(--elf-font-size-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--elf-transition-fast),
+    color var(--elf-transition-fast);
+  animation: menu-slide-in 0.25s ease;
+
+  &:hover:not(.is-disabled) {
+    background: var(--m-hover, var(--elf-bg-overlay));
+  }
+  &:focus-visible {
+    outline: 2px solid var(--elf-primary);
+    outline-offset: -2px;
+  }
+}
+
+@keyframes menu-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 激活指示条
+.menu-item::before {
+  content: "";
+  position: absolute;
+  inset: 6px auto 6px 4px;
+  width: 3px;
+  border-radius: 999px;
+  background: transparent;
+  transition: background var(--elf-transition-fast);
+}
+
+.menu-item.is-active {
+  background: var(--m-active-bg, rgba(25, 118, 210, 0.12));
+  color: var(--m-active-c, var(--elf-primary));
+  font-weight: 600;
+  &::before {
+    background: var(--m-active-c, var(--elf-primary));
+  }
+}
+
+.menu-item.is-disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  &:hover {
+    background: transparent;
+  }
+}
+
+// ───── 图标 / 标签 / 箭头 / 徽章 ──────────────────
+.menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(127, 127, 127, 0.12);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+.menu-item.is-active .menu-icon {
+  background: var(--m-active-c, var(--elf-primary));
+  color: #fff;
+}
+
+.menu-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-arrow {
+  flex-shrink: 0;
+  opacity: 0.45;
+  font-size: 11px;
+  transition: transform var(--elf-transition-fast);
+}
+.menu-item.is-open .menu-arrow {
+  transform: rotate(90deg);
+}
+
+.menu-badge {
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--elf-danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.menu-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  min-width: 40px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: var(--m-color, var(--elf-text-secondary));
+  font: inherit;
+  cursor: pointer;
+}
+
+.menu-ellipsis:hover {
+  background: var(--m-hover, var(--elf-bg-overlay));
+}
+.menu-item.is-active .menu-badge {
+  background: var(--m-active-c, var(--elf-primary));
+}
+
+// ───── 分组标题 / 分割线 ──────────────────────────
+.menu-group-title {
+  display: block;
+  padding: 16px 12px 4px 16px;
+  font-size: var(--elf-font-size-xs);
+  font-weight: 600;
+  color: var(--elf-text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.menu-divider {
+  height: 1px;
+  margin: 4px 12px;
+  background: var(--elf-divider);
+  border: none;
+  flex-shrink: 0;
+}
+
+.menu-empty {
+  padding: 16px;
+  color: var(--elf-text-disabled);
+  text-align: center;
+}
+
+// ───── 折叠切换按钮 ──────────────────────────────
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: var(--m-color, var(--elf-text-secondary));
+  flex-shrink: 0;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background var(--elf-transition-fast);
+  &:hover {
+    background: var(--m-hover, var(--elf-bg-overlay));
+  }
+}
+
+.collapse-toggle--header {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+}

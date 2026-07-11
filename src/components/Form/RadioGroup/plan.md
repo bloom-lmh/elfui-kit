@@ -1,0 +1,157 @@
+# RadioGroup Element Plus API 对标计划
+
+生成时间：2026-07-05
+
+## 对标定位
+
+- ElfUI 组件目录：`Form/RadioGroup`
+- Element Plus 文档：`radio.md`
+- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
+
+## Element Plus API 摘要
+
+### radio.md
+
+#### Radio API
+
+- `model-value / v-model`
+- `value ^`
+- `label`
+- `disabled`
+- `border`
+- `size`
+- `change`
+- `default`
+
+#### Radio Attributes
+
+- `model-value / v-model`
+- `value ^`
+- `label`
+- `disabled`
+- `border`
+- `size`
+
+#### Radio Events
+
+- `change`
+
+#### Radio Slots
+
+- `default`
+
+#### RadioGroup API
+
+- `model-value / v-model`
+- `size`
+- `disabled`
+- `validate-event`
+- `text-color`
+- `fill`
+- `aria-label ^ ^`
+- `id`
+- `label ^ ^`
+- `options ^`
+- `props ^`
+- `type ^`
+- `change`
+- `default`
+
+#### RadioGroup Attributes
+
+- `model-value / v-model`
+- `size`
+- `disabled`
+- `validate-event`
+- `text-color`
+- `fill`
+- `aria-label ^ ^`
+- `id`
+- `label ^ ^`
+- `options ^`
+- `props ^`
+- `type ^`
+
+#### RadioGroup Events
+
+- `change`
+
+#### RadioGroup Slots
+
+- `default`
+
+#### RadioButton API
+
+- `value ^`
+- `label`
+- `disabled`
+- `default`
+
+#### RadioButton Attributes
+
+- `value ^`
+- `label`
+- `disabled`
+
+#### RadioButton Slots
+
+- `default`
+
+## 当前 ElfUI API 快照
+
+### Props
+
+- `disabled`
+- `fill`
+- `modelValue`
+- `size`
+- `textColor`
+- `variant`
+
+### Events
+
+- `change`
+- `update:modelValue`
+
+### Slots
+
+- `default`
+
+### Exposes
+
+- 暂无记录
+
+## 差距与任务
+
+- [ ] P0 补齐核心属性差距：`value ^`、`label`、`border`、`validate-event`、`aria-label ^ ^`、`id`、`label ^ ^`、`options ^`、`props ^`、`type ^`
+- [ ] P0 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
+- [ ] P1 补齐插槽/暴露方法：当前粗扫未发现明显缺口，进入实现时复核默认插槽、命名插槽和 expose 方法。
+- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
+- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
+- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+
+## 验收清单
+
+- [ ] API props/types 与页面 PropsTable 同步。
+- [ ] 关键交互和边界状态有单测覆盖。
+- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+
+---
+
+## 历史计划保留
+
+以下为本轮 Element Plus 对标计划生成前的目录计划，暂保留供核对。
+
+# RadioGroup 单选框组组件开发与重构计划
+
+## 1. 目标定位
+
+提供支持管理多个 `Radio` 子组件的单选组合包装容器。支持统一管理子组件的选中状态（互斥性）、大小、禁用状态，以及统一的风格填充，并支持无缝集成到 `Form` 与 `FormItem` 表单校验中。
+
+## 2. 计划与重构任务
+
+- [x] **2.1 上下文共享与跨打包实例互通**: 使用全局共享 `Symbol.for("elfui.provides.radio-group")` 作为注入键值，保证在 monorepo 局部多实例打包中子单选组件能 100% 正确连通并触发 `RadioGroup` 的状态转换。
+- [x] **2.2 组级别禁用和尺寸联动**: 自动继承外层 `Form` 或自身的禁用和尺寸设置，通过 `provide` 向下透传给 `Radio` 子组件。
+- [x] **2.3 单选互斥选中控制**: 自动实现子组件之间的值对比与互斥选中切换，当用户点击任一子单选组件时，通过 `changeEvent` 统一修改。
+- [x] **2.4 校验事件触发**: 选中值变更时，同步触发 `update:modelValue` 与 `change` 事件，供 `FormItem` 收集校验触发。

@@ -1,0 +1,93 @@
+@use "../../../styles/reset";
+
+// ── elf-radio ──
+
+:host {
+  display: inline-flex;
+  font-size: var(--elf-font-size-sm);
+  color: var(--elf-text-primary);
+  user-select: none;
+}
+
+:host([disabled]) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.control {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--elf-space-2);
+  min-height: 28px;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+}
+
+.control:disabled {
+  cursor: not-allowed;
+}
+
+.dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--elf-border-strong);
+  border-radius: 50%;
+  background: var(--elf-bg-paper);
+  flex-shrink: 0;
+  transition:
+    background-color var(--elf-transition-fast),
+    border-color var(--elf-transition-fast);
+
+  &::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+    transform: scale(0);
+    transition: transform var(--elf-transition-fast);
+  }
+}
+
+:host([data-checked]) .dot {
+  background: var(--elf-primary);
+  border-color: var(--elf-primary);
+
+  &::after {
+    transform: scale(1);
+  }
+}
+
+.control:focus-visible .dot {
+  outline: 2px solid var(--elf-primary);
+  outline-offset: 2px;
+}
+
+.label {
+  line-height: 1;
+}
+
+// border 风格（按钮型）
+:host([border]) {
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-sm);
+}
+
+:host([border]) .control {
+  padding: var(--elf-space-1) var(--elf-space-3);
+}
+
+:host([border][data-checked]) {
+  border-color: var(--elf-primary);
+  color: var(--elf-primary);
+}

@@ -1,0 +1,172 @@
+@use "../../../styles/reset";
+
+// ───── host ────────────────────────────────────────
+:host {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--elf-radius-lg);
+  background: var(--elf-bg-paper);
+  overflow: hidden;
+  transition:
+    box-shadow var(--elf-transition-base),
+    transform var(--elf-transition-base);
+}
+
+// ───── MD3 变体 ─────────────────────────────────
+// elevated（默认）
+:host([variant="elevated"]),
+:host(:not([variant])) {
+  box-shadow: var(--elf-shadow-1);
+}
+
+// outlined
+:host([variant="outlined"]) {
+  box-shadow: none;
+  outline: 1px solid var(--elf-border);
+}
+
+// filled
+:host([variant="filled"]) {
+  box-shadow: none;
+  background: var(--elf-bg-overlay);
+}
+
+// ───── 可点击 ───────────────────────────────────
+:host([clickable]) {
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: var(--elf-shadow-2);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    box-shadow: var(--elf-shadow-1);
+    transform: translateY(0);
+  }
+}
+
+// ───── 水平布局 ─────────────────────────────────
+:host([image-placement="left"]) {
+  flex-direction: row;
+}
+
+// ───── 封面图 ───────────────────────────────────
+.card-image-wrap {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.card-image-wrap img,
+::slotted(img[slot="cover"]) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// 顶部封面
+:host(:not([image-placement="left"])) .card-image-wrap {
+  width: 100%;
+  height: var(--_image-h, 200px);
+}
+
+// 左侧封面
+:host([image-placement="left"]) .card-image-wrap {
+  width: var(--_image-w, 40%);
+  min-height: 100%;
+}
+
+:host([image-placement="left"]) .card-image-wrap img {
+  position: absolute;
+  inset: 0;
+}
+
+// ───── 图片叠加层 ──────────────────────────────
+.image-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: var(--elf-space-5);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+  color: #fff;
+  font-size: var(--elf-font-size-lg);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+// ───── 内容区域 ─────────────────────────────────
+.card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+// ───── 头部 ────────────────────────────────────
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--elf-space-4);
+  padding: var(--elf-space-5) var(--elf-space-5) 0;
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .header-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .title {
+    font-size: var(--elf-font-size-md);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--elf-text-primary);
+  }
+
+  .subtitle {
+    font-size: var(--elf-font-size-xs);
+    color: var(--elf-text-secondary);
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+
+  .extra {
+    flex-shrink: 0;
+  }
+}
+
+// ───── 主体 ────────────────────────────────────
+.body {
+  padding: var(--elf-space-5);
+  flex: 1;
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-sm);
+  line-height: 1.7;
+}
+
+.header:not(:empty) + .body {
+  padding-top: var(--elf-space-3);
+}
+
+// ───── 底部 ────────────────────────────────────
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--elf-space-2);
+  padding: 0 var(--elf-space-5) var(--elf-space-4);
+}
+
+// ───── 空容器隐藏 ──────────────────────────────
+.header:empty,
+.footer:empty,
+.card-image-wrap:empty {
+  display: none;
+}

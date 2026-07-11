@@ -1,0 +1,59 @@
+@use "../../../styles/reset";
+
+:host {
+  position: relative;
+  display: inline-flex;
+  width: 320px;
+  color: var(--elf-text-primary);
+}
+
+.mention {
+  position: relative;
+  width: 100%;
+}
+
+textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: var(--elf-space-3);
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  outline: none;
+  background: var(--elf-bg);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+
+textarea:focus {
+  border-color: var(--elf-primary);
+}
+
+.panel {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  bottom: calc(100% + 6px);
+  left: 0;
+  overflow: hidden;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  background: var(--elf-bg);
+  box-shadow: var(--elf-shadow-3);
+}
+
+.option {
+  display: block;
+  width: 100%;
+  padding: var(--elf-space-3);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.option:hover:not(:disabled) {
+  background: var(--elf-bg-muted);
+}

@@ -1,0 +1,83 @@
+// elf-flex 样式
+@use "../../../styles/reset";
+
+:host {
+  display: flex;
+  flex-direction: var(--_dir, row);
+  justify-content: var(--_justify, flex-start);
+  align-items: var(--_align, stretch);
+  flex-wrap: var(--_wrap, nowrap);
+  gap: var(--_gap, 0);
+  box-sizing: border-box;
+}
+
+:host([direction="row"]) {
+  --_dir: row;
+}
+:host([direction="row-reverse"]) {
+  --_dir: row-reverse;
+}
+:host([direction="column"]) {
+  --_dir: column;
+}
+:host([direction="column-reverse"]) {
+  --_dir: column-reverse;
+}
+
+:host([justify="flex-start"]) {
+  --_justify: flex-start;
+}
+:host([justify="flex-end"]) {
+  --_justify: flex-end;
+}
+:host([justify="center"]) {
+  --_justify: center;
+}
+:host([justify="space-between"]) {
+  --_justify: space-between;
+}
+:host([justify="space-around"]) {
+  --_justify: space-around;
+}
+:host([justify="space-evenly"]) {
+  --_justify: space-evenly;
+}
+
+:host([align="stretch"]) {
+  --_align: stretch;
+}
+:host([align="flex-start"]) {
+  --_align: flex-start;
+}
+:host([align="flex-end"]) {
+  --_align: flex-end;
+}
+:host([align="center"]) {
+  --_align: center;
+}
+:host([align="baseline"]) {
+  --_align: baseline;
+}
+
+:host([wrap]) {
+  --_wrap: wrap;
+}
+:host([wrap="nowrap"]) {
+  --_wrap: nowrap;
+}
+
+:host([gap="xs"]) {
+  --_gap: var(--elf-space-1);
+}
+:host([gap="sm"]) {
+  --_gap: var(--elf-space-2);
+}
+:host([gap="md"]) {
+  --_gap: var(--elf-space-4);
+}
+:host([gap="lg"]) {
+  --_gap: var(--elf-space-6);
+}
+:host([gap="xl"]) {
+  --_gap: var(--elf-space-8);
+}

@@ -1,0 +1,71 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline-flex;
+  color: var(--elf-text-primary);
+}
+
+:host([block]) {
+  display: flex;
+  width: 100%;
+}
+
+.segmented {
+  display: inline-flex;
+  width: 100%;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--elf-radius-md);
+  background: var(--elf-bg-muted);
+}
+
+.option {
+  position: relative;
+  min-width: 0;
+  flex: 0 0 auto;
+  padding: 0 var(--elf-space-4);
+  border: 0;
+  border-radius: calc(var(--elf-radius-md) - 2px);
+  background: transparent;
+  color: var(--elf-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--elf-font-size-sm);
+  font-weight: 500;
+  height: 32px;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+:host([block]) .option {
+  flex: 1 1 0;
+}
+
+:host([size="sm"]) .option {
+  height: 28px;
+  padding: 0 var(--elf-space-3);
+  font-size: var(--elf-font-size-xs);
+}
+
+:host([size="lg"]) .option {
+  height: 40px;
+  padding: 0 var(--elf-space-5);
+  font-size: var(--elf-font-size-md);
+}
+
+.option:hover:not(:disabled) {
+  color: var(--elf-text-primary);
+}
+
+.option.is-active {
+  background: var(--elf-bg);
+  color: var(--elf-primary);
+  box-shadow: var(--elf-shadow-1);
+}
+
+.option:disabled {
+  color: var(--elf-text-disabled);
+  cursor: not-allowed;
+}

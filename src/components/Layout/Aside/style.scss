@@ -1,0 +1,11 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  flex-shrink: 0;
+  width: var(--_width, 240px);
+  background: var(--elf-bg-paper);
+  overflow-y: auto;
+  box-sizing: border-box;
+  transition: width var(--elf-transition-base);
+}

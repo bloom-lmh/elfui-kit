@@ -1,0 +1,127 @@
+// Dialog 全局样式 — 通过 globalStyle 注入 document，配合 Teleport to body 使用
+
+.elf-dialog-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: elf-dialog-fade-in 0.2s ease;
+}
+
+.elf-dialog-panel {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 80px);
+  animation: elf-dialog-zoom-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &.sm {
+    width: 320px;
+  }
+  &.md {
+    width: 520px;
+  }
+  &.lg {
+    width: 800px;
+  }
+  &.fullscreen {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+.elf-dialog-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.elf-dialog-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 4px;
+  &:hover {
+    background: #f3f4f6;
+  }
+}
+
+.elf-dialog-body {
+  padding: 20px;
+  overflow: auto;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.elf-dialog-footer {
+  padding: 12px 20px 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.elf-dialog-mask.elf-dialog-closing {
+  animation: elf-dialog-fade-out 0.22s ease both;
+
+  .elf-dialog-panel {
+    animation: elf-dialog-zoom-out 0.22s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+}
+
+@keyframes elf-dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes elf-dialog-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes elf-dialog-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes elf-dialog-zoom-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}

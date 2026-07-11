@@ -1,0 +1,15 @@
+// ───── 暗色主题 ──────────────────────────────────
+:host([theme="dark"]) .menu {
+  --m-bg: #1e1e2e;
+  --m-color: rgba(255, 255, 255, 0.87);
+  --m-hover: rgba(255, 255, 255, 0.06);
+  --m-active-bg: rgba(144, 202, 249, 0.16);
+  --m-active-c: #90caf9;
+  --m-border: 1px solid rgba(255, 255, 255, 0.06);
+  --m-shadow: none;
+}
+
+:host([theme="dark"]) .horizontal-panel,
+:host([theme="dark"]) .collapse-popup {
+  border-color: rgba(255, 255, 255, 0.08);
+}

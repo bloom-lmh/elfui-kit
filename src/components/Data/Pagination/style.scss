@@ -1,0 +1,137 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  font-family: var(--elf-font-family);
+  font-size: var(--elf-font-size-sm);
+  color: var(--elf-text-primary);
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--elf-space-2);
+}
+
+.total,
+.jumper {
+  color: var(--elf-text-secondary);
+  white-space: nowrap;
+}
+
+.sizes select,
+.jumper input {
+  min-height: 32px;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-sm);
+  background: var(--elf-bg-paper);
+  color: var(--elf-text-primary);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color var(--elf-transition-fast),
+    box-shadow var(--elf-transition-fast);
+
+  &:focus {
+    border-color: var(--elf-primary);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+  }
+}
+
+.sizes select {
+  padding: 0 28px 0 var(--elf-space-2);
+}
+
+.jumper input {
+  width: 52px;
+  margin: 0 var(--elf-space-1);
+  padding: 0 var(--elf-space-2);
+  text-align: center;
+}
+
+.pager {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--elf-space-1);
+}
+
+.page,
+.nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 var(--elf-space-2);
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: var(--elf-text-secondary);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    color var(--elf-transition-fast),
+    background-color var(--elf-transition-fast),
+    opacity var(--elf-transition-fast);
+
+  &:hover:not(:disabled) {
+    color: var(--elf-primary);
+    background: rgba(25, 118, 210, 0.08);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+}
+
+.page.is-active {
+  color: #fff;
+  background: var(--elf-primary);
+  font-weight: 600;
+}
+
+.page.is-ellipsis {
+  color: var(--elf-text-disabled);
+}
+
+.is-background .page:not(.is-active),
+.is-background .nav {
+  background: var(--elf-bg-overlay);
+}
+
+.is-small {
+  font-size: var(--elf-font-size-xs);
+
+  .page,
+  .nav {
+    min-width: 28px;
+    height: 28px;
+  }
+
+  .sizes select,
+  .jumper input {
+    min-height: 28px;
+  }
+}
+
+.is-disabled {
+  opacity: 0.72;
+}
+
+.chevron {
+  width: 7px;
+  height: 7px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  border-radius: 1px;
+}
+
+.chevron-left {
+  transform: rotate(-135deg);
+}
+
+.chevron-right {
+  transform: rotate(45deg);
+}

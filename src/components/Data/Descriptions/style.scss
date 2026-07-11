@@ -1,0 +1,71 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  color: var(--elf-text-primary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--elf-space-3);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.extra {
+  color: var(--elf-text-secondary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--_column), minmax(0, 1fr));
+  overflow: hidden;
+  border-radius: var(--elf-radius-md);
+}
+
+:host([border]) .grid {
+  border: 1px solid var(--elf-border);
+}
+
+.item {
+  min-width: 0;
+  padding: var(--elf-space-3) var(--elf-space-4);
+}
+
+:host([border]) .item {
+  border-right: 1px solid var(--elf-border);
+  border-bottom: 1px solid var(--elf-border);
+}
+
+.label {
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.content {
+  margin-top: var(--elf-space-1);
+  color: var(--elf-text-primary);
+  font-weight: 500;
+}
+
+:host([direction="horizontal"]) .item {
+  display: flex;
+  gap: var(--elf-space-3);
+}
+
+:host([direction="horizontal"]) .content {
+  margin-top: 0;
+}
+
+:host([size="sm"]) .item {
+  padding: var(--elf-space-2) var(--elf-space-3);
+}
+
+:host([size="lg"]) .item {
+  padding: var(--elf-space-4) var(--elf-space-5);
+}

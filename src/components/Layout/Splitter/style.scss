@@ -1,0 +1,54 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  min-height: 160px;
+  color: var(--elf-text-primary);
+}
+
+.splitter {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  background: var(--elf-bg);
+}
+
+:host([vertical]) .splitter {
+  flex-direction: column;
+}
+
+.pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--elf-space-4);
+}
+
+.first {
+  flex: 0 0 var(--_splitter-size);
+}
+
+.second {
+  flex: 1 1 auto;
+}
+
+.bar {
+  flex: 0 0 6px;
+  background: var(--elf-bg-muted);
+  cursor: col-resize;
+}
+
+:host([vertical]) .bar {
+  cursor: row-resize;
+}
+
+:host([disabled]) .bar {
+  cursor: not-allowed;
+}
+
+.bar:hover {
+  background: color-mix(in srgb, var(--elf-primary) 18%, var(--elf-bg-muted));
+}

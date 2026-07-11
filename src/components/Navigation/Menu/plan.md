@@ -1,0 +1,224 @@
+# Menu Element Plus API 对标计划
+
+生成时间：2026-07-05
+
+## 对标定位
+
+- ElfUI 组件目录：`Navigation/Menu`
+- Element Plus 文档：`menu.md`
+- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
+
+## Element Plus API 摘要
+
+### menu.md
+
+#### Menu API
+
+- `mode`
+- `collapse`
+- `ellipsis`
+- `ellipsis-icon ^`
+- `popper-offset ^`
+- `default-active`
+- `default-openeds`
+- `unique-opened`
+- `menu-trigger`
+- `router`
+- `collapse-transition`
+- `popper-effect ^`
+- `close-on-click-outside ^`
+- `popper-class ^`
+- `popper-style ^`
+- `show-timeout ^`
+- `hide-timeout ^`
+- `background-color ^`
+- `text-color ^`
+- `active-text-color ^`
+- `persistent ^`
+- `select`
+- `open`
+- `close`
+- `default`
+- `handleResize`
+- `updateActiveIndex ^`
+
+#### Menu Attributes
+
+- `mode`
+- `collapse`
+- `ellipsis`
+- `ellipsis-icon ^`
+- `popper-offset ^`
+- `default-active`
+- `default-openeds`
+- `unique-opened`
+- `menu-trigger`
+- `router`
+- `collapse-transition`
+- `popper-effect ^`
+- `close-on-click-outside ^`
+- `popper-class ^`
+- `popper-style ^`
+- `show-timeout ^`
+- `hide-timeout ^`
+- `background-color ^`
+- `text-color ^`
+- `active-text-color ^`
+- `persistent ^`
+
+#### Menu Events
+
+- `select`
+- `open`
+- `close`
+
+#### Menu Slots
+
+- `default`
+
+#### Menu Exposes
+
+- `open`
+- `close`
+- `handleResize`
+- `updateActiveIndex ^`
+
+#### SubMenu API
+
+- `index ^`
+- `popper-class`
+- `popper-style ^`
+- `show-timeout`
+- `hide-timeout`
+- `disabled`
+- `teleported`
+- `popper-offset`
+- `expand-close-icon`
+- `expand-open-icon`
+- `collapse-close-icon`
+- `collapse-open-icon`
+- `default`
+- `title`
+
+#### SubMenu Attributes
+
+- `index ^`
+- `popper-class`
+- `popper-style ^`
+- `show-timeout`
+- `hide-timeout`
+- `disabled`
+- `teleported`
+- `popper-offset`
+- `expand-close-icon`
+- `expand-open-icon`
+- `collapse-close-icon`
+- `collapse-open-icon`
+
+#### SubMenu Slots
+
+- `default`
+- `title`
+
+#### Menu-Item API
+
+- `index ^`
+- `route`
+- `disabled`
+- `click`
+- `default`
+- `title`
+
+#### Menu-Item Attributes
+
+- `index ^`
+- `route`
+- `disabled`
+
+#### Menu-Item Events
+
+- `click`
+
+#### Menu-Item Slots
+
+- `default`
+- `title`
+
+#### Menu-Item-Group API
+
+- `title`
+- `default`
+
+#### Menu-Item-Group Attributes
+
+- `title`
+
+#### Menu-Item-Group Slots
+
+- `default`
+- `title`
+
+## 当前 ElfUI API 快照
+
+### Props
+
+- `activeBackground`
+- `activeTextColor`
+- `backgroundColor`
+- `collapse`
+- `collapseWidth`
+- `defaultActive`
+- `defaultOpeneds`
+- `elevation`
+- `indent`
+- `items`
+- `mode`
+- `modelValue`
+- `props`
+- `rounded`
+- `router`
+- `searchPlaceholder`
+- `searchable`
+- `showToggle`
+- `textColor`
+- `theme`
+- `togglePlacement`
+- `uniqueOpened`
+- `width`
+
+### Events
+
+- `close`
+- `collapse-change`
+- `open`
+- `select`
+- `update:modelValue`
+
+### Slots
+
+- `footer`
+- `header`
+- `search`
+
+### Exposes
+
+- 暂无记录
+
+## 差距与任务
+
+- [ ] P1 补齐核心属性差距：`ellipsis`、`ellipsis-icon ^`、`popper-offset ^`、`menu-trigger`、`collapse-transition`、`popper-effect ^`、`close-on-click-outside ^`、`popper-class ^`、`popper-style ^`、`show-timeout ^`、`hide-timeout ^`、`persistent ^`、`index ^`、`popper-class`、`show-timeout`、`hide-timeout`、`disabled`、`teleported`、`popper-offset`、`expand-close-icon`、`expand-open-icon`、`collapse-close-icon`、`collapse-open-icon`、`route`、`title`
+- [ ] P1 补齐事件差距：`click`
+- [ ] P1 补齐插槽/暴露方法：`title`、`open`、`close`、`handleResize`、`updateActiveIndex ^`
+- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
+- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
+- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+
+## 验收清单
+
+- [ ] API props/types 与页面 PropsTable 同步。
+- [ ] 关键交互和边界状态有单测覆盖。
+- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+## 本轮记录
+
+- [x] 2026-07-11 Navigation 第一阶段：补 `ellipsis/ellipsisIcon/menuTrigger/showTimeout/hideTimeout/popperOffset/popperClass/popperStyle/collapseTransition/closeOnClickOutside/persistent` 兼容入口，支持 `title/route/popperClass/teleported` 字段映射，补 `handleResize/updateActiveIndex` 暴露方法，新增定向测试和 PropsTable/hover 案例。

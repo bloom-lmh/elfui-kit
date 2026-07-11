@@ -1,0 +1,7 @@
+// elf-grid-item 样式
+@use "../../../styles/reset";
+
+:host {
+  grid-column: span var(--_span, 1) / span var(--_span, 1);
+  box-sizing: border-box;
+}

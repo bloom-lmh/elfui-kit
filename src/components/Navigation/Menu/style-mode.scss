@@ -1,0 +1,220 @@
+// ───── 水平模式 ──────────────────────────────────
+.menu.is-horizontal {
+  width: 100%;
+  gap: 0;
+  padding: 0;
+  border-radius: var(--elf-radius-md);
+  overflow: visible;
+
+  .menu-body {
+    overflow: visible;
+  }
+}
+
+.horizontal-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.horizontal-bar {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  padding: 4px;
+  border-radius: inherit;
+  background: var(--elf-bg-paper);
+  overflow-x: auto;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.horizontal-panel {
+  position: absolute;
+  top: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--m-popper-offset, 4px);
+  padding: 8px;
+  min-width: 200px;
+  max-width: 320px;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  border: 1px solid var(--elf-divider);
+  border-radius: var(--elf-radius-md);
+  background: var(--m-bg, var(--elf-bg-paper));
+  box-shadow: var(--elf-shadow-2);
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 2px;
+  }
+  &:hover {
+    scrollbar-color: var(--elf-border) transparent;
+    &::-webkit-scrollbar-thumb {
+      background: var(--elf-border);
+    }
+  }
+}
+
+// 水平菜单项
+.menu.is-horizontal .menu-item {
+  width: auto;
+  min-width: 92px;
+  justify-content: center;
+  border-radius: var(--elf-radius-sm);
+
+  &::before {
+    inset: auto 12px 4px;
+    width: auto;
+    height: 3px;
+  }
+  &.is-open {
+    background: var(--m-active-bg, rgba(25, 118, 210, 0.08));
+    color: var(--elf-text-primary);
+  }
+}
+
+.menu.is-horizontal .horizontal-panel .menu-item {
+  width: 100%;
+  justify-content: flex-start;
+  &::before {
+    inset: 6px auto 6px 4px;
+    width: 3px;
+    height: auto;
+  }
+}
+
+// ───── 折叠模式 ──────────────────────────────────
+.menu.is-collapsed {
+  width: var(--m-cw, 64px);
+  overflow: visible;
+
+  .menu-label,
+  .menu-arrow {
+    display: none !important;
+  }
+
+  .menu-item {
+    justify-content: center;
+    padding: 0 !important;
+    animation: none;
+  }
+
+  .menu-badge {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    font-size: 9px;
+    line-height: 16px;
+    z-index: 1;
+  }
+
+  .menu-group-title {
+    display: none;
+  }
+
+  .collapse-toggle {
+    border-top: none;
+  }
+
+  ::slotted([slot="header"]) {
+    display: none;
+  }
+
+  ::slotted(*) {
+    overflow: hidden;
+  }
+}
+
+// ───── 折叠 popup 浮层 ──────────────────────────
+// 这些选择器比 .menu.is-collapsed 优先级更高
+.menu.is-collapsed .collapse-popup {
+  position: absolute;
+  left: 100%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  min-width: 180px;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  background: var(--m-bg, var(--elf-bg-paper));
+  color: var(--elf-text-primary);
+  border: 1px solid var(--elf-divider);
+  border-radius: var(--elf-radius-md);
+  box-shadow: var(--elf-shadow-2);
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 2px;
+  }
+  &:hover {
+    scrollbar-color: var(--elf-border) transparent;
+    &::-webkit-scrollbar-thumb {
+      background: var(--elf-border);
+    }
+  }
+}
+
+.menu.is-collapsed .collapse-popup .menu-label {
+  display: block !important;
+}
+
+.menu.is-collapsed .collapse-popup .menu-item {
+  justify-content: flex-start !important;
+  padding: 0 16px 0 20px !important;
+  color: var(--elf-text-primary) !important;
+
+  &::before {
+    left: 8px !important;
+  }
+  &:hover:not(.is-disabled) {
+    color: var(--elf-text-primary) !important;
+  }
+
+  &.is-active,
+  &.is-active:hover {
+    color: var(--m-active-c, var(--elf-primary)) !important;
+  }
+}
+
+.collapse-popup--nested {
+  left: calc(100% + var(--m-popper-offset, 6px));
+}
+
+.menu.is-ellipsis .horizontal-bar {
+  overflow: hidden;
+}
+
+// ───── 响应式 ────────────────────────────────────
+@media (max-width: 640px) {
+  .menu.is-horizontal .horizontal-bar {
+    overflow-x: auto;
+  }
+}

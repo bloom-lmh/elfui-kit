@@ -1,0 +1,318 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  font-family: var(--elf-font-family);
+}
+
+.steps {
+  --step-icon-size: 36px;
+  --step-gap: 14px;
+  --step-tail-progress: 0%;
+  --step-space: auto;
+
+  display: flex;
+  width: 100%;
+  color: var(--elf-text-secondary, #5f6368);
+}
+
+.steps.size-sm {
+  --step-icon-size: 28px;
+  --step-gap: 10px;
+}
+
+.steps.size-lg {
+  --step-icon-size: 44px;
+  --step-gap: 16px;
+}
+
+.step-item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.step-button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--step-gap);
+  width: auto;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+
+.step-item.is-clickable .step-button {
+  cursor: pointer;
+}
+
+.step-item.is-clickable .step-button:hover .step-icon {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(25, 118, 210, 0.18);
+}
+
+.step-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--elf-primary, #1976d2) 60%, transparent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.step-head {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--step-icon-size);
+  height: var(--step-icon-size);
+  border: 1px solid #d8dee8;
+  border-radius: 50%;
+  background: var(--elf-bg-paper, #fff);
+  color: var(--elf-text-disabled, #9aa0a6);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s,
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+
+.step-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 1px;
+}
+
+.step-title {
+  overflow: hidden;
+  color: var(--elf-text-primary, #202124);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-description {
+  color: var(--elf-text-secondary, #5f6368);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.step-tail {
+  position: absolute;
+  pointer-events: none;
+}
+
+.step-tail-track,
+.step-tail-progress {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+}
+
+.step-tail-track {
+  background: #d8dee8;
+}
+
+.step-tail-progress {
+  background: linear-gradient(90deg, var(--elf-success, #2e7d32), var(--elf-primary, #1976d2));
+  transition:
+    width 0.2s,
+    height 0.2s;
+}
+
+.step-item.is-finish .step-icon {
+  border-color: var(--elf-success, #2e7d32);
+  background: var(--elf-success, #2e7d32);
+  color: #fff;
+  box-shadow: 0 5px 14px rgba(46, 125, 50, 0.18);
+}
+
+.step-item.is-process .step-icon {
+  border-color: var(--elf-primary, #1976d2);
+  background: var(--elf-primary, #1976d2);
+  color: #fff;
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--elf-primary, #1976d2) 12%, transparent),
+    0 8px 18px rgba(25, 118, 210, 0.2);
+}
+
+.step-item.is-process .step-title {
+  color: var(--elf-primary, #1976d2);
+}
+
+.step-item.is-error .step-icon {
+  border-color: var(--elf-danger, #d32f2f);
+  background: var(--elf-danger, #d32f2f);
+  color: #fff;
+}
+
+.step-item.is-error .step-title {
+  color: var(--elf-danger, #d32f2f);
+}
+
+.step-item.is-disabled {
+  opacity: 0.55;
+}
+
+.steps.is-horizontal {
+  align-items: flex-start;
+}
+
+.steps.is-horizontal .step-item {
+  padding-right: 28px;
+}
+
+.steps.has-space.is-horizontal .step-item {
+  flex: 0 0 var(--step-space);
+  max-width: var(--step-space);
+}
+
+.steps.is-horizontal .step-tail {
+  top: calc(var(--step-icon-size) / 2);
+  left: calc(var(--step-icon-size) + var(--step-gap));
+  right: 28px;
+  height: 2px;
+}
+
+.steps.is-horizontal .step-tail-track,
+.steps.is-horizontal .step-tail-progress {
+  inset: 0 auto auto 0;
+  height: 2px;
+}
+
+.steps.is-horizontal .step-tail-track {
+  width: 100%;
+}
+
+.steps.is-horizontal .step-tail-progress {
+  width: var(--step-tail-progress);
+}
+
+.steps.is-vertical {
+  flex-direction: column;
+  gap: 0;
+}
+
+.steps.is-vertical .step-item {
+  min-height: 72px;
+  padding-bottom: 18px;
+}
+
+.steps.has-space.is-vertical .step-item {
+  min-height: var(--step-space);
+}
+
+.steps.is-vertical .step-tail {
+  top: calc(var(--step-icon-size) + 8px);
+  bottom: 8px;
+  left: calc(var(--step-icon-size) / 2 - 1px);
+  width: 2px;
+}
+
+.steps.is-vertical .step-tail-track,
+.steps.is-vertical .step-tail-progress {
+  inset: 0 auto auto 0;
+  width: 2px;
+}
+
+.steps.is-vertical .step-tail-track {
+  height: 100%;
+}
+
+.steps.is-vertical .step-tail-progress {
+  height: var(--step-tail-progress);
+}
+
+.steps.is-alternative.is-horizontal .step-button {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.steps.is-alternative.is-horizontal .step-main {
+  align-items: center;
+}
+
+.steps.is-alternative.is-horizontal .step-tail {
+  left: calc(50% + var(--step-icon-size) / 2 + 8px);
+  right: calc(-50% + var(--step-icon-size) / 2 + 8px);
+}
+
+.steps.is-align-center.is-horizontal .step-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.steps.is-align-center.is-horizontal .step-main {
+  align-items: center;
+  text-align: center;
+}
+
+.steps.is-align-center.is-horizontal .step-tail {
+  left: calc(50% + var(--step-icon-size) / 2 + 8px);
+  right: calc(-50% + var(--step-icon-size) / 2 + 8px);
+}
+
+.steps.is-simple {
+  align-items: center;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--elf-bg-muted, #f5f7fa);
+}
+
+.steps.is-simple .step-item {
+  padding-right: 18px;
+}
+
+.steps.is-simple .step-button {
+  align-items: center;
+}
+
+.steps.is-simple .step-description,
+.steps.is-simple .step-tail {
+  display: none;
+}
+
+.steps.is-simple .step-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.steps.is-simple .step-title {
+  font-size: 14px;
+}
+
+.steps.is-compact.is-horizontal {
+  flex-direction: column;
+  gap: 16px;
+}
+
+.steps.is-compact.is-horizontal .step-item {
+  padding-right: 0;
+}
+
+.steps.is-compact.is-horizontal .step-tail {
+  display: none;
+}

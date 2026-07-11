@@ -1,0 +1,91 @@
+// Material Design Tokens —— 设计令牌（颜色、字号、圆角、间距、阴影、动效）
+//
+// 暴露为 CSS 自定义属性（CSS variables），允许运行时切换主题（light/dark）和用户覆盖。
+// 主题切换：在 <html data-theme="dark"> 上覆盖一组变量。
+
+:root,
+:root[data-theme="light"] {
+  // 颜色
+  --elf-primary: #1976d2;
+  --elf-primary-hover: #1565c0;
+  --elf-primary-active: #0d47a1;
+  --elf-secondary: #d81b60;
+  --elf-success: #2e7d32;
+  --elf-warning: #ed6c02;
+  --elf-danger: #d32f2f;
+  --elf-info: #0288d1;
+
+  --elf-text-primary: rgba(0, 0, 0, 0.87);
+  --elf-text-secondary: rgba(0, 0, 0, 0.6);
+  --elf-text-disabled: rgba(0, 0, 0, 0.38);
+  --elf-text-on-primary: #ffffff;
+
+  --elf-bg-default: #ffffff;
+  --elf-bg-paper: #ffffff;
+  --elf-bg-overlay: rgba(0, 0, 0, 0.04);
+
+  --elf-border: rgba(0, 0, 0, 0.12);
+  --elf-border-strong: rgba(0, 0, 0, 0.23);
+
+  --elf-divider: rgba(0, 0, 0, 0.08);
+
+  // 字体
+  --elf-font-family:
+    "Roboto", "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --elf-font-size-xs: 12px;
+  --elf-font-size-sm: 14px;
+  --elf-font-size-md: 16px;
+  --elf-font-size-lg: 18px;
+  --elf-font-size-xl: 20px;
+  --elf-line-height-md: 1.5;
+
+  // 圆角
+  --elf-radius-sm: 4px;
+  --elf-radius-md: 8px;
+  --elf-radius-lg: 16px;
+  --elf-radius-pill: 999px;
+
+  // 间距（4 倍数 grid）
+  --elf-space-1: 4px;
+  --elf-space-2: 8px;
+  --elf-space-3: 12px;
+  --elf-space-4: 16px;
+  --elf-space-5: 20px;
+  --elf-space-6: 24px;
+  --elf-space-8: 32px;
+
+  // 阴影（Material elevation 1/2/4/8/16）
+  --elf-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --elf-shadow-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  --elf-shadow-4: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+
+  // 动效
+  --elf-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --elf-transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --elf-transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root[data-theme="dark"] {
+  --elf-primary: #90caf9;
+  --elf-primary-hover: #64b5f6;
+  --elf-primary-active: #42a5f5;
+  --elf-secondary: #f48fb1;
+  --elf-success: #66bb6a;
+  --elf-warning: #ffa726;
+  --elf-danger: #ef5350;
+  --elf-info: #4fc3f7;
+
+  --elf-text-primary: rgba(255, 255, 255, 0.87);
+  --elf-text-secondary: rgba(255, 255, 255, 0.6);
+  --elf-text-disabled: rgba(255, 255, 255, 0.38);
+  --elf-text-on-primary: rgba(0, 0, 0, 0.87);
+
+  --elf-bg-default: #121212;
+  --elf-bg-paper: #1e1e1e;
+  --elf-bg-overlay: rgba(255, 255, 255, 0.08);
+
+  --elf-border: rgba(255, 255, 255, 0.12);
+  --elf-border-strong: rgba(255, 255, 255, 0.23);
+
+  --elf-divider: rgba(255, 255, 255, 0.08);
+}

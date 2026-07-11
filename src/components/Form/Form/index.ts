@@ -1,0 +1,147 @@
+// elf-form — 表单容器
+//
+// 对标 Element Plus，提供 model + rules 校验联动。
+// 通过 provide FORM_KEY 给 form-item 共享配置，form-item 注册到 form。
+//
+// 用法:
+//   <elf-form .model="formData" .rules="rules" label-position="top">
+//     <elf-form-item prop="name" label="姓名">
+//       <elf-input v-model="formData.name" placeholder="..." clearable />
+//     </elf-form-item>
+//   </elf-form>
+
+import {
+  defineEmits,
+  defineExpose,
+  defineProps,
+  defineStyle,
+  html,
+  provide,
+  useHost,
+  defineHtml
+} from "elfui";
+
+import { FORM_KEY, type FormContext, type FormItemContext } from "../context";
+import styles from "./style.scss?inline";
+
+import type { FormRules, RuleTrigger } from "./types";
+
+export type { FormProps, FormRule, FormRules, RuleTrigger, ValidateField } from "./types";
+
+const props = defineProps({
+  model: { type: Object, default: () => ({}) },
+  rules: { type: Object, default: () => ({}) },
+  size: { type: String, default: "md" },
+  disabled: { type: Boolean, default: false },
+  labelPosition: { type: String, default: "right" },
+  labelWidth: { type: String, default: "100px" },
+  inline: { type: Boolean, default: false },
+  hideRequiredAsterisk: { type: Boolean, default: false },
+  validateOnRuleChange: { type: Boolean, default: true },
+  scrollToError: { type: Boolean, default: false }
+});
+
+const emit = defineEmits(["validate", "submit"]);
+
+const host = useHost();
+
+const items: FormItemContext[] = [];
+
+const findItems = (propPath?: string | string[]): FormItemContext[] => {
+  if (!propPath) return [...items];
+  const arr = Array.isArray(propPath) ? propPath : [propPath];
+  return items.filter((it) => arr.includes(it.prop));
+};
+
+const validate = async (): Promise<boolean> => {
+  const results = await Promise.all(items.map((it) => it.validate()));
+  const ok = results.every(Boolean);
+
+  if (!ok && props.scrollToError) {
+    await queueMicrotask(() => {
+      const firstErr = items.find((it) => it.state === "error");
+      if (firstErr) {
+        const el = host.querySelector(`[prop="${firstErr.prop}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  }
+
+  emit(
+    "validate",
+    ok,
+    items.map((it) => ({ prop: it.prop, message: it.message }))
+  );
+  return ok;
+};
+
+const validateField = async (
+  propPath: string | string[],
+  trigger?: RuleTrigger
+): Promise<boolean> => {
+  const matched = findItems(propPath);
+  const results = await Promise.all(matched.map((it) => it.validate(trigger)));
+  return results.every(Boolean);
+};
+
+const resetFields = (): void => {
+  for (const it of items) it.resetField();
+};
+
+const clearValidate = (propPath?: string | string[]): void => {
+  for (const it of findItems(propPath)) it.clearValidate();
+};
+
+const formCtx: FormContext = {
+  get model(): Record<string, unknown> {
+    return props.model as Record<string, unknown>;
+  },
+  get rules(): FormRules {
+    return props.rules as FormRules;
+  },
+  get size() {
+    return props.size as FormContext["size"];
+  },
+  get disabled(): boolean {
+    return Boolean(props.disabled);
+  },
+  get labelPosition() {
+    return props.labelPosition as FormContext["labelPosition"];
+  },
+  get labelWidth(): string {
+    return String(props.labelWidth);
+  },
+  get hideRequiredAsterisk(): boolean {
+    return Boolean(props.hideRequiredAsterisk);
+  },
+  registerItem(item) {
+    items.push(item);
+    return () => {
+      const idx = items.indexOf(item);
+      if (idx >= 0) items.splice(idx, 1);
+    };
+  },
+  unregisterItem(item) {
+    const idx = items.indexOf(item);
+    if (idx >= 0) items.splice(idx, 1);
+  },
+  validateField,
+  validate,
+  resetFields,
+  clearValidate
+};
+
+provide(FORM_KEY, formCtx);
+
+defineExpose({ validate, validateField, resetFields, clearValidate });
+
+const onSubmit = (e: Event): void => {
+  e.preventDefault();
+  emit("submit", e);
+};
+
+defineStyle(styles);
+
+const Form = defineHtml(html`<form @submit=${onSubmit}><slot></slot></form>`);
+
+export { Form };

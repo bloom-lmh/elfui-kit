@@ -1,0 +1,31 @@
+@use "../../styles/reset";
+
+:host {
+  display: block;
+  height: 100vh;
+}
+
+elf-layout {
+  height: 100%;
+}
+
+.app-aside {
+  min-height: 0;
+  overflow: visible;
+}
+
+.app-menu {
+  height: 100%;
+  border: none;
+  border-radius: 0;
+}
+
+.brand {
+  font-size: var(--elf-font-size-lg);
+  font-weight: 600;
+  color: var(--elf-primary);
+}
+
+.spacer {
+  flex: 1;
+}

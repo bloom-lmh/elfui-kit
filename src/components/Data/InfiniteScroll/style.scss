@@ -1,0 +1,11 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+}
+
+.scroll {
+  display: block;
+  overflow: auto;
+  max-height: inherit;
+}

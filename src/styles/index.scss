@@ -1,0 +1,27 @@
+@use "./tokens";
+
+// 全局复位（最小化）
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--elf-font-family);
+  font-size: var(--elf-font-size-md);
+  line-height: var(--elf-line-height-md);
+  color: var(--elf-text-primary);
+  background: var(--elf-bg-default);
+}
+
+a {
+  color: var(--elf-primary);
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}

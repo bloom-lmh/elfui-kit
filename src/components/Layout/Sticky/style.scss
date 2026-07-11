@@ -1,0 +1,26 @@
+:host {
+  --sticky-top: 0px;
+  --sticky-bottom: auto;
+  --sticky-z-index: 10;
+  display: block;
+}
+
+.sticky {
+  display: block;
+  position: sticky;
+  top: var(--sticky-top);
+  z-index: var(--sticky-z-index);
+}
+
+:host([data-bottom]) .sticky {
+  top: auto;
+  bottom: var(--sticky-bottom);
+}
+
+:host([disabled]) .sticky {
+  position: static;
+}
+
+:host([data-stuck]) .sticky {
+  box-shadow: var(--sticky-shadow, none);
+}

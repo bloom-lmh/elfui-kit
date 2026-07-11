@@ -1,0 +1,43 @@
+// elf-container 样式
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  width: 100%;
+  margin-inline: auto;
+  box-sizing: border-box;
+  padding: var(--elf-space-4);
+  max-width: 1200px;
+}
+
+:host([max-width="xs"]) {
+  max-width: 480px;
+}
+:host([max-width="sm"]) {
+  max-width: 600px;
+}
+:host([max-width="md"]) {
+  max-width: 900px;
+}
+:host([max-width="lg"]) {
+  max-width: 1200px;
+}
+:host([max-width="xl"]) {
+  max-width: 1536px;
+}
+:host([max-width="full"]) {
+  max-width: 100%;
+}
+
+:host([padding="0"]) {
+  padding: 0;
+}
+:host([padding="sm"]) {
+  padding: var(--elf-space-3);
+}
+:host([padding="md"]) {
+  padding: var(--elf-space-4);
+}
+:host([padding="lg"]) {
+  padding: var(--elf-space-6);
+}

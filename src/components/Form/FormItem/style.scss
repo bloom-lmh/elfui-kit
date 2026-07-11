@@ -1,0 +1,82 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  margin-bottom: var(--elf-space-4);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--elf-space-3);
+}
+
+:host([data-label-position="top"]) .row {
+  flex-direction: column;
+  gap: var(--elf-space-1);
+}
+
+label {
+  flex-shrink: 0;
+  width: var(--_label-width, 100px);
+  font-size: var(--elf-font-size-sm);
+  color: var(--elf-text-primary);
+  line-height: 32px;
+}
+
+:host([data-label-position="top"]) label {
+  width: auto;
+  line-height: 1.5;
+}
+
+:host([data-label-position="left"]) label {
+  text-align: left;
+}
+
+:host([data-label-position="right"]) label {
+  text-align: right;
+}
+
+:host(:not([data-hide-asterisk])) .required::before {
+  content: "*";
+  color: var(--elf-danger);
+  margin-right: 4px;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.feedback {
+  margin-top: var(--elf-space-1);
+  font-size: var(--elf-font-size-xs);
+  min-height: 1.5em;
+  transition: color var(--elf-transition-fast);
+
+  &.error {
+    color: var(--elf-danger);
+  }
+
+  &.success {
+    color: var(--elf-success);
+  }
+
+  &.validating {
+    color: var(--elf-text-disabled);
+  }
+
+  &.inline {
+    flex-shrink: 0;
+    margin-top: 0;
+    margin-left: var(--elf-space-2);
+    display: flex;
+    align-items: center;
+  }
+}

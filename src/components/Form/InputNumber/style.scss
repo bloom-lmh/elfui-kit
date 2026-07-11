@@ -1,0 +1,102 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline-flex;
+  width: 180px;
+  color: var(--elf-text-primary);
+}
+
+.input-number {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  overflow: hidden;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  background: var(--elf-bg);
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.input-number:focus-within {
+  border-color: var(--elf-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 14%, transparent);
+}
+
+input {
+  min-width: 0;
+  height: 34px;
+  padding: 0 var(--elf-space-3);
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+}
+
+.control {
+  display: grid;
+  width: 32px;
+  place-items: center;
+  border: 0;
+  background: var(--elf-bg-muted);
+  color: var(--elf-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.control:hover:not(:disabled) {
+  color: var(--elf-primary);
+}
+
+.control:disabled,
+input:disabled {
+  color: var(--elf-text-disabled);
+  cursor: not-allowed;
+}
+
+:host([disabled]) .input-number {
+  background: var(--elf-bg-disabled, var(--elf-bg-muted));
+}
+
+:host([size="sm"]) {
+  width: 150px;
+}
+
+:host([size="sm"]) input {
+  height: 28px;
+}
+
+:host([size="lg"]) {
+  width: 210px;
+}
+
+:host([size="lg"]) input {
+  height: 40px;
+}
+
+:host([controls-position="right"]) .input-number {
+  grid-template-columns: minmax(0, 1fr) 32px;
+}
+
+:host([controls-position="right"]) .control.decrease {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+:host([controls-position="right"]) .control.increase {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+:host([controls-position="right"]) input {
+  grid-row: 1 / span 2;
+}
+
+:host([controls-position="right"]) .control {
+  height: 17px;
+  font-size: 12px;
+}

@@ -1,0 +1,12 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  font-size: var(--elf-font-size-sm);
+}
+
+:host([inline]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--elf-space-4);
+}

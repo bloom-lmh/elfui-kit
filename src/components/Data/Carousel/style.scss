@@ -1,0 +1,189 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  background: var(--elf-bg-overlay);
+}
+
+// ───── 轨道 ──────────────────────────────────────
+.track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+  transition: transform var(--_dur, 0.5s) cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+::slotted(*) {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+::slotted(img) {
+  object-fit: cover;
+}
+
+// ───── 渐隐模式 ──────────────────────────────────
+:host([effect="fade"]) .track {
+  display: grid;
+  grid-template: 1fr / 1fr;
+}
+
+:host([effect="fade"]) ::slotted(*) {
+  grid-area: 1 / 1;
+  transition: opacity var(--_dur, 0.6s) ease;
+}
+
+// ───── 箭头 ──────────────────────────────────────
+.arrows {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--elf-space-3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--elf-transition-fast);
+}
+
+:host(:hover) .arrows,
+:host(:focus-within) .arrows {
+  opacity: 1;
+}
+
+.arrow {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(4px);
+  transition: all var(--elf-transition-fast);
+
+  &:hover {
+    background: #fff;
+    color: var(--elf-primary);
+    box-shadow: var(--elf-shadow-1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// ───── arrow-style ───────────────────────────────
+:host([show-arrow="square"]) .arrow {
+  border-radius: var(--elf-radius-sm);
+}
+
+:host([show-arrow="ghost"]) .arrow {
+  background: transparent;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 36px;
+  width: 48px;
+  height: 48px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    box-shadow: none;
+  }
+}
+
+// ───── 指示器 ────────────────────────────────────
+.indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px;
+  border-radius: var(--elf-radius-pill);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all var(--elf-transition-base);
+}
+
+.dot.is-active {
+  width: 28px;
+  border-radius: var(--elf-radius-pill);
+  background: #fff;
+}
+
+// ───── 线形指示器 ────────────────────────────────
+:host([indicator-type="line"]) .dot {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+:host([indicator-type="line"]) .dot.is-active {
+  width: 32px;
+  background: #fff;
+}
+
+// ───── 数字指示器 ────────────────────────────────
+:host([indicator-type="number"]) .dot {
+  width: auto;
+  height: 28px;
+  min-width: 28px;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: var(--elf-font-size-xs);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host([indicator-type="number"]) .dot.is-active {
+  background: #fff;
+  color: rgba(0, 0, 0, 0.87);
+  width: auto;
+}
+
+// ───── 暗色主题 ──────────────────────────────────
+:root[data-theme="dark"] .arrow {
+  background: rgba(0, 0, 0, 0.65);
+  color: rgba(255, 255, 255, 0.75);
+  &:hover {
+    background: rgba(0, 0, 0, 0.85);
+    color: var(--elf-primary);
+  }
+}
+
+:root[data-theme="dark"] :host([show-arrow="ghost"]) .arrow {
+  background: transparent;
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}

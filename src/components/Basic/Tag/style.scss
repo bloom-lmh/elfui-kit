@@ -1,0 +1,118 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--elf-space-1);
+  font-size: var(--elf-font-size-xs);
+  line-height: 1;
+  padding: 2px 8px;
+  height: 22px;
+  border-radius: var(--elf-radius-sm);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color var(--elf-transition-fast),
+    color var(--elf-transition-fast),
+    border-color var(--elf-transition-fast);
+}
+
+/* 尺寸 */
+:host([size="sm"]) .tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  height: 18px;
+}
+:host([size="lg"]) .tag {
+  font-size: var(--elf-font-size-sm);
+  padding: 4px 12px;
+  height: 28px;
+}
+
+/* round */
+:host([round]) .tag {
+  border-radius: var(--elf-radius-pill);
+}
+
+/* 颜色 — 默认 primary */
+:host([color="primary"]),
+:host(:not([color])) {
+  --_color: var(--elf-primary);
+  --_bg: rgba(25, 118, 210, 0.1);
+}
+:host([color="secondary"]) {
+  --_color: var(--elf-secondary);
+  --_bg: rgba(216, 27, 96, 0.1);
+}
+:host([color="success"]) {
+  --_color: var(--elf-success);
+  --_bg: rgba(46, 125, 50, 0.1);
+}
+:host([color="warning"]) {
+  --_color: var(--elf-warning);
+  --_bg: rgba(237, 108, 2, 0.1);
+}
+:host([color="danger"]) {
+  --_color: var(--elf-danger);
+  --_bg: rgba(211, 47, 47, 0.1);
+}
+:host([color="info"]) {
+  --_color: var(--elf-info);
+  --_bg: rgba(2, 136, 209, 0.1);
+}
+
+/* variant: light（默认） */
+:host([variant="light"]) .tag,
+:host(:not([variant])) .tag {
+  background: var(--_bg);
+  color: var(--_color);
+  border-color: transparent;
+}
+
+/* variant: filled */
+:host([variant="filled"]) .tag {
+  background: var(--_color);
+  color: var(--elf-text-on-primary);
+  border-color: var(--_color);
+}
+
+/* variant: outlined */
+:host([variant="outlined"]) .tag {
+  background: transparent;
+  color: var(--_color);
+  border-color: var(--_color);
+}
+
+/* disabled */
+:host([disabled]) .tag {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+  line-height: 1;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 50%;
+  margin-left: 2px;
+  padding: 0;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+}

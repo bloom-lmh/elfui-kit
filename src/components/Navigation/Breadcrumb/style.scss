@@ -1,0 +1,103 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.breadcrumb {
+  width: 100%;
+}
+
+.breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.breadcrumb-link,
+.breadcrumb-text {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 240px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 32px;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breadcrumb-link {
+  cursor: pointer;
+  transition:
+    background var(--elf-transition-fast),
+    color var(--elf-transition-fast);
+
+  &:hover {
+    background: var(--elf-bg-overlay);
+    color: var(--elf-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--elf-primary);
+    outline-offset: -2px;
+  }
+}
+
+.breadcrumb-item.is-current .breadcrumb-text {
+  color: var(--elf-text-primary);
+  font-weight: 600;
+}
+
+.breadcrumb-item.is-disabled {
+  opacity: 0.5;
+
+  .breadcrumb-link {
+    cursor: not-allowed;
+
+    &:hover {
+      background: transparent;
+      color: inherit;
+    }
+  }
+}
+
+.breadcrumb-item.is-ellipsis .breadcrumb-text {
+  color: var(--elf-text-disabled);
+  font-weight: 600;
+}
+
+.breadcrumb-separator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 32px;
+  color: var(--elf-text-disabled);
+  user-select: none;
+}
+
+.breadcrumb-separator-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

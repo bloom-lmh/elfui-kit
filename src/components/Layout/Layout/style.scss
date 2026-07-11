@@ -1,0 +1,21 @@
+@use "../../../styles/reset";
+
+:host {
+  display: flex;
+  flex: 1;
+  flex-basis: auto;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 默认垂直堆叠（header/main/footer）；
+   含 elf-aside 的子结构由 :host([direction="horizontal"]) 显式指定 */
+:host,
+:host([direction="vertical"]) {
+  flex-direction: column;
+}
+
+:host([direction="horizontal"]) {
+  flex-direction: row;
+}

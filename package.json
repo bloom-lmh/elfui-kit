@@ -1,0 +1,35 @@
+{
+  "name": "@elfui/kit",
+  "version": "0.0.2-beta.0",
+  "private": true,
+  "type": "module",
+  "description": "Official ElfUI component library built with macro components.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "elfui": "0.1.0-beta.0",
+    "@elfui/reactivity": "0.1.0-beta.0",
+    "@elfui/router": "0.1.0-beta.0",
+    "@elfui/runtime": "0.1.0-beta.0",
+    "@elfui/shared": "0.1.0-beta.0"
+  },
+  "devDependencies": {
+    "@elfui/compiler": "0.1.0-beta.0",
+    "@elfui/vite-plugin": "0.1.0-beta.0",
+    "sass-embedded": "^1.83.0",
+    "typescript": "~5.6.3",
+    "vite": "^7.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bloom-lmh/elfui-kit.git"
+  },
+  "homepage": "https://github.com/bloom-lmh/elfui-kit",
+  "bugs": {
+    "url": "https://github.com/bloom-lmh/elfui-kit/issues"
+  }
+}

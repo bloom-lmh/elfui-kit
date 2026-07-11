@@ -1,0 +1,86 @@
+export type UploadListType = "text" | "picture" | "picture-card";
+export type UploadStatus = "ready" | "uploading" | "success" | "error";
+export type UploadInvalidReason = "limit" | "accept" | "size" | "name" | "before-upload";
+
+export interface UploadFileItem {
+  uid: string;
+  name: string;
+  size: number;
+  type: string;
+  status: UploadStatus;
+  percentage: number;
+  raw?: File;
+  url?: string;
+  response?: unknown;
+  error?: unknown;
+  message?: string;
+}
+
+export interface UploadRequestOptions {
+  action: string;
+  method: string;
+  filename: string;
+  file: UploadFileItem;
+  data: Record<string, unknown>;
+  headers: Headers | Record<string, unknown>;
+  withCredentials: boolean;
+  onProgress(percent: number): void;
+  onSuccess(response?: unknown): void;
+  onError(error: unknown): void;
+}
+
+export interface UploadChunkRequestOptions {
+  file: UploadFileItem;
+  chunk: Blob;
+  index: number;
+  total: number;
+  start: number;
+  end: number;
+  onProgress(percent: number): void;
+}
+
+export interface UploadInvalidPayload {
+  file?: File;
+  files?: File[];
+  reason: UploadInvalidReason;
+  message: string;
+}
+
+export interface UploadProps {
+  modelValue: UploadFileItem[];
+  action: string;
+  method: string;
+  headers: Headers | Record<string, unknown>;
+  data:
+    | Record<string, unknown>
+    | ((file: File) => Record<string, unknown> | Promise<Record<string, unknown>>);
+  withCredentials: boolean;
+  accept: string;
+  crossorigin: "" | "anonymous" | "use-credentials";
+  name: string;
+  multiple: boolean;
+  directory: boolean;
+  drag: boolean;
+  disabled: boolean;
+  autoUpload: boolean;
+  limit: number;
+  maxSize: number;
+  fileNamePattern: string;
+  chunkSize: number;
+  listType: UploadListType;
+  showFileList: boolean;
+  buttonText: string;
+  tip: string;
+  beforeUpload?: (file: File) => boolean | Promise<boolean>;
+  beforeRemove?: (file: UploadFileItem) => boolean | Promise<boolean>;
+  customRequest?: (options: UploadRequestOptions) => void | Promise<void>;
+  httpRequest?: (options: UploadRequestOptions) => void | Promise<void>;
+  chunkRequest?: (options: UploadChunkRequestOptions) => void | Promise<void>;
+  onPreview?: (file: UploadFileItem) => void;
+  onRemove?: (file: UploadFileItem, files: UploadFileItem[]) => void;
+  onSuccess?: (response: unknown, file: UploadFileItem, files: UploadFileItem[]) => void;
+  onError?: (error: unknown, file: UploadFileItem, files: UploadFileItem[]) => void;
+  onProgress?: (percentage: number, file: UploadFileItem, files: UploadFileItem[]) => void;
+  onChange?: (file: UploadFileItem | null, files: UploadFileItem[]) => void;
+  onExceed?: (files: File[], uploadFiles: UploadFileItem[]) => void;
+}

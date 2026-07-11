@@ -1,0 +1,62 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline-block;
+  color: var(--elf-text-primary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.time-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.field {
+  height: 40px;
+  min-width: 128px;
+  padding: 0 12px;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-sm);
+  background: var(--elf-bg-paper);
+  color: var(--elf-text-primary);
+  font: inherit;
+  box-sizing: border-box;
+  outline: none;
+
+  &:focus {
+    border-color: var(--elf-primary);
+  }
+}
+
+.separator {
+  color: var(--elf-text-disabled);
+}
+
+.clear,
+.shortcut {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: var(--elf-bg-overlay);
+  color: var(--elf-text-secondary);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--elf-primary);
+  }
+}
+
+.shortcuts {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.time-picker.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}

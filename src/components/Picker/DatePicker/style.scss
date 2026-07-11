@@ -1,0 +1,151 @@
+@use "../../../styles/reset";
+
+:host {
+  display: inline-block;
+  color: var(--elf-text-primary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.date-picker {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 100%;
+  padding: 10px;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  background: var(--elf-bg-paper);
+  box-sizing: border-box;
+}
+
+.date-picker.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 0 100%;
+  min-width: 0;
+  padding: 0 2px 2px;
+}
+
+.header-title {
+  font-weight: 600;
+  color: var(--elf-text-primary);
+}
+
+.header-type {
+  padding: 2px 8px;
+  border-radius: var(--elf-radius-pill);
+  background: color-mix(in srgb, var(--elf-primary) 10%, transparent);
+  color: var(--elf-primary);
+  font-size: var(--elf-font-size-xs);
+}
+
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.field {
+  height: 40px;
+  min-width: 168px;
+  padding: 0 12px;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-sm);
+  background: var(--elf-bg-paper);
+  color: var(--elf-text-primary);
+  font: inherit;
+  box-sizing: border-box;
+  outline: none;
+
+  &:focus {
+    border-color: var(--elf-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 14%, transparent);
+  }
+}
+
+.separator {
+  color: var(--elf-text-disabled);
+}
+
+.clear,
+.shortcut,
+.chip,
+.text-action,
+.primary-action {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--elf-transition-base),
+    color var(--elf-transition-base),
+    box-shadow var(--elf-transition-base);
+}
+
+.clear,
+.shortcut,
+.text-action {
+  background: var(--elf-bg-overlay);
+  color: var(--elf-text-secondary);
+
+  &:hover {
+    color: var(--elf-primary);
+    background: color-mix(in srgb, var(--elf-primary) 9%, transparent);
+  }
+}
+
+.shortcuts,
+.chips,
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.shortcuts,
+.chips {
+  flex: 1 0 100%;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--elf-primary) 10%, transparent);
+  color: var(--elf-primary);
+}
+
+.actions {
+  flex: 1 0 100%;
+  padding-top: 4px;
+}
+
+.actions-spacer {
+  flex: 1;
+}
+
+.primary-action {
+  background: var(--elf-primary);
+  color: #ffffff;
+  box-shadow: var(--elf-shadow-1);
+
+  &:hover {
+    background: color-mix(in srgb, var(--elf-primary) 88%, #000000);
+  }
+}
+
+.date-picker.has-actions .field {
+  min-width: 180px;
+}

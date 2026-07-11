@@ -1,0 +1,16 @@
+// 组件级共享 reset
+//
+// 任意组件的 style.scss 顶部 @use 即可：
+//   @use "../../../styles/reset";
+//
+// （sass 会自动展开常量；reset 块是占位规则，被组件 :host 覆盖时无副作用）
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  font-family: var(--elf-font-family);
+}
