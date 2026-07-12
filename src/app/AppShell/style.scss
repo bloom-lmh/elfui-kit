@@ -21,9 +21,21 @@ elf-layout {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--elf-space-2);
   font-size: var(--elf-font-size-lg);
   font-weight: 600;
   color: var(--elf-primary);
+  line-height: 1;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6);
 }
 
 .spacer {
