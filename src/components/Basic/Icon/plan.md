@@ -1,5 +1,8 @@
 # Icon Element Plus API 对标计划
 
+## 本轮记录
+- [x] 第二阶段：补 `aria-label` 可访问性属性和页面 PropsTable。
+
 生成时间：2026-07-05
 
 ## 对标定位

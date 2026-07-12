@@ -10,15 +10,16 @@
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
-    "elfui": "0.1.0-beta.0",
-    "@elfui/reactivity": "0.1.0-beta.0",
-    "@elfui/router": "0.1.0-beta.0",
-    "@elfui/runtime": "0.1.0-beta.0",
-    "@elfui/shared": "0.1.0-beta.0"
+    "@elfui/core": "0.1.0-beta.1",
+    "@elfui/reactivity": "0.1.0-beta.1",
+    "@elfui/router": "0.1.0-beta.1",
+    "@elfui/runtime": "0.1.0-beta.1",
+    "@elfui/shared": "0.1.0-beta.1",
+    "elfui": "npm:@elfui/core@0.1.0-beta.1"
   },
   "devDependencies": {
-    "@elfui/compiler": "0.1.0-beta.0",
-    "@elfui/vite-plugin": "0.1.0-beta.0",
+    "@elfui/compiler": "0.1.0-beta.1",
+    "@elfui/vite-plugin": "0.1.0-beta.1",
     "sass-embedded": "^1.83.0",
     "typescript": "~5.6.3",
     "vite": "^7.1.5"

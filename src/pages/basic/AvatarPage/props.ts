@@ -1,19 +1,28 @@
 import { defineHtml, html } from "elfui";
 
 const propsRows = [
-  { name: "size", type: "sm | md | lg | xl", default: "md", desc: "尺寸" },
-  { name: "shape", type: "circle | square", default: "circle", desc: "形状" },
-  { name: "src", type: "string", default: "''", desc: "图片地址，设置后优先展示" },
-  { name: "alt", type: "string", default: "''", desc: "替代文本，同时用于生成首字母缩写" },
-  { name: "icon", type: "string", default: "''", desc: "Unicode 图标" },
-  { name: "color", type: "string", default: "''", desc: "自定义背景色（#hex 或语义色名）" }
+  { name: "size", type: "sm | md | lg | xl", default: "md" },
+  { name: "shape", type: "circle | square", default: "circle" },
+  { name: "src", type: "string", default: "''" },
+  { name: "src-set", type: "string", default: "''" },
+  { name: "alt", type: "string", default: "''" },
+  { name: "fit", type: "fill|contain|cover|none|scale-down", default: "cover" },
+  { name: "icon", type: "string", default: "''" },
+  { name: "color", type: "string", default: "''" }
 ];
 
-const slotsRows = [];
+const eventsRows = [{ name: "error", type: "(event: Event) => void", desc: "image load failed" }];
+
+const slotsRows = [
+  { name: "default", desc: "fallback content" },
+  { name: "icon", desc: "custom icon content" }
+];
 
 const PageAvatarProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows" />
+  <elf-props-table title="Props" :rows=${propsRows} />
+  <elf-props-table title="Events" :rows=${eventsRows} />
+  <elf-props-table title="Slots" :rows=${slotsRows} />
 `);
 
 export { PageAvatarProps };

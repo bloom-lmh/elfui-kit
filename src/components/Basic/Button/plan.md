@@ -1,5 +1,8 @@
 # Button Element Plus API 对标计划
 
+## 本轮记录
+- [x] 第二阶段：补 `type` 语义色兼容、`native-type`、`text`、`bg`、`link`、`round`、`circle`、`icon`、`loading-icon`、`dark`、`direction` 基础行为和页面示例。
+
 生成时间：2026-07-05
 
 ## 对标定位

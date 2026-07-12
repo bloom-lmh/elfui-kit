@@ -1,5 +1,8 @@
 # Badge Element Plus API 对标计划
 
+## 本轮记录
+- [x] 第二阶段：补 `offset`、`badge-style`、`badge-class`、`content` 与 `content` slot 基础能力和页面示例。
+
 生成时间：2026-07-05
 
 ## 对标定位

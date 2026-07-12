@@ -1,5 +1,8 @@
 # Text Element Plus API 对标计划
 
+## 本轮记录
+- [x] 第二阶段：实现 `tag` 的常用标签渲染，并补 PropsTable 示例。
+
 生成时间：2026-07-05
 
 ## 对标定位

@@ -12,12 +12,12 @@
 // - 有 icon → 显示图标
 // - 否则 → 显示 alt 首字母缩写
 
-import { defineProps, defineStyle, html, useComputed, useRef, defineHtml } from "elfui";
+import { defineEmits, defineProps, defineStyle, html, useComputed, useHostAttr, useRef, defineHtml } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { AvatarProps } from "./types";
+import type { AvatarEmits, AvatarFit, AvatarProps } from "./types";
 
-export type { AvatarProps, AvatarShape, AvatarSize } from "./types";
+export type { AvatarEmits, AvatarFit, AvatarProps, AvatarShape, AvatarSize } from "./types";
 
 // ───── 颜色哈希（基于名字生成稳定的背景色） ────────
 const COLORS = [
@@ -49,14 +49,18 @@ const props = defineProps({
   size: { type: String, default: "md" },
   shape: { type: String, default: "circle" },
   src: { type: String, default: "" },
+  srcSet: { type: String, default: "" },
   alt: { type: String, default: "" },
+  fit: { type: String, default: "cover" },
   icon: { type: String, default: "" },
   color: { type: String, default: "" }
 }) as unknown as Readonly<AvatarProps>;
 
+const emit = defineEmits<AvatarEmits>();
 const imgError = useRef(false);
 
-const onImgError = (): void => {
+const onImgError = (event: Event): void => {
+  emit("error", event);
   imgError.set(true);
 };
 
@@ -78,13 +82,26 @@ const bgColor = useComputed(() => {
   return hashColor(toText(props.alt) || "?");
 });
 
+const normalizedFit = (): AvatarFit => {
+  const value = String(props.fit || "cover") as AvatarFit;
+  return ["fill", "contain", "cover", "none", "scale-down"].includes(value) ? value : "cover";
+};
+
+useHostAttr("fit", normalizedFit);
+
 defineStyle(styles);
 
 const Avatar = defineHtml(html`
   <div class="avatar" part="avatar" :style=${{ backgroundColor: bgColor }}>
-    <img v-if=${showImage} :src=${props.src} :alt=${props.alt} @error=${onImgError} />
-    <span v-else-if=${props.icon} class="icon">${props.icon}</span>
-    <span v-else class="initials">${initials}</span>
+    <img
+      v-if=${showImage}
+      :src=${props.src}
+      :srcset=${props.srcSet || null}
+      :alt=${props.alt}
+      @error=${onImgError}
+    />
+    <slot v-else-if=${props.icon} name="icon"><span class="icon">${props.icon}</span></slot>
+    <slot v-else><span class="initials">${initials}</span></slot>
   </div>
 `);
 

@@ -56,28 +56,38 @@ button {
   border-radius: var(--elf-radius-pill);
 }
 
+:host([round]) button {
+  border-radius: var(--elf-radius-pill);
+}
+
 :host([shape="circle"]) button,
-:host([shape="square"]) button {
+:host([shape="square"]) button,
+:host([circle]) button {
   padding: 0;
   aspect-ratio: 1;
 }
 
-:host([shape="circle"]) button {
+:host([shape="circle"]) button,
+:host([circle]) button {
   border-radius: 50%;
 }
 
 :host([shape="circle"][size="sm"]) button,
-:host([shape="square"][size="sm"]) button {
+:host([shape="square"][size="sm"]) button,
+:host([circle][size="sm"]) button {
   width: 28px;
 }
 :host([shape="circle"][size="md"]) button,
 :host([shape="square"][size="md"]) button,
 :host([shape="circle"]:not([size])) button,
-:host([shape="square"]:not([size])) button {
+:host([shape="square"]:not([size])) button,
+:host([circle][size="md"]) button,
+:host([circle]:not([size])) button {
   width: 36px;
 }
 :host([shape="circle"][size="lg"]) button,
-:host([shape="square"][size="lg"]) button {
+:host([shape="square"][size="lg"]) button,
+:host([circle][size="lg"]) button {
   width: 44px;
 }
 
@@ -175,6 +185,36 @@ button {
 }
 
 /* 状态 */
+:host([variant="text"][bg]) button,
+:host([text][bg]) button {
+  background: var(--_overlay);
+}
+
+:host([link]) button {
+  height: auto;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+
+  &:hover:not(:disabled) {
+    background: transparent;
+    color: var(--_hover);
+    box-shadow: none;
+  }
+}
+
+:host([dark][variant="text"]) button,
+:host([dark][text]) button {
+  color: var(--elf-text-on-primary);
+}
+
+:host([direction="vertical"]) button {
+  flex-direction: column;
+  height: auto;
+  min-height: 36px;
+}
+
 :host([disabled]) button,
 button:disabled {
   cursor: not-allowed;
@@ -205,6 +245,12 @@ button:disabled {
 
 ::slotted([slot="icon"]),
 ::slotted([slot="suffix-icon"]) {
+  display: inline-flex;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.prop-icon {
   display: inline-flex;
   font-size: 1.1em;
   line-height: 1;

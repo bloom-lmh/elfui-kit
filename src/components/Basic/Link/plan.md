@@ -1,5 +1,8 @@
 # Link Element Plus API 对标计划
 
+## 本轮记录
+- [x] 第二阶段：调整 icon slot 优先级高于 `icon` prop，并补 PropsTable 说明。
+
 生成时间：2026-07-05
 
 ## 对标定位

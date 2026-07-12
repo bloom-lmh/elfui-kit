@@ -17,6 +17,7 @@ export type ButtonShape = "default" | "round" | "circle" | "square";
 
 /** Button props 完整类型（用于外部消费方做类型推导） */
 export interface ButtonProps {
+  type: ButtonColor | ButtonType | "";
   variant: ButtonVariant;
   color: ButtonColor;
   size: ButtonSize;
@@ -24,7 +25,11 @@ export interface ButtonProps {
   disabled: boolean;
   loading: boolean;
   block: boolean;
-  type: ButtonType;
+  text: boolean;
+  bg: boolean;
+  link: boolean;
+  round: boolean;
+  circle: boolean;
   /** 加 plain 让 contained 变成"低饱和度"风格（element-plus 风格） */
   plain: boolean;
   /** 加 dashed 让 outlined 变成虚线 */
@@ -33,6 +38,13 @@ export interface ButtonProps {
   autofocus: boolean;
   /** native form attribute */
   form: string;
+  nativeType: ButtonType;
+  icon: string;
+  loadingIcon: string;
+  autoInsertSpace: boolean;
+  dark: boolean;
+  tag: string;
+  direction: "horizontal" | "vertical";
 }
 
 /** Button 对外事件 */

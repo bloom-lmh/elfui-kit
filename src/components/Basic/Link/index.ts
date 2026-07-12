@@ -41,8 +41,7 @@ const Link = defineHtml<LinkProps, Record<string, never>, LinkSlots>(html`
     :aria-disabled=${props.disabled ? "true" : null}
     @click=${onClick}
   >
-    <span v-if=${props.icon} class="prop-icon" aria-hidden="true">${props.icon}</span>
-    <span class="icon"><slot name="icon"></slot></span>
+    <span class="icon"><slot name="icon"><span v-if=${props.icon} class="prop-icon" aria-hidden="true">${props.icon}</span></slot></span>
     <slot></slot>
   </a>
 `);

@@ -6,10 +6,10 @@
 //   <elf-button variant="contained" plain color="success">plain</elf-button>
 //   <elf-button shape="round" loading>loading</elf-button>
 
-import { defineEmits, defineHtml, defineProps, defineStyle, html } from "elfui";
+import { defineEmits, defineHtml, defineProps, defineStyle, html, useHostAttr, useHostFlag } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { ButtonEmits, ButtonProps, ButtonSlots } from "./types";
+import type { ButtonEmits, ButtonProps, ButtonSlots, ButtonType, ButtonVariant } from "./types";
 
 export type {
   ButtonColor,
@@ -23,6 +23,7 @@ export type {
 } from "./types";
 
 const props = defineProps<ButtonProps>({
+  type: { type: String, default: "" },
   variant: { type: String, default: "contained" },
   color: { type: String, default: "primary" },
   size: { type: String, default: "md" },
@@ -30,11 +31,22 @@ const props = defineProps<ButtonProps>({
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
   block: { type: Boolean, default: false },
+  text: { type: Boolean, default: false },
+  bg: { type: Boolean, default: false },
+  link: { type: Boolean, default: false },
+  round: { type: Boolean, default: false },
+  circle: { type: Boolean, default: false },
   plain: { type: Boolean, default: false },
   dashed: { type: Boolean, default: false },
   autofocus: { type: Boolean, default: false },
-  type: { type: String, default: "button" },
-  form: { type: String, default: "" }
+  form: { type: String, default: "" },
+  nativeType: { type: String, default: "button" },
+  icon: { type: String, default: "" },
+  loadingIcon: { type: String, default: "" },
+  autoInsertSpace: { type: Boolean, default: false },
+  dark: { type: Boolean, default: false },
+  tag: { type: String, default: "button" },
+  direction: { type: String, default: "horizontal" }
 });
 
 defineEmits<ButtonEmits>();
@@ -47,12 +59,47 @@ const handleClick = (event: Event): void => {
   event.preventDefault();
 };
 
+const colorTypes = ["primary", "secondary", "success", "warning", "danger", "info"];
+const nativeTypes = ["button", "submit", "reset"];
+
+const normalizedColor = (): string => {
+  const type = String(props.type || "");
+  if (colorTypes.includes(type)) return type;
+  return colorTypes.includes(String(props.color)) ? String(props.color) : "primary";
+};
+
+const normalizedVariant = (): ButtonVariant => {
+  if (props.link || props.text) return "text";
+  return props.variant === "outlined" || props.variant === "text" ? props.variant : "contained";
+};
+
+const normalizedNativeType = (): ButtonType => {
+  const type = String(props.type || "");
+  if (nativeTypes.includes(type)) return type as ButtonType;
+  return nativeTypes.includes(String(props.nativeType)) ? (props.nativeType as ButtonType) : "button";
+};
+
+useHostAttr("color", normalizedColor);
+useHostAttr("variant", normalizedVariant);
+useHostFlag("round", () => Boolean(props.round || props.shape === "round"));
+useHostFlag("circle", () => Boolean(props.circle || props.shape === "circle"));
+useHostFlag("text", () => Boolean(props.text));
+useHostFlag("bg", () => Boolean(props.bg));
+useHostFlag("link", () => Boolean(props.link));
+useHostFlag("dark", () => Boolean(props.dark));
+useHostAttr("direction", () => props.direction === "vertical" ? "vertical" : "horizontal");
+
 const Button = defineHtml<ButtonProps, ButtonEmits, ButtonSlots>(html`
-  <button part="button" :type=${props.type} :disabled=${props.disabled ||
+  <button part="button" :type=${normalizedNativeType()} :disabled=${props.disabled ||
     props.loading} :aria-busy=${props.loading} :autofocus=${props.autofocus}
     :form=${props.form || null} @click=${handleClick}>
-    <span v-if=${props.loading} class="spinner" aria-hidden="true"></span>
-    <slot v-if=${!props.loading} name="icon"></slot>
+    <slot v-if=${props.loading} name="loading">
+      <span v-if=${props.loadingIcon} class="prop-icon" aria-hidden="true">${props.loadingIcon}</span>
+      <span v-else class="spinner" aria-hidden="true"></span>
+    </slot>
+    <slot v-if=${!props.loading} name="icon">
+      <span v-if=${props.icon} class="prop-icon" aria-hidden="true">${props.icon}</span>
+    </slot>
     <slot></slot>
     <slot name="suffix-icon"></slot>
   </button>

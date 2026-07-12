@@ -1,19 +1,28 @@
-// elf-tag 类型
-
 export type TagColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info";
 
 export type TagSize = "sm" | "md" | "lg";
 
 export type TagVariant = "filled" | "light" | "outlined";
 
+export type TagEffect = "dark" | "light" | "plain";
+
 export interface TagProps {
+  type: TagColor;
   color: TagColor;
   size: TagSize;
   variant: TagVariant;
-  /** 显示关闭按钮 */
+  effect: TagEffect;
   closable: boolean;
-  /** 圆形 */
   round: boolean;
-  /** 禁用 */
   disabled: boolean;
+  disableTransitions: boolean;
+  hit: boolean;
+  checked?: boolean;
 }
+
+export type TagEmits = {
+  click: [event: MouseEvent];
+  close: [event: Event];
+  change: [checked: boolean];
+  "update:checked": [checked: boolean];
+};

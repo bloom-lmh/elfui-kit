@@ -39,6 +39,11 @@ const normalizedSize = (): TextSize => {
   return value === "sm" || value === "md" || value === "lg" ? value : "";
 };
 
+const normalizedTag = (): string => {
+  const value = String(props.tag || "span").toLowerCase();
+  return ["span", "p", "div", "strong", "em", "mark", "del", "ins"].includes(value) ? value : "span";
+};
+
 useHostAttr("type", normalizedType);
 useHostAttr("size", normalizedSize);
 useHostFlag("truncated", () => Boolean(props.truncated));
@@ -56,9 +61,14 @@ useHostCssVar("--_line-clamp", () => String(lineClampValue()));
 defineStyle(styles);
 
 const Text = defineHtml<TextProps, Record<string, never>, TextSlots>(html`
-  <span class="text" part="text">
-    <slot></slot>
-  </span>
+  <p v-if=${normalizedTag() === "p"} class="text" part="text"><slot></slot></p>
+  <div v-else-if=${normalizedTag() === "div"} class="text" part="text"><slot></slot></div>
+  <strong v-else-if=${normalizedTag() === "strong"} class="text" part="text"><slot></slot></strong>
+  <em v-else-if=${normalizedTag() === "em"} class="text" part="text"><slot></slot></em>
+  <mark v-else-if=${normalizedTag() === "mark"} class="text" part="text"><slot></slot></mark>
+  <del v-else-if=${normalizedTag() === "del"} class="text" part="text"><slot></slot></del>
+  <ins v-else-if=${normalizedTag() === "ins"} class="text" part="text"><slot></slot></ins>
+  <span v-else class="text" part="text"><slot></slot></span>
 `);
 
 export { Text };

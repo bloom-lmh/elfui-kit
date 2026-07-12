@@ -89,6 +89,20 @@
   border-color: var(--_color);
 }
 
+:host([hit]) .tag {
+  border-color: var(--_color);
+}
+
+:host([checked]) .tag {
+  background: var(--_color);
+  color: var(--elf-text-on-primary);
+  border-color: var(--_color);
+}
+
+:host([disable-transitions]) .tag {
+  transition: none;
+}
+
 /* disabled */
 :host([disabled]) .tag {
   cursor: not-allowed;

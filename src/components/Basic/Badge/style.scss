@@ -31,7 +31,7 @@
   white-space: nowrap;
 
   border-radius: var(--elf-radius-pill);
-  transform: translate(50%, -50%);
+  transform: translate(calc(50% + var(--_badge-offset-x, 0px)), calc(-50% + var(--_badge-offset-y, 0px)));
   transform-origin: 100% 0%;
 
   transition:
