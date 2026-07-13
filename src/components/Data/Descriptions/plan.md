@@ -15,8 +15,8 @@
 
 ## 后续差距
 
-- [ ] 拆出 DescriptionsItem 子组件，补 label/default slots、align、label-width、class-name。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 拆出 DescriptionsItem 子组件，补 label/default slots、align、label-width、class-name，并保持 items 数据模式为无子项时的兼容回退。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
 
 ## 本轮案例页
 

@@ -5,6 +5,7 @@ import { Card } from "./Card/index";
 import { Carousel } from "./Carousel/index";
 import { Collapse } from "./Collapse/index";
 import { Descriptions } from "./Descriptions/index";
+import { DescriptionsItem } from "./DescriptionsItem/index";
 import { Divider } from "./Divider/index";
 import { Empty } from "./Empty/index";
 import { Image } from "./Image/index";
@@ -25,6 +26,7 @@ registerComponents(
   Carousel,
   Collapse,
   Descriptions,
+  DescriptionsItem,
   Divider,
   Empty,
   Image,

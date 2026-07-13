@@ -1,4 +1,9 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
+import { PageDescriptionsProps } from "./props";
+
+useComponents({
+  "page-descriptions-props": PageDescriptionsProps
+});
 
 const orderItems = [
   { label: "订单号", value: "ELF-20260707" },
@@ -37,6 +42,17 @@ const code2 = `<elf-descriptions
   :column=\${3}
 />`;
 
+const code3 = `<elf-descriptions title="Account" border direction="horizontal" :column=\${2}>
+  <elf-descriptions-item label="Name" label-width="88" :span=\${1}>Elf</elf-descriptions-item>
+  <elf-descriptions-item align="right" :span=\${1}>
+    <span slot="label">Role</span>
+    Maintainer
+  </elf-descriptions-item>
+  <elf-descriptions-item label="Description" :span=\${2}>
+    Declarative descriptions items preserve rich content and slots.
+  </elf-descriptions-item>
+</elf-descriptions>`;
+
 const script2 = `const profileItems = [
   { label: "用户名", value: "elf-admin" },
   { label: "角色", value: "Maintainer" },
@@ -68,6 +84,21 @@ const PageDescriptions = defineHtml(html`
         :column=${3}
       ></elf-descriptions>
     </elf-playground>
+
+    <elf-playground title="descriptions item / slots" :code=${code3}>
+      <elf-descriptions title="Account" border direction="horizontal" :column=${2}>
+        <elf-descriptions-item label="Name" label-width="88" :span=${1}>Elf</elf-descriptions-item>
+        <elf-descriptions-item align="right" :span=${1}>
+          <span slot="label">Role</span>
+          Maintainer
+        </elf-descriptions-item>
+        <elf-descriptions-item label="Description" :span=${2}>
+          Declarative descriptions items preserve rich content and slots.
+        </elf-descriptions-item>
+      </elf-descriptions>
+    </elf-playground>
+
+    <page-descriptions-props></page-descriptions-props>
   </elf-container>
 `);
 

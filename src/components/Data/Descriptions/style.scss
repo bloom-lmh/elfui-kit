@@ -42,6 +42,11 @@
   border-bottom: 1px solid var(--elf-border);
 }
 
+:host([border]) ::slotted(elf-descriptions-item) {
+  border-right: 1px solid var(--elf-border);
+  border-bottom: 1px solid var(--elf-border);
+}
+
 .label {
   color: var(--elf-text-secondary);
   font-size: var(--elf-font-size-sm);
