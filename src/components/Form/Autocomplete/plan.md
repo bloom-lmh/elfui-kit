@@ -1,17 +1,17 @@
-# Autocomplete Element Plus API 对标计划
+# Autocomplete Element Plus parity plan
 
-生成时间：2026-07-05
+## Baseline
 
-## 第一批实现
+- [x] Core props: `model-value`, `options`, `fetch-suggestions`, `placeholder`, `disabled`, `clearable`, and `trigger-on-focus`.
+- [x] Core events: `update:modelValue`, `input`, `change`, `select`, `focus`, `blur`, and `clear`.
+- [x] Form validation linkage and focused component tests.
 
-- [x] 基础 props：`model-value`、`options`、`fetch-suggestions`、`placeholder`、`disabled`、`clearable`、`trigger-on-focus`。
-- [x] 基础 events：`update:modelValue`、`input`、`change`、`select`、`focus`、`blur`、`clear`。
-- [x] 接入 Form 注册和单测。
+## Delivered in this batch
 
-## 后续差距
+- [x] Add debounced asynchronous suggestions with last-request-wins protection and a loading state.
+- [x] Add `placement`, `highlight-first-item`, accessible combobox/listbox semantics, arrow-key navigation, Escape, Enter selection, and `focus` / `blur` exposes.
+- [x] Add default suggestion and `loading` slots, API reference, and a keyboard/top-placement playground example.
 
-- [ ] 补齐 placement、debounce、highlight-first-item、teleported、slots、键盘导航和远程加载状态。
+## Remaining gap
 
-## 本轮案例页
-
-- [x] 新增独立展示页面，覆盖 Template / Script、本地 options、异步 fetchSuggestions、clearable 和 select 示例。
+- [ ] Support a correctly-positioned `teleported` panel. This requires an anchored-positioning primitive so scroll, zoom, and viewport changes remain accurate.

@@ -4,6 +4,14 @@ export interface AutocompleteOption {
   disabled?: boolean;
 }
 
+export type AutocompletePlacement =
+  | "top"
+  | "top-start"
+  | "top-end"
+  | "bottom"
+  | "bottom-start"
+  | "bottom-end";
+
 export type AutocompleteFetchSuggestions = (
   query: string,
   callback: (items: AutocompleteOption[]) => void
@@ -17,4 +25,13 @@ export interface AutocompleteProps {
   disabled: boolean;
   clearable: boolean;
   triggerOnFocus: boolean;
+  debounce: number;
+  highlightFirstItem: boolean;
+  loading: boolean;
+  loadingText: string;
+  placement: AutocompletePlacement;
+  id: string;
+  name: string;
+  ariaLabel: string;
+  validateEvent: boolean;
 }

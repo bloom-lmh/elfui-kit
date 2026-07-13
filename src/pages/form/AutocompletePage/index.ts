@@ -1,7 +1,11 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "elfui";
+import { PageAutocompleteProps } from "./props";
+
+useComponents({ "page-autocomplete-props": PageAutocompleteProps });
 
 const keyword = useRef("");
 const remoteKeyword = useRef("");
+const keyboardKeyword = useRef("");
 
 const suggestions = [
   { label: "Vue", value: "Vue" },
@@ -63,12 +67,31 @@ const fetchSuggestions = async (query) => {
   return source.filter((item) => item.label.toLowerCase().includes(query.toLowerCase()));
 };`;
 
+const code3 = `<elf-autocomplete
+  :modelValue=\${keyboardKeyword}
+  :options.prop=\${suggestions}
+  :highlightFirstItem=\${true}
+  placement="top-start"
+  aria-label="Framework search"
+  @update:modelValue=\${onKeyboardUpdate}
+/>`;
+
+const script3 = `const keyboardKeyword = useRef("");
+
+const onKeyboardUpdate = (event) => {
+  keyboardKeyword.set(event.detail);
+};`;
+
 const onKeywordUpdate = (event: CustomEvent): void => {
   keyword.set(String(event.detail || ""));
 };
 
 const onRemoteUpdate = (event: CustomEvent): void => {
   remoteKeyword.set(String(event.detail || ""));
+};
+
+const onKeyboardUpdate = (event: CustomEvent): void => {
+  keyboardKeyword.set(String(event.detail || ""));
 };
 
 const onSelect = (): void => undefined;
@@ -97,6 +120,17 @@ const PageAutocomplete = defineHtml(html`
         @update:modelValue=${onRemoteUpdate}
       ></elf-autocomplete>
     </elf-playground>
+    <elf-playground title="Keyboard navigation / top placement" :code=${code3} :script=${script3}>
+      <elf-autocomplete
+        :modelValue=${keyboardKeyword}
+        :options.prop=${suggestions}
+        :highlightFirstItem=${true}
+        placement="top-start"
+        aria-label="Framework search"
+        @update:modelValue=${onKeyboardUpdate}
+      ></elf-autocomplete>
+    </elf-playground>
+    <page-autocomplete-props></page-autocomplete-props>
   </elf-container>
 `);
 
