@@ -10,6 +10,7 @@ import {
     watchEffect,
 } from "elfui";
 
+import { useFormControl } from "../../../composables";
 import styles from "./style.scss?inline";
 import type { InputTagProps, InputTagSize } from "./types";
 
@@ -28,6 +29,11 @@ const props = defineProps<InputTagProps>({
     clearable: { type: Boolean, default: false },
     max: { type: Number, default: undefined },
     size: { type: String, default: "" },
+    trigger: { type: String, default: "enter" },
+    tagType: { type: String, default: "" },
+    tagEffect: { type: String, default: "light" },
+    draggable: { type: Boolean, default: false },
+    validateEvent: { type: Boolean, default: true },
 });
 
 const emit = defineEmits([
@@ -41,6 +47,9 @@ const emit = defineEmits([
 
 const value = useRef<string[]>([]);
 const text = useRef("");
+const ctl = useFormControl<string[]>(props, emit, {
+    triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined,
+});
 
 const normalize = (source: unknown): string[] =>
     Array.isArray(source)
@@ -61,8 +70,11 @@ const commit = (
     eventName: "change" | "input" = "change",
 ): void => {
     value.set(next);
-    emit("update:modelValue", next);
-    emit(eventName, next);
+    if (eventName === "input") ctl.dispatchInput(next);
+    else {
+        ctl.setValue(next);
+        ctl.dispatchChange(next);
+    }
 };
 
 const add = (): void => {
@@ -94,12 +106,17 @@ const onInput = (event: Event): void => {
 };
 
 const onKeydown = (event: KeyboardEvent): void => {
-    if (event.key === "Enter" || event.key === ",") {
+    if (props.trigger === "enter" && (event.key === "Enter" || event.key === ",")) {
         event.preventDefault();
         add();
     } else if (event.key === "Backspace" && !text.value && value.value.length) {
         removeAt(value.value.length - 1);
     }
+};
+
+const onBlur = (event: Event): void => {
+    if (props.trigger === "blur") add();
+    ctl.dispatchBlur(event);
 };
 
 const onRemoveClick = (event: Event): void => {
@@ -131,7 +148,8 @@ defineStyle(styles);
 
 const InputTag = defineHtml<InputTagProps>(html`
     <div class="input-tag" part="wrapper" @click=${onRemoveClick}>
-        <span v-for="tag in tags()" :key="tag.index" class="tag" part="tag">
+        <slot name="prefix"></slot>
+        <span v-for="tag in tags()" :key="tag.index" class="tag" :class=${[() => props.tagType, () => `is-${props.tagEffect}`]} :draggable=${props.draggable} part="tag">
             {{ tag.label }}
             <button
                 v-if=${!props.disabled && !props.readonly}
@@ -151,7 +169,9 @@ const InputTag = defineHtml<InputTagProps>(html`
             :readonly=${props.readonly}
             @input=${onInput}
             @keydown=${onKeydown}
+            @blur=${onBlur}
         />
+        <slot name="suffix"></slot>
         <button
             v-if=${showClear()}
             class="clear"

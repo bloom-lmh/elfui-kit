@@ -8,4 +8,9 @@ export interface InputTagProps {
   clearable: boolean;
   max?: number;
   size: InputTagSize;
+  trigger: "enter" | "blur";
+  tagType: string;
+  tagEffect: string;
+  draggable: boolean;
+  validateEvent: boolean;
 }
