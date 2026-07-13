@@ -13,6 +13,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useFormControl } from "../../../composables";
 import type { InputNumberControlsPosition, InputNumberProps, InputNumberSize } from "./types";
 
 export type { InputNumberControlsPosition, InputNumberProps, InputNumberSize } from "./types";
@@ -37,6 +38,9 @@ const props = defineProps<InputNumberProps>({
 
 const emit = defineEmits(["update:modelValue", "change", "input", "focus", "blur"]);
 const host = useHost();
+const ctl = useFormControl<number | null>(props, emit, {
+  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+});
 
 const current = useRef<number | null>(null);
 const lastModel = useRef<string>("");
@@ -115,8 +119,11 @@ const commit = (value: number | null, eventName: "input" | "change"): void => {
   const next = normalize(value);
   current.set(next);
   lastModel.set(next === null ? "" : String(next));
-  emit("update:modelValue", next);
-  emit(eventName, next);
+  if (eventName === "input") ctl.dispatchInput(next);
+  else {
+    ctl.setValue(next);
+    ctl.dispatchChange(next);
+  }
 };
 
 const onInput = (event: Event): void => {
@@ -189,8 +196,8 @@ const InputNumber = defineHtml<InputNumberProps>(html`
       :aria-valuenow=${current.value === null ? null : String(current.value)}
       @input=${onInput}
       @change=${onChange}
-      @focus=${(event: Event) => emit("focus", event)}
-      @blur=${(event: Event) => emit("blur", event)}
+      @focus=${(event: Event) => ctl.dispatchFocus(event)}
+      @blur=${(event: Event) => ctl.dispatchBlur(event)}
     />
     <button
       v-if=${props.controls}
