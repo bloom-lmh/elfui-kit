@@ -10,7 +10,7 @@
 
 ## 后续差距
 
-- [ ] 补齐指令式 `v-infinite-scroll` 兼容、delay、container target 和销毁清理细节。
+- [ ] 指令式 `v-infinite-scroll` 需由宿主模板编译器提供；组件层已补齐 `delay`、`container` target 和销毁清理细节。
 
 ## 本轮案例页
 

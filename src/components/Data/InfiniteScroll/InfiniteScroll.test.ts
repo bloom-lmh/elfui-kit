@@ -26,7 +26,30 @@ describe("elf-infinite-scroll", () => {
     Object.defineProperty(scroller, "scrollTop", { value: 50, configurable: true });
 
     scroller.dispatchEvent(new Event("scroll"));
+    await new Promise((resolve) => setTimeout(resolve, 220));
 
     expect(onLoad).toHaveBeenCalled();
+  });
+
+  it("uses the configured external container and coalesces delayed loads", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    Object.defineProperties(container, {
+      scrollHeight: { value: 100, configurable: true },
+      clientHeight: { value: 50, configurable: true },
+      scrollTop: { value: 50, configurable: true }
+    });
+    const el = document.createElement("elf-infinite-scroll") as HTMLElement & { container?: HTMLElement; delay?: number };
+    el.container = container;
+    el.delay = 15;
+    const onLoad = vi.fn();
+    el.addEventListener("load", onLoad as EventListener);
+    document.body.appendChild(el);
+    await tick();
+    container.dispatchEvent(new Event("scroll"));
+    container.dispatchEvent(new Event("scroll"));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+
+    expect(onLoad).toHaveBeenCalledTimes(1);
   });
 });
