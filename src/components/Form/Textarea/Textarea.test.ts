@@ -24,6 +24,7 @@ type TextareaHost = HTMLElement & {
   rows?: number;
   showCount?: boolean;
   maxlength?: number;
+  autosize?: boolean | { minRows?: number; maxRows?: number };
 };
 
 describe("elf-textarea", () => {
@@ -61,7 +62,21 @@ describe("elf-textarea", () => {
     el.rows = 5;
     await flush();
     const ta = el.shadowRoot!.querySelector("textarea")!;
-    expect(ta.rows).toBe(5);
+    expect(Number(ta.rows)).toBe(5);
+  });
+
+  it("autosize 会根据输入内容调整高度", async () => {
+    const el = mount();
+    el.autosize = { minRows: 2, maxRows: 6 };
+    await flush();
+    const ta = el.shadowRoot!.querySelector("textarea") as HTMLTextAreaElement;
+    Object.defineProperty(ta, "scrollHeight", { configurable: true, value: 96 });
+    ta.value = "第一行\n第二行\n第三行\n第四行";
+    ta.dispatchEvent(new Event("input"));
+    await flush();
+
+    expect(ta.style.height).toBe("96px");
+    expect(el.hasAttribute("autosize")).toBe(true);
   });
 
   it("placeholder", async () => {

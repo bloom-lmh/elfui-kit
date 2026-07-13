@@ -16,6 +16,8 @@ const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolv
 interface InputTagEl extends HTMLElement {
   modelValue?: string[];
   placeholder?: string;
+  collapseTags?: boolean;
+  maxCollapseTags?: number;
 }
 
 const mount = async (patch: Partial<InputTagEl> = {}): Promise<InputTagEl> => {
@@ -57,5 +59,35 @@ describe("elf-input-tag", () => {
     tags[1]!.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true }));
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Elf", "Vue"]);
+  });
+
+  it("collapses surplus tags without changing the input's height", async () => {
+    const el = await mount({
+      modelValue: ["Vue", "React", "Solid"],
+      collapseTags: true,
+      maxCollapseTags: 1
+    });
+
+    expect(el.shadowRoot!.querySelectorAll(".tag")).toHaveLength(1);
+    expect(el.shadowRoot!.querySelector(".overflow-count")?.textContent).toContain("+2");
+    expect(el.shadowRoot!.querySelector(".remove svg")).toBeTruthy();
+  });
+
+  it("exposes hidden tags and allows deleting one of them", async () => {
+    const el = await mount({
+      modelValue: ["Vue", "React", "Solid"],
+      collapseTags: true,
+      maxCollapseTags: 1
+    });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+
+    const hidden = el.shadowRoot!.querySelectorAll(".hidden-tag");
+    expect(hidden).toHaveLength(2);
+    expect(hidden[0]?.textContent).toContain("React");
+    (hidden[0]!.querySelector(".remove") as HTMLButtonElement).click();
+    await tick();
+
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Vue", "Solid"]);
   });
 });

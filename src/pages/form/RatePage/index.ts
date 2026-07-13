@@ -8,7 +8,7 @@ const half = useRef(3.5);
 const mood = useRef(4);
 
 const palette = ["#ef4444", "#f59e0b", "#22c55e"];
-const rateIcons = ["1", "2", "3"];
+const rateIcons = ["😞", "😐", "😊"];
 
 const basicCode = `<elf-rate v-model="value" show-text></elf-rate>`;
 
@@ -76,7 +76,7 @@ const PageRate = defineHtml(html`
       </div>
     </elf-playground>
 
-    <elf-playground title="Threshold colors and icons">
+    <elf-playground title="分段颜色与图标">
       <div style="display:grid;gap:12px">
         <elf-rate
           model-value="4"
@@ -85,14 +85,14 @@ const PageRate = defineHtml(html`
           void-icon="0"
           low-threshold="2"
           high-threshold="4"
-          aria-label="Satisfaction rating"
+          aria-label="满意度评分"
         ></elf-rate>
         <elf-rate model-value="2" disabled-void-icon="-" readonly></elf-rate>
       </div>
     </elf-playground>
 
     <h2>API</h2>
-    <elf-props-table title="Rate Props" :rows="propsRows"></elf-props-table>
+    <elf-props-table title="评分属性" :rows="propsRows"></elf-props-table>
   </elf-container>
 `);
 

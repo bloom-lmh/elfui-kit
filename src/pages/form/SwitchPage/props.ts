@@ -12,9 +12,9 @@ const rows = [
 
 const PageSwitchProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows=${rows} />
-  <elf-props-table title="Events" :rows=${[{ name: "update:modelValue / change", type: "(value: SwitchValue) => void" }]} />
-  <elf-props-table title="Slots" :rows=${[
+  <elf-props-table title="属性" :rows=${rows} />
+  <elf-props-table title="事件" :rows=${[{ name: "update:modelValue / change", type: "(value: SwitchValue) => void" }]} />
+  <elf-props-table title="插槽" :rows=${[
     { name: "default", desc: "main label" },
     { name: "active / inactive", desc: "inline prompt content" },
     { name: "active-action / inactive-action", desc: "track action content" }

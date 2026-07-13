@@ -27,6 +27,7 @@ const CarouselItem = defineHtml(html`
     :aria-hidden=${props.active ? "false" : "true"}
   >
     <slot></slot>
+    <span v-if=${props.label} class="carousel-item__label">${props.label}</span>
   </div>
 `);
 

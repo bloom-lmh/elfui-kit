@@ -2,6 +2,7 @@
 
 ## 本轮记录
 - [x] 第二阶段：调整 icon slot 优先级高于 `icon` prop，并补 PropsTable 说明。
+- [x] 第三阶段：复核 icon slot 优先级无误；页面示例补 Script 视图；单测扩展到 15 条覆盖 type/href/target/disabled/underline/icon/slot。
 
 生成时间：2026-07-05
 
@@ -20,6 +21,6 @@
 
 ## 后续差距
 
-- [x] 2026-07-07 补独立案例页：覆盖 `type`、`underline`、`disabled`、`href/target`、`icon` 属性和 `icon` 插槽，Playground 动态绑定使用 `${...}`。
-- [ ] 复核 Element Plus icon 对象/组件传入方式与 slot 优先级。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 补独立案例页：覆盖 `type`、`underline`、`disabled`、`href/target`、`icon` 属性和 `icon` 插槽。
+- [x] 复核 Element Plus icon 对象/组件传入方式与 slot 优先级：slot 优先于 icon prop，符合预期。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。

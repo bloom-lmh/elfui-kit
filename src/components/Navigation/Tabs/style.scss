@@ -203,19 +203,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  margin-inline-end: -5px;
   border-radius: 50%;
   color: var(--elf-text-secondary);
-  font-size: 16px;
-  line-height: 1;
+  border: 1px solid transparent;
   transition:
     background var(--elf-transition-fast),
     color var(--elf-transition-fast);
 }
 
+.tab-close svg,
+.tab-add svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
 .tab-close:hover {
-  background: var(--elf-bg-overlay);
+  border-color: color-mix(in srgb, var(--elf-danger) 28%, transparent);
+  background: color-mix(in srgb, var(--elf-danger) 10%, transparent);
   color: var(--elf-danger);
 }
 
@@ -224,21 +235,27 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
-  margin-inline: 4px;
+  width: 34px;
+  height: 34px;
+  margin-inline: 8px 4px;
   border: 1px solid var(--elf-divider);
-  border-radius: var(--elf-radius-sm);
-  background: var(--elf-bg-paper);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tabs-color) 7%, var(--elf-bg-paper));
   color: var(--elf-text-secondary);
   font: inherit;
-  font-size: 18px;
   cursor: pointer;
+  transition:
+    border-color var(--elf-transition-fast),
+    background var(--elf-transition-fast),
+    color var(--elf-transition-fast),
+    transform var(--elf-transition-fast);
 }
 
 .tab-add:hover {
   border-color: var(--tabs-color);
+  background: color-mix(in srgb, var(--tabs-color) 13%, var(--elf-bg-paper));
   color: var(--tabs-color);
+  transform: translateY(-1px);
 }
 
 .tab-slider {

@@ -11,7 +11,7 @@ const code = `<elf-slider vertical :modelValue.prop="volume" @update:modelValue=
 
 const PageSliderEx4 = defineHtml(html`
   <h2>纵向滑块</h2>
-  <elf-playground title="vertical" :code="code">
+  <elf-playground title="垂直滑块" :code="code">
     <div style="display:grid;gap:12px;justify-items:center;min-height:280px;width:120px">
       <elf-slider vertical :modelValue.prop="volume" @update:modelValue="onVolume"></elf-slider>
       <span class="demo-state">音量 {{ volume }}</span>

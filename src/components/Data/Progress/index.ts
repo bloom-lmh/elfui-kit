@@ -23,6 +23,7 @@ const props = defineProps({
   color: { type: String, default: "" },
   trackColor: { type: String, default: "" },
   height: { type: String, default: "" },
+  transitionDuration: { type: Number, default: 0.4 },
   duration: { type: Number, default: 3 },
   width: { type: Number, default: 126 },
   size: { type: Number, default: 0 },
@@ -100,6 +101,8 @@ const normalizedLinecap = (): "butt" | "round" | "square" => {
 };
 
 const duration = (): string => `${Math.max(0.1, Number(props.duration) || 3)}s`;
+const transitionDuration = (): string =>
+  `${Math.max(0, Number(props.transitionDuration) || 0)}s`;
 
 useHostAttr("data-type", progressType);
 useHostAttr("status", normalizedStatus);
@@ -114,6 +117,7 @@ useHostCssVar("--_progress-height", () => props.height || `${stroke()}px`);
 useHostCssVar("--_progress-size", circleSize);
 useHostCssVar("--_progress-stroke", () => String(stroke()));
 useHostCssVar("--_progress-duration", duration);
+useHostCssVar("--_progress-transition-duration", transitionDuration);
 useHostCssVar("--_progress-linecap", normalizedLinecap);
 
 defineStyle(styles);

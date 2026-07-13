@@ -41,6 +41,50 @@ describe("elf-autocomplete", () => {
     expect(onSelect).toHaveBeenCalled();
   });
 
+  it("filters local suggestions using the current query", async () => {
+    const el = document.createElement("elf-autocomplete") as AutocompleteEl;
+    el.options = [{ value: "Vue" }, { value: "React" }];
+    document.body.appendChild(el);
+    await tick();
+
+    const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+    input.value = "r";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+
+    expect(el.shadowRoot!.textContent).toContain("React");
+    expect(el.shadowRoot!.textContent).not.toContain("Vue");
+    expect(el.shadowRoot!.querySelector(".panel")?.getAttribute("role")).toBe("listbox");
+  });
+
+  it("selects the option that is currently rendered after a previous selection", async () => {
+    const el = document.createElement("elf-autocomplete") as AutocompleteEl;
+    el.options = [{ value: "Vue" }, { value: "React" }];
+    const onSelect = vi.fn();
+    el.addEventListener("select", onSelect as EventListener);
+    document.body.appendChild(el);
+    await tick();
+
+    const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+    input.value = "Vue";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+    (el.shadowRoot!.querySelector(".option") as HTMLButtonElement).dispatchEvent(
+      new MouseEvent("mousedown", { bubbles: true })
+    );
+    await tick();
+
+    input.value = "React";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".option")?.textContent).toContain("React");
+    (el.shadowRoot!.querySelector(".option") as HTMLButtonElement).dispatchEvent(
+      new MouseEvent("mousedown", { bubbles: true })
+    );
+
+    expect((onSelect.mock.calls.at(-1)![0] as CustomEvent).detail.value).toBe("React");
+  });
+
   it("uses keyboard navigation and accessible combobox semantics", async () => {
     const el = document.createElement("elf-autocomplete") as AutocompleteEl;
     el.options = [{ value: "apple" }, { value: "banana" }];

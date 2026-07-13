@@ -78,6 +78,11 @@ textarea {
   resize: vertical;
 }
 
+:host([autosize]) textarea {
+  overflow-y: hidden;
+  resize: none;
+}
+
 .count {
   position: absolute;
   bottom: 4px;

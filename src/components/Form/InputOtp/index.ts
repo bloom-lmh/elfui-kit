@@ -1,6 +1,5 @@
 import {
   defineEmits,
-  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
@@ -105,9 +104,6 @@ const onPaste = (event: ClipboardEvent): void => {
   ctl.dispatchChange(output);
 };
 
-const focus = (): void => focusAt(0);
-const blur = (): void => (document.activeElement as HTMLElement | null)?.blur();
-
 const inputType = (): string => (props.type === "password" ? "password" : "text");
 const inputMode = (): string | null => (props.type === "number" ? "numeric" : null);
 
@@ -117,7 +113,6 @@ const normalizedSize = (): InputOtpSize => {
 };
 
 useHostAttr("size", normalizedSize);
-defineExpose({ focus, blur });
 defineStyle(styles);
 
 const InputOtp = defineHtml<InputOtpProps>(html`

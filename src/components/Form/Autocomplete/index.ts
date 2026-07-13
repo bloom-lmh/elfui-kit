@@ -1,13 +1,4 @@
-import {
-    defineExpose,
-    defineEmits,
-    defineHtml,
-    defineProps,
-    defineStyle,
-    html,
-    useRef,
-    useTemplateRef,
-} from "elfui";
+import { defineEmits, defineHtml, defineProps, defineStyle, html, useRef, useTemplateRef } from "elfui";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
@@ -21,10 +12,12 @@ export type {
 } from "./types";
 
 interface ViewOption {
+    key: string;
     label: string;
     text: string;
     disabled: boolean;
     index: number;
+    raw: AutocompleteOption;
 }
 
 const props = defineProps<AutocompleteProps>({
@@ -57,10 +50,7 @@ const emit = defineEmits<{
 }>();
 
 const ctl = useFormControl<string>(props, emit, {
-    triggers:
-        props.validateEvent === false
-            ? { input: false, change: false, blur: false }
-            : undefined,
+    triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined,
 });
 const fi = useFormItem(() => "");
 const isDisabled = useDisabled(() => Boolean(props.disabled));
@@ -75,10 +65,12 @@ const listboxId = `elf-autocomplete-${Math.random().toString(36).slice(2)}`;
 
 const normalize = (items: AutocompleteOption[]): ViewOption[] =>
     items.map((item, index) => ({
+        key: `${index}-${String(item.value ?? item.label ?? "")}`,
         label: String(item.label ?? item.value ?? ""),
         text: String(item.value ?? item.label ?? ""),
         disabled: Boolean(item.disabled),
         index,
+        raw: item,
     }));
 
 const sourceOptions = (): AutocompleteOption[] => {
@@ -138,10 +130,7 @@ const scheduleSuggestions = (query: string): void => {
     }, delay);
 };
 
-const setValue = (
-    value: string,
-    eventName: "input" | "change" = "input",
-): void => {
+const setValue = (value: string, eventName: "input" | "change" = "input"): void => {
     if (eventName === "input") {
         ctl.dispatchInput(value);
         return;
@@ -152,6 +141,9 @@ const setValue = (
 
 const onInput = (event: Event): void => {
     const value = (event.target as HTMLInputElement).value;
+    // A remote result belongs to the previous query until the new request resolves.
+    // Clearing it here prevents stale labels from being paired with the new query.
+    if (props.fetchSuggestions) suggestions.set([]);
     setValue(value, "input");
     scheduleSuggestions(value);
     open.set(true);
@@ -173,10 +165,13 @@ const onBlur = (event: FocusEvent): void => {
 };
 
 const selectAt = (index: number): void => {
+    // Capture the rendered option before updating the model. Updating the model
+    // immediately changes the filtered list, so looking it up afterwards can select
+    // a different item at the same index.
     const option = options()[index];
     if (!option || option.disabled) return;
     setValue(option.text, "change");
-    emit("select", sourceOptions()[index]);
+    emit("select", option.raw);
     open.set(false);
     activeIndex.set(-1);
 };
@@ -192,8 +187,7 @@ const clear = (): void => {
     emit("clear");
 };
 
-const showClear = (): boolean =>
-    Boolean(props.clearable && ctl.model.value && !isDisabled());
+const showClear = (): boolean => Boolean(props.clearable && ctl.model.value && !isDisabled());
 
 const moveActive = (step: 1 | -1): void => {
     const items = options();
@@ -236,11 +230,6 @@ const onOptionMouseenter = (event: Event): void => {
     if (Number.isInteger(index) && !options()[index]?.disabled) activeIndex.set(index);
 };
 
-const focus = (): void => inputRef.value?.focus();
-const blur = (): void => inputRef.value?.blur();
-
-defineExpose({ focus, blur });
-
 defineStyle(styles);
 
 const Autocomplete = defineHtml<AutocompleteProps>(html`
@@ -272,22 +261,21 @@ const Autocomplete = defineHtml<AutocompleteProps>(html`
             @blur=${onBlur}
             @keydown=${onKeydown}
         />
-        <button
-            v-if=${showClear()}
-            class="clear"
-            type="button"
-            aria-label="Clear"
-            @click=${clear}
-        >
-            x
+        <button v-if=${showClear()} class="clear" type="button" aria-label="Clear" @click=${clear}>
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
         </button>
-        <div v-if=${open.value && Boolean(props.loading || pending.value)} class="panel status" part="panel" role="status">
+        <div
+            v-if=${open.value && Boolean(props.loading || pending.value)}
+            class="panel status"
+            part="panel"
+            role="status"
+        >
             <slot name="loading">${props.loadingText}</slot>
         </div>
         <div v-else-if=${open.value && options().length} :id=${listboxId} class="panel" part="panel" role="listbox">
             <button
                 v-for="item in options()"
-                :key="item.index"
+                :key="item.key"
                 :id="\`${listboxId}-option-\${item.index}\`"
                 class="option"
                 type="button"

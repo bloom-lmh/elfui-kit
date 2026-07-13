@@ -72,7 +72,7 @@ const code3 = `<elf-autocomplete
   :options.prop=\${suggestions}
   :highlightFirstItem=\${true}
   placement="top-start"
-  aria-label="Framework search"
+  aria-label="框架搜索"
   @update:modelValue=\${onKeyboardUpdate}
 />`;
 
@@ -101,7 +101,7 @@ const PageAutocomplete = defineHtml(html`
     <h1>Autocomplete 自动补全</h1>
     <p>基于输入内容展示建议项，支持本地 options、异步 fetchSuggestions、清空和选中事件。</p>
 
-    <elf-playground title="本地建议 / clearable" :code=${code1} :script=${script1}>
+    <elf-playground title="本地建议与清空" :code=${code1} :script=${script1}>
       <elf-autocomplete
         :options.prop=${suggestions}
         :modelValue=${keyword}
@@ -120,13 +120,13 @@ const PageAutocomplete = defineHtml(html`
         @update:modelValue=${onRemoteUpdate}
       ></elf-autocomplete>
     </elf-playground>
-    <elf-playground title="Keyboard navigation / top placement" :code=${code3} :script=${script3}>
+    <elf-playground title="键盘导航与上方弹出" :code=${code3} :script=${script3}>
       <elf-autocomplete
         :modelValue=${keyboardKeyword}
         :options.prop=${suggestions}
         :highlightFirstItem=${true}
         placement="top-start"
-        aria-label="Framework search"
+        aria-label="框架搜索"
         @update:modelValue=${onKeyboardUpdate}
       ></elf-autocomplete>
     </elf-playground>

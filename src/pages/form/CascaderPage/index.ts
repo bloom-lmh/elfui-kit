@@ -348,7 +348,7 @@ const PageCascader = defineHtml(html`
       </div>
     </elf-playground>
 
-    <elf-playground title="CascaderPanel 选项面板" :code=${code5} :script=${script5}>
+    <elf-playground title="独立级联选项面板" :code=${code5} :script=${script5}>
       <div style="display:grid;gap:12px;width:max-content">
         <elf-cascader-panel
           checkable
@@ -361,7 +361,7 @@ const PageCascader = defineHtml(html`
       </div>
     </elf-playground>
 
-    <elf-playground title="Search paths" :code=${code6} :script=${script6}>
+    <elf-playground title="搜索级联路径" :code=${code6} :script=${script6}>
       <div style="display:grid;gap:12px;width:320px">
         <elf-cascader
           filterable
@@ -369,15 +369,15 @@ const PageCascader = defineHtml(html`
           :modelValue=${searchValue}
           @update:modelValue=${onSearchUpdate}
         ></elf-cascader>
-        <span class="demo-state">Type a city or its parent region to search selectable paths.</span>
+        <span class="demo-state">输入城市或上级地区名称，搜索可选路径。</span>
       </div>
     </elf-playground>
 
     <h2>API</h2>
-    <elf-props-table title="Cascader Props" :rows=${propsRows}></elf-props-table>
-    <elf-props-table title="Cascader Events" :rows=${eventsRows}></elf-props-table>
-    <elf-props-table title="Cascader Exposes" :rows=${methodsRows}></elf-props-table>
-    <elf-props-table title="CascaderPanel Props" :rows=${panelPropsRows}></elf-props-table>
+    <elf-props-table title="级联选择器属性" :rows=${propsRows}></elf-props-table>
+    <elf-props-table title="级联选择器事件" :rows=${eventsRows}></elf-props-table>
+    <elf-props-table title="级联选择器方法" :rows=${methodsRows}></elf-props-table>
+    <elf-props-table title="独立面板属性" :rows=${panelPropsRows}></elf-props-table>
   </elf-container>
 `);
 

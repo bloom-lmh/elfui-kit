@@ -61,6 +61,7 @@ describe("elf-pagination", () => {
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(2);
     expect(page1.classList.contains("is-active")).toBe(false);
     expect(page2.classList.contains("is-active")).toBe(true);
+    expect(page2.getAttribute("aria-current")).toBe("page");
   });
 
   it("上一页和下一页可切换页码", async () => {

@@ -1,3 +1,5 @@
+// elf-dropdown 类型定义
+
 export type DropdownTrigger = "click" | "hover" | "contextmenu";
 export type DropdownPlacement = "bottom-start" | "bottom-end" | "top-start" | "top-end";
 export type DropdownSize = "sm" | "md" | "lg";
@@ -67,3 +69,26 @@ export interface DropdownProps {
   maxHeight: string;
   props: DropdownFieldNames;
 }
+
+export type DropdownEmits = {
+  command: [detail: DropdownCommandDetail];
+  "visible-change": [visible: boolean];
+  click: [event: Event];
+};
+
+export interface DropdownSlots {
+  default?: () => unknown;
+  trigger?: () => unknown;
+  main?: () => unknown;
+  dropdown?: () => unknown;
+}
+
+export interface DropdownExpose {
+  show: () => void;
+  hide: () => void;
+  toggle: () => void;
+  handleOpen: () => void;
+  handleClose: () => void;
+}
+
+export type DropdownElement = HTMLElement & DropdownExpose & Partial<DropdownProps>;

@@ -16,6 +16,7 @@ const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolv
 interface ImageEl extends HTMLElement {
   src?: string;
   width?: number;
+  fit?: string;
   previewSrcList?: string[];
   initialIndex?: number;
   previewTeleported?: boolean;
@@ -35,6 +36,19 @@ describe("elf-image", () => {
     );
     expect(el.style.getPropertyValue("--_image-width")).toBe("120px");
   });
+
+  it.each(["fill", "contain", "cover", "none", "scale-down"])(
+    "applies the %s object-fit mode immediately",
+    async (fit) => {
+      const el = document.createElement("elf-image") as ImageEl;
+      el.src = "sample.png";
+      el.fit = fit;
+      document.body.appendChild(el);
+      await tick();
+
+      expect(el.style.getPropertyValue("--_image-fit")).toBe(fit);
+    }
+  );
 
   it("opens a local preview at the requested initial index and supports toolbar controls", async () => {
     const el = document.createElement("elf-image") as ImageEl;

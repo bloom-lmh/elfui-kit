@@ -41,6 +41,43 @@ describe("elf-mention", () => {
     expect(onSelect).toHaveBeenCalled();
   });
 
+  it("opens below the input by default", async () => {
+    const el = document.createElement("elf-mention") as MentionEl;
+    el.options = [{ value: "alice" }];
+    document.body.appendChild(el);
+    await tick();
+    const textarea = el.shadowRoot!.querySelector("textarea") as HTMLTextAreaElement;
+    textarea.value = "@";
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+
+    expect(el.shadowRoot!.querySelector(".mention")?.classList.contains("placement-bottom")).toBe(true);
+  });
+
+  it("selects an item whose source index changes after filtering", async () => {
+    const el = document.createElement("elf-mention") as MentionEl;
+    el.options = [
+      { label: "林舟", value: "linzhou" },
+      { label: "周然", value: "zhouran" },
+      { label: "许宁", value: "xuning" }
+    ];
+    const onSelect = vi.fn();
+    el.addEventListener("select", onSelect as EventListener);
+    document.body.appendChild(el);
+    await tick();
+
+    const textarea = el.shadowRoot!.querySelector("textarea") as HTMLTextAreaElement;
+    textarea.value = "@许";
+    textarea.selectionStart = textarea.value.length;
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+
+    const option = el.shadowRoot!.querySelector(".option") as HTMLButtonElement;
+    expect(option.textContent).toContain("许宁");
+    option.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    expect((onSelect.mock.calls[0]![0] as CustomEvent).detail[0].value).toBe("xuning");
+  });
+
   it("replaces only the active mention and supports keyboard selection", async () => {
     const el = document.createElement("elf-mention") as MentionEl;
     el.modelValue = "Hello @al world";

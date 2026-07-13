@@ -13,6 +13,9 @@ export interface ProgressProps {
   color: string;
   trackColor: string;
   height: string;
+  /** Value-change transition duration in seconds. */
+  transitionDuration: number;
+  /** Indeterminate and striped animation duration in seconds. */
   duration: number;
   width: number;
   size: number;

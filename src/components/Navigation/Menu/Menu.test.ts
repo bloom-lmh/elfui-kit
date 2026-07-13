@@ -269,14 +269,50 @@ describe("elf-menu", () => {
     expect(popup.style.top).toBe("88px");
   });
 
-  it("折叠切换按钮放在 footer 区域", async () => {
+  it("折叠切换按钮默认放在 header 区域", async () => {
     const el = await mount();
     el.showToggle = true;
     await tick();
     await tick();
 
-    expect(el.shadowRoot!.querySelector(".menu-footer .collapse-toggle")).toBeTruthy();
-    expect(el.shadowRoot!.querySelector(".horizontal-bar .collapse-toggle")).toBeFalsy();
+    expect(el.shadowRoot!.querySelector(".menu-header .collapse-toggle")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".menu-footer .collapse-toggle")).toBeFalsy();
+  });
+
+  it("supports a custom toggle in the header slot", async () => {
+    const el = await mount();
+    el.showToggle = true;
+    (el as unknown as { togglePlacement: string }).togglePlacement = "header";
+    const customToggle = document.createElement("button");
+    customToggle.slot = "toggle";
+    customToggle.textContent = "Toggle navigation";
+    el.appendChild(customToggle);
+    await tick();
+    await tick();
+
+    customToggle.click();
+    await tick();
+
+    expect(el.shadowRoot!.querySelector(".menu")?.classList.contains("is-collapsed")).toBe(true);
+  });
+
+  it("自定义搜索插槽仍可驱动菜单过滤", async () => {
+    const el = await mount();
+    el.searchable = true;
+    const customSearch = document.createElement("input");
+    customSearch.slot = "search";
+    customSearch.setAttribute("aria-label", "自定义菜单搜索");
+    el.appendChild(customSearch);
+    await tick();
+    await tick();
+
+    customSearch.value = "Settings";
+    customSearch.dispatchEvent(new InputEvent("input", { bubbles: true, composed: true }));
+    await tick();
+
+    const labels = Array.from(el.shadowRoot!.querySelectorAll(".menu-label"), (node) => node.textContent?.trim());
+    expect(labels).toContain("Settings");
+    expect(labels).not.toContain("Dashboard");
   });
 
   it("supports menuTrigger hover timeout and closeOnClickOutside=false", async () => {

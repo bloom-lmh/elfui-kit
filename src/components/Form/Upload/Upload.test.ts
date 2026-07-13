@@ -186,6 +186,32 @@ describe("elf-upload", () => {
     expect(el.shadowRoot!.querySelector(".file.is-success")).toBeTruthy();
   });
 
+  it("chunkRequest receives every real file slice with stable boundaries", async () => {
+    const el = document.createElement("elf-upload") as UploadEl;
+    el.chunkSize = 2;
+    const chunks: Array<{ index: number; total: number; start: number; end: number; size: number }> = [];
+    el.chunkRequest = vi.fn((options) => {
+      chunks.push({
+        index: options.index,
+        total: options.total,
+        start: options.start,
+        end: options.end,
+        size: options.chunk.size
+      });
+    });
+    document.body.appendChild(el);
+    await tick();
+
+    await selectFiles(el, [new File(["abcde"], "chunk.txt")]);
+    await flushTicks();
+
+    expect(chunks).toEqual([
+      { index: 0, total: 3, start: 0, end: 2, size: 2 },
+      { index: 1, total: 3, start: 2, end: 4, size: 2 },
+      { index: 2, total: 3, start: 4, end: 5, size: 1 }
+    ]);
+  });
+
   it("httpRequest 接收 Element Plus 风格请求参数", async () => {
     const el = document.createElement("elf-upload") as UploadEl;
     const httpRequest = vi.fn((options) => {

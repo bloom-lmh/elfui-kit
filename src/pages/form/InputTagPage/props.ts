@@ -10,8 +10,8 @@ const rows = [
 
 const PageInputTagProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows=${rows} />
-  <elf-props-table title="Slots" :rows=${[{ name: "prefix / suffix", desc: "custom input adornments" }]} />
+  <elf-props-table title="属性" :rows=${rows} />
+  <elf-props-table title="插槽" :rows=${[{ name: "prefix / suffix", desc: "自定义输入框前后内容" }]} />
 `);
 
 export { PageInputTagProps };

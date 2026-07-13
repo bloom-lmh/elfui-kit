@@ -1,6 +1,5 @@
 import {
   defineEmits,
-  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
@@ -23,6 +22,7 @@ export type {
 } from "./types";
 
 interface ViewOption {
+  key: string;
   label: string;
   insertText: string;
   disabled: boolean;
@@ -50,7 +50,7 @@ const props = defineProps<MentionProps>({
   checkIsWhole: { type: Function, default: undefined },
   loading: { type: Boolean, default: false },
   loadingText: { type: String, default: "Loading..." },
-  placement: { type: String, default: "top" },
+  placement: { type: String, default: "bottom" },
   id: { type: String, default: "" },
   name: { type: String, default: "" },
   ariaLabel: { type: String, default: "" },
@@ -88,6 +88,7 @@ const options = (): ViewOption[] => {
   const filter = props.filterOption;
   return (props.options || [])
     .map((item, index) => ({
+      key: `${index}-${String(item.value ?? item.label ?? "")}`,
       label: String(item.label ?? item.value ?? ""),
       insertText: String(item.value ?? item.label ?? ""),
       disabled: Boolean(item.disabled),
@@ -97,7 +98,10 @@ const options = (): ViewOption[] => {
     .filter((item) => {
       if (typeof filter === "function") return filter(query.value, item.raw);
       return !pattern || item.label.toLowerCase().includes(pattern);
-    });
+    })
+    // Event handlers address the rendered list. Source indexes are not safe after
+    // filtering (for example the third source item can become the first result).
+    .map((item, index) => ({ ...item, index }));
 };
 
 const resetActive = (): void => {
@@ -199,10 +203,6 @@ const onOptionMouseenter = (event: Event): void => {
   if (Number.isInteger(index) && !options()[index]?.disabled) activeIndex.set(index);
 };
 
-const focus = (): void => textareaRef.value?.focus();
-const blur = (): void => textareaRef.value?.blur();
-defineExpose({ focus, blur });
-
 defineStyle(styles);
 
 const Mention = defineHtml<MentionProps>(html`
@@ -231,7 +231,7 @@ const Mention = defineHtml<MentionProps>(html`
     <div v-else-if=${open.value && options().length} :id=${listboxId} class="panel" role="listbox">
       <button
         v-for="item in options()"
-        :key="item.index"
+        :key="item.key"
         :id="\`${listboxId}-option-\${item.index}\`"
         class="option"
         type="button"

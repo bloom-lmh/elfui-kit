@@ -25,7 +25,7 @@ const code = `<elf-slider
 
 const PageSliderEx2 = defineHtml(html`
   <h2>范围选择</h2>
-  <elf-playground title="range / step / marks / stops" :code="code">
+  <elf-playground title="范围、步进、刻度与间断点" :code="code">
     <div style="display:grid;gap:14px;width:100%;max-width:720px">
       <elf-slider
         range

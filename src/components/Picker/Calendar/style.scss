@@ -65,8 +65,11 @@
 }
 
 .day.is-current {
-  color: var(--elf-primary);
+  border-radius: 999px;
+  background: var(--elf-primary);
+  color: var(--elf-text-on-primary);
   font-weight: 700;
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--elf-primary) 30%, transparent);
 }
 
 .day.is-muted {

@@ -25,6 +25,7 @@ type ProgressHost = HTMLElement & {
   textInside?: boolean;
   striped?: boolean;
   indeterminate?: boolean;
+  transitionDuration?: number;
   format?: (percent: number, value: number) => string;
 };
 
@@ -110,5 +111,12 @@ describe("elf-progress", () => {
     expect(el.style.getPropertyValue("--_progress-linecap")).toBe("butt");
     expect(el.hasAttribute("data-striped-flow")).toBe(true);
     expect(circle).toBeTruthy();
+  });
+
+  it("支持单独设置数值增长过渡速度", async () => {
+    const el = await mount({ transitionDuration: 1.25 });
+
+    expect(el.style.getPropertyValue("--_progress-transition-duration")).toBe("1.25s");
+    expect(el.style.getPropertyValue("--_progress-duration")).toBe("3s");
   });
 });

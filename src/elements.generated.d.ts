@@ -411,6 +411,7 @@ declare global {
       text: string;
       fullscreen: boolean;
       background: string;
+      closable: boolean;
     };
     "elf-locale-provider": HTMLElement & {
       name: string;

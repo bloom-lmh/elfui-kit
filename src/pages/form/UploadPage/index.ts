@@ -1,6 +1,6 @@
 import { defineHtml, html } from "elfui";
 import { useRef } from "elfui";
-import type { UploadRequestOptions } from "../../../components/Form";
+import type { UploadChunkRequestOptions, UploadRequestOptions } from "../../../components/Form";
 
 const basicLog = useRef("等待选择文件");
 
@@ -11,6 +11,7 @@ const manualLog = useRef("等待手动上传");
 const requestLog = useRef("等待自定义请求");
 
 const chunkLog = useRef("等待分片上传");
+const uploadedChunks = useRef(0);
 
 const manualFiles = useRef<unknown[]>([]);
 
@@ -107,12 +108,19 @@ const onRequestSuccess = (event) => {
 };`;
 
 const chunkCode = `<elf-upload
-  :chunk-size=\${1024 * 1024}
+  :chunk-size=\${256 * 1024}
+  :chunk-request.prop=\${chunkRequest}
   @progress=\${onChunkProgress}
   @success=\${onChunkSuccess}
 />`;
 
 const chunkScript = `const chunkLog = useRef("等待分片上传");
+const uploadedChunks = useRef(0);
+
+const chunkRequest = async (options) => {
+  uploadedChunks.set(options.index + 1);
+  chunkLog.set(\`正在上传第 \${options.index + 1} / \${options.total} 片（\${options.chunk.size} bytes）\`);
+};
 
 const onChunkProgress = (event) => {
   const [percent, file] = event.detail;
@@ -170,6 +178,11 @@ const onRequestSuccess = (event: CustomEvent): void => {
 const onChunkProgress = (event: CustomEvent): void => {
   const [percent, file] = event.detail as [number, { name: string }];
   chunkLog.set(`${file.name}：${percent}%`);
+};
+
+const chunkRequest = async (options: UploadChunkRequestOptions): Promise<void> => {
+  uploadedChunks.set(options.index + 1);
+  chunkLog.set(`正在上传第 ${options.index + 1} / ${options.total} 片（${options.chunk.size} bytes）`);
 };
 
 const onChunkSuccess = (event: CustomEvent): void => {
@@ -304,7 +317,7 @@ const PageUpload = defineHtml(html`
     </elf-playground>
 
     <elf-playground
-      title="http-request / directory / headers / data"
+      title="自定义请求、目录与附加数据"
       :code=${requestCode}
       :script=${requestScript}
     >
@@ -326,20 +339,21 @@ const PageUpload = defineHtml(html`
     <elf-playground title="分片上传" :code=${chunkCode} :script=${chunkScript}>
       <div style="display:grid;gap:12px;width:100%;max-width:720px">
         <elf-upload
-          :chunkSize=${1048576}
+          :chunkSize.prop=${262144}
+          :chunkRequest.prop=${chunkRequest}
           button-text="选择大文件"
-          tip="chunkSize 大于 0 时启用分片路径；未提供 chunkRequest 时使用模拟分片。"
+          tip="示例按 256KB 对文件真实切片，并逐片调用 chunkRequest。"
           @progress=${onChunkProgress}
           @success=${onChunkSuccess}
         ></elf-upload>
-        <span class="demo-state">{{ chunkLog }}</span>
+        <span class="demo-state">{{ chunkLog }}；已处理 {{ uploadedChunks }} 片</span>
       </div>
     </elf-playground>
 
     <h2>API</h2>
-    <elf-props-table title="Upload Props" :rows="propsRows"></elf-props-table>
-    <elf-props-table title="Upload Events" :rows="eventsRows"></elf-props-table>
-    <elf-props-table title="Upload Methods" :rows="methodsRows"></elf-props-table>
+    <elf-props-table title="上传属性" :rows="propsRows"></elf-props-table>
+    <elf-props-table title="上传事件" :rows="eventsRows"></elf-props-table>
+    <elf-props-table title="上传方法" :rows="methodsRows"></elf-props-table>
   </elf-container>
 `);
 

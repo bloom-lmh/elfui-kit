@@ -30,8 +30,17 @@ describe("elf-calendar", () => {
     await tick();
 
     expect(el.shadowRoot!.querySelectorAll(".day")).toHaveLength(42);
-    (el.shadowRoot!.querySelector(".day") as HTMLButtonElement).click();
+    const selected = el.shadowRoot!.querySelector('[data-date="2026-07-05"]') as HTMLButtonElement;
+    expect(selected.classList.contains("is-current")).toBe(true);
+    expect(selected.getAttribute("aria-selected")).toBe("true");
+    const next = el.shadowRoot!.querySelector('[data-date="2026-07-06"]') as HTMLButtonElement;
+    next.click();
     expect(onChange).toHaveBeenCalled();
+    await tick();
+    const updated = el.shadowRoot!.querySelector('[data-date="2026-07-06"]') as HTMLButtonElement;
+    const previous = el.shadowRoot!.querySelector('[data-date="2026-07-05"]') as HTMLButtonElement;
+    expect(updated.classList.contains("is-current")).toBe(true);
+    expect(previous.classList.contains("is-current")).toBe(false);
   });
 
   it("supports localized weekday labels, navigation, and disabled dates", async () => {

@@ -13,6 +13,7 @@ const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolv
 interface RateEl extends HTMLElement {
   modelValue?: number;
   allowHalf?: boolean;
+  previewOnHover?: boolean;
   showScore?: boolean;
   colors?: string[];
   icons?: string[];
@@ -66,10 +67,26 @@ describe("elf-rate", () => {
     document.body.appendChild(el);
     await tick();
     const stars = el.shadowRoot!.querySelectorAll(".star");
-    expect(stars[0]?.textContent).toContain("1");
-    expect(stars[2]?.textContent).toContain("2");
+    expect(stars[0]?.textContent).toContain("3");
+    expect(stars[2]?.textContent).toContain("3");
     expect(stars[3]?.textContent).toContain("3");
     expect((stars[3] as HTMLElement).style.getPropertyValue("--rate-item-color")).toBe("green");
     expect(stars[4]?.textContent).toContain("0");
+  });
+
+  it("does not preview another value on hover by default", async () => {
+    const el = document.createElement("elf-rate") as RateEl;
+    el.modelValue = 2;
+    const onHover = vi.fn();
+    el.addEventListener("hover-change", onHover as EventListener);
+    document.body.appendChild(el);
+    await tick();
+
+    (el.shadowRoot!.querySelectorAll(".star")[4] as HTMLElement).dispatchEvent(
+      new MouseEvent("mousemove", { bubbles: true, clientX: 10 })
+    );
+
+    expect(el.shadowRoot!.querySelectorAll(".star.is-full")).toHaveLength(2);
+    expect(onHover).not.toHaveBeenCalled();
   });
 });

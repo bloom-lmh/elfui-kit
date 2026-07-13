@@ -22,8 +22,8 @@ const code3 = `<elf-switch
   inactive-value="disabled"
   inline-prompt
   width="64"
-  active-text="ON"
-  inactive-text="OFF"
+  active-text="开"
+  inactive-text="关"
   @update:modelValue=\${updateStatus}
 />`;
 
@@ -44,7 +44,7 @@ const PageSwitchEx1 = defineHtml(html`
   </elf-playground>
 
   <h2>状态文字</h2>
-  <elf-playground title="active / inactive text" :code="code2">
+  <elf-playground title="开启与关闭文字" :code="code2">
     <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
       <elf-switch
         :modelValue="textValue"
@@ -52,20 +52,20 @@ const PageSwitchEx1 = defineHtml(html`
         inactive-text="关"
         @update:modelValue="updateText"
       ></elf-switch>
-      <elf-switch active-text="ON" inactive-text="OFF"></elf-switch>
+      <elf-switch active-text="开" inactive-text="关"></elf-switch>
     </div>
   </elf-playground>
-  <h2>Custom values / inline prompt</h2>
-  <elf-playground title="active-value / inactive-value" :code=${code3}>
+  <h2>自定义值与内嵌提示</h2>
+  <elf-playground title="自定义开关值与内嵌提示" :code=${code3}>
     <elf-switch
       :modelValue=${status}
       active-value="enabled"
       inactive-value="disabled"
       inline-prompt
       width="64"
-      active-text="ON"
-      inactive-text="OFF"
-      aria-label="Service status"
+      active-text="开"
+      inactive-text="关"
+      aria-label="服务状态"
       @update:modelValue=${updateStatus}
     ></elf-switch>
     <span class="demo-state">{{ status }}</span>

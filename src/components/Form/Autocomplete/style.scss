@@ -19,7 +19,7 @@ input {
   border: 1px solid var(--elf-border);
   border-radius: var(--elf-radius-md);
   outline: none;
-  background: var(--elf-bg);
+  background: var(--elf-bg-paper, #fff);
   color: inherit;
   font: inherit;
 }
@@ -44,6 +44,15 @@ input:focus {
   transform: translateY(-50%);
 }
 
+.clear svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
 .panel {
   position: absolute;
   z-index: 20;
@@ -53,7 +62,7 @@ input:focus {
   overflow: hidden;
   border: 1px solid var(--elf-border);
   border-radius: var(--elf-radius-md);
-  background: var(--elf-bg);
+  background: var(--elf-bg-paper, #fff);
   box-shadow: var(--elf-shadow-3);
 }
 

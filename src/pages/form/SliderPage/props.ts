@@ -44,9 +44,9 @@ const methodsRows = [
 
 const PageSliderProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows"></elf-props-table>
-  <elf-props-table title="Events" :rows="eventsRows"></elf-props-table>
-  <elf-props-table title="Methods" :rows="methodsRows"></elf-props-table>
+  <elf-props-table title="属性" :rows="propsRows"></elf-props-table>
+  <elf-props-table title="事件" :rows="eventsRows"></elf-props-table>
+  <elf-props-table title="方法" :rows="methodsRows"></elf-props-table>
 `);
 
 export { PageSliderProps };

@@ -166,3 +166,4 @@
 ## 本轮记录
 
 - [x] 2026-07-11 Navigation 第一阶段：补 `type/buttonProps/effect/triggerKeys/showArrow/showTimeout/hideTimeout/role/tabindex/popperClass/popperStyle/persistent/closeOnClickOutside` 兼容入口，新增 `handleOpen/handleClose` 暴露方法，补键盘触发、非持久面板、popper 样式和页面案例。
+- [x] 2026-07-12 质量重构：类型完整化（Emits/Slots/Expose/Element）、纯函数抽离、host 同步 size/type/effect/placement、禁用态全路径拦截、Escape 仅在打开时关闭、菜单内 Arrow/Home/End 焦点导航、menuitem role、`dropdown` 插槽、单测扩展到 26 项（含 field names / splitButton / contextmenu / keyboard）。

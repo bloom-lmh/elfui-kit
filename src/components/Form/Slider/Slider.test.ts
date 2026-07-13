@@ -172,6 +172,35 @@ describe("elf-slider", () => {
     expect(onUpdate).not.toHaveBeenCalled();
   });
 
+  it("fills only the portion of the final segmented track", async () => {
+    const el = await mount({
+      min: 0,
+      max: 100,
+      segmented: true,
+      modelValue: 45,
+      marks: [0, 25, 50, 100]
+    });
+    const segments = el.shadowRoot!.querySelectorAll<HTMLElement>(".segment");
+
+    expect(segments[1]?.style.getPropertyValue("--segment-fill")).toBe("80%");
+    expect(segments[2]?.style.getPropertyValue("--segment-fill")).toBe("0%");
+  });
+
+  it("uses primitive stable keys for object marks in range and segmented modes", async () => {
+    const marks = [
+      { value: 0, label: "起点" },
+      { value: 50, label: "中点" },
+      { value: 100, label: "终点" }
+    ];
+    const range = await mount({ range: true, modelValue: [20, 80], marks });
+    const segmented = await mount({ segmented: true, modelValue: 45, marks });
+
+    expect(Array.from(range.shadowRoot!.querySelectorAll(".mark"), (item) => item.textContent?.trim())).toEqual([
+      "起点", "中点", "终点"
+    ]);
+    expect(segmented.shadowRoot!.querySelectorAll(".segment")).toHaveLength(2);
+  });
+
   it("exposes accessible labels and formatted value text on native range inputs", async () => {
     const el = await mount({
       range: true,

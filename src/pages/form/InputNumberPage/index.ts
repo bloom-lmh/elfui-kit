@@ -38,9 +38,9 @@ const onPriceUpdate = (event) => {
   price.set(event.detail ?? 0);
 };`;
 
-const code3 = `<elf-input-number disabled :modelValue=\${3} />
-<elf-input-number readonly :modelValue=\${6} />
-<elf-input-number :controls=\${false} placeholder="无控制按钮" />`;
+const code3 = `<label>禁用状态 <elf-input-number disabled :modelValue.prop=\${3} /></label>
+<label>只读状态 <elf-input-number readonly :modelValue.prop=\${6} /></label>
+<label>隐藏控制按钮 <elf-input-number :controls.prop=\${false} :modelValue.prop=\${8} /></label>`;
 
 const onCountUpdate = (event: CustomEvent): void => {
   count.set(Number(event.detail ?? 0));
@@ -68,7 +68,7 @@ const PageInputNumber = defineHtml(html`
     </elf-playground>
 
     <elf-playground
-      title="precision / step-strictly / controls-position"
+      title="精度、严格步进与按钮位置"
       :code=${code2}
       :script=${script2}
     >
@@ -83,10 +83,12 @@ const PageInputNumber = defineHtml(html`
       <span class="demo-state">价格：{{ price }}</span>
     </elf-playground>
 
-    <elf-playground title="disabled / readonly / controls=false" :code=${code3}>
-      <elf-input-number disabled :modelValue=${3}></elf-input-number>
-      <elf-input-number readonly :modelValue=${6}></elf-input-number>
-      <elf-input-number :controls=${false} placeholder="无控制按钮"></elf-input-number>
+    <elf-playground title="禁用、只读与隐藏控制按钮" :code=${code3}>
+      <div style="display:grid;gap:12px">
+        <label style="display:flex;align-items:center;gap:12px">禁用状态 <elf-input-number disabled :modelValue.prop=${3}></elf-input-number></label>
+        <label style="display:flex;align-items:center;gap:12px">只读状态 <elf-input-number readonly :modelValue.prop=${6}></elf-input-number></label>
+        <label style="display:flex;align-items:center;gap:12px">隐藏控制按钮 <elf-input-number :controls.prop=${false} :modelValue.prop=${8}></elf-input-number></label>
+      </div>
     </elf-playground>
     <page-input-number-props></page-input-number-props>
   </elf-container>

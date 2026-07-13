@@ -19,6 +19,14 @@
     box-shadow 0.16s ease;
 }
 
+.input-number:not(.has-controls) {
+  display: block;
+}
+
+.input-number:not(.has-controls) input {
+  width: 100%;
+}
+
 .input-number:focus-within {
   border-color: var(--elf-primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 14%, transparent);

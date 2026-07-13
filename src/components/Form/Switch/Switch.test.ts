@@ -166,4 +166,11 @@ describe("elf-switch", () => {
     track.focus();
     expect(el.shadowRoot!.activeElement).toBe(track);
   });
+
+  it("accepts a numeric width attribute without collapsing the track", async () => {
+    const el = await mount({ width: "64", inlinePrompt: true, inactiveText: "关" });
+
+    expect(el.style.getPropertyValue("--_switch-width-custom")).toBe("64px");
+    expect(el.shadowRoot!.querySelector(".inline-content")?.textContent).toContain("关");
+  });
 });

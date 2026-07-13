@@ -28,7 +28,7 @@ const code4 = `ElfMessage.success("保存完成，底部提示已出现", {
 
 const PageMessageEx4 = defineHtml(html`
   <h2>位置与回调</h2>
-  <elf-playground title="position / offset / zIndex / callbacks" :code="code4">
+  <elf-playground title="位置、偏移与回调" :code="code4">
     <div style="display:grid;gap:12px">
       <elf-button color="success" @click="showBottom">底部提示</elf-button>
       <p class="demo-state">{{ lastEvent }}</p>

@@ -21,6 +21,7 @@ const propsRows = [
   { name: "dashed", type: "boolean", default: "false" },
   { name: "auto-insert-space", type: "boolean", default: "false" },
   { name: "dark", type: "boolean", default: "false" },
+  { name: "no-hover", type: "boolean", default: "false", desc: "禁用 hover 效果" },
   { name: "direction", type: "horizontal|vertical", default: "horizontal" }
 ];
 

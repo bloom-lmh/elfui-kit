@@ -56,7 +56,9 @@ const CollapseItem = defineHtml<CollapseItemProps, Record<string, never>, Collap
       @click=${requestToggle}
     >
       <span class="title" part="title"><slot name="title">${props.title}</slot></span>
-      <span class="arrow" part="icon" aria-hidden="true"><slot name="icon">›</slot></span>
+      <span class="arrow" part="icon" aria-hidden="true">
+        <slot name="icon"><span class="default-arrow"></span></slot>
+      </span>
     </button>
     <div
       class="body"
@@ -66,7 +68,7 @@ const CollapseItem = defineHtml<CollapseItemProps, Record<string, never>, Collap
       :aria-labelledby=${headerId}
       :aria-hidden=${props.active ? "false" : "true"}
     >
-      <slot></slot>
+      <div class="body-content"><slot></slot></div>
     </div>
   </section>
 `);

@@ -202,10 +202,6 @@ const clear = (): void => {
   emit("clear");
 };
 
-const focus = (): void => getInputEl()?.focus();
-
-const blur = (): void => getInputEl()?.blur();
-
 const select = (): void => getInputEl()?.select();
 
 const input = (): HTMLInputElement | null => getInputEl();
@@ -269,9 +265,7 @@ const ariaText = (): string | null => props.ariaLabel || props.label || props.pl
 const passwordToggleText = (): string => (pwdVisible.value ? "Hide" : "Show");
 
 defineExpose({
-  blur,
   clear,
-  focus,
   input,
   ref,
   resizeTextarea,

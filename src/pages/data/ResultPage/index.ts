@@ -27,13 +27,15 @@ const PageResult = defineHtml(html`
     <p>用于流程结束页或局部操作结果，支持 success、warning、error 与 info 状态。</p>
 
     <elf-playground title="四种状态" :code=${statusCode}>
-      <elf-result icon="success" title="提交成功" sub-title="配置已保存"></elf-result>
-      <elf-result icon="warning" title="需要确认" sub-title="请检查风险项"></elf-result>
-      <elf-result icon="error" title="提交失败" sub-title="请稍后重试"></elf-result>
-      <elf-result icon="info" title="处理中" sub-title="系统正在执行任务"></elf-result>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;width:100%">
+        <elf-result style="border:1px solid var(--elf-border);border-radius:16px;background:var(--elf-bg-paper)" icon="success" title="提交成功" sub-title="配置已保存"></elf-result>
+        <elf-result style="border:1px solid var(--elf-border);border-radius:16px;background:var(--elf-bg-paper)" icon="warning" title="需要确认" sub-title="请检查风险项"></elf-result>
+        <elf-result style="border:1px solid var(--elf-border);border-radius:16px;background:var(--elf-bg-paper)" icon="error" title="提交失败" sub-title="请稍后重试"></elf-result>
+        <elf-result style="border:1px solid var(--elf-border);border-radius:16px;background:var(--elf-bg-paper)" icon="info" title="处理中" sub-title="系统正在执行任务"></elf-result>
+      </div>
     </elf-playground>
 
-    <elf-playground title="extra 操作区" :code=${extraCode}>
+    <elf-playground title="扩展操作区" :code=${extraCode}>
       <elf-result icon="success" title="发布成功" sub-title="页面已经上线">
         <div slot="extra" style="display:flex;gap:8px;justify-content:center">
           <elf-button variant="outlined">查看页面</elf-button>
@@ -42,7 +44,7 @@ const PageResult = defineHtml(html`
       </elf-result>
     </elf-playground>
 
-    <elf-playground title="自定义 icon slot" :code=${slotCode}>
+    <elf-playground title="自定义图标" :code=${slotCode}>
       <elf-result title="自定义图标" sub-title="icon slot 可替换默认状态图形">
         <span slot="icon">★</span>
       </elf-result>

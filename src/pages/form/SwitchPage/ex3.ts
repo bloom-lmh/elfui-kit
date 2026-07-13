@@ -8,7 +8,7 @@ const labelCode = `<elf-switch label-position="start">默认 slot 标签</elf-sw
 
 const PageSwitchEx3 = defineHtml(html`
   <h2>外观</h2>
-  <elf-playground title="inset / flat / color" :code="variantCode">
+  <elf-playground title="内嵌、扁平与颜色变体" :code="variantCode">
     <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
       <elf-switch inset color="success" label="Inset"></elf-switch>
       <elf-switch flat color="warning" label="Flat"></elf-switch>
@@ -18,7 +18,7 @@ const PageSwitchEx3 = defineHtml(html`
   </elf-playground>
 
   <h2>标签 slot</h2>
-  <elf-playground title="default slot" :code="labelCode">
+  <elf-playground title="默认插槽标签" :code="labelCode">
     <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
       <elf-switch label-position="start">默认 slot 标签</elf-switch>
       <elf-switch label="属性标签"></elf-switch>

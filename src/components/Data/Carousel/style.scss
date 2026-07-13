@@ -24,6 +24,13 @@
 
 :host([direction="vertical"]) .track {
   flex-direction: column;
+  width: 100%;
+}
+
+:host([direction="vertical"]) ::slotted(*) {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
 }
 
 ::slotted(img) {
@@ -96,11 +103,11 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: none;
+  border: 1px solid rgb(255 255 255 / 42%);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.78);
   color: rgba(0, 0, 0, 0.55);
-  font-size: 24px;
+  font-size: 0;
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
@@ -118,6 +125,50 @@
   }
 }
 
+.arrow span {
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+}
+
+.arrow-left span { transform: rotate(-135deg); margin-inline-start: 4px; }
+.arrow-right span { transform: rotate(45deg); margin-inline-end: 4px; }
+
+:host([direction="vertical"]) .arrows {
+  flex-direction: column;
+  padding: var(--elf-space-3) 0;
+}
+
+:host([direction="vertical"]) .arrow-left span {
+  margin: 4px 0 0;
+  transform: rotate(-45deg);
+}
+
+:host([direction="vertical"]) .arrow-right span {
+  margin: 0 0 4px;
+  transform: rotate(135deg);
+}
+
+:host([direction="vertical"]) .indicators {
+  right: 20px;
+  bottom: auto;
+  left: auto;
+  top: 50%;
+  flex-direction: column;
+  transform: translateY(-50%);
+}
+
+:host([direction="vertical"][indicator-type="line"]) .dot {
+  width: 3px;
+  height: 20px;
+}
+
+:host([direction="vertical"][indicator-type="line"]) .dot.is-active {
+  width: 3px;
+  height: 32px;
+}
+
 // ───── arrow-style ───────────────────────────────
 :host([show-arrow="square"]) .arrow {
   border-radius: var(--elf-radius-sm);
@@ -127,7 +178,6 @@
   background: transparent;
   box-shadow: none;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 36px;
   width: 48px;
   height: 48px;
 

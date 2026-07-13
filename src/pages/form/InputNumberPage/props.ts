@@ -18,9 +18,9 @@ const eventsRows = [
 
 const PageInputNumberProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows=${propsRows} />
-  <elf-props-table title="Events" :rows=${eventsRows} />
-  <elf-props-table title="Exposes" :rows=${[{ name: "focus / blur", desc: "focus or blur the native number input" }]} />
+  <elf-props-table title="属性" :rows=${propsRows} />
+  <elf-props-table title="事件" :rows=${eventsRows} />
+  <elf-props-table title="方法" :rows=${[{ name: "focus / blur", desc: "聚焦或失焦原生数字输入框" }]} />
 `);
 
 export { PageInputNumberProps };

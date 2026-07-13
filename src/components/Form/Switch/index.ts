@@ -65,7 +65,8 @@ const checked = (): boolean => Object.is(ctl.model.value, props.activeValue);
 const nextValue = (): SwitchValue => checked() ? props.inactiveValue : props.activeValue;
 const width = (): string | null => {
   if (props.width === undefined || props.width === null || props.width === "") return null;
-  return typeof props.width === "number" ? `${props.width}px` : String(props.width);
+  const value = String(props.width).trim();
+  return /^\d+(?:\.\d+)?$/.test(value) ? `${value}px` : value;
 };
 
 useHostFlag("data-checked", checked);

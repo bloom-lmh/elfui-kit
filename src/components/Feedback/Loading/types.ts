@@ -3,4 +3,5 @@ export interface LoadingProps {
   text: string;
   fullscreen: boolean;
   background: string;
+  closable: boolean;
 }

@@ -10,7 +10,9 @@ import {
   defineProps,
   defineStyle,
   html,
+  useEffect,
   useHostAttr,
+  useHostFlag,
   useTemplateRef,
   defineHtml
 } from "elfui";
@@ -29,7 +31,7 @@ const props = defineProps({
   maxlength: { type: Number, default: undefined },
   showCount: { type: Boolean, default: false },
   rows: { type: Number, default: 3 },
-  autosize: { type: null, default: false },
+  autosize: { type: [Boolean, Object], default: false },
   resize: { type: String, default: "vertical" }
 });
 
@@ -48,9 +50,12 @@ useHostAttr("data-state", () => fi.state);
 useHostAttr("size", () => fi.formSize);
 
 useHostAttr("resize", () => props.resize as string);
+const autosizeEnabled = (): boolean => props.autosize === "" || Boolean(props.autosize);
+
+useHostFlag("autosize", autosizeEnabled);
 
 const adjustHeight = (ta: HTMLTextAreaElement): void => {
-  if (!props.autosize) return;
+  if (!autosizeEnabled()) return;
   ta.style.height = "auto";
   const opts = props.autosize as { minRows?: number; maxRows?: number } | boolean;
   const minRows = typeof opts === "object" ? (opts.minRows ?? 1) : 1;
@@ -62,12 +67,23 @@ const adjustHeight = (ta: HTMLTextAreaElement): void => {
   ta.style.height = `${Math.min(Math.max(ta.scrollHeight, minH), maxH)}px`;
 };
 
+useEffect(() => {
+  // Track both inputs so controlled value changes and autosize option changes
+  // recalculate after the textarea has rendered.
+  void ctl.model.value;
+  void props.autosize;
+  queueMicrotask(() => {
+    const ta = textareaRef.value;
+    if (ta) adjustHeight(ta);
+  });
+});
+
 const getValue = (e: Event): string => (e.target as HTMLTextAreaElement).value;
 
 const onInput = (e: Event): void => {
   ctl.dispatchInput(getValue(e));
-  const ta = textareaRef.value;
-  if (ta) queueMicrotask(() => adjustHeight(ta));
+  const ta = e.currentTarget as HTMLTextAreaElement;
+  queueMicrotask(() => adjustHeight(ta));
 };
 
 const onChange = (e: Event): void => ctl.dispatchChange(getValue(e));
@@ -97,7 +113,7 @@ const Textarea = defineHtml(html`
       :disabled=${isDisabled()}
       :readonly=${props.readonly}
       :maxlength=${props.maxlength}
-      :rows.prop=${props.rows}
+      :rows=${props.rows}
       @input=${onInput}
       @change=${onChange}
       @focus=${onFocus}

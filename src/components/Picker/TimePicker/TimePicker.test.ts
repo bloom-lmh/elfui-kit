@@ -108,4 +108,33 @@ describe("elf-time-picker", () => {
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["09:00", "18:00"]);
   });
+
+  it("范围快捷项可以重复切换并清空", async () => {
+    const el = document.createElement("elf-time-picker") as TimePickerEl;
+    el.isRange = true;
+    el.modelValue = ["09:00", "18:00"];
+    el.clearable = true;
+    el.shortcuts = [
+      { label: "工作日", value: "09:00", endValue: "18:00" },
+      { label: "晚上", value: "19:00", endValue: "22:00" }
+    ];
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const buttons = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".shortcut");
+    buttons[1]!.click();
+    await tick();
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual(["19:00", "22:00"]);
+
+    (el.shadowRoot!.querySelector(".clear") as HTMLButtonElement).click();
+    await tick();
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual(["", ""]);
+    expect(Array.from(el.shadowRoot!.querySelectorAll("input"), (input) => (input as HTMLInputElement).value)).toEqual(["", ""]);
+
+    buttons[0]!.click();
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual(["09:00", "18:00"]);
+  });
 });

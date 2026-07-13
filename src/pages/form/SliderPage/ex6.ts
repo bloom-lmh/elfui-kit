@@ -23,7 +23,7 @@ const code = `<elf-slider
 
 const PageSliderEx6 = defineHtml(html`
   <h2>分段滑块</h2>
-  <elf-playground title="segmented / marks" :code="code">
+  <elf-playground title="分段轨道与刻度" :code="code">
     <div style="display:grid;gap:14px;width:100%;max-width:720px">
       <elf-slider
         segmented

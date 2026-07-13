@@ -7,6 +7,10 @@ export interface InputTagProps {
   readonly: boolean;
   clearable: boolean;
   max?: number;
+  /** Collapses overflowing tags into a compact counter. */
+  collapseTags: boolean;
+  /** Number of tags kept visible while `collapseTags` is enabled. */
+  maxCollapseTags: number;
   size: InputTagSize;
   trigger: "enter" | "blur";
   tagType: string;

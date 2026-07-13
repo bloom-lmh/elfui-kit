@@ -15,23 +15,23 @@ const code = `<elf-pagination
   size="large"
   page-count="4"
   default-current-page="2"
-  prev-text="Back"
-  next-text="Forward"
+  prev-text="上一页"
+  next-text="下一页"
   layout="prev, pager, next"
 />
 
 <elf-pagination background small layout="prev, pager, next" total="120" />`;
 
 const PagePaginationEx2 = defineHtml(html`
-  <h2>Layout, defaults, and size</h2>
-  <elf-playground title="Use page-count for known page totals and defaults for uncontrolled state" :code=${code}>
+  <h2>布局、默认值与尺寸</h2>
+  <elf-playground title="已知页数、非受控默认值与紧凑布局" :code=${code}>
     <div style="width: 100%; display: grid; gap: 18px">
       <elf-pagination
         size="large"
         page-count="4"
         default-current-page="2"
-        prev-text="Back"
-        next-text="Forward"
+        prev-text="上一页"
+        next-text="下一页"
         layout="prev, pager, next"
       ></elf-pagination>
 

@@ -60,9 +60,9 @@ const onRemoveTag = (): void => undefined;
 const PageInputTag = defineHtml(html`
   <elf-container>
     <h1>InputTag 标签输入</h1>
-    <p>把输入内容转换成标签，支持受控数组、清空、数量上限、只读与禁用。</p>
+    <p>把输入内容转换成标签。输入框宽度保持稳定；标签较多时可水平滚动，折叠后悬停数量按钮可查看并删除隐藏标签。</p>
 
-    <elf-playground title="受控数组 / clearable" :code=${code1} :script=${script1}>
+    <elf-playground title="受控数组与清空" :code=${code1} :script=${script1}>
       <elf-input-tag
         :modelValue.prop=${tags}
         clearable
@@ -74,11 +74,13 @@ const PageInputTag = defineHtml(html`
       <span class="demo-state">当前：${tags.value.join(" / ")}</span>
     </elf-playground>
 
-    <elf-playground title="max / size / 状态" :code=${code2} :script=${script2}>
+    <elf-playground title="数量上限、折叠标签与状态" :code=${code2} :script=${script2}>
       <div style="display:grid;gap:12px;max-width:420px">
         <elf-input-tag
           :modelValue.prop=${limitedTags}
           :max=${3}
+          collapse-tags
+          :max-collapse-tags=${1}
           size="lg"
           placeholder="最多 3 个"
           @update:modelValue=${onLimitedUpdate}

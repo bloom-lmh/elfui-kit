@@ -1,248 +1,337 @@
 @use "../../../styles/reset";
 
-// Entrance / exit
+// ==============================================
+// Keyframes
+// ==============================================
 @keyframes alert-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 @keyframes alert-out {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.97);
-  }
+    from {
+        opacity: 1;
+        transform: scale(1);
+        max-height: 200px;
+        margin-bottom: var(--elf-space-4, 16px);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.96);
+        max-height: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
 }
 
 :host {
-  display: block;
+    display: block;
+    margin-bottom: var(--elf-space-4, 16px);
+    line-height: var(--elf-line-height-md, 1.5);
+    font-family: var(--elf-font-family, inherit);
+    font-size: var(--elf-font-size-sm, 14px);
 }
 
-// ==============================================
-// Alert container
-// ==============================================
 .alert {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px 12px 16px;
-  border-radius: var(--elf-radius-sm, 6px);
-  font-size: var(--elf-font-size-sm, 14px);
-  line-height: var(--elf-line-height-md, 1.5);
-  animation: alert-in 0.22s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: none;
-  transition:
-    border-color var(--elf-transition-base, 250ms),
-    background var(--elf-transition-base, 250ms),
-    box-shadow var(--elf-transition-fast, 150ms);
-
-  &:hover {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  }
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 14px 14px 18px;
+    border-radius: var(--elf-radius-md, 8px);
+    font-size: inherit;
+    line-height: inherit;
+    animation: alert-in 0.25s cubic-bezier(0.2, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 // ==============================================
-// Color tokens per type
+// Per-type color tokens
 // ==============================================
 :host([type="info"]) .alert {
-  --_c: var(--elf-primary, #1976d2);
-  --_c-soft: color-mix(in srgb, var(--elf-primary, #1976d2) 8%, var(--elf-bg-paper));
-  --_c-border: color-mix(in srgb, var(--elf-primary, #1976d2) 34%, var(--elf-border));
+    --alert-color: var(--elf-primary, #1976d2);
+    --alert-color-soft: color-mix(in srgb, var(--elf-primary, #1976d2) 7%, transparent);
+    --alert-color-border: color-mix(in srgb, var(--elf-primary, #1976d2) 28%, transparent);
+    --alert-color-text: color-mix(in srgb, var(--elf-primary, #1976d2) 40%, #212121);
+    --alert-color-icon-bg: color-mix(in srgb, var(--elf-primary, #1976d2) 12%, transparent);
 }
 :host([type="success"]) .alert {
-  --_c: var(--elf-success, #2e7d32);
-  --_c-soft: color-mix(in srgb, var(--elf-success, #2e7d32) 9%, var(--elf-bg-paper));
-  --_c-border: color-mix(in srgb, var(--elf-success, #2e7d32) 34%, var(--elf-border));
+    --alert-color: var(--elf-success, #2e7d32);
+    --alert-color-soft: color-mix(in srgb, var(--elf-success, #2e7d32) 8%, transparent);
+    --alert-color-border: color-mix(in srgb, var(--elf-success, #2e7d32) 28%, transparent);
+    --alert-color-text: color-mix(in srgb, var(--elf-success, #2e7d32) 38%, #212121);
+    --alert-color-icon-bg: color-mix(in srgb, var(--elf-success, #2e7d32) 13%, transparent);
 }
 :host([type="warning"]) .alert {
-  --_c: var(--elf-warning, #ed6c02);
-  --_c-soft: color-mix(in srgb, var(--elf-warning, #ed6c02) 10%, var(--elf-bg-paper));
-  --_c-border: color-mix(in srgb, var(--elf-warning, #ed6c02) 36%, var(--elf-border));
+    --alert-color: var(--elf-warning, #ed6c02);
+    --alert-color-soft: color-mix(in srgb, var(--elf-warning, #ed6c02) 9%, transparent);
+    --alert-color-border: color-mix(in srgb, var(--elf-warning, #ed6c02) 30%, transparent);
+    --alert-color-text: color-mix(in srgb, var(--elf-warning, #ed6c02) 42%, #212121);
+    --alert-color-icon-bg: color-mix(in srgb, var(--elf-warning, #ed6c02) 14%, transparent);
 }
 :host([type="danger"]) .alert {
-  --_c: var(--elf-danger, #d32f2f);
-  --_c-soft: color-mix(in srgb, var(--elf-danger, #d32f2f) 8%, var(--elf-bg-paper));
-  --_c-border: color-mix(in srgb, var(--elf-danger, #d32f2f) 34%, var(--elf-border));
+    --alert-color: var(--elf-danger, #d32f2f);
+    --alert-color-soft: color-mix(in srgb, var(--elf-danger, #d32f2f) 7%, transparent);
+    --alert-color-border: color-mix(in srgb, var(--elf-danger, #d32f2f) 26%, transparent);
+    --alert-color-text: color-mix(in srgb, var(--elf-danger, #d32f2f) 38%, #212121);
+    --alert-color-icon-bg: color-mix(in srgb, var(--elf-danger, #d32f2f) 12%, transparent);
 }
 
 // ==============================================
-// Light variant (default)
+// Tonal variant (default)
 // ==============================================
-:host([variant="light"]) .alert,
+:host([variant="tonal"]) .alert,
 :host(:not([variant])) .alert {
-  background: var(--_c-soft);
-  border: 1px solid var(--_c-border);
-
-  &::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--_c);
-  }
+    background: var(--alert-color-soft);
+    border: 1px solid var(--alert-color-border);
+    color: var(--alert-color-text);
 }
 
 // ==============================================
-// Filled variant
+// Elevated variant
 // ==============================================
-:host([variant="filled"]) .alert {
-  background: var(--_c);
-  color: #fff;
-  border: 1px solid color-mix(in srgb, var(--_c) 88%, #000 12%);
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--_c) 22%, transparent);
-
-  &:hover {
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--_c) 28%, transparent);
-  }
-
-  .title,
-  .description {
-    color: #fff;
-  }
-  .title {
-    color: rgba(255, 255, 255, 0.95);
-  }
-  .description {
-    color: rgba(255, 255, 255, 0.82);
-  }
-  .icon {
-    background: rgba(255, 255, 255, 0.16);
-    color: #fff;
-  }
-  .close {
-    color: rgba(255, 255, 255, 0.65);
-    &:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.18);
-    }
-  }
+:host([variant="elevated"]) .alert {
+    background: var(--alert-color-soft);
+    border: 1px solid var(--alert-color-border);
+    color: var(--alert-color-text);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--alert-color) 14%, transparent),
+        0 1px 2px color-mix(in srgb, var(--alert-color) 10%, transparent);
 }
 
 // ==============================================
 // Outlined variant
 // ==============================================
 :host([variant="outlined"]) .alert {
-  background: var(--elf-bg-paper);
-  border: 1px solid var(--_c);
+    background: var(--elf-bg-paper, #fff);
+    border: 1px solid var(--alert-color);
+    color: var(--alert-color-text);
+}
 
-  .icon {
-    background: color-mix(in srgb, var(--_c) 10%, transparent);
-    color: var(--_c);
-  }
+// ==============================================
+// Plain variant — no background, no border, just colored text
+// ==============================================
+:host([variant="plain"]) .alert {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--alert-color-text);
+    padding-left: 14px;
+}
+
+// ==============================================
+// Filled variant
+// ==============================================
+:host([variant="filled"]) .alert {
+    background: var(--alert-color);
+    color: #fff;
+    border: 1px solid transparent;
+
+    .title,
+    .description {
+        color: inherit;
+    }
+    .title {
+        color: #fff;
+    }
+    .description {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .icon {
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+    }
+    .close {
+        color: rgba(255, 255, 255, 0.7);
+        &:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.18);
+        }
+    }
+}
+
+// ==============================================
+// Accent border (tonal, elevated, filled)
+// ==============================================
+:host([variant="tonal"]) .alert,
+:host([variant="elevated"]) .alert,
+:host([variant="filled"]) .alert {
+    border-left: 4px solid var(--alert-color);
+}
+
+:host([prominent]) .alert {
+    border-left-width: 8px;
 }
 
 // ==============================================
 // Icon
 // ==============================================
 .icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  color: var(--_c);
-  background: color-mix(in srgb, var(--_c) 10%, transparent);
-  box-shadow: none;
-  margin-top: 1px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--alert-color);
+    background: var(--alert-color-icon-bg);
+    margin-top: 0;
 
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+:host([variant="filled"]) .icon {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+:host([variant="plain"]) .icon {
+    background: transparent;
+    width: auto;
+    height: auto;
+    margin-top: 1px;
 }
 
 // ==============================================
 // Body
 // ==============================================
 .body {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .title {
-  font-weight: 600;
-  font-size: var(--elf-font-size-sm, 14px);
-  color: var(--elf-text-primary, rgba(0, 0, 0, 0.87));
-  line-height: 1.45;
+    font-weight: 600;
+    font-size: var(--elf-font-size-sm, 14px);
+    color: var(--elf-text-primary, rgba(0, 0, 0, 0.87));
+    line-height: 1.5;
+    letter-spacing: 0.01em;
 }
 
 .description {
-  color: var(--elf-text-secondary, rgba(0, 0, 0, 0.6));
-  font-size: var(--elf-font-size-xs, 13px);
-  line-height: 1.55;
-  margin-top: 2px;
+    color: var(--elf-text-secondary, rgba(0, 0, 0, 0.6));
+    font-size: var(--elf-font-size-xs, 13px);
+    line-height: 1.6;
+    margin-top: 4px;
+}
+
+:host([variant="plain"]) .title {
+    color: var(--alert-color-text);
 }
 
 // ==============================================
-// Center align
+// Center
 // ==============================================
 :host([center]) .alert {
-  align-items: center;
-  text-align: center;
-  justify-content: center;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
 
-  .body {
-    flex: 0 1 auto;
-  }
+    .body {
+        flex: 0 1 auto;
+    }
 }
 
 // ==============================================
 // Close button
 // ==============================================
 .close {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  padding: 0;
-  color: var(--elf-text-disabled, rgba(0, 0, 0, 0.38));
-  border-radius: var(--elf-radius-sm, 6px);
-  transition:
-    color var(--elf-transition-fast, 150ms),
-    background var(--elf-transition-fast, 150ms),
-    background var(--elf-transition-fast, 150ms);
-  margin-top: -1px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--elf-text-disabled, rgba(0, 0, 0, 0.38));
+    border-radius: 50%;
+    transition:
+        color 0.15s ease,
+        background 0.15s ease;
+    margin-right: -4px;
+    margin-top: -2px;
 
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+    svg {
+        width: 16px;
+        height: 16px;
+    }
 
-  &:hover {
-    color: var(--elf-text-primary, rgba(0, 0, 0, 0.87));
-    background: var(--elf-bg-overlay, rgba(0, 0, 0, 0.04));
-  }
+    &:hover {
+        color: var(--elf-text-primary, rgba(0, 0, 0, 0.87));
+        background: rgba(0, 0, 0, 0.06);
+    }
 
-  &:active {
-    background: color-mix(in srgb, var(--elf-text-primary, #000) 8%, transparent);
-  }
+    &:active {
+        background: rgba(0, 0, 0, 0.1);
+    }
+}
+
+// ==============================================
+// Density: compact
+// ==============================================
+:host([density="compact"]) .alert {
+    padding: 8px 10px 8px 14px;
+    gap: 8px;
+    border-radius: var(--elf-radius-sm, 6px);
+}
+
+:host([density="compact"]) .icon {
+    width: 28px;
+    height: 28px;
+
+    svg {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+:host([density="compact"]) .title {
+    font-size: var(--elf-font-size-xs, 13px);
+}
+
+:host([density="compact"]) .description {
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+:host([density="compact"]) .close {
+    width: 24px;
+    height: 24px;
+
+    svg {
+        width: 14px;
+        height: 14px;
+    }
 }
 
 // ==============================================
 // Animations
 // ==============================================
 :host([data-closing]) .alert {
-  animation: alert-out 0.2s ease forwards;
+    animation: alert-out 0.25s ease forwards;
 }
+
 :host([data-closed]) {
-  display: none;
+    display: none;
+    margin-bottom: 0;
 }

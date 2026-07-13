@@ -83,11 +83,11 @@ const PageCollapse = defineHtml(html`
       <span class="demo-state">当前：{{ active.value.join(", ") }}</span>
     </elf-playground>
 
-    <elf-playground title="accordion 手风琴" :code=${code2} :script=${script2}>
+    <elf-playground title="手风琴模式" :code=${code2} :script=${script2}>
       <elf-collapse accordion :items.prop=${items} :modelValue=${accordion} @update:modelValue=${onAccordionUpdate}></elf-collapse>
     </elf-playground>
 
-    <elf-playground title="CollapseItem 组合式用法" :code=${slotCode} :script=${slotScript}>
+    <elf-playground title="组合式折叠面板" :code=${slotCode} :script=${slotScript}>
       <elf-collapse :modelValue.prop=${slottedActive} @update:modelValue=${onSlottedUpdate}>
         <elf-collapse-item name="guide" title="组合式用法">默认 slot 承载面板内容。</elf-collapse-item>
         <elf-collapse-item name="custom">

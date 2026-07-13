@@ -12,17 +12,17 @@ const rows = [
 const PageMentionProps = defineHtml(html`
   <h2>API</h2>
   <p><code>prefixes</code> is the Web Component-safe array alternative because native <code>Node.prefix</code> is read-only.</p>
-  <elf-props-table title="Props" :rows=${rows} />
-  <elf-props-table title="Events" :rows=${[
+  <elf-props-table title="属性" :rows=${rows} />
+  <elf-props-table title="事件" :rows=${[
     { name: "update:modelValue / input", type: "(value: string) => void" },
     { name: "select", type: "(option, prefix) => void" },
     { name: "focus / blur", type: "(event: FocusEvent) => void" }
   ]} />
-  <elf-props-table title="Slots" :rows=${[
+  <elf-props-table title="插槽" :rows=${[
     { name: "default", desc: "custom suggestion content; receives item" },
     { name: "loading", desc: "loading content" }
   ]} />
-  <elf-props-table title="Exposes" :rows=${[{ name: "focus / blur", desc: "manage the native textarea" }]} />
+  <elf-props-table title="方法" :rows=${[{ name: "focus / blur", desc: "聚焦或失焦原生文本框" }]} />
 `);
 
 export { PageMentionProps };

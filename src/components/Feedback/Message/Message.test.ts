@@ -1,5 +1,6 @@
 // elf-message + ElfMessage() 测试
 
+import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 beforeAll(async () => {
@@ -10,6 +11,7 @@ afterEach(async () => {
   const { ElfMessage } = await import("../Message/index");
   ElfMessage.closeAll();
   document.body.innerHTML = "";
+  delete document.documentElement.dataset.theme;
 });
 
 const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
@@ -24,6 +26,21 @@ describe("ElfMessage()", () => {
     const el = document.body.querySelector("elf-message");
     expect(el).toBeTruthy();
     expect(el!.shadowRoot!.textContent).toContain("测试消息");
+  });
+
+  it("暗色主题下正文使用主题文字变量", async () => {
+    document.documentElement.dataset.theme = "dark";
+    const { ElfMessage } = await import("../Message/index");
+    ElfMessage({ message: "暗色消息", duration: 0 });
+    await tick();
+    await tick();
+
+    const content = document.body.querySelector("elf-message")!.shadowRoot!.querySelector(".content");
+    expect(content).toBeTruthy();
+    const cssText = readFileSync("src/components/Feedback/Message/style.scss", "utf8");
+    expect(cssText).toContain("var(--elf-text-primary)");
+    expect(cssText).toContain("var(--elf-info");
+    document.documentElement.dataset.theme = "light";
   });
 
   it("ElfMessage.success / .danger 设置 type", async () => {

@@ -66,7 +66,44 @@ describe("elf-tour", () => {
 
     expect(document.body.querySelector(".tour-layer")).toBeTruthy();
     expect(document.body.querySelector(".tour-highlight")).toBeTruthy();
+    expect(document.body.querySelector(".tour-backdrop")).toBeNull();
     expect(document.body.querySelector(".tour-title")?.textContent).toContain("第一步");
+    expect(document.body.querySelector(".tour-close svg")).toBeTruthy();
+  });
+
+  it("目标不存在时仍显示安全遮罩和居中引导面板", async () => {
+    await mount({
+      steps: [{ target: "#missing-target", title: "备用引导", content: "目标暂不可用" }]
+    });
+
+    expect(document.body.querySelector(".tour-highlight")).toBeNull();
+    expect(document.body.querySelector(".tour-backdrop")).toBeTruthy();
+    expect(document.body.querySelector(".tour-title")?.textContent).toContain("备用引导");
+  });
+
+  it("目标靠近视口底部时自动向上翻转，操作区保持在视口内", async () => {
+    const el = await mount();
+    const target = document.querySelector("#tour-target-one") as HTMLElement;
+    target.getBoundingClientRect = () =>
+      ({
+        left: 80,
+        top: window.innerHeight - 50,
+        width: 120,
+        height: 40,
+        right: 200,
+        bottom: window.innerHeight - 10,
+        x: 80,
+        y: window.innerHeight - 50,
+        toJSON: () => ({})
+      }) as DOMRect;
+
+    window.dispatchEvent(new Event("resize"));
+    await frame();
+    await tick();
+
+    const panel = document.body.querySelector<HTMLElement>(".tour-panel")!;
+    expect(panel.style.transform).toBe("translate(-50%, -100%)");
+    expect(el.visible).toBe(true);
   });
 
   it("next/prev 更新 current 并触发 change", async () => {
@@ -104,7 +141,7 @@ describe("elf-tour", () => {
     expect(document.body.querySelector(".tour-title")?.textContent).toContain("第二步");
 
     (
-      document.body.querySelector(".tour-footer elf-button[color='primary']") as HTMLElement
+      document.body.querySelector(".tour-footer .tour-button--primary") as HTMLElement
     ).click();
     await tick();
     expect(onFinish).toHaveBeenCalledTimes(1);

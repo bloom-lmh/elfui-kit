@@ -50,12 +50,18 @@
 
 .link:hover,
 .link:focus-visible {
-  color: var(--_link-hover);
+    color: var(--_link-hover);
 }
 
-:host([underline]) .link:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.link[data-underline="false"],
+.link[data-underline="false"]:hover,
+.link[data-underline="false"]:focus-visible {
+    text-decoration: none !important;
 }
 
 :host([disabled]) {

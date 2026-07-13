@@ -2,6 +2,7 @@
 
 import { compile } from "@elfui/compiler";
 import { defineComponent, setTemplateCompiler, useRef, type RenderFn } from "@elfui/chain";
+import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 beforeAll(async () => {
@@ -12,6 +13,7 @@ beforeAll(async () => {
 afterEach(() => {
   document.body.innerHTML = "";
   document.body.style.overflow = "";
+  delete document.documentElement.dataset.theme;
 });
 
 const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 20));
@@ -58,6 +60,20 @@ describe("elf-dialog", () => {
     expect(panel()?.className).toContain("size-lg");
   });
 
+  it("面板颜色跟随全局主题变量", async () => {
+    document.documentElement.dataset.theme = "dark";
+    const el = document.createElement("elf-dialog") as DialogEl;
+    el.open = true;
+    document.body.appendChild(el);
+    await tick();
+
+    expect(panel()).toBeTruthy();
+    const cssText = readFileSync("src/components/Feedback/Dialog/style.scss", "utf8");
+    expect(cssText).toContain("var(--elf-bg-paper");
+    expect(cssText).toContain("var(--elf-text-primary");
+    document.documentElement.dataset.theme = "light";
+  });
+
   it("close 按钮触发 close + update:open", async () => {
     const el = document.createElement("elf-dialog") as DialogEl;
     el.open = true;
@@ -74,6 +90,7 @@ describe("elf-dialog", () => {
     });
 
     const btn = document.body.querySelector(".elf-dialog-close") as HTMLButtonElement;
+    expect(btn.querySelector("svg")).toBeTruthy();
     btn.click();
     await tick();
 

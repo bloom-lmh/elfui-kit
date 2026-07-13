@@ -11,6 +11,7 @@ const props = defineProps<InfiniteScrollProps>({
   delay: { type: Number, default: 200 },
   immediate: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
+  height: { type: null, default: "280px" },
   container: { type: [String, Object], default: null }
 });
 
@@ -20,6 +21,12 @@ let target: HTMLElement | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
 
 const canLoad = (): boolean => !props.disabled && !props.loading;
+
+const viewportStyle = (): Record<string, string> => {
+  const height = props.height;
+  if (height === "" || height == null) return {};
+  return { height: typeof height === "number" ? `${height}px` : String(height) };
+};
 
 const load = (): void => {
   if (canLoad()) emit("load");
@@ -86,7 +93,7 @@ onUnmount(() => {
 defineStyle(styles);
 
 const InfiniteScroll = defineHtml<InfiniteScrollProps>(html`
-  <div class="scroll" part="scroll">
+  <div class="scroll" part="scroll" :style=${viewportStyle()}>
     <slot></slot>
   </div>
 `);

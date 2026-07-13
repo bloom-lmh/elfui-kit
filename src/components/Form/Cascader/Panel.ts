@@ -425,7 +425,9 @@ const clearCheckedNodes = (): void => {
 watchEffect(() => {
   const next = toValuePaths(props.modelValue);
   selectedValues.set(config().multiple ? next : next.slice(0, 1));
-  activePath.set(findPathByValues(next[0] ?? []));
+  // Controlled multi-select updates must not force the open columns back to the
+  // first selected node. Keep the user's current navigation path once established.
+  if (activePath.peek().length === 0) activePath.set(findPathByValues(next[0] ?? []));
 });
 
 useHostCssVar("--_cascader-height", () => `${Math.max(120, Number(props.height) || 204)}px`);
@@ -435,7 +437,7 @@ defineExpose({ getCheckedNodes, clearCheckedNodes });
 defineStyle(styles);
 
 const CascaderPanel = defineHtml<CascaderPanelProps>(html`
-  <div class="panel" part="panel" @click=${onColumnsClick}>
+  <div class="panel" part="panel">
     <div v-if=${rawOptions().length === 0} class="empty"><slot name="empty">暂无数据</slot></div>
     <div v-else class="columns">
       <div v-for="column in columns()" :key="column.key" class="column">
@@ -448,6 +450,7 @@ const CascaderPanel = defineHtml<CascaderPanelProps>(html`
           :disabled="optionDisabled(option)"
           :role=${config().multiple && config().showPrefix ? "menuitemcheckbox" : "menuitem"}
           :aria-checked="ariaChecked(option, column)"
+          @click="onOptionPathClick(optionPath(option, column), $event)"
         >
           <span
             v-if=${config().multiple && config().showPrefix}

@@ -19,6 +19,7 @@ interface InputNumberEl extends HTMLElement {
   max?: number;
   step?: number;
   precision?: number;
+  controls?: boolean;
   disabled?: boolean;
   valueOnClear?: number | null;
 }
@@ -93,5 +94,13 @@ describe("elf-input-number", () => {
     (el.shadowRoot!.querySelector(".increase") as HTMLButtonElement).click();
 
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("does not render increment controls when controls is false", async () => {
+    const el = await mount({ controls: false, modelValue: 8 });
+
+    expect(el.shadowRoot!.querySelectorAll(".control")).toHaveLength(0);
+    expect((el.shadowRoot!.querySelector("input") as HTMLInputElement).value).toBe("8");
+    expect(el.shadowRoot!.querySelector(".input-number")?.classList.contains("has-controls")).toBe(false);
   });
 });

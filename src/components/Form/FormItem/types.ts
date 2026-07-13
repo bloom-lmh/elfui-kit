@@ -8,15 +8,20 @@ export type FormItemSize = "sm" | "md" | "lg";
 export interface FormItemProps {
   prop: string;
   label: string;
+  labelPosition: "top" | "left" | "right" | "";
+  labelWidth: string;
   rules: FormRule[];
   required: boolean;
   size: FormItemSize | "";
   /** 手动设置错误信息（覆盖校验结果） */
   error: string;
+  for: string;
+  validateStatus: FormItemValidateState;
+  trigger: RuleTrigger | "";
   /** 错误信息显示模式：底部（默认）或行内 */
-  inlineMessage: boolean;
+  inlineMessage?: boolean;
   /** 是否显示错误信息 */
-  showMessage: boolean;
+  showMessage?: boolean;
 }
 
 export interface ValidateError {

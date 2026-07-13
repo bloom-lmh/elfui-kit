@@ -94,6 +94,12 @@ const eventsRows = [
   { name: "click", type: "(event) => void", desc: "分裂按钮主按钮点击时触发" }
 ];
 
+const exposeRows = [
+  { name: "handleOpen / show", type: "() => void", desc: "打开下拉菜单" },
+  { name: "handleClose / hide", type: "() => void", desc: "关闭下拉菜单" },
+  { name: "toggle", type: "() => void", desc: "切换展开状态" }
+];
+
 const commandText = (event: CustomEvent): string => {
   const detail = event.detail as { command?: string; item?: { label?: string } };
   return `${String(detail.command || "")} / ${String(detail.item?.label || "")}`;
@@ -185,6 +191,7 @@ const PageDropdown = defineHtml(html`
     <h2>API</h2>
     <elf-props-table title="Dropdown Props" :rows=${propsRows}></elf-props-table>
     <elf-props-table title="Dropdown Events" :rows=${eventsRows}></elf-props-table>
+    <elf-props-table title="Dropdown Expose" :rows=${exposeRows}></elf-props-table>
   </elf-container>
 `);
 

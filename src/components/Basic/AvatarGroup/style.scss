@@ -9,15 +9,11 @@
 .avatar-group {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
 }
 
 ::slotted(elf-avatar) {
   border: 2px solid var(--elf-bg-page, #fff);
-  margin-inline-start: -8px;
-}
-
-::slotted(elf-avatar:first-child) {
-  margin-inline-start: 0;
 }
 
 .collapse {
@@ -26,7 +22,7 @@
   justify-content: center;
   min-width: 40px;
   height: 40px;
-  margin-inline-start: -8px;
+  margin-inline-start: 2px;
   padding: 0 10px;
   border: 2px solid var(--elf-bg-page, #fff);
   border-radius: 999px;

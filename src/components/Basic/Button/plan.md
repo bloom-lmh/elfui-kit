@@ -2,6 +2,7 @@
 
 ## 本轮记录
 - [x] 第二阶段：补 `type` 语义色兼容、`native-type`、`text`、`bg`、`link`、`round`、`circle`、`icon`、`loading-icon`、`dark`、`direction` 基础行为和页面示例。
+- [x] 第三阶段：修复 handleClick 逻辑反写（disabled/loading 才阻止事件）；新增 noHover 属性禁用 hover 效果；补齐 defineExpose（size/type/disabled）；补齐 host flag（block/plain/dashed/no-hover）；补齐单测 25 条覆盖所有状态。
 
 生成时间：2026-07-05
 
@@ -98,43 +99,59 @@
 ### Props
 
 - `autofocus`
+- `autoInsertSpace`
+- `bg`
 - `block`
+- `circle`
 - `color`
+- `dark`
 - `dashed`
+- `direction`
 - `disabled`
 - `form`
+- `icon`
+- `link`
 - `loading`
+- `loadingIcon`
+- `nativeType`
+- `noHover` — 禁用 hover 效果
 - `plain`
+- `round`
 - `shape`
 - `size`
+- `tag`
+- `text`
 - `type`
-- `variant`
 
 ### Events
 
-- 暂无记录
+- `click`
 
 ### Slots
 
 - `default`
+- `icon`
 - `suffix-icon`
+- `loading`
 
 ### Exposes
 
-- 暂无记录
+- `size`
+- `type` — 原生 button type
+- `disabled`
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`text ^`、`bg ^`、`link ^`、`round`、`circle`、`loading-icon`、`icon`、`native-type`、`auto-insert-space`、`dark`、`tag ^`、`direction ^`
-- [ ] P1 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：`loading`、`icon`、`ref`、`size`、`type`、`disabled`、`shouldAddSpace`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P1 补齐核心属性差距：所有 props 已对齐 Element Plus + 新增 noHover。
+- [x] P1 补齐事件差距：handleClick 已修复（disabled/loading 阻止 click 冒泡）。
+- [x] P1 补齐插槽/暴露方法：loading/icon/suffix-icon slot；defineExpose 暴露 size/type/disabled。
+- [x] P1 对齐交互行为：disabled/loading/noHover/block 状态完整。
+- [ ] P2 更新页面示例：已有基础示例，Template/Script 双视图后续统一刷新。
+- [x] P2 补齐组件单测：25 条测试覆盖所有 props/flags/slots/expose/事件。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 关键交互和边界状态有单测覆盖。
+- [ ] 文档示例 Playground 后续统一刷新。
+- [x] `pnpm build` 通过。

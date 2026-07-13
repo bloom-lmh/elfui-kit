@@ -1,6 +1,6 @@
 import { defineHtml, html } from "elfui";
 
-const code1 = `<elf-card style="max-width:360px">
+const code1 = `<elf-card style="max-width:480px;width:100%">
   <elf-skeleton loading variant="image" width="100%" height="180px" />
   <div style="padding:20px 20px 0">
     <elf-skeleton loading variant="text" width="60%" height="20px" />
@@ -102,7 +102,7 @@ const code3 = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;w
 const PageSkeletonEx2 = defineHtml(html`
   <h2>卡片骨架</h2>
   <elf-playground title="图片 + 标题 + 正文 + 按钮占位" :code="code1">
-    <elf-card style="max-width:360px;pointer-events:none">
+    <elf-card style="max-width:480px;width:100%;pointer-events:none">
       <elf-skeleton loading variant="image" width="100%" height="180px" />
       <div style="padding:20px 20px 0">
         <elf-skeleton loading variant="text" width="60%" height="20px" />

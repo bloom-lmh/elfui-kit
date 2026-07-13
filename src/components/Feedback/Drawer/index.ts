@@ -59,8 +59,7 @@ const PANEL_LEAVE_MS = 240;
 
 const rootSelector = `[data-elf-drawer="${id}"]`;
 const projection = projectLightDom(host, {
-    defaultTarget: () =>
-        document.querySelector(rootSelector)?.querySelector(".elf-drawer-body"),
+    defaultTarget: () => document.querySelector(rootSelector)?.querySelector(".elf-drawer-body"),
 });
 
 const panelClass = (): string => {
@@ -107,9 +106,7 @@ const removeTeleportedRoot = (): void => {
 
 const requestClose = async (): Promise<void> => {
     if (closing.peek()) return;
-    const before = props.beforeClose as unknown as
-        | (() => boolean | Promise<boolean>)
-        | null;
+    const before = props.beforeClose as unknown as (() => boolean | Promise<boolean>) | null;
     if (typeof before === "function") {
         try {
             if ((await before()) === false) return;
@@ -175,22 +172,40 @@ defineExpose({ close: () => void requestClose() });
 defineStyle(styles);
 
 const Drawer = defineHtml(html`
-  <Teleport to="body">
-    <div v-if=${rendered} class="elf-drawer-mask mask" :class=${maskClass()}
-      :data-elf-drawer=${id} role="presentation" @click=${onMaskClick}>
-      <aside :class=${panelClass()} :style=${panelStyle()} role="dialog"
-        aria-modal="true" :aria-labelledby=${props.title ? titleId : null}>
-        <header class="elf-drawer-header" v-if=${props.title || props.closable}>
-          <span class="elf-drawer-title" :id=${titleId}>${title}</span>
-          <button v-if=${props.closable} class="elf-drawer-close close"
-            type="button" aria-label="关闭" @click=${onCloseClick}>
-            ×
-          </button>
-        </header>
-        <div class="elf-drawer-body"></div>
-      </aside>
-    </div>
-  </Teleport>
+    <Teleport to="body">
+        <div
+            v-if=${rendered}
+            class="elf-drawer-mask mask"
+            :class=${maskClass()}
+            :data-elf-drawer=${id}
+            role="presentation"
+            @click=${onMaskClick}
+        >
+            <aside
+                :class=${panelClass()}
+                :style=${panelStyle()}
+                role="dialog"
+                aria-modal="true"
+                :aria-labelledby=${props.title ? titleId : null}
+            >
+                <header class="elf-drawer-header" v-if=${props.title || props.closable}>
+                    <span class="elf-drawer-title" :id=${titleId}>${title}</span>
+                    <button
+                        v-if=${props.closable}
+                        class="elf-drawer-close close"
+                        type="button"
+                        aria-label="关闭"
+                        @click=${onCloseClick}
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6L6 18"></path>
+                        </svg>
+                    </button>
+                </header>
+                <div class="elf-drawer-body"></div>
+            </aside>
+        </div>
+    </Teleport>
 `);
 
 export { Drawer };

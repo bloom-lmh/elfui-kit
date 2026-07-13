@@ -1,95 +1,303 @@
 // elf-button 单元测试
 
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 beforeAll(async () => {
-  await import("../../../components");
+    await import("../../../components");
 });
 
 afterEach(() => {
-  document.body.innerHTML = "";
+    document.body.innerHTML = "";
 });
 
-const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
+const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 10));
+
+type ButtonEl = HTMLElement & {
+    type?: string;
+    variant?: string;
+    color?: string;
+    size?: string;
+    shape?: string;
+    disabled?: boolean;
+    loading?: boolean;
+    block?: boolean;
+    text?: boolean;
+    bg?: boolean;
+    link?: boolean;
+    round?: boolean;
+    circle?: boolean;
+    plain?: boolean;
+    dashed?: boolean;
+    noHover?: boolean;
+    nativeType?: string;
+    icon?: string;
+    loadingIcon?: string;
+    direction?: string;
+    dark?: boolean;
+};
 
 describe("elf-button", () => {
-  it("能渲染并显示 slot 内容", async () => {
-    const el = document.createElement("elf-button");
-    el.textContent = "保存";
-    document.body.appendChild(el);
-    await tick();
+    it("渲染 slot 内容", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.textContent = "保存";
+        document.body.appendChild(el);
+        await tick();
 
-    const btn = el.shadowRoot!.querySelector("button")!;
-    expect(btn).toBeTruthy();
-    expect(el.textContent).toContain("保存");
-  });
+        const btn = el.shadowRoot!.querySelector("button")!;
+        expect(btn).toBeTruthy();
+        expect(el.textContent).toContain("保存");
+    });
 
-  it("点击触发 click 事件", async () => {
-    const el = document.createElement("elf-button");
-    document.body.appendChild(el);
-    await tick();
+    it("点击触发 click 事件", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        document.body.appendChild(el);
+        await tick();
 
-    let count = 0;
-    el.addEventListener("click", () => count++);
-    el.shadowRoot!.querySelector("button")!.click();
-    expect(count).toBe(1);
-  });
+        let count = 0;
+        el.addEventListener("click", () => count++);
+        el.shadowRoot!.querySelector("button")!.click();
+        expect(count).toBe(1);
+    });
 
-  it("disabled 时不触发 click", async () => {
-    const el = document.createElement("elf-button");
-    el.setAttribute("disabled", "");
-    document.body.appendChild(el);
-    await tick();
+    it("disabled 时不触发 click", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("disabled", "");
+        document.body.appendChild(el);
+        await tick();
 
-    let count = 0;
-    el.addEventListener("click", () => count++);
-    el.shadowRoot!.querySelector("button")!.click();
-    expect(count).toBe(0);
-  });
+        let count = 0;
+        el.addEventListener("click", () => count++);
+        el.shadowRoot!.querySelector("button")!.click();
+        expect(count).toBe(0);
+    });
 
-  it("loading 时渲染 spinner 且不触发 click", async () => {
-    const el = document.createElement("elf-button");
-    el.setAttribute("loading", "");
-    document.body.appendChild(el);
-    await tick();
+    it("loading 时渲染 spinner 且阻止 click", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("loading", "");
+        document.body.appendChild(el);
+        await tick();
 
-    expect(el.shadowRoot!.querySelector(".spinner")).toBeTruthy();
+        expect(el.shadowRoot!.querySelector(".spinner")).toBeTruthy();
 
-    let count = 0;
-    el.addEventListener("click", () => count++);
-    el.shadowRoot!.querySelector("button")!.click();
-    expect(count).toBe(0);
-  });
+        let count = 0;
+        el.addEventListener("click", () => count++);
+        el.shadowRoot!.querySelector("button")!.click();
+        expect(count).toBe(0);
+    });
 
-  it("variant / color / size attribute 反射到 host", async () => {
-    const el = document.createElement("elf-button");
-    el.setAttribute("variant", "outlined");
-    el.setAttribute("color", "danger");
-    el.setAttribute("size", "lg");
-    document.body.appendChild(el);
-    await tick();
+    it("loading 时 button[disabled] 为 true", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("loading", "");
+        document.body.appendChild(el);
+        await tick();
 
-    expect(el.getAttribute("variant")).toBe("outlined");
-    expect(el.getAttribute("color")).toBe("danger");
-    expect(el.getAttribute("size")).toBe("lg");
-  });
+        const btn = el.shadowRoot!.querySelector("button")! as HTMLButtonElement;
+        expect(btn.disabled).toBe(true);
+    });
 
-  it("button[type] 透传给原生 button", async () => {
-    const el = document.createElement("elf-button");
-    el.setAttribute("type", "submit");
-    document.body.appendChild(el);
-    await tick();
+    it("variant / color / size 反射到 host attribute", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("variant", "outlined");
+        el.setAttribute("color", "danger");
+        el.setAttribute("size", "lg");
+        document.body.appendChild(el);
+        await tick();
 
-    const btn = el.shadowRoot!.querySelector("button")!;
-    expect(btn.type).toBe("submit");
-  });
+        expect(el.getAttribute("variant")).toBe("outlined");
+        expect(el.getAttribute("color")).toBe("danger");
+        expect(el.getAttribute("size")).toBe("lg");
+    });
 
-  it("part 属性可被外部 ::part(button) 选中", async () => {
-    const el = document.createElement("elf-button");
-    document.body.appendChild(el);
-    await tick();
+    it("nativeType 透传给原生 button[type]", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("type", "submit");
+        document.body.appendChild(el);
+        await tick();
 
-    const btn = el.shadowRoot!.querySelector("button")!;
-    expect(btn.getAttribute("part")).toBe("button");
-  });
+        const btn = el.shadowRoot!.querySelector("button")! as HTMLButtonElement;
+        expect(btn.type).toBe("submit");
+    });
+
+    it("nativeType=reset", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("native-type", "reset");
+        document.body.appendChild(el);
+        await tick();
+
+        const btn = el.shadowRoot!.querySelector("button")! as HTMLButtonElement;
+        expect(btn.type).toBe("reset");
+    });
+
+    it("part 属性可被 ::part(button) 选中", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        document.body.appendChild(el);
+        await tick();
+
+        const btn = el.shadowRoot!.querySelector("button")!;
+        expect(btn.getAttribute("part")).toBe("button");
+    });
+
+    it("circle shape 反射到 host flag", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("circle", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("circle")).toBe(true);
+    });
+
+    it("round shape 反射到 host flag", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("round", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("round")).toBe(true);
+    });
+
+    it("shape=circle 等价于 circle flag", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("shape", "circle");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("circle")).toBe(true);
+    });
+
+    it("block 反射到 host flag", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("block", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("block")).toBe(true);
+    });
+
+    it("plain 反射到 host flag", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("plain", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("plain")).toBe(true);
+    });
+
+    it("dashed 反射到 host flag", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("dashed", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("dashed")).toBe(true);
+    });
+
+    it("link 将 variant 变成 text 并设置 link flag", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("link", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("link")).toBe(true);
+    });
+
+    it("bg flag 反射", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("bg", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("bg")).toBe(true);
+    });
+
+    it("text flag 反射", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("text", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("text")).toBe(true);
+    });
+
+    it("dark flag 反射", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("dark", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("dark")).toBe(true);
+    });
+
+    it("direction=vertical 反射到 host", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("direction", "vertical");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.getAttribute("direction")).toBe("vertical");
+    });
+
+    it("no-hover flag 反射到 host", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("no-hover", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.hasAttribute("no-hover")).toBe(true);
+    });
+
+    it("no-hover 时 hover 不改变 background", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("no-hover", "");
+        document.body.appendChild(el);
+        await tick();
+
+        const btn = el.shadowRoot!.querySelector("button")! as HTMLButtonElement;
+        const before = getComputedStyle(btn).backgroundColor;
+        // 派发 mouseenter 模拟 hover
+        btn.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+        await tick();
+        const after = getComputedStyle(btn).backgroundColor;
+        // background 不应变化
+        expect(after).toBe(before);
+    });
+
+    it("icon 属性渲染图标", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("icon", "★");
+        document.body.appendChild(el);
+        await tick();
+
+        const icon = el.shadowRoot!.querySelector(".prop-icon");
+        expect(icon).toBeTruthy();
+        expect(icon!.textContent).toBe("★");
+    });
+
+    it("loadingIcon 在 loading 时替换 spinner", async () => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("loading", "");
+        el.setAttribute("loading-icon", "⏳");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.shadowRoot!.querySelector(".spinner")).toBeNull();
+        const icon = el.shadowRoot!.querySelector(".prop-icon");
+        expect(icon).toBeTruthy();
+        expect(icon!.textContent).toBe("⏳");
+    });
+
+    it("size/type/disabled 通过 props 可读且不会触发 defineExpose 冲突警告", async () => {
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+        const el = document.createElement("elf-button") as ButtonEl & { size: string; type: string; disabled: boolean };
+        el.setAttribute("size", "sm");
+        el.setAttribute("type", "submit");
+        el.setAttribute("disabled", "");
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.size).toBe("sm");
+        expect(el.type).toBe("submit");
+        expect(el.disabled).toBe(true);
+        expect(warn.mock.calls.some(([message]) => String(message).includes("[defineExpose]"))).toBe(false);
+        warn.mockRestore();
+    });
 });

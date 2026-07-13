@@ -30,12 +30,17 @@ export type { FormItemProps, FormItemSize, FormItemValidateState, ValidateError 
 const props = defineProps({
   prop: { type: String, default: "" },
   label: { type: String, default: "" },
+  labelPosition: { type: String, default: "" },
+  labelWidth: { type: String, default: "" },
   rules: { type: Array, default: () => [] as FormRule[] },
   required: { type: Boolean, default: false },
   size: { type: String, default: "" },
   error: { type: String, default: "" },
-  inlineMessage: { type: Boolean, default: false },
-  showMessage: { type: Boolean, default: true }
+  for: { type: String, default: "" },
+  validateStatus: { type: String, default: "" },
+  trigger: { type: String, default: "" },
+  inlineMessage: { type: Boolean, default: undefined },
+  showMessage: { type: Boolean, default: undefined }
 });
 
 const host = useHost();
@@ -140,11 +145,15 @@ let unreg: (() => void) | null = null;
 onMount(() => {
   if (form) {
     unreg = form.registerItem(itemCtx);
-    host.setAttribute("data-label-position", form.labelPosition);
-    host.style.setProperty("--_label-width", form.labelWidth);
+    const labelPosition = props.labelPosition || form.labelPosition;
+    const labelWidth = props.labelWidth || form.labelWidth;
+    host.setAttribute("data-label-position", labelPosition);
+    host.style.setProperty("--_label-width", labelWidth);
     if (form.hideRequiredAsterisk) {
       host.setAttribute("data-hide-asterisk", "");
     }
+    if (form.requireAsteriskPosition === "right") host.setAttribute("data-asterisk-right", "");
+    if (form.inline) host.setAttribute("data-inline", "");
   }
 });
 
@@ -153,35 +162,39 @@ onBeforeUnmount(() => {
   if (form) form.unregisterItem(itemCtx);
 });
 
-const hasError = (): boolean => {
-  return state.value === "error" || Boolean(props.error);
+const resolvedState = (): "" | "validating" | "success" | "error" => {
+  const override = props.validateStatus as string;
+  if (override === "error" || override === "success" || override === "validating") return override;
+  return state.value;
 };
 
-const hasSuccess = (): boolean => {
-  return state.value === "success";
-};
+const hasError = (): boolean => resolvedState() === "error" || Boolean(props.error);
 
-const hasValidating = (): boolean => {
-  return state.value === "validating";
-};
+const hasSuccess = (): boolean => resolvedState() === "success";
+
+const hasValidating = (): boolean => resolvedState() === "validating";
 
 const isRequired = (): boolean => {
   return Boolean(props.required) || collectRules().some((rule) => rule.required);
 };
 
 const showMessage = (): boolean => {
-  return Boolean(props.showMessage);
+  return props.showMessage ?? form?.showMessage ?? true;
 };
 
 const isInline = (): boolean => {
-  return Boolean(props.inlineMessage);
+  return props.inlineMessage ?? form?.inlineMessage ?? false;
 };
+
+const showStatusIcon = (): boolean => Boolean(form?.statusIcon && resolvedState());
+
+const labelSuffix = (): string => form?.labelSuffix ?? "";
 
 const feedbackClass = (): string => {
   const classes = ["feedback"];
-  if (state.value === "error" || props.error) classes.push("error");
-  if (state.value === "success") classes.push("success");
-  if (state.value === "validating") classes.push("validating");
+  if (hasError()) classes.push("error");
+  if (hasSuccess()) classes.push("success");
+  if (hasValidating()) classes.push("validating");
   return classes.join(" ");
 };
 
@@ -189,18 +202,23 @@ defineStyle(styles);
 
 const FormItem = defineHtml(html`
   <div class="row">
-    <label v-if=${props.label} :class=${{ required: isRequired() }}>${props.label}</label>
+    <label v-if=${props.label} :for=${props.for || undefined} :class=${{ required: isRequired() }}>
+      <slot name="label">${props.label}</slot><span v-if=${labelSuffix()} class="label-suffix">${labelSuffix()}</span>
+    </label>
     <div class="content">
       <div class="control">
         <slot></slot>
+        <span v-if=${showStatusIcon()} :class=${"status-icon " + resolvedState()} aria-hidden="true">
+          <span v-if=${hasSuccess()}>✓</span><span v-else-if=${hasError()}>!</span><span v-else>…</span>
+        </span>
       </div>
       <div v-if=${showMessage() && !isInline()} :class=${feedbackClass()}>
         <span v-if=${hasValidating()}>校验中...</span>
-        <span v-else-if=${hasError()}>${message}</span>
+        <slot v-else-if=${hasError()} name="error">${message}</slot>
       </div>
     </div>
     <span v-if=${showMessage() && isInline()} :class=${feedbackClass() + " inline"}>
-      <span v-if=${hasError()}>${message}</span>
+      <slot v-if=${hasError()} name="error">${message}</slot>
     </span>
   </div>
 `);

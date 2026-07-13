@@ -31,7 +31,7 @@ const close = () => {
 
 const PageDrawerEx1 = defineHtml(html`
   <h2>基础用法（不同弹出方向）</h2>
-  <elf-playground title="direction: rtl | ltr | ttb | btt" :code="code1">
+  <elf-playground title="弹出方向（rtl / ltr / ttb / btt）" :code="code1">
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <elf-button @click="open1">右滑 (RTL)</elf-button
       ><elf-button @click="open2">左滑 (LTR)</elf-button
@@ -58,7 +58,7 @@ const PageDrawerEx1 = defineHtml(html`
     >
   </elf-playground>
   <h2>自定义大小</h2>
-  <elf-playground title="size: 50% 宽度" :code="code2">
+  <elf-playground title="自定义宽度（50%）" :code="code2">
     <elf-button @click="open5">打开 50% 宽抽屉</elf-button>
     <elf-drawer v-model:open="d5" title="大幅面设置" size="50%"
       ><div style="padding:16px"><h3>50% 屏幕宽度</h3></div></elf-drawer

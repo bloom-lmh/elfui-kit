@@ -19,7 +19,7 @@ textarea {
   border: 1px solid var(--elf-border);
   border-radius: var(--elf-radius-md);
   outline: none;
-  background: var(--elf-bg);
+  background: var(--elf-bg-paper, #fff);
   color: inherit;
   font: inherit;
   resize: vertical;
@@ -38,8 +38,13 @@ textarea:focus {
   overflow: hidden;
   border: 1px solid var(--elf-border);
   border-radius: var(--elf-radius-md);
-  background: var(--elf-bg);
+  background: var(--elf-bg-paper, #fff);
   box-shadow: var(--elf-shadow-3);
+}
+
+.placement-top .panel {
+  top: auto;
+  bottom: calc(100% + 6px);
 }
 
 .placement-bottom .panel {

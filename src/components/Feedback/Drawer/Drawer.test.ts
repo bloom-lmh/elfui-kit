@@ -99,6 +99,7 @@ describe("elf-drawer", () => {
     });
 
     const btn = document.body.querySelector(".elf-drawer-close") as HTMLButtonElement;
+    expect(btn.querySelector("svg")).toBeTruthy();
     btn.click();
     await tick();
 
@@ -198,6 +199,7 @@ describe("elf-drawer", () => {
 
     expect(mask()?.classList.contains("closing")).toBe(true);
     expect(mask()?.classList.contains("mask-closing")).toBe(true);
+    expect(panel()?.classList.contains("rtl")).toBe(true);
 
     await wait(260);
     expect(mask()).toBeNull();

@@ -8,16 +8,16 @@
 }
 
 .tree {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  overflow: visible;
+  width: min(100%, 520px);
+  min-width: 280px;
+  border: 1px solid var(--elf-border);
+  border-radius: calc(var(--elf-radius-md) + 2px);
+  background: var(--elf-bg-paper);
+  overflow: hidden;
 }
 
 .tree-filter {
-  padding: 0 0 var(--elf-space-2);
+  padding: var(--elf-space-3);
   border-bottom: 1px solid var(--elf-divider);
 
   input {
@@ -43,9 +43,9 @@
 }
 
 .tree-body {
-  max-height: 360px;
+  max-height: 420px;
   min-height: 96px;
-  padding: var(--elf-space-1) 0 0;
+  padding: var(--elf-space-2);
   overflow: auto;
 }
 
@@ -62,18 +62,19 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  min-height: 36px;
-  padding-right: var(--elf-space-1);
+  min-height: 40px;
+  padding-right: var(--elf-space-2);
+  border-radius: var(--elf-radius-sm);
   color: var(--elf-text-primary);
   transition: background-color var(--elf-transition-fast);
 
   &:hover:not(.is-disabled) {
-    background: var(--elf-bg-overlay);
+    background: color-mix(in srgb, var(--elf-primary) 6%, transparent);
   }
 
   &.is-selected:not(.is-disabled) {
     color: var(--elf-primary);
-    background: rgba(25, 118, 210, 0.08);
+    background: color-mix(in srgb, var(--elf-primary) 13%, transparent);
   }
 
   &.is-disabled {

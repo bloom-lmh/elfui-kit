@@ -276,6 +276,23 @@ describe("elf-cascader", () => {
     expect(el.getCheckedNodes?.()).toEqual([]);
   });
 
+  it("cascader-panel 切换父项时保留新的活动面板", async () => {
+    const el = await mountPanel({
+      checkable: true,
+      modelValue: [["zhejiang", "ningbo"]]
+    });
+    const rootOptions = el.shadowRoot!.querySelectorAll(".column:first-child .option");
+
+    (rootOptions[1] as HTMLButtonElement).click();
+    await tick();
+
+    expect(rootOptions[1]?.classList.contains("is-active")).toBe(true);
+    const columns = el.shadowRoot!.querySelectorAll(".column");
+    expect(columns).toHaveLength(2);
+    expect(columns[1]?.textContent).toContain("南京");
+    expect(columns[1]?.textContent).not.toContain("杭州");
+  });
+
   it("filters selectable paths and selects the matching result", async () => {
     const el = await mount({ filterable: true, debounce: 0 });
     const onUpdate = vi.fn();

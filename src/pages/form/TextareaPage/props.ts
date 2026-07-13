@@ -21,8 +21,8 @@ const eventsRows = [
 
 const PageTextareaProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows" />
-  <elf-props-table title="Events" :rows="eventsRows" />
+  <elf-props-table title="属性" :rows="propsRows" />
+  <elf-props-table title="事件" :rows="eventsRows" />
 `);
 
 export { PageTextareaProps };

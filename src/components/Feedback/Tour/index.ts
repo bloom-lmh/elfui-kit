@@ -6,6 +6,7 @@ import {
   defineHtml,
   defineProps,
   defineStyle,
+  globalStyle,
   html,
   onBeforeUnmount,
   useEffect,
@@ -24,6 +25,10 @@ import styles from "./style.scss?inline";
 import type { TourChangeDetail, TourPlacement, TourProps, TourStep } from "./types";
 
 export type { TourChangeDetail, TourPlacement, TourProps, TourStep } from "./types";
+
+// Tour 内容通过 Teleport 挂到 body，必须同时提供全局样式；仅注入 Shadow DOM
+// 会让遮罩和步骤面板失去布局，这也是页面上“引导无效果”的根因。
+globalStyle(styles);
 
 interface TargetBox {
   left: number;
@@ -54,6 +59,7 @@ const emit = defineEmits<{
 
 const host = useHost();
 const overlayRef = useTemplateRef<HTMLElement>("overlay");
+const panelRef = useTemplateRef<HTMLElement>("panel");
 const currentStep = useRef(0);
 const rendered = useRef(false);
 const closing = useRef(false);
@@ -225,30 +231,74 @@ const bubbleStyle = (): Record<string, string> => {
     };
   }
   const gap = Math.max(8, Number(props.gap) || 12) + 8;
-  const p = placement();
   const viewportPadding = 16;
-  const maxLeft = window.innerWidth - viewportPadding;
-  const maxTop = window.innerHeight - viewportPadding;
+  const panelRect = panelRef.peek()?.getBoundingClientRect();
+  const panelWidth = panelRect?.width || Math.min(360, window.innerWidth - viewportPadding * 2);
+  const panelHeight = panelRect?.height || 220;
+  const maxPanelLeft = window.innerWidth - viewportPadding - panelWidth;
+  const maxPanelTop = window.innerHeight - viewportPadding - panelHeight;
+  let p = placement();
+
+  if (
+    p === "bottom" &&
+    box.bottom + gap + panelHeight > window.innerHeight - viewportPadding &&
+    box.top - gap - panelHeight >= viewportPadding
+  ) {
+    p = "top";
+  } else if (
+    p === "top" &&
+    box.top - gap - panelHeight < viewportPadding &&
+    box.bottom + gap + panelHeight <= window.innerHeight - viewportPadding
+  ) {
+    p = "bottom";
+  } else if (
+    p === "right" &&
+    box.right + gap + panelWidth > window.innerWidth - viewportPadding &&
+    box.left - gap - panelWidth >= viewportPadding
+  ) {
+    p = "left";
+  } else if (
+    p === "left" &&
+    box.left - gap - panelWidth < viewportPadding &&
+    box.right + gap + panelWidth <= window.innerWidth - viewportPadding
+  ) {
+    p = "right";
+  }
+
   let left = box.left + box.width / 2;
   let top = box.bottom + gap;
   let transform = "translate(-50%, 0)";
 
   if (p === "top") {
-    top = box.top - gap;
+    top = Math.max(viewportPadding + panelHeight, box.top - gap);
     transform = "translate(-50%, -100%)";
   } else if (p === "left") {
-    left = box.left - gap;
+    left = Math.max(viewportPadding + panelWidth, box.left - gap);
     top = box.top + box.height / 2;
     transform = "translate(-100%, -50%)";
   } else if (p === "right") {
-    left = box.right + gap;
+    left = Math.min(maxPanelLeft, box.right + gap);
     top = box.top + box.height / 2;
     transform = "translate(0, -50%)";
+  } else {
+    top = Math.min(maxPanelTop, box.bottom + gap);
+  }
+
+  if (p === "top" || p === "bottom") {
+    left = Math.min(
+      window.innerWidth - viewportPadding - panelWidth / 2,
+      Math.max(viewportPadding + panelWidth / 2, left)
+    );
+  } else {
+    top = Math.min(
+      window.innerHeight - viewportPadding - panelHeight / 2,
+      Math.max(viewportPadding + panelHeight / 2, top)
+    );
   }
 
   return {
-    left: `${Math.min(maxLeft, Math.max(viewportPadding, left))}px`,
-    top: `${Math.min(maxTop, Math.max(viewportPadding, top))}px`,
+    left: `${left}px`,
+    top: `${top}px`,
     transform,
     zIndex: String(props.zIndex + 2)
   };
@@ -308,32 +358,35 @@ const Tour = defineHtml<TourProps>(html`
       @click=${onLayerClick}
       @keydown=${onKeydown}
     >
-      <div class="tour-backdrop"></div>
+      <div v-if=${!hasTarget()} class="tour-backdrop"></div>
       <div v-if=${hasTarget()} class="tour-highlight" :style=${highlightStyle()}></div>
-      <section class="tour-panel" :class=${placement()} :style=${bubbleStyle()}>
+      <section ref="panel" class="tour-panel" :class=${placement()} :style=${bubbleStyle()}>
         <header class="tour-header">
           <span class="tour-progress">${currentNumber()} / ${stepCount()}</span>
-          <button class="tour-close" type="button" aria-label="关闭引导" @click=${skip}>×</button>
+          <button class="tour-close" type="button" aria-label="关闭引导" @click=${skip}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18"></path>
+            </svg>
+          </button>
         </header>
         <div class="tour-body">
           <h3 class="tour-title">${activeStep()?.title}</h3>
           <p class="tour-content">${activeStep()?.content}</p>
         </div>
         <footer class="tour-footer">
-          <elf-button size="sm" variant="text" tabindex="0" @click=${skip}>跳过</elf-button>
+          <button class="tour-button tour-button--text" type="button" @click=${skip}>跳过</button>
           <span class="tour-spacer"></span>
-          <elf-button
-            size="sm"
-            variant="text"
-            tabindex="0"
+          <button
+            class="tour-button tour-button--text"
+            type="button"
             :disabled=${isFirstStep()}
             @click=${prev}
           >
             ${prevButtonText()}
-          </elf-button>
-          <elf-button size="sm" color="primary" tabindex="0" @click=${next}>
+          </button>
+          <button class="tour-button tour-button--primary" type="button" @click=${next}>
             ${nextButtonText()}
-          </elf-button>
+          </button>
         </footer>
       </section>
     </div>

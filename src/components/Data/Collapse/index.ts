@@ -189,7 +189,7 @@ const Collapse = defineHtml<CollapseProps>(html`
         @click=${onHeaderClick}
       >
         <span>{{ item.title }}</span>
-        <span class="arrow" aria-hidden="true">›</span>
+        <span class="arrow" aria-hidden="true"></span>
       </button>
       <div
         class="body"
@@ -198,8 +198,10 @@ const Collapse = defineHtml<CollapseProps>(html`
         role="region"
         :aria-labelledby="headerId(item)"
       >
-        {{ item.content }}
-        <slot></slot>
+        <div class="body-content">
+          {{ item.content }}
+          <slot></slot>
+        </div>
       </div>
     </div>
     </template>

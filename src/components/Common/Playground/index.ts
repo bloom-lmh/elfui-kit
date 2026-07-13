@@ -27,15 +27,26 @@ const copied = useRef(false);
 const activeTab = useRef<"template" | "script">("template");
 
 const normalizeCode = (value: string): string => {
-  const text = String(value || "").replace(/\r\n/g, "\n");
-  const lines = text.split("\n");
-  while (lines.length > 0 && !lines[0]!.trim()) lines.shift();
-  while (lines.length > 0 && !lines[lines.length - 1]!.trim()) lines.pop();
-  const indents = lines
-    .filter((line) => line.trim())
-    .map((line) => line.match(/^\s*/)?.[0].length ?? 0);
-  const min = indents.length > 0 ? Math.min(...indents) : 0;
-  return lines.map((line) => line.slice(Math.min(min, line.length))).join("\n");
+    const text = String(value || "").replace(/\r\n/g, "\n");
+    const lines = text.split("\n");
+    while (lines.length > 0 && !lines[0]!.trim()) lines.shift();
+    while (lines.length > 0 && !lines[lines.length - 1]!.trim()) lines.pop();
+    if (lines.length === 0) return "";
+    const contentIndents = lines
+        .filter((l) => l.trim())
+        .map((l) => l.match(/^\s*/)?.[0].length ?? 0);
+    const globalMin = Math.min(...contentIndents);
+    if (globalMin === 0) {
+        // 有些行 0 缩进（紧跟反引号），只对有缩进的行 trim
+        const targets = contentIndents.filter((n) => n > 0);
+        if (targets.length === 0) return lines.join("\n");
+        const trimBy = Math.min(...targets);
+        return lines.map((line) => {
+            const indent = line.match(/^\s*/)?.[0].length ?? 0;
+            return indent >= trimBy ? line.slice(trimBy) : line;
+        }).join("\n");
+    }
+    return lines.map((line) => (line ? line.slice(globalMin) : line)).join("\n");
 };
 
 const templateCode = (): string => normalizeCode(props.code);
@@ -73,19 +84,52 @@ const escapeHtml = (value: string): string =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 const highlightTemplate = (value: string): string => {
-  return escapeHtml(value)
-    .replace(/(&lt;\/?)([a-zA-Z][\w-]*)/g, '$1<span class="token tag">$2</span>')
-    .replace(/(\$\{[^}]*\})/g, '<span class="token expr">$1</span>');
+    let html = escapeHtml(value);
+    // HTML 注释
+    html = html.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="token comment">$1</span>');
+    // 标签名
+    html = html.replace(/(&lt;\/?)([a-zA-Z][\w-]*)/g, '$1<span class="token tag">$2</span>');
+    // 属性名=属性值
+    html = html.replace(
+        / ([\w-]+)(=)(&quot;[^&]*?&quot;)/g,
+        ' <span class="token attr">$1</span>$2<span class="token string">$3</span>'
+    );
+    // 布尔属性（无 = 号的独立单词，在标签内）
+    html = html.replace(
+        / ([\w-]+)(?=[\s&]|$)(?![^<]*&quot;)(?![^<]*<)/g,
+        ' <span class="token attr">$1</span>'
+    );
+    // ${...} 表达式
+    html = html.replace(/(\$\{[^}]*\})/g, '<span class="token expr">$1</span>');
+    // {{ ... }} 插值
+    html = html.replace(/(\{\{[^}]*\}\})/g, '<span class="token expr">$1</span>');
+    return html;
 };
 
 const highlightScript = (value: string): string => {
-  return escapeHtml(value)
-    .replace(/(&quot;[^&]*?&quot;|'[^']*?'|`[^`]*?`)/g, '<span class="token string">$1</span>')
-    .replace(/(\/\/[^\n]*)/g, '<span class="token comment">$1</span>')
-    .replace(
-      /\b(const|let|return|if|else|true|false|null|undefined|import|from)\b/g,
-      '<span class="token keyword">$1</span>'
+    let html = escapeHtml(value);
+    // 字符串
+    html = html.replace(
+        /(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;|'[^']*?'|`[^`]*?`)/g,
+        '<span class="token string">$1</span>'
     );
+    // 注释
+    html = html.replace(/(\/\/[^\n]*)/g, '<span class="token comment">$1</span>');
+    // 关键字
+    html = html.replace(
+        /\b(const|let|var|return|if|else|true|false|null|undefined|import|from|export|default|as|typeof|new|class|function|async|await)\b/g,
+        '<span class="token keyword">$1</span>'
+    );
+    // 数字
+    html = html.replace(/\b(\d+\.?\d*)\b/g, '<span class="token number">$1</span>');
+    // 函数调用
+    html = html.replace(/\b(\w+)(?=\()/g, '<span class="token function">$1</span>');
+    // ElfUI API
+    html = html.replace(
+        /\b(useRef|useReactive|useComputed|defineHtml|defineProps|defineEmits|defineModel|defineExpose|html|css|onMount|onUnmount|useEffect|watchEffect)\b/g,
+        '<span class="token expr">$1</span>'
+    );
+    return html;
 };
 
 const highlightedCode = (): string =>

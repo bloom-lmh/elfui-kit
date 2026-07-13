@@ -19,7 +19,7 @@ const code = `<elf-slider
 
 const PageSliderEx3 = defineHtml(html`
   <h2>输入框联动</h2>
-  <elf-playground title="show-input / color / formatTooltip" :code="code">
+  <elf-playground title="数字输入、颜色与提示格式" :code="code">
     <div style="display:grid;gap:14px;width:100%;max-width:720px">
       <elf-slider
         show-input

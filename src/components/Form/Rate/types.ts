@@ -4,6 +4,8 @@ export interface RateProps {
   modelValue: number;
   max: number;
   allowHalf: boolean;
+  /** Whether pointer movement previews a score before it is selected. */
+  previewOnHover: boolean;
   clearable: boolean;
   disabled: boolean;
   readonly: boolean;

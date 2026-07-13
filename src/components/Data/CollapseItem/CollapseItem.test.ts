@@ -29,8 +29,11 @@ describe("elf-collapse-item", () => {
     await tick();
 
     const header = el.shadowRoot!.querySelector(".header") as HTMLButtonElement;
+    const body = el.shadowRoot!.querySelector(".body") as HTMLElement;
     expect(header.getAttribute("aria-expanded")).toBe("true");
     expect(el.shadowRoot!.querySelector("slot:not([name])")?.assignedNodes()).toHaveLength(1);
+    expect(body.getAttribute("aria-hidden")).toBe("false");
+    expect(el.shadowRoot!.querySelector(".body-content")).toBeTruthy();
     header.click();
     expect(onToggle).toHaveBeenCalledTimes(1);
     el.toggle?.();

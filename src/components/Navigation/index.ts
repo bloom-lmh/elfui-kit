@@ -27,12 +27,19 @@ export type {
   BackTopShape
 } from "./BackTop/types";
 export type {
+  DropdownButtonProps,
+  DropdownButtonType,
   DropdownCommandDetail,
+  DropdownEffect,
+  DropdownElement,
+  DropdownEmits,
+  DropdownExpose,
   DropdownFieldNames,
   DropdownItem,
   DropdownPlacement,
   DropdownProps,
   DropdownSize,
+  DropdownSlots,
   DropdownTrigger
 } from "./Dropdown/types";
 export type {

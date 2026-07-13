@@ -82,6 +82,16 @@
   color: #6b7280;
   border-radius: 50%;
   font-size: 20px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
+
   &:hover {
     color: #111;
     background: rgba(0, 0, 0, 0.06);
@@ -101,19 +111,17 @@
   pointer-events: none;
 }
 .elf-drawer-mask.closing .elf-drawer-panel {
-  animation: none;
-
   &.rtl {
-    transform: translateX(100%);
+    animation: elf-dr-out-rtl 0.24s cubic-bezier(0.4, 0, 1, 1) both;
   }
   &.ltr {
-    transform: translateX(-100%);
+    animation: elf-dr-out-ltr 0.24s cubic-bezier(0.4, 0, 1, 1) both;
   }
   &.ttb {
-    transform: translateY(-100%);
+    animation: elf-dr-out-ttb 0.24s cubic-bezier(0.4, 0, 1, 1) both;
   }
   &.btt {
-    transform: translateY(100%);
+    animation: elf-dr-out-btt 0.24s cubic-bezier(0.4, 0, 1, 1) both;
   }
 }
 
@@ -155,5 +163,41 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes elf-dr-out-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes elf-dr-out-ltr {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes elf-dr-out-ttb {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes elf-dr-out-btt {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
   }
 }

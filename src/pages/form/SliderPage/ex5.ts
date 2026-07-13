@@ -4,7 +4,7 @@ const code = `<elf-slider disabled :modelValue.prop="70"></elf-slider>`;
 
 const PageSliderEx5 = defineHtml(html`
   <h2>禁用状态</h2>
-  <elf-playground title="disabled" :code="code">
+  <elf-playground title="禁用状态" :code="code">
     <div style="width:100%;max-width:680px">
       <elf-slider disabled :modelValue.prop="70"></elf-slider>
     </div>

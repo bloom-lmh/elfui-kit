@@ -123,6 +123,7 @@ describe("elf-carousel", () => {
     expect(el.activeIndex).toBe(1);
     expect(items[1].hasAttribute("active")).toBe(true);
     expect(items[1].shadowRoot!.querySelector("[role=group]")?.getAttribute("aria-roledescription")).toBe("slide");
+    expect(items[1].shadowRoot!.querySelector(".carousel-item__label")?.textContent).toBe("Plans");
   });
 
   it("preserves a CarouselItem custom accessible label", async () => {

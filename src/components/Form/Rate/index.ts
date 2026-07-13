@@ -35,6 +35,7 @@ const props = defineProps({
   modelValue: { type: Number, default: 0 },
   max: { type: Number, default: 5 },
   allowHalf: { type: Boolean, default: false },
+  previewOnHover: { type: Boolean, default: false },
   clearable: { type: Boolean, default: true },
   disabled: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
@@ -87,7 +88,10 @@ useHostAttr("size", () => fi.formSize);
 
 const max = (): number => Math.max(1, Number(props.max || 5));
 
-const displayValue = (): number => hoverValue.value || innerValue.value;
+const displayValue = (): number => props.previewOnHover ? (hoverValue.value || innerValue.value) : innerValue.value;
+
+const thresholdIndex = (value: number): number =>
+  value <= Number(props.lowThreshold) ? 0 : value < Number(props.highThreshold) ? 1 : 2;
 
 const items = (): RateViewItem[] =>
   Array.from({ length: max() }, (_, index) => ({ index, score: index + 1 }));
@@ -108,7 +112,7 @@ const iconOf = (item: RateViewItem): string => {
     return String(props.voidIcon || props.voidCharacter || "☆");
   }
   const icons = Array.isArray(props.icons) ? props.icons as string[] : [];
-  const index = item.score <= props.lowThreshold ? 0 : item.score < props.highThreshold ? 1 : 2;
+  const index = thresholdIndex(displayValue());
   return String(icons[index] || props.character || "★");
 };
 
@@ -116,7 +120,7 @@ const colorOf = (item: RateViewItem): string => {
   if (isReadOnly()) return String(props.disabledColor || props.disabledVoidColor || "var(--elf-text-disabled)");
   if (stateOf(item) === "empty") return String(props.voidColor || "var(--elf-text-disabled)");
   const colors = Array.isArray(props.colors) ? props.colors as string[] : [];
-  const index = item.score <= props.lowThreshold ? 0 : item.score < props.highThreshold ? 1 : 2;
+  const index = thresholdIndex(displayValue());
   return String(colors[index] || props.color || "var(--elf-warning)");
 };
 
@@ -144,7 +148,7 @@ const onClick = (item: RateViewItem, event: MouseEvent): void => {
 };
 
 const onMouseMove = (item: RateViewItem, event: MouseEvent): void => {
-  if (isDisabled() || props.readonly) return;
+  if (!props.previewOnHover || isDisabled() || props.readonly) return;
   const next = preciseValue(item, event);
   hoverValue.set(next);
   emit("hover-change", next);
@@ -236,7 +240,7 @@ const Rate = defineHtml(html`
       @click=${clear}
       aria-label="清空评分"
     >
-      ×
+      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
     </button>
   </div>
 `);

@@ -13,8 +13,12 @@ const props = defineProps<IconProps>({
 });
 
 const size = (): string => {
-  const value = props.size;
-  return typeof value === "number" ? `${Math.max(1, value)}px` : value || "1em";
+    const value = props.size;
+    if (typeof value === "number") return `${Math.max(1, value)}px`;
+    const s = String(value || "");
+    // 纯数字字符串如 "16" → "16px"
+    if (/^\d+$/.test(s)) return `${s}px`;
+    return s || "1em";
 };
 
 useHostCssVar("--_icon-size", size);

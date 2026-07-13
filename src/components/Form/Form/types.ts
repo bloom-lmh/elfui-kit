@@ -53,13 +53,19 @@ export interface FormProps {
   disabled: boolean;
   labelPosition: "top" | "left" | "right";
   labelWidth: string;
+  labelSuffix: string;
   inline: boolean;
   /** 隐藏 label 必填星号 */
   hideRequiredAsterisk: boolean;
+  requireAsteriskPosition: "left" | "right";
+  showMessage: boolean;
+  inlineMessage: boolean;
+  statusIcon: boolean;
   /** rules 变化时是否重新校验 */
   validateOnRuleChange: boolean;
   /** 校验失败时滚动到第一个错误 */
   scrollToError: boolean;
+  scrollIntoViewOptions: ScrollIntoViewOptions | boolean;
   /** 提交时是否阻止原生 submit */
   preventSubmit: boolean;
 }

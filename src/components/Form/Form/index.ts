@@ -18,6 +18,7 @@ import {
   html,
   provide,
   useHost,
+  useHostFlag,
   defineHtml
 } from "elfui";
 
@@ -35,10 +36,16 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   labelPosition: { type: String, default: "right" },
   labelWidth: { type: String, default: "100px" },
+  labelSuffix: { type: String, default: "" },
   inline: { type: Boolean, default: false },
   hideRequiredAsterisk: { type: Boolean, default: false },
+  requireAsteriskPosition: { type: String, default: "left" },
+  showMessage: { type: Boolean, default: true },
+  inlineMessage: { type: Boolean, default: false },
+  statusIcon: { type: Boolean, default: false },
   validateOnRuleChange: { type: Boolean, default: true },
-  scrollToError: { type: Boolean, default: false }
+  scrollToError: { type: Boolean, default: false },
+  scrollIntoViewOptions: { type: [Object, Boolean], default: () => ({ behavior: "smooth", block: "center" }) }
 });
 
 const emit = defineEmits(["validate", "submit"]);
@@ -62,7 +69,8 @@ const validate = async (): Promise<boolean> => {
       const firstErr = items.find((it) => it.state === "error");
       if (firstErr) {
         const el = host.querySelector(`[prop="${firstErr.prop}"]`);
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const options = props.scrollIntoViewOptions;
+        el?.scrollIntoView(options === false ? { block: "nearest" } : options);
       }
     });
   }
@@ -111,8 +119,29 @@ const formCtx: FormContext = {
   get labelWidth(): string {
     return String(props.labelWidth);
   },
+  get labelSuffix(): string {
+    return String(props.labelSuffix || "");
+  },
   get hideRequiredAsterisk(): boolean {
     return Boolean(props.hideRequiredAsterisk);
+  },
+  get requireAsteriskPosition(): "left" | "right" {
+    return props.requireAsteriskPosition === "right" ? "right" : "left";
+  },
+  get showMessage(): boolean {
+    return props.showMessage !== false;
+  },
+  get inlineMessage(): boolean {
+    return Boolean(props.inlineMessage);
+  },
+  get statusIcon(): boolean {
+    return Boolean(props.statusIcon);
+  },
+  get inline(): boolean {
+    return Boolean(props.inline);
+  },
+  get scrollIntoViewOptions(): ScrollIntoViewOptions | boolean {
+    return props.scrollIntoViewOptions as ScrollIntoViewOptions | boolean;
   },
   registerItem(item) {
     items.push(item);
@@ -132,6 +161,8 @@ const formCtx: FormContext = {
 };
 
 provide(FORM_KEY, formCtx);
+
+useHostFlag("inline", () => Boolean(props.inline));
 
 defineExpose({ validate, validateField, resetFields, clearValidate });
 

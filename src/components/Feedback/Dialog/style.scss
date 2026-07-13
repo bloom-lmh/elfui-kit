@@ -12,7 +12,9 @@
 }
 
 .elf-dialog-panel {
-  background: #fff;
+  border: 1px solid var(--elf-border, rgba(0, 0, 0, 0.12));
+  background: var(--elf-bg-paper, #fff);
+  color: var(--elf-text-primary, rgba(0, 0, 0, 0.87));
   border-radius: 8px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
   display: flex;
@@ -39,7 +41,7 @@
 
 .elf-dialog-header {
   padding: 16px 20px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--elf-border, rgba(0, 0, 0, 0.12));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -53,11 +55,22 @@
   cursor: pointer;
   font-size: 20px;
   line-height: 1;
-  color: #6b7280;
+  color: var(--elf-text-secondary, #6b7280);
   padding: 4px 8px;
   border-radius: 4px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
+
   &:hover {
-    background: #f3f4f6;
+    background: var(--elf-bg-overlay, rgba(0, 0, 0, 0.04));
+    color: var(--elf-text-primary, #111827);
   }
 }
 
@@ -71,7 +84,7 @@
 
 .elf-dialog-footer {
   padding: 12px 20px 16px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--elf-border, rgba(0, 0, 0, 0.12));
   display: flex;
   justify-content: flex-end;
   gap: 8px;

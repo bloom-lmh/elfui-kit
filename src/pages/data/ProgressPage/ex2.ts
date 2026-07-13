@@ -12,7 +12,7 @@ const formatter = (percent: number, value: number): string => `${value} / ${perc
 
 const PageProgressEx2 = defineHtml(html`
   <h2>环形进度</h2>
-  <elf-playground title="circle" :code="circleCode">
+  <elf-playground title="圆形与仪表盘进度" :code="circleCode">
     <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
       <elf-progress type="circle" percentage="68"></elf-progress>
       <elf-progress type="circle" percentage="100" status="success"></elf-progress>
@@ -21,7 +21,7 @@ const PageProgressEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>状态与不确定进度</h2>
-  <elf-playground title="status / striped / indeterminate" :code="statusCode">
+  <elf-playground title="状态、条纹与不确定进度" :code="statusCode">
     <div style="display:grid;gap:16px;width:100%;max-width:520px">
       <elf-progress percentage="28" status="warning" striped-flow></elf-progress>
       <elf-progress percentage="64" status="exception"></elf-progress>

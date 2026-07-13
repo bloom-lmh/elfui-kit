@@ -64,6 +64,7 @@
 
 .pager {
   display: inline-flex;
+  min-width: 256px;
   align-items: center;
   gap: var(--elf-space-1);
 }
@@ -87,9 +88,14 @@
     background-color var(--elf-transition-fast),
     opacity var(--elf-transition-fast);
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled):not(.is-active) {
     color: var(--elf-primary);
     background: rgba(25, 118, 210, 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--elf-primary) 45%, transparent);
+    outline-offset: 2px;
   }
 
   &:disabled {
@@ -102,6 +108,12 @@
   color: #fff;
   background: var(--elf-primary);
   font-weight: 600;
+}
+
+.page.is-active:hover,
+.page.is-active:focus {
+  color: #fff;
+  background: var(--elf-primary);
 }
 
 .page.is-ellipsis {

@@ -20,7 +20,7 @@ const code = `<elf-slider
 
 const PageSliderEx7 = defineHtml(html`
   <h2>输入控件与辅助标签</h2>
-  <elf-playground title="show-input-controls / input-size / label" :code="code">
+  <elf-playground title="输入按钮、输入尺寸与标签" :code="code">
     <div style="display:grid;gap:14px;width:100%;max-width:720px">
       <elf-slider
         show-input

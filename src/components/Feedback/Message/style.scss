@@ -73,31 +73,27 @@
 
 :host([type="info"]),
 :host(:not([type])) {
-  --_c: #1565c0;
-  --_bg: #e3f2fd;
-  --_bd: #90caf9;
+  --_c: var(--elf-info, #1565c0);
+  --_tone: var(--elf-info, #1976d2);
   --_icon-bg: rgba(21, 101, 192, 0.12);
 }
 
 :host([type="success"]) {
-  --_c: #2e7d32;
-  --_bg: #e8f5e9;
-  --_bd: #a5d6a7;
+  --_c: var(--elf-success, #2e7d32);
+  --_tone: var(--elf-success, #2e7d32);
   --_icon-bg: rgba(46, 125, 50, 0.12);
 }
 
 :host([type="warning"]) {
-  --_c: #ed6c02;
-  --_bg: #fff3e0;
-  --_bd: #ffcc80;
+  --_c: var(--elf-warning, #ed6c02);
+  --_tone: var(--elf-warning, #ed6c02);
   --_icon-bg: rgba(237, 108, 2, 0.14);
 }
 
 :host([type="danger"]),
 :host([type="error"]) {
-  --_c: #c62828;
-  --_bg: #ffebee;
-  --_bd: #ef9a9a;
+  --_c: var(--elf-danger, #c62828);
+  --_tone: var(--elf-danger, #d32f2f);
   --_icon-bg: rgba(198, 40, 40, 0.12);
 }
 
@@ -108,9 +104,9 @@
   max-width: min(520px, calc(100vw - 32px));
   min-height: 40px;
   padding: 10px 16px;
-  border: 1px solid var(--_bd);
+  border: 1px solid color-mix(in srgb, var(--_tone) 36%, var(--elf-border, transparent));
   border-radius: var(--elf-radius-md);
-  background: var(--_bg);
+  background: color-mix(in srgb, var(--_tone) 10%, var(--elf-bg-paper, #fff));
   color: var(--_c);
   box-shadow:
     0 3px 5px -1px rgba(0, 0, 0, 0.08),
@@ -166,6 +162,15 @@
   transition:
     opacity var(--elf-transition-fast),
     background-color var(--elf-transition-fast);
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
 
   &:hover {
     opacity: 1;

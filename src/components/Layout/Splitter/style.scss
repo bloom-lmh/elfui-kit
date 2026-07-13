@@ -13,7 +13,7 @@
   min-height: inherit;
   border: 1px solid var(--elf-border);
   border-radius: var(--elf-radius-md);
-  background: var(--elf-bg);
+  background: var(--elf-bg-paper);
 }
 
 :host([vertical]) .splitter {
@@ -28,7 +28,7 @@
 }
 
 .first {
-  flex: 0 0 var(--_splitter-size);
+  flex: 0 0 var(--_splitter-size, 50%);
 }
 
 .second {
@@ -37,8 +37,16 @@
 
 .bar {
   flex: 0 0 6px;
-  background: var(--elf-bg-muted);
+  background: var(--elf-border);
   cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  transition: background var(--elf-transition-fast);
+
+  &:hover,
+  &:active {
+    background: var(--elf-primary);
+  }
 }
 
 :host([vertical]) .bar {
@@ -47,8 +55,6 @@
 
 :host([disabled]) .bar {
   cursor: not-allowed;
-}
-
-.bar:hover {
-  background: color-mix(in srgb, var(--elf-primary) 18%, var(--elf-bg-muted));
+  pointer-events: none;
+  opacity: 0.4;
 }

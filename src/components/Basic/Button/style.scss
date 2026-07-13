@@ -6,29 +6,34 @@
 }
 
 button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--elf-space-2);
-  font-family: inherit;
-  font-weight: 500;
-  line-height: 1;
-  border: 1px solid transparent;
-  border-radius: var(--elf-radius-sm);
-  cursor: pointer;
-  user-select: none;
-  vertical-align: middle;
-  transition:
-    background-color var(--elf-transition-fast),
-    color var(--elf-transition-fast),
-    box-shadow var(--elf-transition-fast),
-    border-color var(--elf-transition-fast);
-  width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--elf-space-2);
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1;
+    border: 1px solid transparent;
+    border-radius: var(--elf-radius-sm);
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    transition:
+        background-color var(--elf-transition-fast),
+        color var(--elf-transition-fast),
+        box-shadow var(--elf-transition-fast),
+        border-color var(--elf-transition-fast),
+        transform var(--elf-transition-fast);
+    width: 100%;
 
-  &:focus-visible {
-    outline: 2px solid var(--_color, var(--elf-primary));
-    outline-offset: 2px;
-  }
+    &:active:not(:disabled) {
+        transform: scale(0.97);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--_color, var(--elf-primary));
+        outline-offset: 2px;
+    }
 }
 
 /* 尺寸 */
@@ -223,7 +228,46 @@ button:disabled {
 }
 
 :host([block]) {
-  display: block;
+    display: block;
+}
+
+// no-hover: 禁用所有 hover 效果
+:host([no-hover]) button {
+    pointer-events: auto;
+}
+
+:host([no-hover][variant="contained"]):not([plain]) button:hover:not(:disabled) {
+    background: var(--_color);
+    color: var(--elf-text-on-primary);
+    box-shadow: var(--elf-shadow-1);
+}
+
+:host([no-hover][variant="contained"][plain]) button:hover:not(:disabled) {
+    background: var(--_overlay);
+    color: var(--_color);
+    border-color: var(--_color);
+    box-shadow: none;
+}
+
+:host([no-hover][variant="outlined"]) button:hover:not(:disabled) {
+    background: transparent;
+    color: var(--_color);
+}
+
+:host([no-hover][variant="text"]) button:hover:not(:disabled) {
+    background: transparent;
+    color: var(--_color);
+}
+
+:host([no-hover][bg]) button:hover:not(:disabled),
+:host([no-hover][text][bg]) button:hover:not(:disabled) {
+    background: var(--_overlay);
+}
+
+:host([no-hover][link]) button:hover:not(:disabled) {
+    background: transparent;
+    color: var(--_color);
+    box-shadow: none;
 }
 
 /* loading 旋转 */

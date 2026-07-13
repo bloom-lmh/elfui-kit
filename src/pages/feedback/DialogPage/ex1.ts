@@ -37,7 +37,7 @@ const PageDialogEx1 = defineHtml(html`
   </elf-playground>
 
   <h2>不同尺寸</h2>
-  <elf-playground title="size: sm | md | lg | fullscreen" :code="code2">
+  <elf-playground title="弹窗尺寸（sm / md / lg / fullscreen）" :code="code2">
     <div style="display:flex;gap:12px">
       <elf-button @click="open2">全屏 (fullscreen)</elf-button
       ><elf-button @click="open3">小尺寸 (sm)</elf-button>

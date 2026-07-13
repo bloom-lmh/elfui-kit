@@ -49,7 +49,7 @@ const updateTime = (event) => {
 };`;
 
 const rangeCode = `<elf-time-picker
-  :modelValue=\${rangeValue}
+  :modelValue.prop=\${rangeValue}
   is-range
   start-placeholder="开始时间"
   end-placeholder="结束时间"
@@ -164,11 +164,11 @@ const PageTimePicker = defineHtml(html`
       </div>
     </elf-playground>
 
-    <elf-playground title="is-range + 数组值 + 快捷项" :code=${rangeCode} :script=${rangeScript}>
+    <elf-playground title="范围值、快捷时间与清空" :code=${rangeCode} :script=${rangeScript}>
       <div style="display:grid;gap:16px;width:100%;max-width:820px">
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
           <elf-time-picker
-            :modelValue=${rangeValue}
+            :modelValue.prop=${rangeValue}
             is-range
             start-placeholder="开始时间"
             end-placeholder="结束时间"
@@ -183,7 +183,7 @@ const PageTimePicker = defineHtml(html`
     </elf-playground>
 
     <elf-playground
-      title="限制范围 / 不可编辑 / value-on-clear"
+      title="限制范围、不可编辑与清空回退值"
       :code=${controlCode}
       :script=${controlScript}
     >
@@ -205,9 +205,9 @@ const PageTimePicker = defineHtml(html`
     </elf-playground>
 
     <h2>API</h2>
-    <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>
-    <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
-    <elf-props-table title="Methods" :rows=${methodsRows}></elf-props-table>
+    <elf-props-table title="属性" :rows=${propsRows}></elf-props-table>
+    <elf-props-table title="事件" :rows=${eventsRows}></elf-props-table>
+    <elf-props-table title="方法" :rows=${methodsRows}></elf-props-table>
   </elf-container>
 `);
 

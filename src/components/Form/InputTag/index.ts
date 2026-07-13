@@ -28,6 +28,8 @@ const props = defineProps<InputTagProps>({
     readonly: { type: Boolean, default: false },
     clearable: { type: Boolean, default: false },
     max: { type: Number, default: undefined },
+    collapseTags: { type: Boolean, default: false },
+    maxCollapseTags: { type: Number, default: 1 },
     size: { type: String, default: "" },
     trigger: { type: String, default: "enter" },
     tagType: { type: String, default: "" },
@@ -63,6 +65,12 @@ watchEffect(() => {
 
 const tags = (): TagItem[] =>
     value.value.map((label, index) => ({ label, index }));
+const visibleTags = (): TagItem[] => {
+    if (!props.collapseTags) return tags();
+    return tags().slice(0, Math.max(0, Number(props.maxCollapseTags) || 0));
+};
+const hiddenTags = (): TagItem[] => tags().slice(visibleTags().length);
+const hiddenTagCount = (): number => Math.max(0, tags().length - visibleTags().length);
 const isLimitReached = (): boolean =>
     Number(props.max) > 0 && value.value.length >= Number(props.max);
 
@@ -169,17 +177,34 @@ defineStyle(styles);
 const InputTag = defineHtml<InputTagProps>(html`
     <div class="input-tag" part="wrapper" @click=${onRemoveClick}>
         <slot name="prefix"></slot>
-        <span v-for="tag in tags()" :key="tag.index" class="tag" :class=${[() => props.tagType, () => `is-${props.tagEffect}`]} :data-index="tag.index" :draggable=${props.draggable} part="tag" @dragstart=${onDragStart} @dragover=${(event: DragEvent) => props.draggable && event.preventDefault()} @drop=${onDrop}>
-            {{ tag.label }}
-            <button
+        <span class="tag-strip" part="tag-strip">
+          <span v-for="tag in visibleTags()" :key="tag.index" class="tag" :class=${[() => props.tagType, () => `is-${props.tagEffect}`]} :data-index="tag.index" :draggable=${props.draggable} part="tag" @dragstart=${onDragStart} @dragover=${(event: DragEvent) => props.draggable && event.preventDefault()} @drop=${onDrop}>
+              <span class="tag-label">{{ tag.label }}</span>
+              <button
+                  v-if=${!props.disabled && !props.readonly}
+                  class="remove"
+                  type="button"
+                  :data-index="tag.index"
+                  :aria-label="'删除标签 ' + tag.label"
+              >
+                  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
+              </button>
+          </span>
+        </span>
+        <span v-if=${hiddenTagCount() > 0} class="overflow">
+          <button class="overflow-count" type="button" part="overflow-count" :aria-label="'查看 ' + hiddenTagCount() + ' 个隐藏标签'">+{{ hiddenTagCount() }}</button>
+          <span class="overflow-panel" role="list" aria-label="隐藏标签">
+            <span v-for="tag in hiddenTags()" :key="tag.index" class="hidden-tag" role="listitem">
+              <span>{{ tag.label }}</span>
+              <button
                 v-if=${!props.disabled && !props.readonly}
                 class="remove"
                 type="button"
                 :data-index="tag.index"
-                aria-label="Remove tag"
-            >
-                x
-            </button>
+                :aria-label="'删除隐藏标签 ' + tag.label"
+              ><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg></button>
+            </span>
+          </span>
         </span>
         <input
             part="input"
@@ -199,7 +224,7 @@ const InputTag = defineHtml<InputTagProps>(html`
             aria-label="Clear tags"
             @click=${clear}
         >
-            x
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
         </button>
     </div>
 `);

@@ -1,6 +1,5 @@
 import {
   defineEmits,
-  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
@@ -137,9 +136,6 @@ const onChange = (event: Event): void => {
 };
 
 const inputElement = (): HTMLInputElement | null => host.shadowRoot?.querySelector("input") ?? null;
-const focus = (): void => inputElement()?.focus();
-const blur = (): void => inputElement()?.blur();
-
 const decrease = (): void => {
   const base = current.value ?? 0;
   commit(base - step(), "change");
@@ -162,12 +158,10 @@ useHostAttr("size", normalizedSize);
 useHostAttr("controls-position", normalizedControlsPosition);
 useHostFlag("disabled", () => Boolean(props.disabled));
 
-defineExpose({ focus, blur });
-
 defineStyle(styles);
 
 const InputNumber = defineHtml<InputNumberProps>(html`
-  <div class="input-number" part="wrapper">
+  <div :class=${["input-number", { "has-controls": props.controls }]} part="wrapper">
     <button
       v-if=${props.controls}
       class="control decrease"

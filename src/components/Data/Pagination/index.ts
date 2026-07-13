@@ -31,7 +31,7 @@ const props = defineProps({
   nextText: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   hideOnSinglePage: { type: Boolean, default: false },
-  ariaLabel: { type: String, default: "Pagination" }
+  ariaLabel: { type: String, default: "分页导航" }
 });
 
 const emit = defineEmits([
@@ -166,10 +166,10 @@ const go = (next: number): void => {
 };
 const isPageActive = (item: PagerItem): boolean => !item.ellipsis && item.page === page.value;
 const pageLabel = (item: PagerItem): string =>
-  item.ellipsis ? `Jump to page ${item.page}` : `Page ${item.page}`;
+  item.ellipsis ? `跳转到第 ${item.page} 页` : `第 ${item.page} 页`;
 const isSizeSelected = (item: unknown): boolean => Number(item) === size.value;
-const prevLabel = (): string => props.prevText || "Previous page";
-const nextLabel = (): string => props.nextText || "Next page";
+const prevLabel = (): string => props.prevText || "上一页";
+const nextLabel = (): string => props.nextText || "下一页";
 
 const prev = (): void => {
   if (props.disabled || isFirst()) return;
@@ -233,10 +233,10 @@ const Pagination = defineHtml(html`
     <span v-if=${hasPart("total")} class="total">${totalText()}</span>
 
     <label v-if=${hasPart("sizes")} class="sizes">
-      <span class="sr-only">Items per page</span>
+      <span class="sr-only">每页条数</span>
       <select :value=${size.value} :disabled=${props.disabled} @change=${onSizeChange}>
         <option v-for="item in props.pageSizes" :key="item" :value="item" :selected="isSizeSelected(item)">
-          {{ item }} / page
+          {{ item }} 条/页
         </option>
       </select>
     </label>
@@ -282,19 +282,19 @@ const Pagination = defineHtml(html`
     </button>
 
     <label v-if=${hasPart("jumper")} class="jumper">
-      <span>Go to</span>
+      <span>前往</span>
       <input
         :value=${jumpValue.value}
         :disabled=${props.disabled}
         type="number"
         min="1"
         :max=${pageCount()}
-        aria-label="Go to page"
+        aria-label="跳转页码"
         @input=${onJumpInput}
         @change=${commitJump}
         @keydown=${onJumpKeydown}
       />
-      <span>page</span>
+      <span>页</span>
     </label>
     <slot></slot>
   </nav>

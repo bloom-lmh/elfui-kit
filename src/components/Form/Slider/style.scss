@@ -77,7 +77,11 @@
   transition: background var(--elf-transition-fast);
 
   &.is-active {
-    background: color-mix(in srgb, var(--slider-color), white 20%);
+    background: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--slider-color), white 20%) 0 var(--segment-fill, 100%),
+      color-mix(in srgb, var(--elf-border-strong), transparent 28%) var(--segment-fill, 100%) 100%
+    );
   }
 }
 
@@ -327,6 +331,14 @@
     left: calc(100% + 10px);
     top: 50%;
     transform: translateY(-50%);
+  }
+
+  .segment.is-active {
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--slider-color), white 20%) 0 var(--segment-fill, 100%),
+      color-mix(in srgb, var(--elf-border-strong), transparent 28%) var(--segment-fill, 100%) 100%
+    );
   }
 
   .tooltip.placement-top {

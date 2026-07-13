@@ -31,6 +31,14 @@ describe("elf-infinite-scroll", () => {
     expect(onLoad).toHaveBeenCalled();
   });
 
+  it("creates a bounded internal viewport by default", async () => {
+    const el = document.createElement("elf-infinite-scroll");
+    document.body.appendChild(el);
+    await tick();
+
+    expect((el.shadowRoot!.querySelector(".scroll") as HTMLElement).style.height).toBe("280px");
+  });
+
   it("uses the configured external container and coalesces delayed loads", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

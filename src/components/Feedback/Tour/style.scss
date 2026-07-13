@@ -81,6 +81,15 @@
   cursor: pointer;
   font-size: 18px;
   line-height: 1;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
 }
 
 .tour-close:hover,
@@ -117,6 +126,49 @@
 
 .tour-spacer {
   flex: 1;
+}
+
+.tour-button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--elf-text-secondary, #5f6368);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tour-button:hover:not(:disabled),
+.tour-button:focus-visible:not(:disabled) {
+  background: color-mix(in srgb, var(--elf-primary, #1976d2) 10%, transparent);
+  color: var(--elf-primary, #1976d2);
+  outline: none;
+}
+
+.tour-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--elf-primary, #1976d2) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.tour-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tour-button--primary {
+  background: var(--elf-primary, #1976d2);
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(25, 118, 210, 0.24);
+}
+
+.tour-button--primary:hover,
+.tour-button--primary:focus-visible {
+  background: color-mix(in srgb, var(--elf-primary, #1976d2) 88%, #000);
+  color: #fff;
 }
 
 @keyframes tour-panel-in {

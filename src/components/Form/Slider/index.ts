@@ -42,6 +42,10 @@ interface SegmentView {
   end: number;
 }
 
+interface MarkView extends SliderMark {
+  key: string;
+}
+
 const readNumber = (value: unknown, fallback = 0): number => {
   const next = Number(value ?? fallback);
   return Number.isFinite(next) ? next : fallback;
@@ -326,14 +330,15 @@ const rootStyle = useComputed(() => {
 const pointStyle = (value: number): Record<string, string> =>
   props.vertical ? { bottom: `${percent(value)}%` } : { left: `${percent(value)}%` };
 
-const marks = (): SliderMark[] => {
+const marks = (): MarkView[] => {
   const source = props.marks as unknown;
   if (Array.isArray(source)) {
     return source
       .map((mark) =>
         typeof mark === "number"
-          ? { value: mark, label: String(mark) }
+          ? { key: String(mark), value: mark, label: String(mark) }
           : {
+              key: String((mark as SliderMark).value),
               value: readNumber((mark as SliderMark).value, min()),
               label: String((mark as SliderMark).label ?? (mark as SliderMark).value ?? "")
             }
@@ -342,7 +347,7 @@ const marks = (): SliderMark[] => {
   }
   if (source && typeof source === "object") {
     return Object.entries(source as Record<string, string | number>)
-      .map(([value, label]) => ({ value: readNumber(value, min()), label: String(label) }))
+      .map(([value, label]) => ({ key: value, value: readNumber(value, min()), label: String(label) }))
       .filter((mark) => mark.value >= min() && mark.value <= max());
   }
   return [];
@@ -390,9 +395,19 @@ const segmentStyle = (segment: SegmentView): Record<string, string> => {
   const start = percent(segment.start);
   const end = percent(segment.end);
   const size = Math.max(0, end - start);
-  return props.vertical
-    ? { bottom: `${start}%`, height: `calc(${size}% - 2px)` }
-    : { left: `${start}%`, width: `calc(${size}% - 2px)` };
+  const activeStart = props.range ? values()[0] : min();
+  const activeEnd = props.range ? values()[1] : singleValue();
+  const segmentSize = Math.max(0, segment.end - segment.start);
+  const filled = Math.max(
+    0,
+    Math.min(1, (Math.min(activeEnd, segment.end) - Math.max(activeStart, segment.start)) / segmentSize)
+  );
+  return {
+    "--segment-fill": `${filled * 100}%`,
+    ...(props.vertical
+      ? { bottom: `${start}%`, height: `calc(${size}% - 2px)` }
+      : { left: `${start}%`, width: `calc(${size}% - 2px)` })
+  };
 };
 
 const isSegmentActive = (segment: SegmentView): boolean => {
@@ -520,7 +535,7 @@ const Slider = defineHtml(html`
       <div v-if=${marks().length > 0} class="marks">
         <span
           v-for="mark in marks()"
-          :key="String(mark.value)"
+          :key="mark.key"
           class="mark"
           :style="pointStyle(mark.value)"
         >

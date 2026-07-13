@@ -18,6 +18,7 @@
 
 .placeholder {
   gap: var(--elf-space-4);
+  min-width: min(100%, 320px);
 }
 
 // ───── 公共 ──────────────────────────────────────

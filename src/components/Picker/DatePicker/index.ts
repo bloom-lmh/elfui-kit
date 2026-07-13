@@ -250,7 +250,7 @@ const DatePicker = defineHtml(html`
         v-if=${props.clearable && hasValue() && !props.actions}
         type="button"
         class="clear"
-        @click=${clear()}
+        @click=${clear}
       >
         ${props.clearText}
       </button>
@@ -282,12 +282,12 @@ const DatePicker = defineHtml(html`
     </div>
 
     <div v-if=${props.actions} class="actions">
-      <button v-if=${props.clearable} type="button" class="text-action" @click=${clear()}>
+      <button v-if=${props.clearable} type="button" class="text-action" @click=${clear}>
         ${props.clearText}
       </button>
       <span class="actions-spacer"></span>
-      <button type="button" class="text-action" @click=${cancel()}>${props.cancelText}</button>
-      <button type="button" class="primary-action" @click=${confirm()}>${props.confirmText}</button>
+      <button type="button" class="text-action" @click=${cancel}>${props.cancelText}</button>
+      <button type="button" class="primary-action" @click=${confirm}>${props.confirmText}</button>
     </div>
   </div>
 `);

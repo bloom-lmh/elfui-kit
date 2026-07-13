@@ -294,10 +294,12 @@ const Tabs = defineHtml(html`
           class="tab-close"
           role="button"
           tabindex="-1"
-          aria-label="close"
+          aria-label="关闭标签"
           @click="onRemoveClick(item, $event)"
         >
-          ×
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M4.25 4.25 11.75 11.75M11.75 4.25 4.25 11.75"></path>
+          </svg>
         </span>
         <span v-if="isActive(item)" class="tab-slider"></span>
       </button>
@@ -305,10 +307,12 @@ const Tabs = defineHtml(html`
         v-if=${props.addable || props.editable}
         class="tab-add"
         type="button"
-        aria-label="add tab"
+        aria-label="新增标签"
         @click=${add}
       >
-        +
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M8 3.25v9.5M3.25 8h9.5"></path>
+        </svg>
       </button>
     </div>
     <div v-if=${props.showPanels} class="tab-panels">

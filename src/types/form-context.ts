@@ -16,7 +16,14 @@ export interface FormContext {
   disabled: boolean;
   labelPosition: FormProps["labelPosition"];
   labelWidth: string;
+  labelSuffix: string;
   hideRequiredAsterisk: boolean;
+  requireAsteriskPosition: FormProps["requireAsteriskPosition"];
+  showMessage: boolean;
+  inlineMessage: boolean;
+  statusIcon: boolean;
+  inline: boolean;
+  scrollIntoViewOptions: FormProps["scrollIntoViewOptions"];
   registerItem(item: FormItemContext): () => void;
   unregisterItem(item: FormItemContext): void;
   validateField: ValidateField;

@@ -272,18 +272,18 @@ const Carousel = defineHtml(html`
     </div>
 
     <div class="arrows" v-if=${showArrows}>
-      <button class="arrow arrow-left" type="button" aria-label="Previous slide" @click=${doPrev}>&lsaquo;</button>
-      <button class="arrow arrow-right" type="button" aria-label="Next slide" @click=${doNext}>&rsaquo;</button>
+      <button class="arrow arrow-left" type="button" aria-label="上一张" @click=${doPrev}><span aria-hidden="true"></span></button>
+      <button class="arrow arrow-right" type="button" aria-label="下一张" @click=${doNext}><span aria-hidden="true"></span></button>
     </div>
 
-    <div class="indicators" v-if=${showIndicators} role="tablist" aria-label="Slide selector">
+    <div class="indicators" v-if=${showIndicators} role="tablist" aria-label="轮播页选择">
       <button
         v-for="(dot, idx) in dots"
         :key="idx"
         class="dot"
         :class="{ 'is-active': idx === active }"
         :data-index="idx"
-        :aria-label="'Go to slide ' + (idx + 1)"
+        :aria-label="'切换到第 ' + (idx + 1) + ' 张'"
         :aria-current="idx === active ? 'true' : undefined"
         type="button"
         @click=${onIndicatorClick}

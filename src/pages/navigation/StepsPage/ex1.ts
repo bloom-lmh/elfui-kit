@@ -1,6 +1,10 @@
 import { defineHtml, html, useRef } from "elfui";
 
-const code1 = `<elf-steps :active=\${1} :items.prop=\${steps} />`;
+const code1 = `<elf-steps
+  :active=\${basicActive}
+  :items.prop=\${steps}
+  @update:active=\${onBasicUpdate}
+/>`;
 
 const code2 = `<elf-steps
   :active=\${active}
@@ -18,7 +22,12 @@ const script = `const steps = [
 ];
 
 const active = useRef(1);
+const basicActive = useRef(1);
 const lastAction = useRef("等待操作");
+
+const onBasicUpdate = (event) => {
+  basicActive.set(event.detail);
+};
 
 const onUpdateActive = (event) => {
   active.set(event.detail);
@@ -40,7 +49,12 @@ const steps = [
 ];
 
 const active = useRef(1);
+const basicActive = useRef(1);
 const lastAction = useRef("等待操作");
+
+const onBasicUpdate = (event: Event): void => {
+  basicActive.set(Number((event as CustomEvent<number>).detail ?? 0));
+};
 
 const onUpdateActive = (event: Event): void => {
   active.set(Number((event as CustomEvent<number>).detail ?? 0));
@@ -64,7 +78,11 @@ const prev = (): void => {
 const PageStepsEx1 = defineHtml(html`
   <h2>基础与受控</h2>
   <elf-playground title="流程状态" :code=${code1} :script=${script}>
-    <elf-steps :active=${1} :items.prop=${steps}></elf-steps>
+    <elf-steps
+      :active=${basicActive}
+      :items.prop=${steps}
+      @update:active=${onBasicUpdate}
+    ></elf-steps>
   </elf-playground>
 
   <elf-playground title="受控当前步骤" :code=${code2} :script=${script}>

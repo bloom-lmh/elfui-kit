@@ -2,6 +2,7 @@
 
 ## 本轮记录
 - [x] 第二阶段：补 `aria-label` 可访问性属性和页面 PropsTable。
+- [x] 第三阶段：页面补 Script 视图；单测扩展到 10 条覆盖 name/size/color/CSS 变量/aria-label/role/slot/part。
 
 生成时间：2026-07-05
 
@@ -18,6 +19,6 @@
 
 ## 后续差距
 
-- [x] 2026-07-07 补独立案例页：覆盖 `name`、`size`、`color` 属性和默认插槽，Playground 动态绑定使用 `${...}`。
-- [ ] 补齐 SVG 图标库、icon collection 和外部图标对象渲染。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 补独立案例页：覆盖 `name`、`size`、`color` 属性和默认插槽。
+- [ ] SVG 图标库 / icon collection：需要产品决策（内置 SVG sprite 还是依赖外部图标库、按需引入还是全量打包），暂不在此阶段实施。
+- [x] 页面示例补 Script 视图和 PropsTable。

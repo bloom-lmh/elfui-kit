@@ -18,11 +18,13 @@ const tagCode = `<elf-text tag="p">段落文本</elf-text>
 <elf-text tag="mark">mark 标签</elf-text>`;
 
 const clampCode = `<div style="width:260px">
-  <elf-text truncated>这是一段很长很长的单行文本，超出容器时会被截断。</elf-text>
+  <elf-text truncated>单行截断：很长的文本超出容器时自动省略号。</elf-text>
 </div>
 <div style="width:320px;margin-top:12px">
-  <elf-text line-clamp="2">这里展示两行截断。内容会保持段落阅读感，同时避免卡片被撑得太高。</elf-text>
+  <elf-text line-clamp="2">多行截断：这里展示两行截断效果，内容保持段落阅读感，同时避免卡片被撑得太高。</elf-text>
 </div>`;
+
+const script1 = `// Text 是纯展示组件，通过 props 控制语义、样式和截断`;
 
 const propsRows = [
   { name: "type", type: "primary|success|warning|danger|info", default: "''" },
@@ -42,7 +44,7 @@ const PageText = defineHtml(html`
     <h1>Text 文本</h1>
     <p>用于语义文本、尺寸和文本装饰，支持单行截断、多行截断和 tag 渲染。</p>
 
-    <elf-playground title="语义类型" :code=${typeCode}>
+    <elf-playground title="语义类型" :code=${typeCode} :script=${script1}>
       <elf-text>默认文本</elf-text>
       <elf-text type="primary">主要文本</elf-text>
       <elf-text type="success">成功文本</elf-text>

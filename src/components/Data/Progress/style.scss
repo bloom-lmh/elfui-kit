@@ -8,6 +8,7 @@
   --_progress-size: 96px;
   --_progress-stroke: 8;
   --_progress-duration: 3s;
+  --_progress-transition-duration: 0.4s;
   --_progress-linecap: round;
 
   display: inline-block;
@@ -44,7 +45,7 @@
   border-radius: inherit;
   background: var(--_progress-color);
   transition:
-    width var(--_progress-duration),
+    width var(--_progress-transition-duration) cubic-bezier(0.4, 0, 0.2, 1),
     background-color var(--elf-transition-base);
 }
 
@@ -95,7 +96,7 @@
 .circle-value {
   stroke: var(--_progress-color);
   transition:
-    stroke-dashoffset var(--_progress-duration),
+    stroke-dashoffset var(--_progress-transition-duration) cubic-bezier(0.4, 0, 0.2, 1),
     stroke var(--elf-transition-base);
 }
 

@@ -112,6 +112,18 @@
   background: var(--m-bg, var(--elf-bg-paper));
 }
 
+.menu-toggle-slot {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+::slotted([slot="toggle"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 // ───── 搜索 ────────────────────────────────────────
 .menu-search {
   padding: 8px 8px 0;

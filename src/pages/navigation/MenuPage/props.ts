@@ -29,7 +29,7 @@ const propsRows = [
   {
     name: "togglePlacement",
     type: "footer | header",
-    default: "footer",
+    default: "header",
     desc: "折叠按钮位置"
   },
   { name: "searchable", type: "boolean", default: "false", desc: "显示搜索框" },

@@ -2,7 +2,7 @@ import { defineHtml, html, useComponents, useRef } from "elfui";
 import { PageMentionProps } from "./props";
 
 useComponents({ "page-mention-props": PageMentionProps });
-const wholeContent = useRef("");
+const keyboardContent = useRef("@");
 
 const content = useRef("请 @");
 const hashContent = useRef("发布到 #");
@@ -10,7 +10,7 @@ const hashContent = useRef("发布到 #");
 const members = [
   { label: "林舟", value: "linzhou" },
   { label: "周然", value: "zhouran" },
-  { label: "许宁", value: "xuning", disabled: true }
+  { label: "许宁", value: "xuning" }
 ];
 
 const topics = [
@@ -32,7 +32,7 @@ const script1 = `const content = useRef("请 @");
 const members = [
   { label: "林舟", value: "linzhou" },
   { label: "周然", value: "zhouran" },
-  { label: "许宁", value: "xuning", disabled: true }
+  { label: "许宁", value: "xuning" }
 ];`;
 
 const code2 = `<elf-mention
@@ -60,8 +60,8 @@ const onHashUpdate = (event: CustomEvent): void => {
   hashContent.set(String(event.detail || ""));
 };
 
-const onWholeUpdate = (event: CustomEvent): void => {
-  wholeContent.set(String(event.detail || ""));
+const onKeyboardUpdate = (event: CustomEvent): void => {
+  keyboardContent.set(String(event.detail || ""));
 };
 
 const onSelect = (): void => undefined;
@@ -81,7 +81,7 @@ const PageMention = defineHtml(html`
       ></elf-mention>
     </elf-playground>
 
-    <elf-playground title="自定义 prefix / rows" :code=${code2} :script=${script2}>
+    <elf-playground title="自定义触发前缀与行数" :code=${code2} :script=${script2}>
       <elf-mention
         prefix="#"
         rows="4"
@@ -91,16 +91,16 @@ const PageMention = defineHtml(html`
         @update:modelValue=${onHashUpdate}
       ></elf-mention>
     </elf-playground>
-    <elf-playground title="Whole-word trigger / keyboard selection">
-      <elf-mention
-        :modelValue=${wholeContent}
-        :options.prop=${members}
-        whole
-        split=" "
-        placement="bottom"
-        aria-label="Mention a member"
-        @update:modelValue=${onWholeUpdate}
-      ></elf-mention>
+    <elf-playground title="键盘选择">
+      <div style="display:grid;gap:10px;max-width:480px">
+        <elf-mention
+          :modelValue=${keyboardContent}
+          :options.prop=${members}
+          aria-label="使用键盘选择成员"
+          @update:modelValue=${onKeyboardUpdate}
+        ></elf-mention>
+        <span class="demo-state">输入 @ 后，使用 ↑ / ↓ 切换候选项，按 Enter 确认。</span>
+      </div>
     </elf-playground>
     <page-mention-props></page-mention-props>
   </elf-container>
