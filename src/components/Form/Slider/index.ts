@@ -54,7 +54,12 @@ const props = defineProps({
   marks: { type: null, default: () => [] },
   color: { type: String, default: "" },
   size: { type: String, default: "" },
-  formatTooltip: { type: Function, default: undefined }
+  formatTooltip: { type: Function, default: undefined },
+  formatValueText: { type: Function, default: undefined },
+  height: { type: null, default: undefined },
+  ariaLabel: { type: String, default: "" },
+  rangeStartLabel: { type: String, default: "" },
+  rangeEndLabel: { type: String, default: "" }
 });
 
 const emit = defineEmits(["update:modelValue", "input", "change"]);
@@ -256,6 +261,11 @@ const formatValue = (value: number): string => {
   return String(value);
 };
 
+const valueText = (value: number): string => {
+  if (typeof props.formatValueText === "function") return String(props.formatValueText(value));
+  return formatValue(value);
+};
+
 const rootStyle = useComputed(() => {
   const [start, end] = values();
   const activeStart = props.range ? percent(start) : 0;
@@ -263,7 +273,8 @@ const rootStyle = useComputed(() => {
   return {
     "--slider-start": `${activeStart}%`,
     "--slider-end": `${activeEnd}%`,
-    ...(props.color ? { "--slider-color": String(props.color) } : {})
+    ...(props.color ? { "--slider-color": String(props.color) } : {}),
+    ...(props.height !== undefined && props.height !== null ? { "--slider-height": typeof props.height === "number" ? `${props.height}px` : String(props.height) } : {})
   };
 });
 
@@ -402,7 +413,8 @@ const Slider = defineHtml(html`
         :disabled=${isDisabled() || props.readonly}
         @input=${onSingleInput}
         @change=${onSingleChange}
-        aria-label="Slider"
+        :aria-label=${props.ariaLabel || "Slider"}
+        :aria-valuetext=${valueText(singleValue())}
       />
       <template v-else>
         <input
@@ -415,7 +427,8 @@ const Slider = defineHtml(html`
           :disabled=${isDisabled() || props.readonly}
           @input=${onStartInput}
           @change=${onStartChange}
-          aria-label="Range start"
+          :aria-label=${props.rangeStartLabel || props.ariaLabel || "Range start"}
+          :aria-valuetext=${valueText(values()[0])}
         />
         <input
           class="native native-end"
@@ -427,7 +440,8 @@ const Slider = defineHtml(html`
           :disabled=${isDisabled() || props.readonly}
           @input=${onEndInput}
           @change=${onEndChange}
-          aria-label="Range end"
+          :aria-label=${props.rangeEndLabel || props.ariaLabel || "Range end"}
+          :aria-valuetext=${valueText(values()[1])}
         />
       </template>
 

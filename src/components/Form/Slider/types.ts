@@ -25,4 +25,9 @@ export interface SliderProps {
   color: string;
   size: SliderSize;
   formatTooltip?: (value: number) => string;
+  formatValueText?: (value: number) => string;
+  height: string | number;
+  ariaLabel: string;
+  rangeStartLabel: string;
+  rangeEndLabel: string;
 }
