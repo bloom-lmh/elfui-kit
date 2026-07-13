@@ -17,9 +17,16 @@ import {
 import { useDisabled, useFormItem } from "../../../composables";
 import { FORM_ITEM_KEY } from "../context";
 import styles from "./style.scss?inline";
-import type { SliderMark, SliderModelValue, SliderSize } from "./types";
+import type { SliderInputSize, SliderMark, SliderModelValue, SliderSize } from "./types";
 
-export type { SliderMark, SliderMarks, SliderModelValue, SliderProps, SliderSize } from "./types";
+export type {
+  SliderInputSize,
+  SliderMark,
+  SliderMarks,
+  SliderModelValue,
+  SliderProps,
+  SliderSize
+} from "./types";
 
 type SliderValue = number | [number, number];
 type RangeThumb = "start" | "end";
@@ -53,6 +60,8 @@ const props = defineProps({
   showStops: { type: Boolean, default: false },
   segmented: { type: Boolean, default: false },
   showInput: { type: Boolean, default: false },
+  showInputControls: { type: Boolean, default: true },
+  inputSize: { type: String, default: "" },
   marks: { type: null, default: () => [] },
   color: { type: String, default: "" },
   size: { type: String, default: "" },
@@ -61,8 +70,12 @@ const props = defineProps({
   height: { type: null, default: undefined },
   ariaLabel: { type: String, default: "" },
   rangeStartLabel: { type: String, default: "" },
-  rangeEndLabel: { type: String, default: "" }
-  ,validateEvent: { type: Boolean, default: true }
+  rangeEndLabel: { type: String, default: "" },
+  tooltipClass: { type: String, default: "" },
+  placement: { type: String, default: "top" },
+  persistent: { type: Boolean, default: true },
+  label: { type: String, default: "" },
+  validateEvent: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(["update:modelValue", "input", "change"]);
@@ -194,6 +207,9 @@ const onEndChange = (event: Event): void =>
 const onNumberChange = (event: Event): void =>
   updateSingle((event.target as HTMLInputElement).value, true);
 
+const onNumberInput = (event: Event): void =>
+  updateSingle((event.target as HTMLInputElement).value);
+
 const pointerValue = (event: PointerEvent, track: HTMLElement): number => {
   const rect = track.getBoundingClientRect();
   const span = props.vertical ? rect.height : rect.width;
@@ -271,6 +287,28 @@ const formatValue = (value: number): string => {
 const valueText = (value: number): string => {
   if (typeof props.formatValueText === "function") return String(props.formatValueText(value));
   return formatValue(value);
+};
+
+const sliderLabel = (): string => props.label || props.ariaLabel || "Slider";
+
+const rangeLabel = (thumb: RangeThumb): string =>
+  thumb === "start"
+    ? props.rangeStartLabel || props.label || props.ariaLabel || "Range start"
+    : props.rangeEndLabel || props.label || props.ariaLabel || "Range end";
+
+const tooltipPlacement = (): "top" | "bottom" | "left" | "right" => {
+  const placement = props.placement;
+  return placement === "bottom" || placement === "left" || placement === "right"
+    ? placement
+    : "top";
+};
+
+const inputSize = (): SliderInputSize | "" => {
+  const size = props.inputSize;
+  if (size === "small") return "sm";
+  if (size === "large") return "lg";
+  if (size === "default") return "md";
+  return size === "sm" || size === "md" || size === "lg" ? size : "";
 };
 
 const rootStyle = useComputed(() => {
@@ -420,7 +458,7 @@ const Slider = defineHtml(html`
         :disabled=${isDisabled() || props.readonly}
         @input=${onSingleInput}
         @change=${onSingleChange}
-        :aria-label=${props.ariaLabel || "Slider"}
+        :aria-label=${sliderLabel()}
         :aria-valuetext=${valueText(singleValue())}
       />
       <template v-else>
@@ -434,7 +472,7 @@ const Slider = defineHtml(html`
           :disabled=${isDisabled() || props.readonly}
           @input=${onStartInput}
           @change=${onStartChange}
-          :aria-label=${props.rangeStartLabel || props.ariaLabel || "Range start"}
+          :aria-label=${rangeLabel("start")}
           :aria-valuetext=${valueText(values()[0])}
         />
         <input
@@ -447,26 +485,35 @@ const Slider = defineHtml(html`
           :disabled=${isDisabled() || props.readonly}
           @input=${onEndInput}
           @change=${onEndChange}
-          :aria-label=${props.rangeEndLabel || props.ariaLabel || "Range end"}
+          :aria-label=${rangeLabel("end")}
           :aria-valuetext=${valueText(values()[1])}
         />
       </template>
 
       <span v-if=${!props.range} class="thumb" :style=${pointStyle(singleValue())}>
-        <span v-if=${props.showTooltip} class="tooltip">${formatValue(singleValue())}</span>
+        <span
+          v-if=${props.showTooltip}
+          :class=${["tooltip", `placement-${tooltipPlacement()}`, props.tooltipClass]}
+        >${formatValue(singleValue())}</span>
       </span>
       <template v-else>
         <span
           :class=${["thumb", "thumb-start", { "is-active": isActiveThumb("start") }]}
           :style=${pointStyle(values()[0])}
         >
-          <span v-if=${props.showTooltip} class="tooltip">${formatValue(values()[0])}</span>
+          <span
+            v-if=${props.showTooltip}
+            :class=${["tooltip", `placement-${tooltipPlacement()}`, props.tooltipClass]}
+          >${formatValue(values()[0])}</span>
         </span>
         <span
           :class=${["thumb", "thumb-end", { "is-active": isActiveThumb("end") }]}
           :style=${pointStyle(values()[1])}
         >
-          <span v-if=${props.showTooltip} class="tooltip">${formatValue(values()[1])}</span>
+          <span
+            v-if=${props.showTooltip}
+            :class=${["tooltip", `placement-${tooltipPlacement()}`, props.tooltipClass]}
+          >${formatValue(values()[1])}</span>
         </span>
       </template>
 
@@ -484,13 +531,19 @@ const Slider = defineHtml(html`
 
     <input
       v-if=${props.showInput && !props.range}
-      class="number-input"
+      :class=${[
+        "number-input",
+        { "without-controls": !props.showInputControls },
+        inputSize() ? `size-${inputSize()}` : ""
+      ]}
       type="number"
       :min=${min()}
       :max=${max()}
       :step=${step()}
       :value=${singleValue()}
       :disabled=${isDisabled() || props.readonly}
+      :aria-label=${sliderLabel()}
+      @input=${onNumberInput}
       @change=${onNumberChange}
     />
   </div>

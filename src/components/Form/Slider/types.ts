@@ -1,4 +1,5 @@
 export type SliderSize = "sm" | "md" | "lg";
+export type SliderInputSize = SliderSize | "small" | "default" | "large";
 export type SliderModelValue = number | [number, number];
 
 export interface SliderMark {
@@ -21,6 +22,8 @@ export interface SliderProps {
   showStops: boolean;
   segmented: boolean;
   showInput: boolean;
+  showInputControls: boolean;
+  inputSize: SliderInputSize;
   marks: SliderMarks;
   color: string;
   size: SliderSize;
@@ -30,5 +33,9 @@ export interface SliderProps {
   ariaLabel: string;
   rangeStartLabel: string;
   rangeEndLabel: string;
+  tooltipClass: string;
+  placement: "top" | "bottom" | "left" | "right";
+  persistent: boolean;
+  label: string;
   validateEvent: boolean;
 }

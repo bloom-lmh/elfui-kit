@@ -20,6 +20,16 @@ interface SliderEl extends HTMLElement {
   showStops?: boolean;
   segmented?: boolean;
   marks?: unknown;
+  showInput?: boolean;
+  showInputControls?: boolean;
+  inputSize?: string;
+  ariaLabel?: string;
+  rangeStartLabel?: string;
+  rangeEndLabel?: string;
+  formatValueText?: (value: number) => string;
+  tooltipClass?: string;
+  placement?: string;
+  label?: string;
 }
 
 const mount = async (patch: Partial<SliderEl> = {}): Promise<SliderEl> => {
@@ -160,5 +170,52 @@ describe("elf-slider", () => {
     await tick();
 
     expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it("exposes accessible labels and formatted value text on native range inputs", async () => {
+    const el = await mount({
+      range: true,
+      modelValue: [20, 80],
+      rangeStartLabel: "Minimum price",
+      rangeEndLabel: "Maximum price",
+      formatValueText: (value) => `$${value}`
+    });
+
+    const start = el.shadowRoot!.querySelector(".native-start") as HTMLInputElement;
+    const end = el.shadowRoot!.querySelector(".native-end") as HTMLInputElement;
+    expect(start.getAttribute("aria-label")).toBe("Minimum price");
+    expect(end.getAttribute("aria-label")).toBe("Maximum price");
+    expect(start.getAttribute("aria-valuetext")).toBe("$20");
+    expect(end.getAttribute("aria-valuetext")).toBe("$80");
+  });
+
+  it("applies tooltip placement and consumer classes", async () => {
+    const el = await mount({ tooltipClass: "price-tooltip", placement: "right" });
+    const tooltip = el.shadowRoot!.querySelector(".tooltip") as HTMLElement;
+
+    expect(tooltip.classList.contains("placement-right")).toBe(true);
+    expect(tooltip.classList.contains("price-tooltip")).toBe(true);
+  });
+
+  it("supports a sized input without native number controls and keeps it synchronized", async () => {
+    const el = await mount({
+      modelValue: 20,
+      showInput: true,
+      showInputControls: false,
+      inputSize: "large",
+      label: "Volume"
+    });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    const input = el.shadowRoot!.querySelector(".number-input") as HTMLInputElement;
+
+    expect(input.classList.contains("without-controls")).toBe(true);
+    expect(input.classList.contains("size-lg")).toBe(true);
+    expect(input.getAttribute("aria-label")).toBe("Volume");
+
+    setRangeValue(input, "42");
+    await tick();
+
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(42);
   });
 });
