@@ -22,4 +22,7 @@ export interface SegmentedProps {
   disabled: boolean;
   block: boolean;
   props: SegmentedFieldNames;
+  name: string;
+  id: string;
+  validateEvent: boolean;
 }

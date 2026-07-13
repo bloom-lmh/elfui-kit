@@ -17,6 +17,8 @@ interface SegmentedEl extends HTMLElement {
   modelValue?: string | number | boolean;
   options?: unknown[];
   block?: boolean;
+  name?: string;
+  id?: string;
 }
 
 const mount = async (patch: Partial<SegmentedEl> = {}): Promise<SegmentedEl> => {
@@ -64,5 +66,14 @@ describe("elf-segmented", () => {
     (el.shadowRoot!.querySelectorAll(".option")[2] as HTMLButtonElement).click();
 
     expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it("exposes accessible radio semantics and name/id", async () => {
+    const el = await mount({ name: "period", id: "period-choice" });
+    const group = el.shadowRoot!.querySelector(".segmented")!;
+    expect(group.getAttribute("role")).toBe("radiogroup");
+    expect(group.getAttribute("id")).toBe("period-choice");
+    expect(group.getAttribute("aria-label")).toBe("period");
+    expect(group.querySelector(".option")?.getAttribute("aria-checked")).toBe("true");
   });
 });

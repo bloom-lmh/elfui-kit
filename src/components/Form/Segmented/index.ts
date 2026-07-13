@@ -9,6 +9,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useFormControl } from "../../../composables";
 import type {
   SegmentedFieldNames,
   SegmentedOption,
@@ -39,6 +40,9 @@ const props = defineProps<SegmentedProps>({
   size: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   block: { type: Boolean, default: false },
+  name: { type: String, default: "" },
+  id: { type: String, default: "" },
+  validateEvent: { type: Boolean, default: true },
   props: {
     type: Object,
     default: () => ({ label: "label", value: "value", disabled: "disabled" })
@@ -46,6 +50,9 @@ const props = defineProps<SegmentedProps>({
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
+const ctl = useFormControl<SegmentedValue>(props, emit, {
+  triggers: props.validateEvent === false ? { change: false, input: false, blur: false } : { input: false, blur: false }
+});
 
 const fields = (): Required<SegmentedFieldNames> => {
   const value = props.props || {};
@@ -83,8 +90,8 @@ const isActive = (option: ViewOption): boolean => String(option.value) === Strin
 
 const select = (option: ViewOption): void => {
   if (props.disabled || option.disabled || isActive(option)) return;
-  emit("update:modelValue", option.value);
-  emit("change", option.value);
+  ctl.setValue(option.value);
+  ctl.dispatchChange(option.value);
 };
 
 const onContainerClick = (event: Event): void => {
@@ -106,7 +113,7 @@ useHostFlag("disabled", () => Boolean(props.disabled));
 defineStyle(styles);
 
 const Segmented = defineHtml<SegmentedProps>(html`
-  <div class="segmented" role="group" part="segmented" @click=${onContainerClick}>
+  <div class="segmented" role="radiogroup" :id=${props.id || null} :aria-label=${props.name || null} part="segmented" @click=${onContainerClick}>
     <button
       v-for="option in options()"
       :key="option.key"
@@ -114,7 +121,9 @@ const Segmented = defineHtml<SegmentedProps>(html`
       :class="['option', { 'is-active': isActive(option) }]"
       :data-index="option.key"
       :disabled="props.disabled || option.disabled"
-      :aria-pressed="isActive(option) ? 'true' : 'false'"
+      role="radio"
+      :aria-checked="isActive(option) ? 'true' : 'false'"
+      :name=${props.name || null}
     >
       {{ option.label }}
     </button>
