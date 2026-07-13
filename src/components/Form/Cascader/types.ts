@@ -10,6 +10,11 @@ export type CascaderSize = "small" | "default" | "large" | "sm" | "md" | "lg";
 export type CascaderExpandTrigger = "click" | "hover";
 export type CascaderShowCheckedStrategy = "child" | "parent";
 
+/** Decides whether a selectable cascader node matches a search keyword. */
+export type CascaderFilterMethod = (node: CascaderNodeSnapshot, keyword: string) => boolean;
+/** May cancel a search before its result list is rendered. */
+export type CascaderBeforeFilter = (keyword: string) => boolean | Promise<boolean>;
+
 export interface CascaderOption {
   label?: string;
   value?: CascaderValue;
@@ -71,6 +76,8 @@ export interface CascaderProps {
   showPrefix: boolean;
   showCheckedStrategy: CascaderShowCheckedStrategy;
   filterable: boolean;
+  filterMethod?: CascaderFilterMethod;
+  beforeFilter?: CascaderBeforeFilter;
   debounce: number;
   virtualScroll: boolean;
   itemSize: number;

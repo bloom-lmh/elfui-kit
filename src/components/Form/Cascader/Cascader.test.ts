@@ -11,6 +11,11 @@ afterEach(() => {
 });
 
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
+const flushFilter = async (): Promise<void> => {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await tick();
+  await tick();
+};
 
 interface CascaderEl extends HTMLElement {
   modelValue?: unknown[] | unknown[][];
@@ -19,6 +24,10 @@ interface CascaderEl extends HTMLElement {
   disabled?: boolean;
   multiple?: boolean;
   checkable?: boolean;
+  filterable?: boolean;
+  debounce?: number;
+  filterMethod?: (node: { label: string }, keyword: string) => boolean;
+  beforeFilter?: (keyword: string) => boolean | Promise<boolean>;
   props?: Record<string, unknown>;
   clear?: () => void;
 }
@@ -265,5 +274,45 @@ describe("elf-cascader", () => {
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual([]);
     expect(el.getCheckedNodes?.()).toEqual([]);
+  });
+
+  it("filters selectable paths and selects the matching result", async () => {
+    const el = await mount({ filterable: true, debounce: 0 });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>(".filter-input")!;
+    input.value = "杭州";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await flushFilter();
+
+    const results = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".filter-option");
+    expect(results).toHaveLength(1);
+    expect(results[0].textContent).toContain("杭州");
+    results[0].click();
+    await tick();
+
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["zhejiang", "hangzhou"]);
+    expect(el.hasAttribute("data-open")).toBe(false);
+  });
+
+  it("honors custom and asynchronous pre-filter hooks", async () => {
+    const beforeFilter = vi.fn(async (keyword: string) => keyword !== "blocked");
+    const filterMethod = vi.fn((node: { label: string }, keyword: string) => node.label === "宁波" && keyword === "city");
+    const el = await mount({ filterable: true, debounce: 0, beforeFilter, filterMethod });
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>(".filter-input")!;
+
+    input.value = "blocked";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await flushFilter();
+    expect(beforeFilter).toHaveBeenCalledWith("blocked");
+    expect(el.shadowRoot!.querySelectorAll(".filter-option")).toHaveLength(0);
+
+    input.value = "city";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await flushFilter();
+    expect(filterMethod).toHaveBeenCalled();
+    expect(el.shadowRoot!.querySelectorAll(".filter-option")).toHaveLength(1);
+    expect(el.shadowRoot!.querySelector(".filter-option")?.textContent).toContain("宁波");
   });
 });

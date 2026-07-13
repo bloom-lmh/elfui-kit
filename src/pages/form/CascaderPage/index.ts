@@ -5,6 +5,7 @@ const clearableValue = useRef<string[]>([]);
 const multipleValue = useRef<string[][]>([["zhejiang", "hangzhou"]]);
 const checkableValue = useRef<string[][]>([["jiangsu", "nanjing"]]);
 const panelValue = useRef<string[][]>([["zhejiang", "ningbo"]]);
+const searchValue = useRef<string[]>([]);
 const status = useRef("浙江 / 杭州");
 const multipleStatus = useRef("浙江 / 杭州");
 const checkableStatus = useRef("江苏 / 南京");
@@ -133,6 +134,19 @@ const code5 = `<elf-cascader-panel
   @change=\${onPanelChange}
 />`;
 
+const code6 = `<elf-cascader
+  filterable
+  :options.prop=\${options}
+  :modelValue=\${searchValue}
+  @update:modelValue=\${onSearchUpdate}
+/>`;
+
+const script6 = `const searchValue = useRef([]);
+
+const onSearchUpdate = (event) => {
+  searchValue.set(event.detail);
+};`;
+
 const script5 = `const panelValue = useRef([["zhejiang", "ningbo"]]);
 const panelStatus = useRef("浙江 / 宁波");
 
@@ -180,8 +194,10 @@ const propsRows = [
     name: "filterable / debounce",
     type: "boolean / number",
     default: "false / 300",
-    desc: "过滤能力预留"
+    desc: "Enable debounced selectable-path searching"
   },
+  { name: "filterMethod", type: "(node, keyword) => boolean", default: "-", desc: "Custom search result matcher" },
+  { name: "beforeFilter", type: "(keyword) => boolean | Promise<boolean>", default: "-", desc: "Cancels or asynchronously gates a search" },
   { name: "separator", type: "string", default: "' / '", desc: "回显路径分隔符" },
   { name: "props", type: "CascaderFieldNames", default: "-", desc: "自定义字段名" }
 ];
@@ -342,6 +358,18 @@ const PageCascader = defineHtml(html`
           @change=${onPanelChange}
         ></elf-cascader-panel>
         <span class="demo-state">当前路径：{{ panelStatus }}</span>
+      </div>
+    </elf-playground>
+
+    <elf-playground title="Search paths" :code=${code6} :script=${script6}>
+      <div style="display:grid;gap:12px;width:320px">
+        <elf-cascader
+          filterable
+          :options.prop=${options}
+          :modelValue=${searchValue}
+          @update:modelValue=${onSearchUpdate}
+        ></elf-cascader>
+        <span class="demo-state">Type a city or its parent region to search selectable paths.</span>
       </div>
     </elf-playground>
 

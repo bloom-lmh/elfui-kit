@@ -7,6 +7,7 @@ import {
   defineProps,
   defineStyle,
   html,
+  onBeforeUnmount,
   useClickOutside,
   useEffect,
   useEventListener,
@@ -19,8 +20,10 @@ import {
 import { useDisabled, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
 import type {
+  CascaderBeforeFilter,
   CascaderChangeDetail,
   CascaderExpandTrigger,
+  CascaderFilterMethod,
   CascaderFieldNames,
   CascaderModelValue,
   CascaderNodeSnapshot,
@@ -32,8 +35,10 @@ import type {
 } from "./types";
 
 export type {
+  CascaderBeforeFilter,
   CascaderChangeDetail,
   CascaderExpandTrigger,
+  CascaderFilterMethod,
   CascaderFieldNames,
   CascaderModelValue,
   CascaderMultipleValue,
@@ -90,6 +95,8 @@ const props = defineProps<CascaderProps>({
   showPrefix: { type: Boolean, default: true },
   showCheckedStrategy: { type: String, default: "child" },
   filterable: { type: Boolean, default: false },
+  filterMethod: { type: Function, default: undefined },
+  beforeFilter: { type: Function, default: undefined },
   debounce: { type: Number, default: 300 },
   virtualScroll: { type: Boolean, default: false },
   itemSize: { type: Number, default: 34 },
@@ -130,6 +137,12 @@ const host = useHost();
 const open = useRef(false);
 const selectedValues = useRef<CascaderPathValue[]>([]);
 const activePath = useRef<RawOption[]>([]);
+const query = useRef("");
+const filtering = useRef(false);
+const filteredPaths = useRef<RawOption[][]>([]);
+
+let filterTimer: ReturnType<typeof setTimeout> | null = null;
+let filterRequest = 0;
 
 const config = (): CascaderConfig => {
   const o = (props.props || {}) as CascaderFieldNames;
@@ -372,6 +385,83 @@ const detailFromPaths = (paths: CascaderPathValue[]): CascaderChangeDetail => {
   };
 };
 
+const clearPendingFilter = (): void => {
+  if (filterTimer) clearTimeout(filterTimer);
+  filterTimer = null;
+};
+
+const clearFilter = (): void => {
+  clearPendingFilter();
+  filterRequest += 1;
+  query.set("");
+  filtering.set(false);
+  filteredPaths.set([]);
+};
+
+const isSearchMode = (): boolean => Boolean(props.filterable && query.value.trim());
+
+const isSearchTarget = (path: RawOption[]): boolean => {
+  const option = path[path.length - 1];
+  if (!option || optionDisabled(option)) return false;
+  return optionLeaf(option) || isCheckStrictly() || props.checkable || config().checkOnClickNode;
+};
+
+const defaultFilter = (node: CascaderNodeSnapshot, keyword: string): boolean =>
+  node.pathLabels.join(" / ").toLocaleLowerCase().includes(keyword.toLocaleLowerCase());
+
+const matchesFilter = (node: CascaderNodeSnapshot, keyword: string): boolean => {
+  try {
+    return Boolean(((props.filterMethod as CascaderFilterMethod | undefined) ?? defaultFilter)(node, keyword));
+  } catch {
+    return false;
+  }
+};
+
+const collectFilterResults = (keyword: string): RawOption[][] => {
+  const result: RawOption[][] = [];
+  const visit = (options: RawOption[], parentPath: RawOption[] = []): void => {
+    options.forEach((option) => {
+      const path = [...parentPath, option];
+      const snapshot = nodeSnapshot(path);
+      if (snapshot && isSearchTarget(path) && matchesFilter(snapshot, keyword)) result.push(path);
+      visit(optionChildren(option), path);
+    });
+  };
+  visit(rawOptions());
+  return result;
+};
+
+const runFilter = async (keyword: string, request: number): Promise<void> => {
+  const beforeFilter = props.beforeFilter as CascaderBeforeFilter | undefined;
+  try {
+    const allowed = beforeFilter ? await beforeFilter(keyword) : true;
+    if (request !== filterRequest) return;
+    const nextAllowed = allowed !== false;
+    filteredPaths.set(nextAllowed ? collectFilterResults(keyword) : []);
+  } catch {
+    if (request !== filterRequest) return;
+    filteredPaths.set([]);
+  } finally {
+    if (request === filterRequest) filtering.set(false);
+  }
+};
+
+const scheduleFilter = (): void => {
+  clearPendingFilter();
+  const keyword = query.value.trim();
+  const request = ++filterRequest;
+  if (!keyword) {
+    filtering.set(false);
+    filteredPaths.set([]);
+    return;
+  }
+  filtering.set(true);
+  filterTimer = setTimeout(() => {
+    filterTimer = null;
+    void runFilter(keyword, request);
+  }, Math.max(0, Number(props.debounce) || 0));
+};
+
 const emitChange = (paths: CascaderPathValue[]): void => {
   emit("update:modelValue", modelValueFromPaths(paths));
   emit("change", detailFromPaths(paths));
@@ -380,6 +470,7 @@ const emitChange = (paths: CascaderPathValue[]): void => {
 const closeDropdown = (): void => {
   if (!open.peek()) return;
   open.set(false);
+  clearFilter();
   emit("visible-change", false);
 };
 
@@ -524,6 +615,28 @@ const clear = (event?: Event): void => {
   emit("clear");
 };
 
+const onFilterInput = (event: Event): void => {
+  const input = event.currentTarget as HTMLInputElement | null;
+  query.set(input?.value ?? "");
+  if (!open.peek()) openDropdown();
+  scheduleFilter();
+};
+
+const onFilterKeydown = (event: KeyboardEvent): void => {
+  if (event.key !== "Escape") return;
+  event.preventDefault();
+  closeDropdown();
+};
+
+const onFilterResultsClick = (event: Event): void => {
+  const target = event.target as HTMLElement | null;
+  const option = target?.closest?.(".filter-option") as HTMLElement | null;
+  const key = option?.dataset.pathKey;
+  if (!key) return;
+  const path = findPathByKey(key);
+  if (path.length > 0) onOptionPathClick(path, event);
+};
+
 const isActive = (option: RawOption, column: CascaderColumn): boolean =>
   sameValue(optionValue(activePath.value[column.level] ?? {}), optionValue(option));
 
@@ -638,6 +751,7 @@ useEffect(() => {
 });
 
 useClickOutside(host, closeDropdown);
+onBeforeUnmount(clearPendingFilter);
 useEventListener<CustomEvent<HTMLElement>>(document, CASCADER_OPEN_EVENT, (event) => {
   if (event.detail !== host) closeDropdown();
 });
@@ -660,14 +774,28 @@ const Cascader = defineHtml<CascaderProps>(html`
   <div
     class="trigger"
     part="trigger"
-    tabindex="0"
+    :tabindex=${props.filterable ? undefined : 0}
     role="combobox"
     :aria-expanded=${open.value ? "true" : "false"}
     @click=${toggleOpen}
     @focus=${onTriggerFocus}
     @blur=${onTriggerBlur}
   >
-    <span v-if=${!hasValue()} class="placeholder">${props.placeholder}</span>
+    <input
+      v-if=${props.filterable}
+      class="filter-input"
+      type="text"
+      autocomplete="off"
+      :value=${query.value}
+      :placeholder=${hasValue() ? displayLabel() : props.placeholder}
+      :aria-label=${props.placeholder}
+      @click=${stopClick}
+      @input=${onFilterInput}
+      @keydown=${onFilterKeydown}
+      @focus=${onTriggerFocus}
+      @blur=${onTriggerBlur}
+    />
+    <span v-else-if=${!hasValue()} class="placeholder">${props.placeholder}</span>
     <span v-else class="value">${displayLabel()}</span>
     <span class="suffix" part="suffix">
       <button v-if=${showClear()} type="button" class="clear" aria-label="清空" @click=${clear}>
@@ -683,7 +811,24 @@ const Cascader = defineHtml<CascaderProps>(html`
     role="menu"
     @click=${stopClick}
   >
-    <div v-if=${rawOptions().length === 0} class="empty">暂无数据</div>
+    <div v-if=${isSearchMode()} class="filter-results" role="listbox" @click=${onFilterResultsClick}>
+      <div v-if=${filtering.value} class="empty" aria-live="polite">Searching…</div>
+      <template v-else>
+        <button
+          v-for="path in filteredPaths.value"
+          :key="valuePathKey(pathValues(path))"
+          class="filter-option"
+          type="button"
+          role="option"
+          :data-path-key="valuePathKey(pathValues(path))"
+          :aria-selected="isPathSelected(pathValues(path)) ? 'true' : 'false'"
+        >
+          {{ displayPathLabel(path) }}
+        </button>
+        <slot v-if="filteredPaths.value.length === 0" name="empty"><div class="empty">No matching data</div></slot>
+      </template>
+    </div>
+    <div v-else-if=${rawOptions().length === 0} class="empty">暂无数据</div>
     <div v-else class="columns" @click=${onColumnsClick}>
       <div v-for="column in columns()" :key="column.key" class="column">
         <button

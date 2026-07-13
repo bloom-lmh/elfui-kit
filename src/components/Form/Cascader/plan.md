@@ -240,6 +240,8 @@
 
 ## 本轮已完成（2026-07-05）
 
+- [x] P0 Add debounced `filterable` searching with selectable path results, custom `filter-method`, async `before-filter` cancellation, an empty slot fallback, tests, and a Playground example.
+
 - [x] 兼容 Element Plus `props.multiple`、`props.checkStrictly`、`props.emitPath`、`props.expandTrigger`、`props.showPrefix`、`props.checkOnClickNode`、`props.checkOnClickLeaf`。
 - [x] 补齐 `show-all-levels`、`collapse-tags`、`max-collapse-tags`、`show-checked-strategy` 的基础展示逻辑。
 - [x] 补齐 `expand-change`、`focus`、`blur` 事件和 `getCheckedNodes`、`togglePopperVisible`、`presentText` 暴露方法。
