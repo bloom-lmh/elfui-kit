@@ -28,6 +28,7 @@ describe("elf-empty", () => {
 
     expect(el.shadowRoot!.textContent).toContain("Nothing here");
     expect(el.style.getPropertyValue("--_empty-image-size")).toBe("120px");
+    expect(el.shadowRoot!.querySelector(".illustration")?.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("renders default slot actions", async () => {
@@ -48,6 +49,7 @@ describe("elf-empty", () => {
 
     const image = el.shadowRoot!.querySelector("img")!;
     expect(image.getAttribute("src")).toBe("https://example.com/empty.svg");
+    expect(el.shadowRoot!.querySelector(".illustration")).toBeNull();
     expect(el.style.getPropertyValue("--_empty-image-size")).toBe("96px");
   });
 

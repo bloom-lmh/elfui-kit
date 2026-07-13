@@ -1,21 +1,15 @@
-# Empty Element Plus API 对标计划
+# Empty Element Plus API 对齐计划
 
-生成时间：2026-07-05
+更新时间：2026-07-13
 
-## 对标定位
+- [x] Props：`image`、`image-size`、`description`。
+- [x] Slots：`default`、`image`、`description`。
+- [x] 默认状态使用可主题化 SVG 插画；`--elf-empty-illustration` 与 `--elf-empty-illustration-accent` 支持明暗主题覆盖。
+- [x] 自定义图片会替换默认插画，默认插画对辅助技术隐藏。
+- [x] 文档覆盖默认、插槽及图片场景，PropsTable 同步。
+- [x] 单测覆盖尺寸、默认插画、图片切换与 slots。
 
-- ElfUI 组件目录：`Data/Empty`
-- Element Plus 文档：`empty.md`
-- 实现原则：对齐 Element Plus Empty 的空状态展示 API，内部保持轻量 Web Components 实现。
+## 验收记录
 
-## 第一批实现
-
-- [x] 基础 props：`image`、`image-size`、`description`。
-- [x] 基础 slot：`default`、`image`、`description`。
-- [x] 注册到 Data 组件族并补单测。
-
-## 后续差距
-
-- [x] 2026-07-07 补独立案例页：覆盖基础空状态、自定义 `image`/`image-size`、`image`/`description` slots 和底部操作区。
-- [ ] 增强默认插画样式和全局空状态 token。
-- [x] 页面示例补 Template / Script 双视图和 PropsTable，并覆盖基础、自定义图片、image/description slots 与底部操作区。
+- [x] `pnpm test src/components/Data/Empty/Empty.test.ts` 通过。
+- [x] `pnpm build` 通过。
