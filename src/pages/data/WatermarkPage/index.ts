@@ -1,4 +1,7 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
+import { PageWatermarkProps } from "./props";
+
+useComponents({ "page-watermark-props": PageWatermarkProps });
 
 const code1 = `<elf-watermark
   content="ElfUI"
@@ -50,6 +53,7 @@ const PageWatermark = defineHtml(html`
         </div>
       </elf-watermark>
     </elf-playground>
+    <page-watermark-props></page-watermark-props>
   </elf-container>
 `);
 

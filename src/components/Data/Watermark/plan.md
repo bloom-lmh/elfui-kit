@@ -16,7 +16,7 @@
 ## 后续差距
 
 - [ ] 补齐 font 对象配置、append-to、anti-tamper 等高级能力。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
 
 ## 本轮案例页
 
