@@ -1,4 +1,7 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "elfui";
+import { PageInputTagProps } from "./props";
+
+useComponents({ "page-input-tag-props": PageInputTagProps });
 
 const tags = useRef(["设计", "开发"]);
 const limitedTags = useRef(["Alpha"]);
@@ -84,6 +87,7 @@ const PageInputTag = defineHtml(html`
         <elf-input-tag :modelValue.prop=${["禁用"]} disabled></elf-input-tag>
       </div>
     </elf-playground>
+    <page-input-tag-props></page-input-tag-props>
   </elf-container>
 `);
 

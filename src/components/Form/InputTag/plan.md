@@ -15,8 +15,8 @@
 
 ## 后续差距
 
-- [ ] 补齐 trigger、tag-type、tag-effect、draggable、validate-event、suffix/prefix slot。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 补齐 trigger、tag-type、tag-effect、draggable、validate-event、suffix/prefix slot。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
 
 ## 本轮案例页
 
