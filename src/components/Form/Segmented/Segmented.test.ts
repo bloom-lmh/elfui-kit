@@ -19,6 +19,8 @@ interface SegmentedEl extends HTMLElement {
   block?: boolean;
   name?: string;
   id?: string;
+  ariaLabel?: string;
+  label?: string;
 }
 
 const mount = async (patch: Partial<SegmentedEl> = {}): Promise<SegmentedEl> => {
@@ -69,11 +71,31 @@ describe("elf-segmented", () => {
   });
 
   it("exposes accessible radio semantics and name/id", async () => {
-    const el = await mount({ name: "period", id: "period-choice" });
+    const el = await mount({ name: "period", id: "period-choice", ariaLabel: "Report period" });
     const group = el.shadowRoot!.querySelector(".segmented")!;
     expect(group.getAttribute("role")).toBe("radiogroup");
     expect(group.getAttribute("id")).toBe("period-choice");
-    expect(group.getAttribute("aria-label")).toBe("period");
+    expect(group.getAttribute("aria-label")).toBe("Report period");
     expect(group.querySelector(".option")?.getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("uses roving tabindex and arrow navigation while skipping disabled options", async () => {
+    const el = await mount();
+    const onChange = vi.fn();
+    el.addEventListener("change", onChange as EventListener);
+    const buttons = el.shadowRoot!.querySelectorAll(".option") as NodeListOf<HTMLButtonElement>;
+
+    expect(buttons[0]!.tabIndex).toBe(0);
+    expect(buttons[1]!.tabIndex).toBe(-1);
+    buttons[0]!.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    await tick();
+
+    expect((onChange.mock.calls[0]![0] as CustomEvent).detail).toBe("weekly");
+    expect(buttons[1]!.tabIndex).toBe(0);
+    expect(el.shadowRoot!.activeElement).toBe(buttons[1]);
+
+    buttons[1]!.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+    await tick();
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 });

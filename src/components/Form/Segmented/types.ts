@@ -24,5 +24,7 @@ export interface SegmentedProps {
   props: SegmentedFieldNames;
   name: string;
   id: string;
+  ariaLabel: string;
+  label: string;
   validateEvent: boolean;
 }

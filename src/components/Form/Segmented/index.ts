@@ -42,6 +42,8 @@ const props = defineProps<SegmentedProps>({
   block: { type: Boolean, default: false },
   name: { type: String, default: "" },
   id: { type: String, default: "" },
+  ariaLabel: { type: String, default: "" },
+  label: { type: String, default: "" },
   validateEvent: { type: Boolean, default: true },
   props: {
     type: Object,
@@ -86,7 +88,7 @@ const options = (): ViewOption[] => {
   });
 };
 
-const isActive = (option: ViewOption): boolean => String(option.value) === String(props.modelValue);
+const isActive = (option: ViewOption): boolean => String(option.value) === String(ctl.model.value);
 
 const select = (option: ViewOption): void => {
   if (props.disabled || option.disabled || isActive(option)) return;
@@ -101,6 +103,41 @@ const onContainerClick = (event: Event): void => {
   if (option) select(option);
 };
 
+const optionIndexFromEvent = (event: Event): number => {
+  const index = Number((event.currentTarget as HTMLElement | null)?.dataset.index);
+  return Number.isInteger(index) ? index : -1;
+};
+
+const onOptionKeyDown = (event: KeyboardEvent): void => {
+  if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+  const source = options();
+  const enabled = source.filter((option) => !props.disabled && !option.disabled);
+  if (!enabled.length) return;
+  event.preventDefault();
+  const current = source[optionIndexFromEvent(event)];
+  const currentIndex = current ? enabled.findIndex((option) => option.key === current.key) : -1;
+  const backwards = event.key === 'ArrowLeft' || event.key === 'ArrowUp';
+  const next = event.key === 'Home'
+    ? enabled[0]
+    : event.key === 'End'
+      ? enabled[enabled.length - 1]
+      : enabled[(currentIndex + (backwards ? -1 : 1) + enabled.length) % enabled.length];
+  if (!next) return;
+  select(next);
+  const target = (event.currentTarget as HTMLElement | null)?.parentElement?.querySelector<HTMLElement>(
+    `.option[data-index="${next.key}"]`
+  );
+  target?.focus();
+};
+
+const tabIndex = (option: ViewOption): number => {
+  if (props.disabled) return -1;
+  if (isActive(option)) return 0;
+  const source = options();
+  if (source.some(isActive)) return -1;
+  return source.find((entry) => !entry.disabled)?.key === option.key ? 0 : -1;
+};
+
 const normalizedSize = (): SegmentedSize => {
   const value = String(props.size || "") as SegmentedSize;
   return value === "sm" || value === "lg" ? value : "";
@@ -113,7 +150,7 @@ useHostFlag("disabled", () => Boolean(props.disabled));
 defineStyle(styles);
 
 const Segmented = defineHtml<SegmentedProps>(html`
-  <div class="segmented" role="radiogroup" :id=${props.id || null} :aria-label=${props.name || null} part="segmented" @click=${onContainerClick}>
+  <div class="segmented" role="radiogroup" :id=${props.id || null} :aria-label=${props.ariaLabel || props.label || props.name || null} part="segmented" @click=${onContainerClick}>
     <button
       v-for="option in options()"
       :key="option.key"
@@ -124,6 +161,8 @@ const Segmented = defineHtml<SegmentedProps>(html`
       role="radio"
       :aria-checked="isActive(option) ? 'true' : 'false'"
       :name=${props.name || null}
+      :tabindex=${tabIndex(option)}
+      @keydown=${onOptionKeyDown}
     >
       {{ option.label }}
     </button>
