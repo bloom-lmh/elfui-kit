@@ -1,4 +1,7 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "elfui";
+import { PageInputOtpProps } from "./props";
+
+useComponents({ "page-input-otp-props": PageInputOtpProps });
 
 const otp = useRef("4821");
 const payCode = useRef("");
@@ -75,6 +78,7 @@ const PageInputOtp = defineHtml(html`
         <elf-input-otp model-value="123456" disabled></elf-input-otp>
       </div>
     </elf-playground>
+    <page-input-otp-props></page-input-otp-props>
   </elf-container>
 `);
 

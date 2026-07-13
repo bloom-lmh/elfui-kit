@@ -15,8 +15,8 @@
 
 ## 后续差距
 
-- [ ] 补齐 formatter/parser、mask、独立 separator slot、`focus`/`blur` 代理和表单校验联动。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 补齐 formatter/parser、mask、独立 separator slot、`focus`/`blur` 代理和表单校验联动。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
 
 ## 本轮案例页
 
