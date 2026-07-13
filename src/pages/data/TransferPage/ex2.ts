@@ -1,79 +1,49 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
 
 const users = [
-  { id: "u1", name: "张三" },
-  { id: "u2", name: "李四" },
-  { id: "u3", name: "王五" },
-  { id: "u4", name: "赵六" },
-  { id: "u5", name: "孙七" },
-  { id: "u6", name: "周八" },
-  { id: "u7", name: "吴九" },
-  { id: "u8", name: "郑十" },
-  { id: "u9", name: "冯十一" },
-  { id: "u10", name: "陈十二" }
+  { id: "u1", name: "Ada" },
+  { id: "u2", name: "Bruno" },
+  { id: "u3", name: "Chi" },
+  { id: "u4", name: "Dora", locked: true },
+  { id: "u5", name: "Evan" }
 ];
 
-const selected1 = useRef<string[]>([]);
+const selected = useRef<string[]>(["u2"]);
+const readKeys = (event: Event): string[] => (Array.isArray((event as CustomEvent).detail) ? (event as CustomEvent).detail : []);
+const onTransfer = (event: Event): void => selected.set(readKeys(event));
+const filterUsers = (query: string, user: { name: string }): boolean => user.name.toLowerCase().startsWith(query.toLowerCase());
 
-const selected2 = useRef<string[]>([]);
-
-const onTransfer1 = (e: Event) => {
-  const detail = (e as CustomEvent).detail;
-  if (Array.isArray(detail)) selected1.set(detail);
-};
-
-const onTransfer2 = (e: Event) => {
-  const detail = (e as CustomEvent).detail;
-  if (Array.isArray(detail)) selected2.set(detail);
-};
-
-const code1 = `const users = [
-  { id: "u1", name: "张三" },
-  { id: "u2", name: "李四" },
-  // ...
-]
+const code = `const selected = useRef(["u2"])
 <elf-transfer
   :data="users"
   :modelValue="selected"
-  @update:modelValue="onChange"
-  :props="{ key: 'id', label: 'name' }"
-  :titles="['可选用户', '已选用户']"
+  @update:modelValue="onTransfer"
+  :props="{ key: 'id', label: 'name', disabled: 'locked' }"
   filterable
+  :filterMethod="filterUsers"
+  target-order="unshift"
+  :leftDefaultChecked="['u1']"
+  :buttonTexts="['Remove', 'Add']"
+  :format="{ noChecked: '\${total} users', hasChecked: '\${checked}/\${total} selected' }"
 />`;
 
-const code2 = `<elf-transfer
-  :data="users"
-  :modelValue="selected"
-  @update:modelValue="onChange"
-  :props="{ key: 'id', label: 'name' }"
-  filterable
-  filter-placeholder="搜索用户..."
-/>`;
+const noCheckedFormat = "${total} users";
+const hasCheckedFormat = "${checked}/${total} selected";
 
 const PageTransferEx2 = defineHtml(html`
-  <h2>自定义字段 + 可搜索</h2>
-  <elf-playground title="自定义 key/label 映射 + 搜索过滤" :code="code1">
+  <h2>Filter, defaults, and target ordering</h2>
+  <elf-playground title="Custom fields, disabled items, custom filtering, and unshift ordering" :code=${code}>
     <elf-transfer
-      :data="users"
-      :modelValue="selected1"
-      @update:modelValue="onTransfer1"
-      :props="{ key: 'id', label: 'name' }"
-      :titles="['可选用户', '已选用户']"
+      :data=${users}
+      :modelValue=${selected}
+      @update:modelValue=${onTransfer}
+      :props=${{ key: "id", label: "name", disabled: "locked" }}
       filterable
-      filter-placeholder="搜索用户..."
-    ></elf-transfer>
-  </elf-playground>
-
-  <h2>大量数据搜索</h2>
-  <elf-playground title="输入关键词快速筛选" :code="code2">
-    <elf-transfer
-      :data="users"
-      :modelValue="selected2"
-      @update:modelValue="onTransfer2"
-      :props="{ key: 'id', label: 'name' }"
-      filterable
-      filter-placeholder="请输入姓名..."
+      :filterMethod=${filterUsers}
+      target-order="unshift"
+      :leftDefaultChecked=${["u1"]}
+      :buttonTexts=${["Remove", "Add"]}
+      :format=${{ noChecked: noCheckedFormat, hasChecked: hasCheckedFormat }}
     ></elf-transfer>
   </elf-playground>
 `);

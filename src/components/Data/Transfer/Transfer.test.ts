@@ -1,179 +1,130 @@
-// elf-transfer 单元测试
-
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-
-let transferExampleTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
-  const { ensureCustomElement } = await import("elfui");
-  const { PageTransferEx1 } = await import("../../../pages/data/TransferPage/ex1");
-  transferExampleTag = ensureCustomElement(PageTransferEx1);
 });
 
 afterEach(() => {
   document.body.innerHTML = "";
 });
 
-const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
-
+const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
 const sampleData = [
-  { key: "1", label: "选项 1" },
-  { key: "2", label: "选项 2" },
-  { key: "3", label: "选项 3" },
-  { key: "4", label: "选项 4" }
+  { key: "1", label: "Item 1" },
+  { key: "2", label: "Item 2" },
+  { key: "3", label: "Item 3" },
+  { key: "4", label: "Item 4" }
 ];
 
-describe("elf-transfer", () => {
-  it("渲染左右面板和按钮", async () => {
-    const el = document.createElement("elf-transfer");
-    (el as any).data = sampleData;
-    document.body.appendChild(el);
-    await tick();
+const mount = async (configure?: (el: any) => void): Promise<any> => {
+  const el = document.createElement("elf-transfer") as any;
+  el.data = sampleData;
+  configure?.(el);
+  document.body.appendChild(el);
+  await tick();
+  await tick();
+  return el;
+};
 
+describe("elf-transfer", () => {
+  it("renders source, target, and action controls", async () => {
+    const el = await mount();
     expect(el.shadowRoot!.querySelector(".panel-left")).toBeTruthy();
     expect(el.shadowRoot!.querySelector(".panel-right")).toBeTruthy();
-    expect(el.shadowRoot!.querySelector(".buttons")).toBeTruthy();
+    expect(el.shadowRoot!.querySelectorAll(".buttons button")).toHaveLength(2);
+    expect(el.shadowRoot!.querySelectorAll(".panel-left .panel-item")).toHaveLength(4);
   });
 
-  it("无数据时展示空状态", async () => {
-    const el = document.createElement("elf-transfer");
-    (el as any).data = [];
-    document.body.appendChild(el);
-    await tick();
-
-    const empties = el.shadowRoot!.querySelectorAll(".panel-empty");
-    expect(empties.length).toBe(2);
+  it("renders selected model keys in the target panel", async () => {
+    const el = await mount((transfer) => {
+      transfer.modelValue = ["1", "3"];
+    });
+    expect(el.shadowRoot!.querySelectorAll(".panel-left .panel-item")).toHaveLength(2);
+    expect(el.shadowRoot!.querySelectorAll(".panel-right .panel-item")).toHaveLength(2);
   });
 
-  it("初始数据全部在左侧", async () => {
-    const el = document.createElement("elf-transfer");
-    (el as any).data = sampleData;
-    document.body.appendChild(el);
+  it("moves checked source items and emits update and change payloads", async () => {
+    const el = await mount();
+    let update: unknown;
+    let change: unknown;
+    el.addEventListener("update:modelValue", (event: Event) => (update = (event as CustomEvent).detail));
+    el.addEventListener("change", (event: Event) => (change = (event as CustomEvent).detail));
+    const checkbox = el.shadowRoot!.querySelector<HTMLInputElement>(".panel-left .panel-item input")!;
+    checkbox.click();
+    await tick();
+    (el.shadowRoot!.querySelector(".buttons button:first-child") as HTMLButtonElement).click();
     await tick();
 
-    const leftItems = el.shadowRoot!.querySelectorAll(".panel-left .panel-item");
-    const rightItems = el.shadowRoot!.querySelectorAll(".panel-right .panel-item");
-    expect(leftItems.length).toBe(4);
-    expect(rightItems.length).toBe(0);
+    expect(update).toEqual(["1"]);
+    expect(change).toEqual([["1"], "right", ["1"]]);
+    expect(el.shadowRoot!.querySelector(".panel-right")?.textContent).toContain("Item 1");
   });
 
-  it("有 modelValue 时右侧显示选中项", async () => {
-    const el = document.createElement("elf-transfer");
-    (el as any).data = sampleData;
-    (el as any).modelValue = ["1", "3"];
-    document.body.appendChild(el);
+  it("does not move disabled items and reports checked-key changes", async () => {
+    const el = await mount((transfer) => {
+      transfer.data = [...sampleData, { key: "disabled", label: "Disabled", disabled: true }];
+    });
+    let checked: unknown;
+    el.addEventListener("left-check-change", (event: Event) => (checked = (event as CustomEvent).detail));
+    const inputs = el.shadowRoot!.querySelectorAll<HTMLInputElement>(".panel-left .panel-item input");
+    const disabled = Array.from(inputs).find((input) => input.disabled)!;
+    expect(disabled).toBeTruthy();
+    (inputs[0] as HTMLInputElement).click();
     await tick();
-
-    const leftItems = el.shadowRoot!.querySelectorAll(".panel-left .panel-item");
-    const rightItems = el.shadowRoot!.querySelectorAll(".panel-right .panel-item");
-    expect(leftItems.length).toBe(2);
-    expect(rightItems.length).toBe(2);
+    expect(checked).toEqual([["1"], ["1"]]);
+    (el.shadowRoot!.querySelector(".buttons button:first-child") as HTMLButtonElement).click();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".panel-right")?.textContent).not.toContain("Disabled");
   });
 
-  it("显示标题", async () => {
-    const el = document.createElement("elf-transfer");
-    (el as any).data = sampleData;
-    (el as any).titles = ["可选", "已选"];
-    document.body.appendChild(el);
+  it("applies default checked keys only to selectable items", async () => {
+    const el = await mount((transfer) => {
+      transfer.data = [...sampleData, { key: "disabled", label: "Disabled", disabled: true }];
+      transfer.leftDefaultChecked = ["1", "disabled"];
+    });
+    const toRight = el.shadowRoot!.querySelector(".buttons button:first-child") as HTMLButtonElement;
+    expect(toRight.disabled).toBe(false);
+    toRight.click();
     await tick();
-
-    const headers = el.shadowRoot!.querySelectorAll(".panel-header span");
-    const texts = Array.from(headers).map((s) => s.textContent?.trim());
-    expect(texts).toContain("可选");
-    expect(texts).toContain("已选");
+    expect(el.shadowRoot!.querySelector(".panel-right")?.textContent).toContain("Item 1");
+    expect(el.shadowRoot!.querySelector(".panel-right")?.textContent).not.toContain("Disabled");
   });
 
-  it("点击 → 按钮触发 update:modelValue", async () => {
-    const el = document.createElement("elf-transfer");
-    (el as any).data = sampleData;
-    document.body.appendChild(el);
+  it("supports unshift target order with controlled model writeback", async () => {
+    const el = await mount((transfer) => {
+      transfer.modelValue = ["2"];
+      transfer.targetOrder = "unshift";
+      transfer.leftDefaultChecked = ["1"];
+      transfer.addEventListener("update:modelValue", ((event: CustomEvent) => {
+        transfer.modelValue = event.detail;
+      }) as EventListener);
+    });
+    (el.shadowRoot!.querySelector(".buttons button:first-child") as HTMLButtonElement).click();
     await tick();
-
-    // 点击左侧第一个复选框
-    const leftCheckbox = el.shadowRoot!.querySelector(
-      ".panel-left .panel-item input[type='checkbox']"
-    ) as HTMLInputElement;
-    leftCheckbox.click();
-    await tick();
-
-    let emitted: string[] = [];
-    el.addEventListener("update:modelValue", ((e: CustomEvent) => {
-      emitted = e.detail;
-    }) as EventListener);
-
-    // 点击 → 按钮
-    const toRightBtn = el.shadowRoot!.querySelector(
-      ".buttons button:first-child"
-    ) as HTMLButtonElement;
-    toRightBtn.click();
-    await tick();
-
-    expect(emitted).toContain("1");
+    const labels = Array.from(el.shadowRoot!.querySelectorAll(".panel-right .panel-item span")).map((node) => node.textContent?.trim());
+    expect(labels).toEqual(["Item 1", "Item 2"]);
   });
 
-  it("受控回写后支持从右侧移回左侧", async () => {
-    const el = document.createElement("elf-transfer");
-    (el as any).data = sampleData;
-    (el as any).modelValue = ["1", "3"];
-    el.addEventListener("update:modelValue", ((e: CustomEvent) => {
-      (el as any).modelValue = e.detail;
-    }) as EventListener);
-    document.body.appendChild(el);
+  it("filters with a custom method and clears queries through the exposed method", async () => {
+    const el = await mount((transfer) => {
+      transfer.filterable = true;
+      transfer.filterMethod = (query: string, item: { key: string }) => query === item.key;
+    });
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>(".panel-left .panel-filter input")!;
+    input.value = "3";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
     await tick();
-
-    const rightCheckbox = el.shadowRoot!.querySelector(
-      ".panel-right .panel-item input[type='checkbox']"
-    ) as HTMLInputElement;
-    rightCheckbox.click();
+    expect(el.shadowRoot!.querySelectorAll(".panel-left .panel-item")).toHaveLength(1);
+    expect(el.shadowRoot!.querySelector(".panel-left")?.textContent).toContain("Item 3");
+    el.clearQuery();
     await tick();
-
-    const toLeftBtn = el.shadowRoot!.querySelector(
-      ".buttons button:nth-child(2)"
-    ) as HTMLButtonElement;
-    expect(toLeftBtn.disabled).toBe(false);
-    toLeftBtn.click();
-    await tick();
-
-    const leftText = el.shadowRoot!.querySelector(".panel-left")?.textContent ?? "";
-    const rightText = el.shadowRoot!.querySelector(".panel-right")?.textContent ?? "";
-    expect((el as any).modelValue).toEqual(["3"]);
-    expect(leftText).toContain("选项 1");
-    expect(rightText).not.toContain("选项 1");
+    expect(el.shadowRoot!.querySelectorAll(".panel-left .panel-item")).toHaveLength(4);
   });
 
-  it("页面示例中支持完整左右移动", async () => {
-    const page = document.createElement(transferExampleTag);
-    document.body.appendChild(page);
-    await tick();
-
-    const transfer = page.shadowRoot!.querySelector("elf-transfer") as HTMLElement;
-    const root = transfer.shadowRoot!;
-    const leftCheckbox = root.querySelector(
-      ".panel-left .panel-item input[type='checkbox']"
-    ) as HTMLInputElement;
-    leftCheckbox.click();
-    await tick();
-
-    const toRightBtn = root.querySelector(".buttons button:first-child") as HTMLButtonElement;
-    expect(toRightBtn.disabled).toBe(false);
-    toRightBtn.click();
-    await tick();
-
-    expect(root.querySelector(".panel-right")?.textContent ?? "").toContain("选项 1");
-
-    const rightCheckbox = root.querySelector(
-      ".panel-right .panel-item input[type='checkbox']"
-    ) as HTMLInputElement;
-    rightCheckbox.click();
-    await tick();
-
-    const toLeftBtn = root.querySelector(".buttons button:nth-child(2)") as HTMLButtonElement;
-    expect(toLeftBtn.disabled).toBe(false);
-    toLeftBtn.click();
-    await tick();
-
-    expect(root.querySelector(".panel-left")?.textContent ?? "").toContain("选项 1");
-    expect(root.querySelector(".panel-right")?.textContent ?? "").not.toContain("选项 1");
+  it("hides both panels behind empty slots when the data set is empty", async () => {
+    const el = await mount((transfer) => {
+      transfer.data = [];
+    });
+    expect(el.shadowRoot!.querySelectorAll(".panel-empty")).toHaveLength(2);
   });
 });

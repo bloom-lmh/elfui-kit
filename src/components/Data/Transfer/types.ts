@@ -10,6 +10,13 @@ export interface TransferFieldNames {
   disabled?: string;
 }
 
+export type TransferDirection = "left" | "right";
+export type TransferTargetOrder = "original" | "push" | "unshift";
+export interface TransferFormat {
+  noChecked?: string;
+  hasChecked?: string;
+}
+
 export interface TransferProps {
   /** 数据源 */
   data: TransferDataItem[];
@@ -21,6 +28,12 @@ export interface TransferProps {
   filterable: boolean;
   /** 搜索框占位文本 */
   filterPlaceholder: string;
+  filterMethod?: (query: string, item: TransferDataItem) => boolean;
+  targetOrder: TransferTargetOrder;
+  buttonTexts: [string, string] | string[];
+  format: TransferFormat;
+  leftDefaultChecked: string[];
+  rightDefaultChecked: string[];
   /** 字段别名 */
   props: TransferFieldNames;
 }

@@ -1,263 +1,272 @@
-// elf-transfer — 穿梭框
-//
-// 使用：
-//   const selected = useRef([])
-//   <elf-transfer :data="list" :modelValue="selected" @update:modelValue="onChange" />
-//
-// Material Design 风格，对标 Element Plus el-transfer。
-
 import {
   defineEmits,
+  defineExpose,
+  defineHtml,
   defineProps,
   defineStyle,
   html,
+  onMount,
   useReactive,
   useRef,
-  watchEffect,
-  defineHtml
+  watchEffect
 } from "elfui";
 
 import styles from "./style.scss?inline";
 
-export type { TransferDataItem, TransferFieldNames, TransferProps } from "./types";
+export type {
+  TransferDataItem,
+  TransferDirection,
+  TransferFieldNames,
+  TransferFormat,
+  TransferProps,
+  TransferTargetOrder
+} from "./types";
 
 const props = defineProps({
   data: { type: Array, default: () => [] },
   modelValue: { type: Array, default: () => [] },
-  titles: { type: Array, default: () => ["源列表", "目标列表"] },
+  titles: { type: Array, default: () => ["Source", "Target"] },
   filterable: { type: Boolean, default: false },
-  filterPlaceholder: { type: String, default: "请输入搜索内容" },
-  props: { type: Object, default: () => ({ key: "key", label: "label" }) }
+  filterPlaceholder: { type: String, default: "Search" },
+  filterMethod: { type: Function, default: undefined },
+  targetOrder: { type: String, default: "original" },
+  buttonTexts: { type: Array, default: () => [] },
+  format: { type: Object, default: () => ({}) },
+  leftDefaultChecked: { type: Array, default: () => [] },
+  rightDefaultChecked: { type: Array, default: () => [] },
+  props: { type: Object, default: () => ({ key: "key", label: "label", disabled: "disabled" }) }
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "change", "left-check-change", "right-check-change"]);
 
-type TransferViewItem = Record<string, unknown> & { __key: string; __label: string };
-
-const fieldKey = useRef("key");
-
-const fieldLabel = useRef("label");
-
-const selectedKeys = useRef<string[]>([]);
-
-const leftFilter = useRef("");
-
-const rightFilter = useRef("");
-
-const leftChecked = useReactive<Record<string, boolean>>({});
-
-const rightChecked = useReactive<Record<string, boolean>>({});
-
-const _source = useRef<TransferViewItem[]>([]);
-
-const _target = useRef<TransferViewItem[]>([]);
-
-const leftCheckedCount = useRef(0);
-
-const rightCheckedCount = useRef(0);
-
-const normalizeKeys = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return [];
-  return value.map((key) => String(key));
+type TransferViewItem = Record<string, unknown> & {
+  __key: string;
+  __label: string;
+  __disabled: boolean;
+  __original: number;
 };
 
-const getCheckedKeys = (bucket: Record<string, boolean>): string[] =>
-  Object.keys(bucket).filter((key) => bucket[key]);
+const fieldKey = useRef("key");
+const fieldLabel = useRef("label");
+const fieldDisabled = useRef("disabled");
+const selectedKeys = useRef<string[]>([]);
+const leftFilter = useRef("");
+const rightFilter = useRef("");
+const leftChecked = useReactive<Record<string, boolean>>({});
+const rightChecked = useReactive<Record<string, boolean>>({});
+const source = useRef<TransferViewItem[]>([]);
+const target = useRef<TransferViewItem[]>([]);
+const leftCheckedCount = useRef(0);
+const rightCheckedCount = useRef(0);
+const leftTotalCount = useRef(0);
+const rightTotalCount = useRef(0);
+let defaultsApplied = false;
 
+const normalizeKeys = (value: unknown): string[] =>
+  Array.isArray(value) ? Array.from(new Set(value.map((key) => String(key)))) : [];
+const checkedKeys = (bucket: Record<string, boolean>): string[] => Object.keys(bucket).filter((key) => bucket[key]);
 const clearChecked = (bucket: Record<string, boolean>): void => {
   for (const key of Object.keys(bucket)) delete bucket[key];
 };
-
-const syncCheckedCount = (): void => {
-  leftCheckedCount.set(getCheckedKeys(leftChecked).length);
-  rightCheckedCount.set(getCheckedKeys(rightChecked).length);
+const syncCheckedCounts = (): void => {
+  leftCheckedCount.set(checkedKeys(leftChecked).length);
+  rightCheckedCount.set(checkedKeys(rightChecked).length);
+};
+const sourceItems = (): TransferViewItem[] => source.value;
+const targetItems = (): TransferViewItem[] => target.value;
+const leftSelectable = (): TransferViewItem[] => source.value.filter((item) => !item.__disabled);
+const rightSelectable = (): TransferViewItem[] => target.value.filter((item) => !item.__disabled);
+const leftAllChecked = (): boolean => {
+  const items = leftSelectable();
+  return items.length > 0 && items.every((item) => leftChecked[item.__key]);
+};
+const rightAllChecked = (): boolean => {
+  const items = rightSelectable();
+  return items.length > 0 && items.every((item) => rightChecked[item.__key]);
 };
 
-const setChecked = (
-  bucket: Record<string, boolean>,
-  item: TransferViewItem,
-  checked: boolean
-): void => {
-  if (checked) bucket[item.__key] = true;
-  else delete bucket[item.__key];
-  syncCheckedCount();
-};
-
-const commitValue = (next: string[]): void => {
+const commitValue = (next: string[], direction: TransferDirection, movedKeys: string[]): void => {
   const normalized = Array.from(new Set(next.map((key) => String(key))));
   selectedKeys.set(normalized);
   emit("update:modelValue", normalized);
+  emit("change", normalized, direction, movedKeys);
 };
 
-const getSource = () => _source.value;
+const emitCheck = (side: "left" | "right", changedKeys: string[]): void => {
+  const bucket = side === "left" ? leftChecked : rightChecked;
+  emit(`${side}-check-change`, checkedKeys(bucket), changedKeys);
+};
 
-const getTarget = () => _target.value;
+const matchesFilter = (query: string, item: TransferViewItem): boolean => {
+  if (!query) return true;
+  const method = props.filterMethod as unknown;
+  if (typeof method === "function") return Boolean(method(query, item));
+  return item.__label.toLowerCase().includes(query.toLowerCase());
+};
 
-const getLeftCount = () => _source.value.length;
-
-const getRightCount = () => _target.value.length;
+const orderedTarget = (items: TransferViewItem[], keys: string[]): TransferViewItem[] => {
+  if (props.targetOrder === "original") return items.filter((item) => keys.includes(item.__key));
+  const byKey = new Map(items.map((item) => [item.__key, item]));
+  return keys.map((key) => byKey.get(key)).filter((item): item is TransferViewItem => Boolean(item));
+};
 
 watchEffect(() => {
-  const p = (props.props || { key: "key", label: "label" }) as Record<string, string>;
-  fieldKey.set(p.key || "key");
-  fieldLabel.set(p.label || "label");
+  const fieldMap = (props.props || {}) as Record<string, string>;
+  fieldKey.set(fieldMap.key || "key");
+  fieldLabel.set(fieldMap.label || "label");
+  fieldDisabled.set(fieldMap.disabled || "disabled");
 });
 
-watchEffect(() => {
-  selectedKeys.set(normalizeKeys(props.modelValue));
-});
+watchEffect(() => selectedKeys.set(normalizeKeys(props.modelValue)));
 
-watchEffect(() => {
+const rebuild = (): void => {
   const all = (props.data || []) as Record<string, unknown>[];
   const selected = new Set(selectedKeys.value);
-  const fk = fieldKey.value;
-  const fl = fieldLabel.value;
-  const leftKw = leftFilter.value.toLowerCase();
-  const rightKw = rightFilter.value.toLowerCase();
-  const left: TransferViewItem[] = [];
-  const right: TransferViewItem[] = [];
+  const entries = all.map((item, index) => ({
+    ...item,
+    __key: String(item[fieldKey.value] ?? ""),
+    __label: String(item[fieldLabel.value] ?? ""),
+    __disabled: Boolean(item[fieldDisabled.value]),
+    __original: index
+  })) as TransferViewItem[];
+  const selectedEntries = orderedTarget(entries, selectedKeys.value);
+  const sourceEntries = entries.filter((item) => !selected.has(item.__key));
+  const nextSource = sourceEntries.filter((item) => matchesFilter(leftFilter.value, item));
+  const nextTarget = selectedEntries.filter((item) => matchesFilter(rightFilter.value, item));
+  source.set(nextSource);
+  target.set(nextTarget);
+  leftTotalCount.set(sourceEntries.length);
+  rightTotalCount.set(selectedEntries.length);
 
-  for (const item of all) {
-    const key = String(item[fk] ?? "");
-    const label = String(item[fl] ?? "");
-    const viewItem = { ...item, __key: key, __label: label };
-    if (selected.has(key)) {
-      if (!rightKw || label.toLowerCase().includes(rightKw)) right.push(viewItem);
-    } else if (!leftKw || label.toLowerCase().includes(leftKw)) {
-      left.push(viewItem);
-    }
-  }
+  const visibleLeft = new Set(nextSource.map((item) => item.__key));
+  const visibleRight = new Set(nextTarget.map((item) => item.__key));
+  for (const key of Object.keys(leftChecked)) if (!visibleLeft.has(key)) delete leftChecked[key];
+  for (const key of Object.keys(rightChecked)) if (!visibleRight.has(key)) delete rightChecked[key];
+  syncCheckedCounts();
 
-  _source.set(left);
-  _target.set(right);
+  if (!defaultsApplied && entries.length > 0) {
+    const leftDefaults = new Set(normalizeKeys(props.leftDefaultChecked));
+    const rightDefaults = new Set(normalizeKeys(props.rightDefaultChecked));
+    for (const item of sourceEntries) if (!item.__disabled && leftDefaults.has(item.__key)) leftChecked[item.__key] = true;
+    for (const item of selectedEntries) if (!item.__disabled && rightDefaults.has(item.__key)) rightChecked[item.__key] = true;
+    defaultsApplied = true;
+    syncCheckedCounts();
+  }
+};
+watchEffect(rebuild);
+onMount(rebuild);
 
-  const leftKeySet = new Set(left.map((item) => item.__key));
-  const rightKeySet = new Set(right.map((item) => item.__key));
-  for (const key of Object.keys(leftChecked)) {
-    if (!leftKeySet.has(key)) delete leftChecked[key];
-  }
-  for (const key of Object.keys(rightChecked)) {
-    if (!rightKeySet.has(key)) delete rightChecked[key];
-  }
-  syncCheckedCount();
-});
-
-const toggleLeftAll = (e: Event): void => {
-  clearChecked(leftChecked);
-  if ((e.target as HTMLInputElement).checked) {
-    for (const item of _source.peek()) leftChecked[item.__key] = true;
-  }
-  syncCheckedCount();
+const setChecked = (side: "left" | "right", item: TransferViewItem, checked: boolean): void => {
+  if (item.__disabled) return;
+  const bucket = side === "left" ? leftChecked : rightChecked;
+  if (checked) bucket[item.__key] = true;
+  else delete bucket[item.__key];
+  syncCheckedCounts();
+  emitCheck(side, [item.__key]);
 };
 
-const toggleRightAll = (e: Event): void => {
-  clearChecked(rightChecked);
-  if ((e.target as HTMLInputElement).checked) {
-    for (const item of _target.peek()) rightChecked[item.__key] = true;
+const toggleAll = (side: "left" | "right", event: Event): void => {
+  const bucket = side === "left" ? leftChecked : rightChecked;
+  const items = side === "left" ? leftSelectable() : rightSelectable();
+  clearChecked(bucket);
+  if ((event.target as HTMLInputElement).checked) {
+    for (const item of items) bucket[item.__key] = true;
   }
-  syncCheckedCount();
-};
-
-const toggleLeftItem = (item: TransferViewItem, e: Event): void => {
-  setChecked(leftChecked, item, (e.target as HTMLInputElement).checked);
-};
-
-const toggleRightItem = (item: TransferViewItem, e: Event): void => {
-  setChecked(rightChecked, item, (e.target as HTMLInputElement).checked);
+  syncCheckedCounts();
+  emitCheck(side, items.map((item) => item.__key));
 };
 
 const moveToRight = (): void => {
-  const keys = getCheckedKeys(leftChecked);
+  const keys = checkedKeys(leftChecked);
   if (keys.length === 0) return;
-  commitValue([...selectedKeys.peek(), ...keys]);
+  const existing = selectedKeys.peek();
+  const next = props.targetOrder === "unshift" ? [...keys, ...existing] : [...existing, ...keys];
+  commitValue(next, "right", keys);
   clearChecked(leftChecked);
-  syncCheckedCount();
+  syncCheckedCounts();
 };
 
 const moveToLeft = (): void => {
-  const keys = getCheckedKeys(rightChecked);
+  const keys = checkedKeys(rightChecked);
   if (keys.length === 0) return;
   const removed = new Set(keys);
-  commitValue(selectedKeys.peek().filter((key) => !removed.has(key)));
+  commitValue(selectedKeys.peek().filter((key) => !removed.has(key)), "left", keys);
   clearChecked(rightChecked);
-  syncCheckedCount();
+  syncCheckedCounts();
 };
 
-const onLeftFilterInput = (e: Event): void => {
-  leftFilter.set((e.target as HTMLInputElement).value);
+const onFilterInput = (side: "left" | "right", event: Event): void => {
+  const value = (event.target as HTMLInputElement).value;
+  if (side === "left") leftFilter.set(value);
+  else rightFilter.set(value);
+};
+const clearQuery = (side?: "left" | "right"): void => {
+  if (!side || side === "left") leftFilter.set("");
+  if (!side || side === "right") rightFilter.set("");
+};
+const title = (side: "left" | "right"): string => String((props.titles as string[])[side === "left" ? 0 : 1] || (side === "left" ? "Source" : "Target"));
+const buttonText = (direction: "left" | "right"): string => {
+  const texts = props.buttonTexts as string[];
+  return String(texts?.[direction === "left" ? 0 : 1] || (direction === "left" ? "←" : "→"));
+};
+const countText = (side: "left" | "right"): string => {
+  const checked = side === "left" ? leftCheckedCount.value : rightCheckedCount.value;
+  const total = side === "left" ? leftTotalCount.value : rightTotalCount.value;
+  const format = (props.format || {}) as Record<string, string>;
+  const template = checked > 0 ? format.hasChecked || "${checked}/${total}" : format.noChecked || "${total}";
+  return template.replace(/\$\{checked\}/g, String(checked)).replace(/\$\{total\}/g, String(total));
 };
 
-const onRightFilterInput = (e: Event): void => {
-  rightFilter.set((e.target as HTMLInputElement).value);
-};
-
+defineExpose({
+  clearQuery,
+  leftPanel: { get query() { return leftFilter.peek(); } },
+  rightPanel: { get query() { return rightFilter.peek(); } }
+});
 defineStyle(styles);
 
 const Transfer = defineHtml(html`
-  <div class="panel panel-left">
+  <section class="panel panel-left" aria-label="Source transfer panel">
     <div class="panel-header">
-      <input
-        type="checkbox"
-        @change="toggleLeftAll($event)"
-        :checked=${leftCheckedCount > 0 && leftCheckedCount === getLeftCount()}
-      />
-      <span>${props.titles ? props.titles[0] : "源列表"}</span>
-      <span class="count">${leftCheckedCount}/${getLeftCount()}</span>
+      <input type="checkbox" :checked=${leftAllChecked()} @change="toggleAll('left', $event)" aria-label="Select all source items" />
+      <span>${title("left")}</span>
+      <span class="count">${countText("left")}</span>
     </div>
     <div class="panel-filter" v-if=${props.filterable}>
-      <input
-        :placeholder=${props.filterPlaceholder || "请输入搜索内容"}
-        @input=${onLeftFilterInput}
-      />
+      <input :value=${leftFilter.value} :placeholder=${props.filterPlaceholder} aria-label="Filter source items" @input="onFilterInput('left', $event)" />
     </div>
-    <div class="panel-body">
-      <div v-if=${getLeftCount() === 0} class="panel-empty">无数据</div>
-      <label v-for="item in getSource()" :key="item.__key" class="panel-item">
-        <input
-          type="checkbox"
-          :checked="leftChecked[item.__key] || false"
-          @change.stop="toggleLeftItem(item, $event)"
-        />
+    <div class="panel-body" role="list">
+      <div v-if=${sourceItems().length === 0} class="panel-empty"><slot name="left-empty">No data</slot></div>
+      <label v-for="item in sourceItems()" :key="item.__key" class="panel-item" :class="{ 'is-disabled': item.__disabled }">
+        <input type="checkbox" :checked="leftChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('left', item, $event.target.checked)" />
         <span>{{ item.__label }}</span>
       </label>
     </div>
+    <footer class="panel-footer"><slot name="left-footer"></slot></footer>
+  </section>
+
+  <div class="buttons" aria-label="Transfer actions">
+    <button type="button" @click=${moveToRight} :disabled=${leftCheckedCount.value === 0} aria-label="Move selected to target">${buttonText("right")}</button>
+    <button type="button" @click=${moveToLeft} :disabled=${rightCheckedCount.value === 0} aria-label="Move selected to source">${buttonText("left")}</button>
   </div>
 
-  <div class="buttons">
-    <button @click=${moveToRight()} :disabled=${leftCheckedCount === 0} title="添加到右侧">
-      →
-    </button>
-    <button @click=${moveToLeft()} :disabled=${rightCheckedCount === 0} title="移回左侧">←</button>
-  </div>
-
-  <div class="panel panel-right">
+  <section class="panel panel-right" aria-label="Target transfer panel">
     <div class="panel-header">
-      <input
-        type="checkbox"
-        @change="toggleRightAll($event)"
-        :checked=${rightCheckedCount > 0 && rightCheckedCount === getRightCount()}
-      />
-      <span>${props.titles ? props.titles[1] : "目标列表"}</span>
-      <span class="count">${rightCheckedCount}/${getRightCount()}</span>
+      <input type="checkbox" :checked=${rightAllChecked()} @change="toggleAll('right', $event)" aria-label="Select all target items" />
+      <span>${title("right")}</span>
+      <span class="count">${countText("right")}</span>
     </div>
     <div class="panel-filter" v-if=${props.filterable}>
-      <input
-        :placeholder=${props.filterPlaceholder || "请输入搜索内容"}
-        @input=${onRightFilterInput}
-      />
+      <input :value=${rightFilter.value} :placeholder=${props.filterPlaceholder} aria-label="Filter target items" @input="onFilterInput('right', $event)" />
     </div>
-    <div class="panel-body">
-      <div v-if=${getRightCount() === 0} class="panel-empty">无数据</div>
-      <label v-for="item in getTarget()" :key="item.__key" class="panel-item">
-        <input
-          type="checkbox"
-          :checked="rightChecked[item.__key] || false"
-          @change.stop="toggleRightItem(item, $event)"
-        />
+    <div class="panel-body" role="list">
+      <div v-if=${targetItems().length === 0} class="panel-empty"><slot name="right-empty">No data</slot></div>
+      <label v-for="item in targetItems()" :key="item.__key" class="panel-item" :class="{ 'is-disabled': item.__disabled }">
+        <input type="checkbox" :checked="rightChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('right', item, $event.target.checked)" />
         <span>{{ item.__label }}</span>
       </label>
     </div>
-  </div>
+    <footer class="panel-footer"><slot name="right-footer"></slot></footer>
+  </section>
 `);
 
 export { Transfer };

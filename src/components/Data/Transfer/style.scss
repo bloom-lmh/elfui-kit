@@ -121,6 +121,15 @@
   font-size: var(--elf-font-size-xs);
 }
 
+.panel-footer {
+  min-height: 0;
+  border-top: 1px solid var(--elf-border);
+
+  &:empty {
+    display: none;
+  }
+}
+
 // ───── 按钮区 ──────────────────────────────────────
 .buttons {
   display: flex;
