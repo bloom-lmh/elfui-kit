@@ -1,0 +1,88 @@
+.elf-image-preview {
+  position: fixed;
+  z-index: 2100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 78%);
+}
+
+.elf-image-preview__image {
+  display: block;
+  max-width: min(90vw, 1200px);
+  max-height: 76vh;
+  object-fit: contain;
+  transition: transform 160ms ease;
+  user-select: none;
+}
+
+.elf-image-preview__toolbar,
+.elf-image-preview__nav,
+.elf-image-preview__close,
+.elf-image-preview__counter {
+  position: absolute;
+  color: #fff;
+}
+
+.elf-image-preview__toolbar {
+  inset-block-end: 28px;
+  inset-inline-start: 50%;
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 42%);
+  transform: translateX(-50%);
+}
+
+.elf-image-preview button {
+  min-width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.elf-image-preview button:hover {
+  background: rgb(255 255 255 / 18%);
+}
+
+.elf-image-preview button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.elf-image-preview__close {
+  inset-block-start: 20px;
+  inset-inline-end: 20px;
+  background: rgb(0 0 0 / 42%) !important;
+}
+
+.elf-image-preview__nav {
+  inset-block-start: 50%;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: rgb(0 0 0 / 42%) !important;
+  transform: translateY(-50%);
+}
+
+.elf-image-preview__nav--previous {
+  inset-inline-start: 24px;
+}
+
+.elf-image-preview__nav--next {
+  inset-inline-end: 24px;
+}
+
+.elf-image-preview__counter {
+  inset-block-start: 28px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+}

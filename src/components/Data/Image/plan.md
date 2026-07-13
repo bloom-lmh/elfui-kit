@@ -10,8 +10,8 @@
 
 ## 后续差距
 
-- [ ] 补齐 preview-src-list、initial-index、preview-teleported、zoom-rate、toolbar、viewer 预览能力。
+- [x] 补齐 preview-src-list、initial-index、preview-teleported、zoom-rate、toolbar、viewer 预览能力：支持本地或 body Teleport 渲染、遮罩/键盘关闭、轮换与缩放工具栏。
 
 ## 本轮案例页
 
-- [x] 新增独立展示页面，覆盖 Template / Script、src、fit、width/height、lazy 和 error slot 示例。
+- [x] 新增独立展示页面，覆盖 Template / Script、src、fit、width/height、lazy、error slot 与 preview / zoom / navigation 示例。

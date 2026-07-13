@@ -18,6 +18,10 @@
   background: var(--elf-bg-muted);
 }
 
+.image.is-previewable {
+  cursor: zoom-in;
+}
+
 img {
   display: block;
   width: 100%;

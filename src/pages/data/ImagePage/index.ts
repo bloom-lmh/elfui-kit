@@ -3,6 +3,11 @@ import { defineHtml, html, useRef } from "elfui";
 const fit = useRef("cover");
 
 const imageSrc = "https://picsum.photos/640/360?random=21";
+const previewImages = [
+  "https://picsum.photos/1200/800?random=21",
+  "https://picsum.photos/1200/800?random=22",
+  "https://picsum.photos/1200/800?random=23"
+];
 
 const code1 = `<elf-segmented
   :options.prop=\${["fill", "contain", "cover", "none", "scale-down"]}
@@ -40,6 +45,15 @@ const code3 = `<elf-image
   :width=\${320}
   :height=\${180}
   lazy
+/>`;
+
+const code4 = `<elf-image
+  :src=${previewImages[0]}
+  :previewSrcList.prop=${previewImages}
+  :initialIndex=${0}
+  :width=${320}
+  :height=${180}
+  fit="cover"
 />`;
 
 const onFitUpdate = (event: CustomEvent): void => {
@@ -81,6 +95,18 @@ const PageImage = defineHtml(html`
 
     <elf-playground title="lazy" :code=${code3}>
       <elf-image :src=${imageSrc} alt="懒加载图片" :width=${320} :height=${180} lazy></elf-image>
+    </elf-playground>
+
+    <elf-playground title="preview / zoom / navigation" :code=${code4}>
+      <elf-image
+        :src=${previewImages[0]}
+        :previewSrcList.prop=${previewImages}
+        :initialIndex=${0}
+        :width=${320}
+        :height=${180}
+        fit="cover"
+        alt="Click to preview"
+      ></elf-image>
     </elf-playground>
   </elf-container>
 `);

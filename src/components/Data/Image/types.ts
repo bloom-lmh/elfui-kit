@@ -7,4 +7,9 @@ export interface ImageProps {
   width: number | string;
   height: number | string;
   lazy: boolean;
+  previewSrcList: string[];
+  initialIndex: number;
+  previewTeleported: boolean;
+  zoomRate: number;
+  toolbar: boolean;
 }
