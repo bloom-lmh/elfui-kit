@@ -1,6 +1,10 @@
 export interface WatermarkFont {
   fontSize?: number;
   color?: string;
+  fontWeight?: string | number;
+  fontStyle?: string;
+  fontFamily?: string;
+  textAlign?: "left" | "center" | "right" | "start" | "end";
 }
 
 export interface WatermarkProps {

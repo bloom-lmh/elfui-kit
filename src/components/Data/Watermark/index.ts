@@ -25,6 +25,22 @@ const font = (): WatermarkFont =>
   props.font && typeof props.font === "object" ? props.font : {};
 const fontSize = (): number => Math.max(1, Number(font().fontSize ?? props.fontSize) || 16);
 const fontColor = (): string => String(font().color || props.fontColor || "rgba(0,0,0,0.15)");
+const fontWeight = (): string => String(font().fontWeight ?? "normal");
+const fontStyle = (): string => String(font().fontStyle ?? "normal");
+const fontFamily = (): string => String(font().fontFamily ?? "sans-serif");
+
+const textPosition = (): { x: string; anchor: "start" | "middle" | "end" } => {
+  switch (font().textAlign) {
+    case "left":
+    case "start":
+      return { x: "0", anchor: "start" };
+    case "right":
+    case "end":
+      return { x: "100%", anchor: "end" };
+    default:
+      return { x: "50%", anchor: "middle" };
+  }
+};
 
 const escapeXml = (value: string): string =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -44,12 +60,13 @@ const svgText = (): string => {
   const lines = contentLines();
   const lineHeight = Math.max(14, fontSize()) + 4;
   const startY = height / 2 - ((lines.length - 1) * lineHeight) / 2;
+  const position = textPosition();
   const body = props.image
     ? `<image href="${escapeXml(props.image)}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet" />`
     : lines
         .map(
           (line, index) =>
-            `<text x="50%" y="${startY + index * lineHeight}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize()}" fill="${escapeXml(fontColor())}">${escapeXml(line)}</text>`
+            `<text x="${position.x}" y="${startY + index * lineHeight}" dominant-baseline="middle" text-anchor="${position.anchor}" font-size="${fontSize()}" font-weight="${escapeXml(fontWeight())}" font-style="${escapeXml(fontStyle())}" font-family="${escapeXml(fontFamily())}" fill="${escapeXml(fontColor())}">${escapeXml(line)}</text>`
         )
         .join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><g transform="rotate(${Number(props.rotate) || 0} ${width / 2} ${height / 2})">${body}</g></svg>`;

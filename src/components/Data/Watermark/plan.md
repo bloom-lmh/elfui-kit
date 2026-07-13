@@ -1,23 +1,21 @@
-# Watermark Element Plus API 对标计划
+# Watermark Element Plus API 对齐计划
 
-生成时间：2026-07-05
+更新时间：2026-07-13
 
-## 对标定位
+## 已完成
 
-- ElfUI 组件目录：`Data/Watermark`
-- Element Plus 文档：`watermark.md`
+- [x] 核心 props：`content`、`image`、尺寸、旋转、层级、间距与偏移。
+- [x] `font` 对象：`color`、`fontSize`、`fontWeight`、`fontStyle`、`fontFamily` 与 `textAlign`，并保持旧版 `font-size` / `font-color` 兼容。
+- [x] 文字与图片水印、数组多行内容和默认 slot 承载内容。
+- [x] 文档案例覆盖基础平铺与完整字体对象，PropsTable 同步。
+- [x] 单测覆盖 SVG 背景、字体优先级和完整字体序列化。
 
-## 第一批实现
+## 后续项
 
-- [x] 基础 props：`content`、`image`、`width`、`height`、`rotate`、`z-index`、`gap-x`、`gap-y`、`offset-x`、`offset-y`、`font-size`、`font-color`。
-- [x] 默认 slot 承载水印覆盖内容。
-- [x] 注册到 Data 组件族并补单测。
+- [ ] P1 `append-to`：需要在 Shadow DOM 外建立并同步定位的覆盖层，不能以移动宿主节点的方式伪实现。
+- [ ] P2 `anti-tamper`：需要定义可恢复范围与 MutationObserver 的性能边界后再实现。
 
-## 后续差距
+## 验收记录
 
-- [ ] 补齐 font 对象配置、append-to、anti-tamper 等高级能力。
-- [x] 页面示例补 Template / Script 双视图和 PropsTable。
-
-## 本轮案例页
-
-- [x] 新增独立展示页面，覆盖文字水印、多行 content、尺寸、间距、旋转角度和颜色示例。
+- [x] `pnpm test src/components/Data/Watermark/Watermark.test.ts` 通过。
+- [x] `pnpm build` 通过。
