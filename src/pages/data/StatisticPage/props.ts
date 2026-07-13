@@ -1,27 +1,29 @@
 import { defineHtml, html } from "elfui";
 
-const propsRows = [
+const statisticRows = [
   { name: "value", type: "number", default: "0", desc: "统计值" },
-  { name: "title", type: "string", default: "''", desc: "标题" },
-  { name: "prefix", type: "string", default: "''", desc: "数字前缀" },
-  { name: "suffix", type: "string", default: "''", desc: "数字后缀" },
+  { name: "title / prefix / suffix", type: "string", default: "''", desc: "标题和数值前后缀" },
   { name: "precision", type: "number", default: "-", desc: "小数位数" },
-  { name: "group-separator", type: "string", default: "','", desc: "千分位分隔符" },
-  { name: "decimal-separator", type: "string", default: "'.'", desc: "小数点分隔符" },
+  { name: "group-separator / decimal-separator", type: "string", default: "',' / '.'", desc: "数值分隔符" },
   { name: "formatter", type: "(value: number) => string", default: "-", desc: "自定义格式化函数" },
   { name: "value-style", type: "object", default: "{}", desc: "数值区内联样式" }
 ];
-
-const slotsRows = [
-  { name: "title", desc: "替换标题" },
-  { name: "prefix", desc: "替换前缀" },
-  { name: "suffix", desc: "替换后缀" }
+const countdownRows = [
+  { name: "value", type: "number | string | Date", default: "0", desc: "目标时间戳或可解析日期" },
+  { name: "format", type: "string", default: "HH:mm:ss", desc: "支持 DD、HH、mm、ss、SSS；方括号为字面量" },
+  { name: "title / prefix / suffix", type: "string", default: "''", desc: "倒计时文本" },
+  { name: "value-style", type: "object", default: "{}", desc: "数值区内联样式" },
+  { name: "aria-label", type: "string", default: "Countdown", desc: "timer 无障碍标签" }
+];
+const countdownEvents = [
+  { name: "change", type: "(remaining: number) => void", desc: "剩余毫秒变化时触发" },
+  { name: "finish", type: "() => void", desc: "到达目标时间时触发一次" }
 ];
 
 const PageStatisticProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows=${propsRows} />
-  <elf-props-table title="Slots" :rows=${slotsRows} />
+  <elf-props-table title="Statistic Props" :rows=${statisticRows} />
+  <elf-props-table title="Countdown Props" :rows=${countdownRows} />
+  <elf-props-table title="Countdown Events" :rows=${countdownEvents} />
 `);
-
 export { PageStatisticProps };
