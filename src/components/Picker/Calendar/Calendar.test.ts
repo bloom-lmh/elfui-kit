@@ -15,6 +15,7 @@ const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolv
 
 interface CalendarEl extends HTMLElement {
   modelValue?: string;
+  range?: boolean;
   disabledDate?: (date: Date) => boolean;
   locale?: string;
 }
@@ -48,5 +49,21 @@ describe("elf-calendar", () => {
     (el.shadowRoot!.querySelectorAll(".nav")[1] as HTMLButtonElement).click();
     await tick();
     expect(header.textContent).toContain("2026-08");
+  });
+
+  it("collects two clicks into a sorted range", async () => {
+    const el = document.createElement("elf-calendar") as CalendarEl;
+    el.modelValue = "2026-07-05";
+    el.range = true;
+    const onChange = vi.fn();
+    el.addEventListener("change", onChange as EventListener);
+    document.body.appendChild(el);
+    await tick();
+    const end = el.shadowRoot!.querySelector('[data-date="2026-07-12"]') as HTMLButtonElement;
+    const start = el.shadowRoot!.querySelector('[data-date="2026-07-08"]') as HTMLButtonElement;
+    end.click();
+    expect(onChange).not.toHaveBeenCalled();
+    start.click();
+    expect((onChange.mock.calls[0]![0] as CustomEvent).detail).toEqual(["2026-07-08", "2026-07-12"]);
   });
 });

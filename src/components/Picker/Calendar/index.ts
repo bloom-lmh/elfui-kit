@@ -11,11 +11,15 @@ interface DayCell {
   muted: boolean;
   current: boolean;
   disabled: boolean;
+  rangeStart: boolean;
+  rangeEnd: boolean;
+  inRange: boolean;
 }
 
 const props = defineProps<CalendarProps>({
-  modelValue: { type: String, default: "" },
+  modelValue: { type: null, default: "" },
   firstDayOfWeek: { type: Number, default: 1 },
+  range: { type: Boolean, default: false },
   disabledDate: { type: Function, default: undefined },
   locale: { type: String, default: "" },
   ariaLabel: { type: String, default: "Calendar" }
@@ -28,11 +32,13 @@ const toIso = (date: Date): string =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
 const selectedDate = (): Date => {
-  const value = props.modelValue ? new Date(props.modelValue) : new Date();
+  const source = Array.isArray(props.modelValue) ? props.modelValue[0] : props.modelValue;
+  const value = source ? new Date(source) : new Date();
   return Number.isNaN(value.getTime()) ? new Date() : value;
 };
 
 const viewedDate = useRef(selectedDate());
+const rangeStart = useRef<string | null>(null);
 
 watchEffect(() => {
   props.modelValue;
@@ -66,12 +72,18 @@ const days = (): DayCell[] => {
     const date = new Date(start);
     date.setDate(start.getDate() + index);
     const iso = toIso(date);
+    const value = Array.isArray(props.modelValue) ? [...props.modelValue].sort() : [];
+    const rangeStartValue = rangeStart.value || value[0] || "";
+    const rangeEndValue = value[1] || "";
     return {
       iso,
       label: date.getDate(),
       muted: date.getMonth() !== current.getMonth(),
       current: iso === toIso(selectedDate()),
-      disabled: typeof props.disabledDate === "function" && Boolean(props.disabledDate(date))
+      disabled: typeof props.disabledDate === "function" && Boolean(props.disabledDate(date)),
+      rangeStart: Boolean(rangeStartValue) && iso === rangeStartValue,
+      rangeEnd: Boolean(rangeEndValue) && iso === rangeEndValue,
+      inRange: Boolean(rangeStartValue && rangeEndValue) && iso > rangeStartValue && iso < rangeEndValue
     };
   });
 };
@@ -80,6 +92,15 @@ const select = (event: Event): void => {
   const iso = (event.currentTarget as HTMLElement).dataset.date;
   if (!iso) return;
   if (days().find((day) => day.iso === iso)?.disabled) return;
+  if (props.range) {
+    const start = rangeStart.value;
+    if (!start || start === iso) { rangeStart.set(iso); return; }
+    const value = start < iso ? [start, iso] : [iso, start];
+    rangeStart.set(null);
+    emit("update:modelValue", value);
+    emit("change", value);
+    return;
+  }
   emit("update:modelValue", iso);
   emit("change", iso);
 };
@@ -106,7 +127,7 @@ const Calendar = defineHtml<CalendarProps>(html`
         v-for="day in days()"
         :key="day.iso"
         type="button"
-        :class="['day', { 'is-muted': day.muted, 'is-current': day.current, 'is-disabled': day.disabled }]"
+        :class="['day', { 'is-muted': day.muted, 'is-current': day.current, 'is-disabled': day.disabled, 'is-range-start': day.rangeStart, 'is-range-end': day.rangeEnd, 'is-in-range': day.inRange }]"
         :data-date="day.iso"
         :disabled="day.disabled"
         :aria-label="day.iso"

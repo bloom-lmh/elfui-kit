@@ -77,3 +77,7 @@
   color: var(--elf-text-disabled);
   cursor: not-allowed;
 }
+
+.day.is-in-range { background: color-mix(in srgb, var(--elf-primary), transparent 86%); }
+.day.is-range-start,
+.day.is-range-end { background: var(--elf-primary); color: var(--elf-text-on-primary); font-weight: 700; }
