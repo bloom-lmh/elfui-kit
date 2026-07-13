@@ -129,4 +129,47 @@ describe("ElfNotification()", () => {
     expect(offsetB).toBeTruthy();
     expect(parseInt(offsetB)).toBeGreaterThan(16);
   });
+
+  it("supports append targets, host classes, z-index, and custom offsets", async () => {
+    const { ElfNotification } = await import("../Notification/index");
+    const target = document.createElement("section");
+    document.body.appendChild(target);
+
+    ElfNotification({
+      message: "targeted",
+      duration: 0,
+      appendTo: target,
+      customClass: "notice analytics-notice",
+      zIndex: 4321,
+      offset: 40,
+      icon: "@",
+      closeIcon: "Dismiss"
+    });
+    await tick();
+    await tick();
+
+    const el = target.querySelector("elf-notification") as HTMLElement;
+    expect(el).toBeTruthy();
+    expect(el.classList.contains("notice")).toBe(true);
+    expect(el.classList.contains("analytics-notice")).toBe(true);
+    expect(el.style.zIndex).toBe("4321");
+    expect(el.style.getPropertyValue("--_offset")).toBe("40px");
+    expect(el.shadowRoot!.querySelector(".icon")?.textContent).toBe("@");
+    expect(el.shadowRoot!.querySelector(".close")?.textContent?.trim()).toBe("Dismiss");
+  });
+
+  it("calls onClose once and supports the showClose compatibility option", async () => {
+    const { ElfNotification } = await import("../Notification/index");
+    const onClose = vi.fn();
+    const handle = ElfNotification({ message: "manual", duration: 0, showClose: false, onClose });
+    await tick();
+    await tick();
+
+    const el = document.body.querySelector("elf-notification")!;
+    expect(el.shadowRoot!.querySelector(".close")).toBeNull();
+    handle.close();
+    expect(onClose).toHaveBeenCalledTimes(1);
+    handle.close();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 });

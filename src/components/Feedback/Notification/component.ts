@@ -1,15 +1,13 @@
-// elf-notification element
-
 import {
   defineEmits,
   defineExpose,
+  defineHtml,
   defineProps,
   defineStyle,
   html,
   useHostAttr,
   useHostFlag,
-  useRef,
-  defineHtml
+  useRef
 } from "elfui";
 
 import styles from "./style.scss?inline";
@@ -25,29 +23,34 @@ const props = defineProps({
   titleText: { type: String, default: "" },
   message: { type: String, default: "" },
   type: { type: String, default: "" },
+  icon: { type: String, default: "" },
   position: { type: String, default: "top-right" },
-  closable: { type: Boolean, default: true }
+  closable: { type: Boolean, default: true },
+  showClose: { type: Boolean, default: true },
+  closeIcon: { type: String, default: "×" }
 });
 
 const emit = defineEmits(["close"]);
 const closing = useRef(false);
-
 useHostFlag("data-closing", () => closing.value);
 useHostAttr("position", () => props.position as string);
 
 const close = (): void => {
+  if (closing.peek()) return;
   closing.set(true);
   emit("close");
 };
 
-const icon = (): string => ICONS[String(props.type)] ?? "";
+const icon = (): string => props.icon || ICONS[String(props.type)] || "";
+const hasIcon = (): boolean => Boolean(icon());
+const canClose = (): boolean => props.closable && props.showClose;
 
 defineExpose({ close, closing });
 defineStyle(styles);
 
 const Notification = defineHtml(html`
-  <div class="notification" part="notification" role="status">
-    <div v-if=${props.type} :class=${["icon-box", props.type]}>
+  <div class="notification" part="notification" role="status" aria-live="polite">
+    <div v-if=${hasIcon()} :class=${["icon-box", props.type]}>
       <span class="icon">${icon()}</span>
     </div>
     <div class="content-wrapper">
@@ -55,13 +58,13 @@ const Notification = defineHtml(html`
       <div class="message"><slot>${props.message}</slot></div>
     </div>
     <button
-      v-if=${props.closable}
+      v-if=${canClose()}
       class="close"
       type="button"
       @click.stop=${close}
-      aria-label="关闭"
+      aria-label="Close notification"
     >
-      ×
+      ${props.closeIcon}
     </button>
   </div>
 `);

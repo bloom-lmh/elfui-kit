@@ -2,6 +2,7 @@
 
 export type NotificationType = "info" | "success" | "warning" | "error";
 export type NotificationPosition = "top-right" | "top-left" | "bottom-right" | "bottom-left";
+export type NotificationAppendTarget = string | Element;
 
 export interface NotificationOptions {
   title?: string;
@@ -11,6 +12,20 @@ export interface NotificationOptions {
   duration?: number;
   closable?: boolean;
   offset?: number;
+  /** Render into this element or a selector matching one. Falls back to document.body. */
+  appendTo?: NotificationAppendTarget;
+  /** Additional host class names. */
+  customClass?: string;
+  /** Host stacking context. */
+  zIndex?: number;
+  /** Element Plus-compatible alias for closable. */
+  showClose?: boolean;
+  /** Text glyph used for a custom notification icon. */
+  icon?: string;
+  /** Text glyph used by the close button. */
+  closeIcon?: string;
+  /** Invoked after the notification starts closing. */
+  onClose?: () => void;
   onClick?: () => void;
 }
 
