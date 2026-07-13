@@ -15,8 +15,8 @@
 
 ## 后续差距
 
-- [ ] 补齐 formatter、value-style、Countdown 子能力。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [ ] 补齐 formatter、value-style、Countdown 子能力。`formatter`、`value-style` 已完成；Countdown 作为独立的时间驱动组件能力待实现。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
 
 ## 本轮案例页
 

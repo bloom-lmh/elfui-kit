@@ -34,6 +34,14 @@ const props = defineProps<CollapseProps>({
 const emit = defineEmits(["update:modelValue", "change"]);
 const active = useRef<string[]>([]);
 
+const nextId = (): string => {
+  const store = globalThis as typeof globalThis & { __elfCollapseIdSeed?: number };
+  store.__elfCollapseIdSeed = (store.__elfCollapseIdSeed ?? 0) + 1;
+  return `elf-collapse-${store.__elfCollapseIdSeed}`;
+};
+
+const id = nextId();
+
 const fieldNames = (): Required<CollapseFieldNames> => {
   const value = props.props || {};
   return {
@@ -70,6 +78,9 @@ const viewItems = (): ViewItem[] => {
 };
 
 const isActive = (item: ViewItem): boolean => active.value.includes(item.name);
+
+const panelId = (item: ViewItem): string => `${id}-panel-${encodeURIComponent(item.name)}`;
+const headerId = (item: ViewItem): string => `${id}-header-${encodeURIComponent(item.name)}`;
 
 const outputValue = (next: string[]): CollapseModelValue =>
   props.accordion ? next[0] || "" : next;
@@ -111,14 +122,22 @@ const Collapse = defineHtml<CollapseProps>(html`
         class="header"
         type="button"
         :data-name="item.name"
+        :id="headerId(item)"
         :disabled="item.disabled"
         :aria-expanded="isActive(item) ? 'true' : 'false'"
+        :aria-controls="panelId(item)"
         @click=${onHeaderClick}
       >
         <span>{{ item.title }}</span>
         <span class="arrow" aria-hidden="true">›</span>
       </button>
-      <div class="body" part="body">
+      <div
+        class="body"
+        part="body"
+        :id="panelId(item)"
+        role="region"
+        :aria-labelledby="headerId(item)"
+      >
         {{ item.content }}
         <slot></slot>
       </div>

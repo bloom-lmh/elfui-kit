@@ -1,4 +1,9 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
+import { PageStatisticProps } from "./props";
+
+useComponents({
+  "page-statistic-props": PageStatisticProps
+});
 
 const code1 = `<elf-statistic title="活跃用户" :value=\${128430} suffix="人" />
 <elf-statistic title="转化率" :value=\${0.8732} :precision=\${2} suffix="%" />`;
@@ -16,6 +21,11 @@ const slotCode = `<elf-statistic :value=\${86.5} :precision=\${1}>
   <span slot="title">CPU 使用率</span>
   <span slot="suffix">%</span>
 </elf-statistic>`;
+
+const formatter = (value: number): string => `${Math.round(value / 1000)}k`;
+
+const formatCode = `<elf-statistic :value=\${128430} :formatter.prop="formatter" :value-style.prop="{ color: 'var(--elf-primary)' }" />`;
+const formatScript = 'const formatter = (value: number): string => `${Math.round(value / 1000)}k`;';
 
 const PageStatistic = defineHtml(html`
   <elf-container>
@@ -54,6 +64,16 @@ const PageStatistic = defineHtml(html`
         <span slot="suffix">%</span>
       </elf-statistic>
     </elf-playground>
+
+    <elf-playground title="formatter / value-style" :code=${formatCode} :script=${formatScript}>
+      <elf-statistic
+        :value=${128430}
+        :formatter=${formatter}
+        :value-style=${{ color: "var(--elf-primary)" }}
+      ></elf-statistic>
+    </elf-playground>
+
+    <page-statistic-props></page-statistic-props>
   </elf-container>
 `);
 

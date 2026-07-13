@@ -15,8 +15,8 @@
 
 ## 后续差距
 
-- [ ] 拆出 CollapseItem 子组件、补 title/default/icon slots 和 expose。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [ ] 拆出 CollapseItem 子组件、补 title/default/icon slots 和 expose。当前数据驱动 Collapse 已补齐原生 button 键盘访问、受控同步、disabled 行为和 aria region 关联。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable，并增加字段映射案例。
 
 ## 本轮案例页
 

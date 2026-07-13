@@ -4,8 +4,10 @@ export interface StatisticProps {
   prefix: string;
   suffix: string;
   precision?: number;
+  formatter?: (value: number) => string;
   groupSeparator: string;
   decimalSeparator: string;
+  valueStyle: Record<string, string | number>;
 }
 
 export interface StatisticSlots {

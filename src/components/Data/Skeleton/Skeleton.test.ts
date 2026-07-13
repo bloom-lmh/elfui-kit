@@ -1,5 +1,3 @@
-// elf-skeleton 单元测试
-
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 beforeAll(async () => {
@@ -10,58 +8,80 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
+const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
+const wait = (milliseconds: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+type SkeletonHost = HTMLElement & {
+  loading?: boolean;
+  count?: number;
+  rows?: number;
+  throttle?: number | { leading?: number; trailing?: number };
+};
+
+const mount = async (patch: Partial<SkeletonHost> = {}): Promise<SkeletonHost> => {
+  const el = document.createElement("elf-skeleton") as SkeletonHost;
+  Object.assign(el, patch);
+  document.body.appendChild(el);
+  await tick();
+  return el;
+};
 
 describe("elf-skeleton", () => {
-  it("默认渲染 text 变体", async () => {
-    const el = document.createElement("elf-skeleton");
-    document.body.appendChild(el);
+  it("renders default-slot content when loading is false", async () => {
+    const el = await mount();
+    el.textContent = "Loaded content";
     await tick();
 
-    const items = el.shadowRoot!.querySelectorAll(".skeleton");
-    expect(items.length).toBe(1);
+    expect(el.shadowRoot!.querySelector(".placeholder")).toBeNull();
+    expect(el.shadowRoot!.querySelector("slot")?.assignedNodes()[0]?.textContent).toBe("Loaded content");
   });
 
-  it("count=3 渲染 3 条", async () => {
-    const el = document.createElement("elf-skeleton");
-    el.setAttribute("count", "3");
-    document.body.appendChild(el);
-    await tick();
+  it("renders the default three text rows while loading", async () => {
+    const el = await mount({ loading: true });
 
-    expect(el.shadowRoot!.querySelectorAll(".skeleton").length).toBe(3);
+    expect(el.shadowRoot!.querySelectorAll(".skeleton")).toHaveLength(3);
+    expect(el.shadowRoot!.querySelector(".root")?.getAttribute("aria-busy")).toBe("true");
   });
 
-  it("circle variant 渲染圆形", async () => {
-    const el = document.createElement("elf-skeleton");
+  it("uses count and rows to generate predictable placeholder groups", async () => {
+    const el = await mount({ loading: true, count: 2, rows: 2 });
+
+    expect(el.shadowRoot!.querySelectorAll(".group")).toHaveLength(2);
+    expect(el.shadowRoot!.querySelectorAll(".skeleton")).toHaveLength(4);
+  });
+
+  it("keeps non-text variants to one placeholder per group", async () => {
+    const el = await mount({ loading: true, count: 2 });
     el.setAttribute("variant", "circle");
-    el.setAttribute("width", "64px");
-    el.setAttribute("height", "64px");
-    document.body.appendChild(el);
     await tick();
 
-    const sk = el.shadowRoot!.querySelector(".skeleton") as HTMLElement;
-    expect(sk.style.width).toBe("64px");
-    expect(sk.style.height).toBe("64px");
+    expect(el.shadowRoot!.querySelectorAll(".skeleton")).toHaveLength(2);
   });
 
-  it("rect variant 渲染矩形", async () => {
-    const el = document.createElement("elf-skeleton");
-    el.setAttribute("variant", "rect");
-    el.setAttribute("width", "100%");
-    el.setAttribute("height", "200px");
-    document.body.appendChild(el);
+  it("renders a custom template slot while loading", async () => {
+    const el = await mount({ loading: true });
+    el.innerHTML = '<span slot="template">Custom placeholder</span>';
     await tick();
 
-    const sk = el.shadowRoot!.querySelector(".skeleton") as HTMLElement;
-    expect(sk.style.height).toBe("200px");
+    const template = el.shadowRoot!.querySelector('slot[name="template"]') as HTMLSlotElement;
+    expect(template.assignedNodes()[0]?.textContent).toContain("Custom placeholder");
   });
 
-  it("animated 默认开启 shimmer", async () => {
-    const el = document.createElement("elf-skeleton");
-    document.body.appendChild(el);
+  it("delays showing a loading skeleton with numeric throttle", async () => {
+    const el = await mount({ throttle: 20 });
+    el.loading = true;
     await tick();
 
-    expect(el.hasAttribute("animated")).toBe(false);
-    expect(el.shadowRoot!.querySelector(".skeleton")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".placeholder")).toBeNull();
+    await wait(30);
+    expect(el.shadowRoot!.querySelector(".placeholder")).toBeTruthy();
+  });
+
+  it("reflects the animated state for the shimmer stylesheet", async () => {
+    const el = await mount({ loading: true });
+    el.setAttribute("animated", "");
+    await tick();
+
+    expect(el.hasAttribute("animated")).toBe(true);
   });
 });

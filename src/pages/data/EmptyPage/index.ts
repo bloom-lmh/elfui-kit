@@ -1,4 +1,9 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
+import { PageEmptyProps } from "./props";
+
+useComponents({
+  "page-empty-props": PageEmptyProps
+});
 
 const basicCode = `<elf-empty description="暂无数据" />`;
 
@@ -36,6 +41,8 @@ const PageEmpty = defineHtml(html`
         description="还没有上传图片"
       ></elf-empty>
     </elf-playground>
+
+    <page-empty-props></page-empty-props>
   </elf-container>
 `);
 

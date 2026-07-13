@@ -68,4 +68,33 @@ describe("elf-timeline", () => {
 
     expect(el.shadowRoot!.querySelector(".node.is-success")).toBeTruthy();
   });
+
+  it("supports Element Plus TimelineItem placement, type, size, hollow, and hidden timestamps", async () => {
+    const el = document.createElement("elf-timeline");
+    (el as any).items = [
+      { timestamp: "2026-07-13", title: "Top", placement: "top", type: "success", size: "large" },
+      { timestamp: "2026-07-14", title: "Hidden", hideTimestamp: true, hollow: true }
+    ];
+    document.body.appendChild(el);
+    await tick();
+
+    const nodes = el.shadowRoot!.querySelectorAll(".node");
+    expect(nodes[0].classList.contains("is-success")).toBe(true);
+    expect(nodes[0].classList.contains("is-large")).toBe(true);
+    expect(nodes[1].classList.contains("is-hollow")).toBe(true);
+    expect(el.shadowRoot!.textContent).not.toContain("2026-07-14");
+  });
+
+  it("supports start, end, alternate-reverse, and the dot slot", async () => {
+    const el = document.createElement("elf-timeline");
+    (el as any).items = items;
+    el.setAttribute("mode", "alternate-reverse");
+    el.innerHTML = '<span slot="dot">●</span>';
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.getAttribute("data-mode")).toBe("alternate-reverse");
+    const dot = el.shadowRoot!.querySelector('slot[name="dot"]') as HTMLSlotElement;
+    expect(dot.assignedNodes()[0]?.textContent).toContain("●");
+  });
 });

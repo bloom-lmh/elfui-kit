@@ -4,10 +4,20 @@
   display: block;
 }
 
-.wrapper {
+.root,
+.placeholder,
+.content {
+  width: 100%;
+}
+
+.placeholder,
+.group {
   display: flex;
   flex-direction: column;
-  width: 100%;
+}
+
+.placeholder {
+  gap: var(--elf-space-4);
 }
 
 // ───── 公共 ──────────────────────────────────────

@@ -34,4 +34,36 @@ describe("elf-statistic", () => {
     expect(el.shadowRoot!.textContent).toContain("1,234.50");
     expect(el.shadowRoot!.textContent).toContain("USD");
   });
+
+  it("supports formatter and value-style props", async () => {
+    const el = document.createElement("elf-statistic") as StatisticEl & {
+      formatter?: (value: number) => string;
+      valueStyle?: Record<string, string>;
+    };
+    el.value = 128430;
+    el.formatter = (value) => `${Math.round(value / 1000)}k`;
+    el.valueStyle = { color: "rgb(1, 2, 3)" };
+    document.body.appendChild(el);
+    await tick();
+
+    const value = el.shadowRoot!.querySelector(".value") as HTMLElement;
+    expect(value.textContent).toContain("128k");
+    expect(value.getAttribute("style")).toContain("color");
+  });
+
+  it("renders title, prefix, and suffix slots without matching props", async () => {
+    const el = document.createElement("elf-statistic");
+    el.innerHTML = `
+      <strong slot="title">CPU</strong>
+      <span slot="prefix">~</span>
+      <span slot="suffix">%</span>
+    `;
+    document.body.appendChild(el);
+    await tick();
+
+    for (const name of ["title", "prefix", "suffix"]) {
+      const slot = el.shadowRoot!.querySelector(`slot[name="${name}"]`) as HTMLSlotElement;
+      expect(slot.assignedNodes().length).toBeGreaterThan(0);
+    }
+  });
 });

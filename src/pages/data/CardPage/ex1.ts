@@ -16,6 +16,10 @@ const code3 = `<elf-card variant="outlined" clickable title="点击我" subtitle
   </template>
 </elf-card>`;
 
+const code4 = `<elf-card header="订单摘要" footer="共计 ¥128.00" shadow="hover">
+  <p>Header / footer prop 也可以分别由同名 slot 覆盖。</p>
+</elf-card>`;
+
 const script3 = `const clickCount = useRef(0);
 
 const handle = () => {
@@ -68,6 +72,13 @@ const PageCardEx1 = defineHtml(html`
       </template>
     </elf-card>
     <span class="demo-state">点击次数：{{ clickCount }}</span>
+  </elf-playground>
+
+  <h2>Element Plus 兼容 API</h2>
+  <elf-playground title="header / footer / shadow" :code=${code4}>
+    <elf-card header="订单摘要" footer="共计 ¥128.00" shadow="hover" style="max-width:360px">
+      <p style="color:var(--elf-text-secondary)">Header / footer prop 也可以分别由同名 slot 覆盖。</p>
+    </elf-card>
   </elf-playground>
 `);
 

@@ -17,4 +17,4 @@
 
 - [x] 2026-07-07 补独立案例页：覆盖四种 `icon` 状态、`title/sub-title`、`extra` 操作区和自定义 `icon` slot。
 - [ ] 补齐更细的默认插画与状态视觉。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable；案例覆盖四种状态、extra 操作区和自定义 icon slot。

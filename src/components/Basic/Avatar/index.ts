@@ -12,7 +12,7 @@
 // - 有 icon → 显示图标
 // - 否则 → 显示 alt 首字母缩写
 
-import { defineEmits, defineProps, defineStyle, html, useComputed, useHostAttr, useRef, defineHtml } from "elfui";
+import { defineEmits, defineProps, defineStyle, html, useComputed, useEffect, useHostAttr, useRef, defineHtml } from "elfui";
 
 import styles from "./style.scss?inline";
 import type { AvatarEmits, AvatarFit, AvatarProps } from "./types";
@@ -64,7 +64,13 @@ const onImgError = (event: Event): void => {
   imgError.set(true);
 };
 
-const showImage = useComputed(() => !!toText(props.src) && !imgError.peek());
+// A new source must be allowed to render after an earlier source failed.
+useEffect(() => {
+  props.src;
+  imgError.set(false);
+});
+
+const showImage = useComputed(() => !!toText(props.src) && !imgError.value);
 
 const initials = useComputed(() => {
   const name = toText(props.alt);
@@ -100,8 +106,10 @@ const Avatar = defineHtml(html`
       :alt=${props.alt}
       @error=${onImgError}
     />
-    <slot v-else-if=${props.icon} name="icon"><span class="icon">${props.icon}</span></slot>
-    <slot v-else><span class="initials">${initials}</span></slot>
+    <slot v-else name="icon">
+      <span v-if=${props.icon} class="icon">${props.icon}</span>
+      <slot v-else><span class="initials">${initials}</span></slot>
+    </slot>
   </div>
 `);
 

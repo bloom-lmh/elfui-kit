@@ -1,4 +1,9 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "elfui";
+import { PageCollapseProps } from "./props";
+
+useComponents({
+  "page-collapse-props": PageCollapseProps
+});
 
 const active = useRef(["design"]);
 const accordion = useRef("api");
@@ -33,6 +38,16 @@ const code2 = `<elf-collapse
 
 const script2 = `const accordion = useRef("api");`;
 
+const mappedItems = [
+  { id: "security", label: "安全", detail: "通过 props 映射第三方或业务数据字段。" },
+  { id: "billing", label: "账单", detail: "映射保持数据源无需转换。" }
+];
+
+const mappingCode = `<elf-collapse
+  :items.prop=\${mappedItems}
+  :props.prop="{ name: 'id', title: 'label', content: 'detail' }"
+/>`;
+
 const onActiveUpdate = (event: CustomEvent): void => {
   active.set(Array.isArray(event.detail) ? event.detail.map(String) : []);
 };
@@ -63,6 +78,15 @@ const PageCollapse = defineHtml(html`
         @update:modelValue=${onAccordionUpdate}
       ></elf-collapse>
     </elf-playground>
+
+    <elf-playground title="字段映射" :code=${mappingCode}>
+      <elf-collapse
+        :items.prop=${mappedItems}
+        :props.prop=${{ name: "id", title: "label", content: "detail" }}
+      ></elf-collapse>
+    </elf-playground>
+
+    <page-collapse-props></page-collapse-props>
   </elf-container>
 `);
 

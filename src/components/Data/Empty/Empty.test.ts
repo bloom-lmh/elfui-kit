@@ -38,4 +38,28 @@ describe("elf-empty", () => {
 
     expect(el.shadowRoot!.querySelector("slot:not([name])")).toBeTruthy();
   });
+
+  it("forwards image source and accepts a string image size", async () => {
+    const el = document.createElement("elf-empty") as EmptyEl & { image?: string };
+    el.image = "https://example.com/empty.svg";
+    el.imageSize = "96px";
+    document.body.appendChild(el);
+    await tick();
+
+    const image = el.shadowRoot!.querySelector("img")!;
+    expect(image.getAttribute("src")).toBe("https://example.com/empty.svg");
+    expect(el.style.getPropertyValue("--_empty-image-size")).toBe("96px");
+  });
+
+  it("projects image and description slots", async () => {
+    const el = document.createElement("elf-empty");
+    el.innerHTML = '<span slot="image">◎</span><strong slot="description">No matches</strong>';
+    document.body.appendChild(el);
+    await tick();
+
+    const imageSlot = el.shadowRoot!.querySelector('slot[name="image"]') as HTMLSlotElement;
+    const descriptionSlot = el.shadowRoot!.querySelector('slot[name="description"]') as HTMLSlotElement;
+    expect(imageSlot.assignedNodes()[0]?.textContent).toContain("◎");
+    expect(descriptionSlot.assignedNodes()[0]?.textContent).toContain("No matches");
+  });
 });

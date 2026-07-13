@@ -1,6 +1,13 @@
 import { defineHtml, html } from "elfui";
 
 const propsRows = [
+  { name: "header", type: "string", default: "''", desc: "卡片头部文本（header slot 优先）" },
+  { name: "footer", type: "string", default: "''", desc: "卡片底部文本（footer slot 优先）" },
+  { name: "body-style", type: "object", default: "{}", desc: "主体区域内联样式" },
+  { name: "header-class", type: "string", default: "''", desc: "头部自定义 class" },
+  { name: "body-class", type: "string", default: "''", desc: "主体自定义 class" },
+  { name: "footer-class", type: "string", default: "''", desc: "底部自定义 class" },
+  { name: "shadow", type: "always | hover | never", default: "always", desc: "阴影显示时机" },
   {
     name: "variant",
     type: "elevated | outlined | filled",
@@ -30,8 +37,8 @@ const slotsRows = [
   { name: "cover", desc: "封面区域（与 image prop 共用容器）" },
   { name: "title", desc: "自定义标题" },
   { name: "extra", desc: "头部右侧额外内容" },
-  { name: "header", desc: "完全自定义头部" },
-  { name: "footer", desc: "底部操作栏" }
+  { name: "header", desc: "完全自定义头部，优先于 header prop" },
+  { name: "footer", desc: "底部操作栏，优先于 footer prop" }
 ];
 
 const PageCardProps = defineHtml(html`

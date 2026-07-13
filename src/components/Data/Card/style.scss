@@ -13,9 +13,17 @@
 }
 
 // ───── MD3 变体 ─────────────────────────────────
-// elevated（默认）
-:host([variant="elevated"]),
-:host(:not([variant])) {
+// Element Plus-compatible shadow behaviour. The default is always.
+:host([shadow="always"]) {
+  box-shadow: var(--elf-shadow-1);
+}
+
+:host([shadow="hover"]),
+:host([shadow="never"]) {
+  box-shadow: none;
+}
+
+:host([shadow="hover"]:hover) {
   box-shadow: var(--elf-shadow-1);
 }
 
@@ -29,6 +37,10 @@
 :host([variant="filled"]) {
   box-shadow: none;
   background: var(--elf-bg-overlay);
+}
+
+:host([shadow="always"]) {
+  box-shadow: var(--elf-shadow-1);
 }
 
 // ───── 可点击 ───────────────────────────────────
@@ -151,7 +163,7 @@
   line-height: 1.7;
 }
 
-.header:not(:empty) + .body {
+:host([has-header]) .body {
   padding-top: var(--elf-space-3);
 }
 
@@ -165,8 +177,8 @@
 }
 
 // ───── 空容器隐藏 ──────────────────────────────
-.header:empty,
-.footer:empty,
-.card-image-wrap:empty {
+:host(:not([has-header])) .header,
+:host(:not([has-footer])) .footer,
+:host(:not([has-cover])) .card-image-wrap {
   display: none;
 }

@@ -1,11 +1,11 @@
 // elf-timeline — Material Design 时间轴
 
-import { defineProps, defineStyle, html, useComputed, defineHtml } from "elfui";
+import { defineProps, defineStyle, html, useComputed, useHostAttr, defineHtml } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { TimelineItem, TimelineProps } from "./types";
+import type { TimelineItem, TimelineMode, TimelineProps } from "./types";
 
-export type { TimelineItem, TimelineMode, TimelineProps } from "./types";
+export type { TimelineColor, TimelineItem, TimelineMode, TimelineNodeSize, TimelineProps } from "./types";
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -18,34 +18,56 @@ type TimelineRenderItem = TimelineItem & {
   __idx: number;
   __last: boolean;
   __side: string;
+  __placement: "top" | "bottom";
+};
+
+const normalizedMode = (): Exclude<TimelineMode, "left" | "right"> => {
+  if (props.mode === "left") return "start";
+  if (props.mode === "right") return "end";
+  if (props.mode === "alternate" || props.mode === "alternate-reverse" || props.mode === "horizontal") return props.mode;
+  return "start";
 };
 
 const list = useComputed(() => {
   const arr = props.items || [];
   const result = props.reverse ? [...arr].reverse() : arr;
   const len = result.length;
-  const isAlt = props.mode === "alternate" || props.mode === "horizontal";
+  const mode = normalizedMode();
+  const isAlt = mode === "alternate" || mode === "alternate-reverse" || mode === "horizontal";
   return result.map(
     (item: TimelineItem, i: number): TimelineRenderItem => ({
       ...item,
       __key: String(item.timestamp || item.title || i),
       __idx: i,
       __last: i === len - 1,
-      __side: isAlt ? (i % 2 === 0 ? "left" : "right") : "left"
+      __side: isAlt ? ((i + (mode === "alternate-reverse" ? 1 : 0)) % 2 === 0 ? "left" : "right") : "left",
+      __placement: item.placement === "top" ? "top" : "bottom"
     })
   );
 });
 
 const nodeClass = (item: Record<string, unknown>): Record<string, boolean> => {
-  const color = String(item.color || "primary");
-  return { [`is-${color}`]: true };
+  const color = String(item.color || item.type || "primary");
+  return {
+    [`is-${color}`]: true,
+    "is-large": item.size === "large",
+    "is-hollow": Boolean(item.hollow),
+    "is-centered": Boolean(item.center)
+  };
 };
+
+const nodeStyle = (item: Record<string, unknown>): Record<string, string> => {
+  const color = String(item.color || "");
+  return ["primary", "success", "warning", "danger", "info"].includes(color) ? {} : color ? { "--_node-bg": color } : {};
+};
+
+useHostAttr("data-mode", normalizedMode);
 
 defineStyle(styles);
 
 const Timeline = defineHtml(html`
-  <div class="timeline">
-    <div
+  <ol class="timeline" role="list">
+    <li
       v-for="item in list"
       :key="item.__key"
       class="item"
@@ -61,16 +83,19 @@ const Timeline = defineHtml(html`
         :part="'body-' + item.__idx"
         v-if="item.__side === 'right' || item.side === 'both' || item.side === 'left'"
       >
-        <div class="timestamp" v-if="item.timestamp2 || item.timestamp">
+        <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'top' && (item.timestamp2 || item.timestamp)">
           {{ item.timestamp2 || item.timestamp }}
         </div>
         <div class="title" v-if="item.title2 || item.title">{{ item.title2 || item.title }}</div>
         <span v-if="item.content2 || item.content" v-html="item.content2 || item.content"></span>
+        <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'bottom' && (item.timestamp2 || item.timestamp)">
+          {{ item.timestamp2 || item.timestamp }}
+        </div>
         <slot></slot>
       </div>
 
-      <div class="node" :class="nodeClass(item)" :part="'node-' + item.__idx">
-        <span class="node-inner">{{ item.icon || "" }}</span>
+      <div class="node" :class="nodeClass(item)" :style="nodeStyle(item)" :part="'node-' + item.__idx" aria-hidden="true">
+        <slot name="dot"><span class="node-inner">{{ item.icon || "" }}</span></slot>
       </div>
 
       <div
@@ -78,13 +103,14 @@ const Timeline = defineHtml(html`
         :part="'body-' + item.__idx"
         v-if="item.__side === 'left' || item.side === 'both' || item.side === 'right'"
       >
-        <div class="timestamp" v-if="item.timestamp">{{ item.timestamp }}</div>
+        <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'top' && item.timestamp">{{ item.timestamp }}</div>
         <div class="title" v-if="item.title">{{ item.title }}</div>
         <span v-if="item.content" v-html="item.content"></span>
+        <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'bottom' && item.timestamp">{{ item.timestamp }}</div>
         <slot></slot>
       </div>
-    </div>
-  </div>
+    </li>
+  </ol>
 `);
 
 export { Timeline };

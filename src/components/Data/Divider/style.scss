@@ -12,19 +12,12 @@
 /* 水平分割线 */
 .line {
   flex: 1;
-  height: 1px;
-  border: none;
-  background: var(--elf-border);
+  height: 0;
+  border-top: var(--_divider-border-width, 1px) var(--_divider-border-style, solid) var(--elf-border);
 }
 
-:host([dashed]) .line {
-  background: repeating-linear-gradient(
-    to right,
-    var(--elf-border) 0px,
-    var(--elf-border) 4px,
-    transparent 4px,
-    transparent 8px
-  );
+:host([border-style="double"]) .line {
+  --_divider-border-width: 3px;
 }
 
 /* 中间文字 */
@@ -53,21 +46,11 @@
 }
 
 :host([direction="vertical"]) .line {
-  width: 1px;
+  width: 0;
   height: auto;
   flex: 1;
-  border: none;
-  background: var(--elf-border);
-}
-
-:host([direction="vertical"][dashed]) .line {
-  background: repeating-linear-gradient(
-    to bottom,
-    var(--elf-border) 0px,
-    var(--elf-border) 4px,
-    transparent 4px,
-    transparent 8px
-  );
+  border-top: none;
+  border-left: var(--_divider-border-width, 1px) var(--_divider-border-style, solid) var(--elf-border);
 }
 
 :host([direction="vertical"]) .text {

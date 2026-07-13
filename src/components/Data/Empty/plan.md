@@ -18,4 +18,4 @@
 
 - [x] 2026-07-07 补独立案例页：覆盖基础空状态、自定义 `image`/`image-size`、`image`/`description` slots 和底部操作区。
 - [ ] 增强默认插画样式和全局空状态 token。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable，并覆盖基础、自定义图片、image/description slots 与底部操作区。

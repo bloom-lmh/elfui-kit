@@ -2,8 +2,20 @@
 
 export type CardVariant = "elevated" | "outlined" | "filled";
 export type CardShadow = "always" | "hover" | "never";
+export type CardBodyStyle = Record<string, string | number>;
 
 export interface CardProps {
+  /** Element Plus-compatible header text. The `header` slot takes precedence. */
+  header: string;
+  /** Element Plus-compatible footer text. The `footer` slot takes precedence. */
+  footer: string;
+  /** Inline styles for the card body. */
+  bodyStyle: CardBodyStyle;
+  headerClass: string;
+  bodyClass: string;
+  footerClass: string;
+  /** When the card shadow is visible. */
+  shadow: CardShadow;
   /** MD3 变体：elevated(阴影) | outlined(边框) | filled(填充背景) */
   variant: CardVariant;
   /** 头像/图标地址 */

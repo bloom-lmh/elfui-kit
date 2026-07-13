@@ -9,23 +9,29 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { ProgressProps, ProgressStatus, ProgressVariant } from "./types";
+import type { ProgressProps, ProgressStatus, ProgressType, ProgressVariant } from "./types";
 
-export type { ProgressProps, ProgressStatus, ProgressVariant } from "./types";
+export type { ProgressProps, ProgressStatus, ProgressType, ProgressVariant } from "./types";
 
 const props = defineProps({
+  percentage: { type: Number, default: undefined },
+  type: { type: String, default: "" },
   value: { type: Number, default: 0 },
   max: { type: Number, default: 100 },
   variant: { type: String, default: "line" },
   status: { type: String, default: "" },
   color: { type: String, default: "" },
   trackColor: { type: String, default: "" },
-  height: { type: String, default: "8px" },
-  size: { type: Number, default: 96 },
-  strokeWidth: { type: Number, default: 8 },
+  height: { type: String, default: "" },
+  duration: { type: Number, default: 3 },
+  width: { type: Number, default: 126 },
+  size: { type: Number, default: 0 },
+  strokeWidth: { type: Number, default: 6 },
+  strokeLinecap: { type: String, default: "round" },
   showText: { type: Boolean, default: true },
   textInside: { type: Boolean, default: false },
   striped: { type: Boolean, default: false },
+  stripedFlow: { type: Boolean, default: false },
   indeterminate: { type: Boolean, default: false },
   format: { type: Function, default: undefined }
 }) as unknown as Readonly<ProgressProps>;
@@ -34,9 +40,18 @@ const max = (): number => Math.max(1, Number(props.max) || 100);
 
 const value = (): number => Math.min(Math.max(0, Number(props.value) || 0), max());
 
-const percent = (): number => Math.round((value() / max()) * 100);
+const percent = (): number => {
+  if (props.percentage !== undefined && props.percentage !== null) {
+    return Math.min(Math.max(0, Number(props.percentage) || 0), 100);
+  }
+  return Math.round((value() / max()) * 100);
+};
 
-const variant = (): ProgressVariant => (props.variant === "circle" ? "circle" : "line");
+const progressType = (): ProgressType => {
+  if (props.type === "circle" || props.type === "dashboard") return props.type;
+  if (props.type === "line") return "line";
+  return props.variant === "circle" ? "circle" : "line";
+};
 
 const normalizedStatus = (): ProgressStatus => {
   const status = String(props.status || "") as ProgressStatus;
@@ -52,6 +67,7 @@ const tokenColor = (): string => {
     case "warning":
       return "var(--elf-warning)";
     case "danger":
+    case "exception":
       return "var(--elf-danger)";
     case "info":
       return "var(--elf-info)";
@@ -66,25 +82,39 @@ const label = (): string => {
   return props.indeterminate ? "进行中" : `${percent()}%`;
 };
 
-const circleSize = (): string => `${Math.max(40, Number(props.size) || 96)}px`;
+const circleSize = (): string => `${Math.max(40, Number(props.size) || Number(props.width) || 126)}px`;
 
 const stroke = (): number => Math.min(Math.max(2, Number(props.strokeWidth) || 8), 24);
 
 const radius = (): number => 50 - stroke() / 2;
 
-const dashOffset = (): number => (props.indeterminate ? 72 : 100 - percent());
+const dashArray = (): string => (progressType() === "dashboard" ? "75 100" : "100");
 
-useHostAttr("variant", variant);
+const dashOffset = (): number => {
+  if (props.indeterminate) return progressType() === "dashboard" ? 54 : 72;
+  return progressType() === "dashboard" ? 75 - percent() * 0.75 : 100 - percent();
+};
+
+const normalizedLinecap = (): "butt" | "round" | "square" => {
+  return props.strokeLinecap === "butt" || props.strokeLinecap === "square" ? props.strokeLinecap : "round";
+};
+
+const duration = (): string => `${Math.max(0.1, Number(props.duration) || 3)}s`;
+
+useHostAttr("data-type", progressType);
 useHostAttr("status", normalizedStatus);
 useHostFlag("data-indeterminate", () => Boolean(props.indeterminate));
-useHostFlag("data-striped", () => Boolean(props.striped));
+useHostFlag("data-striped", () => Boolean(props.striped || props.stripedFlow));
+useHostFlag("data-striped-flow", () => Boolean(props.stripedFlow));
 useHostFlag("data-text-inside", () => Boolean(props.textInside));
 useHostCssVar("--_progress-percent", () => `${props.indeterminate ? 42 : percent()}%`);
 useHostCssVar("--_progress-color", tokenColor);
 useHostCssVar("--_progress-track", () => props.trackColor || "var(--elf-bg-overlay)");
-useHostCssVar("--_progress-height", () => props.height || "8px");
+useHostCssVar("--_progress-height", () => props.height || `${stroke()}px`);
 useHostCssVar("--_progress-size", circleSize);
 useHostCssVar("--_progress-stroke", () => String(stroke()));
+useHostCssVar("--_progress-duration", duration);
+useHostCssVar("--_progress-linecap", normalizedLinecap);
 
 defineStyle(styles);
 
@@ -97,12 +127,12 @@ const Progress = defineHtml(html`
     :aria-valuenow=${props.indeterminate ? null : value()}
     :aria-valuetext=${label()}
   >
-    <div v-if=${variant() === "line"} class="line">
+    <div v-if=${progressType() === "line"} class="line">
       <div class="line-track">
         <div class="line-value"></div>
-        <span v-if=${props.showText && props.textInside} class="line-text inside">${label()}</span>
+        <span v-if=${props.showText && props.textInside} class="line-text inside"><slot>${label()}</slot></span>
       </div>
-      <span v-if=${props.showText && !props.textInside} class="line-text">${label()}</span>
+      <span v-if=${props.showText && !props.textInside} class="line-text"><slot>${label()}</slot></span>
     </div>
 
     <div v-else class="circle">
@@ -115,10 +145,11 @@ const Progress = defineHtml(html`
           :r=${radius()}
           pathLength="100"
           fill="none"
+          :stroke-dasharray=${dashArray()}
           :stroke-dashoffset=${dashOffset()}
         />
       </svg>
-      <span v-if=${props.showText} class="circle-text">${label()}</span>
+      <span v-if=${props.showText} class="circle-text"><slot>${label()}</slot></span>
     </div>
   </div>
 `);

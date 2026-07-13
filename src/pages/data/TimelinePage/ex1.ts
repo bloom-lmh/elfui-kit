@@ -64,6 +64,9 @@ const code2 = `<elf-timeline :items="items" mode="alternate">
   // side: 'both' 时节点两侧都有信息
 </elf-timeline>`;
 
+const code3 = `<elf-timeline :items="items" mode="alternate-reverse" />
+<!-- item 支持 placement、hide-timestamp、type、size、hollow -->`;
+
 const PageTimelineEx1 = defineHtml(html`
   <h2>双边交替</h2>
   <elf-playground title="mode='alternate'：中轴 + 左右交替" :code="code1">
@@ -73,6 +76,17 @@ const PageTimelineEx1 = defineHtml(html`
   <h2>节点双侧信息</h2>
   <elf-playground title="side='both'：一个节点左右两侧都有内容" :code="code2">
     <elf-timeline :items="bothItems" mode="alternate"></elf-timeline>
+  </elf-playground>
+
+  <h2>Element Plus 节点属性</h2>
+  <elf-playground title="alternate-reverse + item placement/type/size/hollow" :code="code3">
+    <elf-timeline
+      :items=${[
+        { timestamp: "2026-07-13", title: "顶置时间", placement: "top", type: "success", size: "large", icon: "✓" },
+        { timestamp: "2026-07-14", title: "隐藏时间", hideTimestamp: true, type: "warning", hollow: true, icon: "!" }
+      ]}
+      mode="alternate-reverse"
+    ></elf-timeline>
   </elf-playground>
 `);
 

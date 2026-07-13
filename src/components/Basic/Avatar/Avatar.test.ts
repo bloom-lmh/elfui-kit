@@ -68,6 +68,48 @@ describe("elf-avatar", () => {
     expect(img.getAttribute("src")).toBe("https://example.com/img.jpg");
   });
 
+  it("forwards src-set and normalizes fit", async () => {
+    const el = document.createElement("elf-avatar");
+    el.setAttribute("src", "https://example.com/avatar.png");
+    el.setAttribute("src-set", "avatar.png 1x, avatar@2x.png 2x");
+    el.setAttribute("fit", "contain");
+    document.body.appendChild(el);
+    await tick();
+
+    const img = el.shadowRoot!.querySelector("img")!;
+    expect(img.getAttribute("srcset")).toContain("avatar@2x.png 2x");
+    expect(el.getAttribute("fit")).toBe("contain");
+  });
+
+  it("emits error and renders the fallback after image failure", async () => {
+    const el = document.createElement("elf-avatar");
+    el.setAttribute("src", "https://example.com/missing.png");
+    el.setAttribute("alt", "Jane Doe");
+    document.body.appendChild(el);
+    await tick();
+
+    let error: Event | undefined;
+    el.addEventListener("error", (event) => {
+      error = (event as CustomEvent<Event>).detail;
+    });
+    el.shadowRoot!.querySelector("img")!.dispatchEvent(new Event("error"));
+    await tick();
+
+    expect(error).toBeInstanceOf(Event);
+    expect(el.shadowRoot!.querySelector("img")).toBeNull();
+    expect(el.shadowRoot!.querySelector(".initials")?.textContent).toBe("JD");
+  });
+
+  it("renders an icon slot even without the icon prop", async () => {
+    const el = document.createElement("elf-avatar");
+    el.innerHTML = '<span slot="icon">◎</span>';
+    document.body.appendChild(el);
+    await tick();
+
+    const iconSlot = el.shadowRoot!.querySelector('slot[name="icon"]') as HTMLSlotElement;
+    expect(iconSlot.assignedNodes()[0]?.textContent).toContain("◎");
+  });
+
   it("size 属性反射到 host", async () => {
     const el = document.createElement("elf-avatar");
     el.setAttribute("size", "lg");
@@ -95,7 +137,7 @@ describe("elf-avatar", () => {
     await tick();
 
     const avatar = el.shadowRoot!.querySelector(".avatar") as HTMLElement;
-    expect(avatar.style.backgroundColor).toBe("rgb(123, 31, 162)");
+    expect(["#7b1fa2", "rgb(123, 31, 162)"]).toContain(avatar.style.backgroundColor);
   });
 
   it("无 alt 时使用哈希颜色作为背景", async () => {

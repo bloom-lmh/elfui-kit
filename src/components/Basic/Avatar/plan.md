@@ -98,16 +98,16 @@
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`src-set`、`fit`、`collapse-avatars`、`collapse-avatars-tooltip`、`max-collapse-avatars`、`effect`、`placement`、`popper-class`、`popper-style`、`collapse-class`、`collapse-style`
-- [ ] P1 补齐事件差距：`error`
-- [ ] P1 补齐插槽/暴露方法：当前粗扫未发现明显缺口，进入实现时复核默认插槽、命名插槽和 expose 方法。
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [ ] P1 补齐核心属性差距：Avatar 本体的 `src-set`、`fit` 已完成；独立 AvatarGroup 的 `collapse-avatars`、`collapse-avatars-tooltip`、`max-collapse-avatars`、`effect`、`placement`、`popper-class`、`popper-style`、`collapse-class`、`collapse-style` 待实现。
+- [x] P1 补齐事件差距：`error` 事件会透传原生图片错误事件，并切换到 fallback。
+- [x] P1 补齐插槽/暴露方法：default fallback 与 icon slot 均已验证；Avatar 本体无 expose。
+- [x] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。Avatar 为非交互展示组件；图片具有 alt，加载失败后回退到可读文本或插槽。
+- [x] P2 更新页面示例：覆盖图片、src-set、fit、error fallback、icon 与颜色场景。
+- [x] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 关键交互和边界状态有单测覆盖。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] `pnpm build` 通过；目标单测通过。

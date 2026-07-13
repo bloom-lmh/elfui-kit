@@ -1,4 +1,9 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
+import { PageResultProps } from "./props";
+
+useComponents({
+  "page-result-props": PageResultProps
+});
 
 const statusCode = `<elf-result icon="success" title="提交成功" sub-title="配置已保存" />
 <elf-result icon="warning" title="需要确认" sub-title="请检查风险项" />
@@ -42,6 +47,8 @@ const PageResult = defineHtml(html`
         <span slot="icon">★</span>
       </elf-result>
     </elf-playground>
+
+    <page-result-props></page-result-props>
   </elf-container>
 `);
 

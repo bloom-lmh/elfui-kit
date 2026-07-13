@@ -20,15 +20,23 @@ import {
   useHostAttr,
   useHostCssVar,
   useHostFlag,
+  useRef,
   defineHtml
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { CardProps } from "./types";
+import type { CardProps, CardShadow } from "./types";
 
-export type { CardProps, CardShadow, CardVariant } from "./types";
+export type { CardBodyStyle, CardProps, CardShadow, CardVariant } from "./types";
 
 const props = defineProps({
+  header: { type: String, default: "" },
+  footer: { type: String, default: "" },
+  bodyStyle: { type: Object, default: () => ({}) },
+  headerClass: { type: String, default: "" },
+  bodyClass: { type: String, default: "" },
+  footerClass: { type: String, default: "" },
+  shadow: { type: String, default: "always" },
   variant: { type: String, default: "elevated" },
   avatar: { type: String, default: "" },
   title: { type: String, default: "" },
@@ -45,7 +53,27 @@ const emit = defineEmits(["click"]);
 
 const showImage = useComputed(() => !!props.image);
 const showOverlay = useComputed(() => !!props.image && !!props.overlay);
-const showHeader = useComputed(() => !!props.title || !!props.subtitle || !!props.avatar);
+const hasHeaderSlot = useRef(false);
+const hasFooterSlot = useRef(false);
+const hasCoverSlot = useRef(false);
+const showHeader = useComputed(
+  () => Boolean(props.header || props.title || props.subtitle || props.avatar || hasHeaderSlot.value)
+);
+const showFooter = useComputed(() => Boolean(props.footer || hasFooterSlot.value));
+const showCover = useComputed(() => Boolean(props.image || hasCoverSlot.value));
+
+const normalizedShadow = (): CardShadow => {
+  const shadow = String(props.shadow || "always") as CardShadow;
+  return shadow === "hover" || shadow === "never" ? shadow : "always";
+};
+
+const onSlotChange = (target: "header" | "footer" | "cover") => (event: Event): void => {
+  const slot = event.target as HTMLSlotElement;
+  const hasContent = slot.assignedNodes().some((node) => (node.textContent?.trim() ?? "") !== "");
+  if (target === "header") hasHeaderSlot.set(hasContent);
+  if (target === "footer") hasFooterSlot.set(hasContent);
+  if (target === "cover") hasCoverSlot.set(hasContent);
+};
 
 const handleClick = (event: Event): void => {
   if (!props.clickable) return;
@@ -53,38 +81,55 @@ const handleClick = (event: Event): void => {
   emit("click");
 };
 
+const handleKeydown = (event: KeyboardEvent): void => {
+  if (!props.clickable || (event.key !== "Enter" && event.key !== " ")) return;
+  event.preventDefault();
+  emit("click");
+};
+
 useHostAttr("variant", () => props.variant || "elevated");
+useHostAttr("shadow", normalizedShadow);
 useHostAttr("image-placement", () => props.imagePlacement || "top");
 useHostFlag("clickable", () => Boolean(props.clickable));
+useHostFlag("has-header", () => showHeader.value);
+useHostFlag("has-footer", () => showFooter.value);
+useHostFlag("has-cover", () => showCover.value);
 useHostCssVar("--_image-h", () => String(props.imageHeight || "200px"));
 useHostCssVar("--_image-w", () => String(props.imageWidth || "40%"));
 
 defineStyle(styles);
 
 const Card = defineHtml(html`
-  <div class="card-image-wrap" @click=${handleClick}>
+  <div class="card-image-wrap" v-show=${showCover} @click=${handleClick}>
     <img v-if=${showImage} :src=${props.image} alt="" />
-    <slot name="cover"></slot>
+    <slot name="cover" @slotchange=${onSlotChange("cover")}></slot>
     <div class="image-overlay" v-if=${showOverlay}>${props.overlay}</div>
   </div>
 
-  <div class="card-content" @click=${handleClick}>
-    <div class="header">
-      <img class="avatar" v-if=${props.avatar} :src=${props.avatar} alt="" />
-      <div class="header-text" v-if=${props.title || props.subtitle}>
-        <div class="title" v-if=${props.title}><slot name="title">${props.title}</slot></div>
-        <div class="subtitle" v-if=${props.subtitle}>${props.subtitle}</div>
-      </div>
-      <div class="extra"><slot name="extra"></slot></div>
-      <slot name="header"></slot>
+  <div
+    class="card-content"
+    :role=${props.clickable ? "button" : null}
+    :tabindex=${props.clickable ? 0 : null}
+    @click=${handleClick}
+    @keydown=${handleKeydown}
+  >
+    <div class="header" v-show=${showHeader} :class=${props.headerClass}>
+      <slot name="header" @slotchange=${onSlotChange("header")}>
+        <img class="avatar" v-if=${props.avatar} :src=${props.avatar} alt="" />
+        <div class="header-text" v-if=${props.title || props.subtitle || props.header}>
+          <div class="title" v-if=${props.title || props.header}><slot name="title">${props.title || props.header}</slot></div>
+          <div class="subtitle" v-if=${props.subtitle}>${props.subtitle}</div>
+        </div>
+        <div class="extra"><slot name="extra"></slot></div>
+      </slot>
     </div>
 
-    <div class="body">
+    <div class="body" :class=${props.bodyClass} :style=${props.bodyStyle}>
       <slot></slot>
     </div>
 
-    <div class="footer">
-      <slot name="footer"></slot>
+    <div class="footer" v-show=${showFooter} :class=${props.footerClass}>
+      <slot name="footer" @slotchange=${onSlotChange("footer")}>${props.footer}</slot>
     </div>
   </div>
 `);

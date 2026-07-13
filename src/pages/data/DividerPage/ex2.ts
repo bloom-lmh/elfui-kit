@@ -1,7 +1,8 @@
 import { defineHtml, html } from "elfui";
 
-const code1 = `<elf-divider dashed />
-<elf-divider dashed>虚线分割</elf-divider>`;
+const code1 = `<elf-divider border-style="dashed" />
+<elf-divider border-style="dotted">点线分割</elf-divider>
+<elf-divider border-style="double">双线分割</elf-divider>`;
 
 const code2 = `<span>文本A</span>
 <elf-divider direction="vertical" />
@@ -10,10 +11,11 @@ const code2 = `<span>文本A</span>
 <span>文本C</span>`;
 
 const PageDividerEx2 = defineHtml(html`
-  <h2>虚线</h2>
-  <elf-playground title="dashed" :code="code1">
+  <h2>线条样式</h2>
+  <elf-playground title="border-style" :code="code1">
     <div style="width:100%;max-width:480px">
-      <elf-divider dashed /><elf-divider dashed>虚线分割</elf-divider>
+      <elf-divider border-style="dashed" /><elf-divider border-style="dotted">点线分割</elf-divider
+      ><elf-divider border-style="double">双线分割</elf-divider>
     </div>
   </elf-playground>
 

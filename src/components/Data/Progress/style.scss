@@ -7,6 +7,8 @@
   --_progress-percent: 0%;
   --_progress-size: 96px;
   --_progress-stroke: 8;
+  --_progress-duration: 3s;
+  --_progress-linecap: round;
 
   display: inline-block;
   width: 100%;
@@ -42,7 +44,7 @@
   border-radius: inherit;
   background: var(--_progress-color);
   transition:
-    width var(--elf-transition-base),
+    width var(--_progress-duration),
     background-color var(--elf-transition-base);
 }
 
@@ -83,7 +85,7 @@
 .circle-track,
 .circle-value {
   stroke-width: var(--_progress-stroke);
-  stroke-linecap: round;
+  stroke-linecap: var(--_progress-linecap);
 }
 
 .circle-track {
@@ -92,9 +94,8 @@
 
 .circle-value {
   stroke: var(--_progress-color);
-  stroke-dasharray: 100;
   transition:
-    stroke-dashoffset var(--elf-transition-base),
+    stroke-dashoffset var(--_progress-duration),
     stroke var(--elf-transition-base);
 }
 
@@ -125,16 +126,24 @@
 :host([data-indeterminate]) .line-value {
   position: absolute;
   width: 42%;
-  animation: elf-progress-line 1.25s ease-in-out infinite;
+  animation: elf-progress-line var(--_progress-duration) ease-in-out infinite;
 }
 
 :host([data-indeterminate]) .circle-value {
-  animation: elf-progress-circle 1.35s ease-in-out infinite;
+  animation: elf-progress-circle var(--_progress-duration) ease-in-out infinite;
   stroke-dasharray: 72 100;
 }
 
 :host([data-text-inside]) .line-track {
   height: max(var(--_progress-height), 18px);
+}
+
+:host([data-striped-flow]) .line-value {
+  animation: elf-progress-stripes var(--_progress-duration) linear infinite;
+}
+
+:host([data-type="dashboard"]) .circle-svg {
+  transform: rotate(135deg);
 }
 
 @keyframes elf-progress-line {
@@ -155,5 +164,11 @@
   }
   100% {
     stroke-dashoffset: -44;
+  }
+}
+
+@keyframes elf-progress-stripes {
+  to {
+    background-position: 18px 0;
   }
 }

@@ -35,6 +35,54 @@ describe("elf-card", () => {
     expect(el.shadowRoot!.querySelector(".subtitle")!.textContent).toBe("副标题");
   });
 
+  it("supports Element Plus-compatible header, footer, classes, and body style props", async () => {
+    const el = document.createElement("elf-card") as HTMLElement & {
+      bodyStyle?: Record<string, string>;
+    };
+    el.setAttribute("header", "标题");
+    el.setAttribute("footer", "页脚");
+    el.setAttribute("header-class", "custom-header");
+    el.setAttribute("body-class", "custom-body");
+    el.setAttribute("footer-class", "custom-footer");
+    el.bodyStyle = { color: "rgb(1, 2, 3)" };
+    document.body.appendChild(el);
+    await tick();
+
+    const root = el.shadowRoot!;
+    expect(root.querySelector(".header")?.textContent).toContain("标题");
+    expect(root.querySelector(".footer")?.textContent).toContain("页脚");
+    expect(root.querySelector(".header")?.classList.contains("custom-header")).toBe(true);
+    expect(root.querySelector(".body")?.classList.contains("custom-body")).toBe(true);
+    expect(root.querySelector(".footer")?.classList.contains("custom-footer")).toBe(true);
+    expect(root.querySelector(".body")?.getAttribute("style")).toContain("color");
+  });
+
+  it.each(["always", "hover", "never"])("supports the %s shadow mode", async (shadow) => {
+    const el = document.createElement("elf-card");
+    el.setAttribute("shadow", shadow);
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.getAttribute("shadow")).toBe(shadow);
+  });
+
+  it("makes clickable cards keyboard accessible", async () => {
+    const el = document.createElement("elf-card");
+    el.setAttribute("clickable", "");
+    document.body.appendChild(el);
+    await tick();
+
+    const content = el.shadowRoot!.querySelector(".card-content")!;
+    let count = 0;
+    el.addEventListener("click", () => count++);
+    content.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    content.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+
+    expect(content.getAttribute("role")).toBe("button");
+    expect(content.getAttribute("tabindex")).toBe("0");
+    expect(count).toBe(2);
+  });
+
   it("image prop 渲染封面图", async () => {
     const el = document.createElement("elf-card");
     el.setAttribute("image", "test.jpg");

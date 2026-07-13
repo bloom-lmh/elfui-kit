@@ -11,6 +11,8 @@ afterEach(() => {
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
 
 type ProgressHost = HTMLElement & {
+  percentage?: number;
+  type?: string;
   value?: number;
   max?: number;
   variant?: string;
@@ -39,7 +41,7 @@ describe("elf-progress", () => {
   it("渲染条形进度并同步百分比变量", async () => {
     const el = await mount({ value: 30 });
 
-    expect(el.getAttribute("variant")).toBe("line");
+    expect(el.getAttribute("data-type")).toBe("line");
     expect(el.style.getPropertyValue("--_progress-percent")).toBe("30%");
     expect(el.shadowRoot!.querySelector(".line-value")).toBeTruthy();
     expect(el.shadowRoot!.textContent).toContain("30%");
@@ -56,7 +58,7 @@ describe("elf-progress", () => {
     const el = await mount({ variant: "circle", value: 75, size: 120, strokeWidth: 10 });
     const circle = el.shadowRoot!.querySelector(".circle-value") as SVGCircleElement;
 
-    expect(el.getAttribute("variant")).toBe("circle");
+    expect(el.getAttribute("data-type")).toBe("circle");
     expect(el.style.getPropertyValue("--_progress-size")).toBe("120px");
     expect(circle.namespaceURI).toBe("http://www.w3.org/2000/svg");
     expect(circle.getAttribute("stroke-dashoffset")).toBe("25");
@@ -81,5 +83,32 @@ describe("elf-progress", () => {
 
     expect(el.hasAttribute("data-text-inside")).toBe(true);
     expect(el.shadowRoot!.textContent).toContain("5 / 50");
+  });
+
+  it("prefers Element Plus percentage and type props", async () => {
+    const el = await mount({ percentage: 75, type: "dashboard", value: 5 } as Partial<ProgressHost>);
+    const circle = el.shadowRoot!.querySelector(".circle-value") as SVGCircleElement;
+
+    expect(el.getAttribute("data-type")).toBe("dashboard");
+    expect(el.style.getPropertyValue("--_progress-percent")).toBe("75%");
+    expect(circle.getAttribute("stroke-dasharray")).toBe("75 100");
+    expect(circle.getAttribute("stroke-dashoffset")).toBe("18.75");
+  });
+
+  it("supports Element Plus duration, width, line cap, and striped flow", async () => {
+    const el = await mount({
+      type: "circle",
+      width: 140,
+      duration: 2,
+      strokeLinecap: "butt",
+      stripedFlow: true
+    } as Partial<ProgressHost>);
+    const circle = el.shadowRoot!.querySelector(".circle-value") as SVGCircleElement;
+
+    expect(el.style.getPropertyValue("--_progress-size")).toBe("140px");
+    expect(el.style.getPropertyValue("--_progress-duration")).toBe("2s");
+    expect(el.style.getPropertyValue("--_progress-linecap")).toBe("butt");
+    expect(el.hasAttribute("data-striped-flow")).toBe(true);
+    expect(circle).toBeTruthy();
   });
 });

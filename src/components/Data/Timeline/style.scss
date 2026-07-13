@@ -8,6 +8,8 @@
 .timeline {
   display: flex;
   flex-direction: column;
+  margin: 0;
+  list-style: none;
 }
 
 // ───── 单项 ──────────────────────────────────────
@@ -47,7 +49,9 @@
 // ═══════════════════════════════════════════════════
 //  alternate 模式：中轴线 + grid 双边
 // ═══════════════════════════════════════════════════
-:host([mode="alternate"]) .timeline {
+:host([data-mode="alternate"]),
+:host([data-mode="alternate-reverse"]) {
+  .timeline {
   position: relative;
   &::before {
     content: "";
@@ -59,9 +63,11 @@
     margin-left: -1px;
     background: var(--elf-border);
   }
+  }
 }
 
-:host([mode="alternate"]) .item {
+:host([data-mode="alternate"]) .item,
+:host([data-mode="alternate-reverse"]) .item {
   display: grid;
   grid-template-columns: 1fr 32px 1fr;
   gap: 0 var(--elf-space-4);
@@ -70,7 +76,8 @@
   }
 }
 
-:host([mode="alternate"]) .item:not(.is-right):not(.is-both) {
+:host([data-mode="alternate"]) .item:not(.is-right):not(.is-both),
+:host([data-mode="alternate-reverse"]) .item:not(.is-right):not(.is-both) {
   .body-left {
     display: none;
   }
@@ -85,7 +92,8 @@
   }
 }
 
-:host([mode="alternate"]) .item.is-right:not(.is-both) {
+:host([data-mode="alternate"]) .item.is-right:not(.is-both),
+:host([data-mode="alternate-reverse"]) .item.is-right:not(.is-both) {
   .body-left {
     display: block;
     grid-column: 1;
@@ -100,7 +108,8 @@
   }
 }
 
-:host([mode="alternate"]) .item.is-both {
+:host([data-mode="alternate"]) .item.is-both,
+:host([data-mode="alternate-reverse"]) .item.is-both {
   .body-left {
     display: block;
     grid-column: 1;
@@ -120,7 +129,7 @@
 // ═══════════════════════════════════════════════════
 //  horizontal 模式：横轴 + 上下交替
 // ═══════════════════════════════════════════════════
-:host([mode="horizontal"]) {
+:host([data-mode="horizontal"]) {
   overflow-x: auto;
 
   .timeline {
@@ -219,6 +228,20 @@
 .node-inner {
   line-height: 1;
 }
+.node.is-large {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}
+.node.is-hollow {
+  border: 2px solid var(--_node-bg, var(--elf-primary));
+  background: var(--elf-bg-paper);
+  color: var(--_node-bg, var(--elf-primary));
+}
+.node.is-centered {
+  margin-top: auto;
+  margin-bottom: auto;
+}
 .is-primary {
   --_node-bg: var(--elf-primary);
 }
@@ -253,4 +276,21 @@
   color: var(--elf-text-secondary);
   line-height: 1.6;
   margin-top: 4px;
+}
+
+:host([data-mode="end"]) .item {
+  flex-direction: row-reverse;
+}
+:host([data-mode="end"]) .body-left {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+:host([data-mode="end"]) .body-right {
+  display: none;
+}
+:host([data-mode="end"]) .line {
+  right: 15px;
+  left: auto;
 }
