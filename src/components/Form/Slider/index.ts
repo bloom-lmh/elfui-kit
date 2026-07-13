@@ -1,5 +1,6 @@
 import {
   defineEmits,
+  inject,
   defineExpose,
   defineProps,
   defineStyle,
@@ -14,6 +15,7 @@ import {
 } from "elfui";
 
 import { useDisabled, useFormItem } from "../../../composables";
+import { FORM_ITEM_KEY } from "../context";
 import styles from "./style.scss?inline";
 import type { SliderMark, SliderModelValue, SliderSize } from "./types";
 
@@ -60,11 +62,13 @@ const props = defineProps({
   ariaLabel: { type: String, default: "" },
   rangeStartLabel: { type: String, default: "" },
   rangeEndLabel: { type: String, default: "" }
+  ,validateEvent: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(["update:modelValue", "input", "change"]);
 
 const fi = useFormItem(() => props.size as SliderSize);
+const formItem = inject(FORM_ITEM_KEY);
 
 const isDisabled = useDisabled(() => Boolean(props.disabled));
 
@@ -141,7 +145,10 @@ const emitValue = (value: SliderValue, change = false): void => {
   const payload: SliderModelValue = Array.isArray(value) ? [value[0], value[1]] : value;
   emit("update:modelValue", payload);
   emit("input", payload);
-  if (change) emit("change", payload);
+  if (change) {
+    emit("change", payload);
+    if (props.validateEvent) formItem?.validateTrigger("change");
+  }
 };
 
 const updateSingle = (raw: unknown, change = false): void => {

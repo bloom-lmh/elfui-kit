@@ -30,4 +30,5 @@ export interface SliderProps {
   ariaLabel: string;
   rangeStartLabel: string;
   rangeEndLabel: string;
+  validateEvent: boolean;
 }
