@@ -74,6 +74,12 @@
 - `setCurrentValue`
 - `resetCurrentValue`
 
+## 2026-07-13 delivered
+
+- [x] Add thresholds, color/icon arrays, void/disabled icons, `id`, `aria-label`, `label`, and `validate-event`.
+- [x] Route score changes through FormItem validation; expose `setCurrentValue` and `resetCurrentValue`.
+- [x] Add threshold-color/icon rendering tests and a playground example.
+
 ## 当前 ElfUI API 快照
 
 ### Props

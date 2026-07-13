@@ -7,6 +7,9 @@ const half = useRef(3.5);
 
 const mood = useRef(4);
 
+const palette = ["#ef4444", "#f59e0b", "#22c55e"];
+const rateIcons = ["1", "2", "3"];
+
 const basicCode = `<elf-rate v-model="value" show-text></elf-rate>`;
 
 const halfCode = `<elf-rate v-model="half" allow-half show-score score-template="{value} 分"></elf-rate>`;
@@ -70,6 +73,21 @@ const PageRate = defineHtml(html`
           @update:modelValue="onMood"
         ></elf-rate>
         <elf-rate model-value="4" readonly show-score score-template="{value} / 5"></elf-rate>
+      </div>
+    </elf-playground>
+
+    <elf-playground title="Threshold colors and icons">
+      <div style="display:grid;gap:12px">
+        <elf-rate
+          model-value="4"
+          :colors.prop=${palette}
+          :icons.prop=${rateIcons}
+          void-icon="0"
+          low-threshold="2"
+          high-threshold="4"
+          aria-label="Satisfaction rating"
+        ></elf-rate>
+        <elf-rate model-value="2" disabled-void-icon="-" readonly></elf-rate>
       </div>
     </elf-playground>
 
