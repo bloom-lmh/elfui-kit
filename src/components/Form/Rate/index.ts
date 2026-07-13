@@ -1,5 +1,6 @@
 import {
   defineEmits,
+  defineExpose,
   defineProps,
   defineStyle,
   html,
@@ -11,7 +12,7 @@ import {
   defineHtml
 } from "elfui";
 
-import { useDisabled, useFormItem } from "../../../composables";
+import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
 
 export type { RateProps, RateSize } from "./types";
@@ -46,10 +47,25 @@ const props = defineProps({
   showText: { type: Boolean, default: false },
   showScore: { type: Boolean, default: false },
   scoreTemplate: { type: String, default: "{value}" },
-  texts: { type: Array, default: () => ["极差", "失望", "一般", "满意", "惊喜"] }
+  texts: { type: Array, default: () => ["极差", "失望", "一般", "满意", "惊喜"] },
+  lowThreshold: { type: Number, default: 2 },
+  highThreshold: { type: Number, default: 4 },
+  colors: { type: Array, default: () => [] },
+  disabledVoidColor: { type: String, default: "" },
+  icons: { type: Array, default: () => [] },
+  voidIcon: { type: String, default: "" },
+  disabledVoidIcon: { type: String, default: "" },
+  textColor: { type: String, default: "" },
+  id: { type: String, default: "" },
+  ariaLabel: { type: String, default: "" },
+  label: { type: String, default: "" },
+  validateEvent: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(["update:modelValue", "change", "hover-change", "clear"]);
+const ctl = useFormControl<number>(props, emit, {
+  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : { input: false, blur: false, change: "change" }
+});
 
 const fi = useFormItem(() => props.size as string);
 
@@ -97,8 +113,8 @@ const commit = (value: number): void => {
   if (isDisabled() || props.readonly) return;
   const next = props.clearable && value === innerValue.value ? 0 : value;
   innerValue.set(next);
-  emit("update:modelValue", next);
-  emit("change", next);
+  ctl.setValue(next);
+  ctl.dispatchChange(next);
   if (next === 0) emit("clear");
 };
 
@@ -118,6 +134,11 @@ const onMouseLeave = (): void => {
 };
 
 const clear = (): void => commit(0);
+const setCurrentValue = (value: number): void => commit(Math.max(0, Math.min(max(), readNumber(value))));
+const resetCurrentValue = (): void => {
+  hoverValue.set(0);
+  innerValue.set(readNumber(props.modelValue));
+};
 
 const onKeyDown = (event: KeyboardEvent): void => {
   if (isDisabled() || props.readonly) return;
@@ -153,6 +174,8 @@ const rootStyle = useComputed(() => ({
   ...(props.disabledColor ? { "--rate-disabled-color": String(props.disabledColor) } : {})
 }));
 
+defineExpose({ setCurrentValue, resetCurrentValue });
+
 defineStyle(styles);
 
 const Rate = defineHtml(html`
@@ -162,7 +185,9 @@ const Rate = defineHtml(html`
     @mouseleave=${onMouseLeave}
     @keydown=${onKeyDown}
     role="slider"
-    tabindex="0"
+    :id=${props.id || null}
+    :aria-label=${props.ariaLabel || props.label || "Rate"}
+    :tabindex=${isDisabled() || props.readonly ? -1 : 0}
     :aria-valuenow=${innerValue}
     aria-valuemin="0"
     :aria-valuemax=${props.max}

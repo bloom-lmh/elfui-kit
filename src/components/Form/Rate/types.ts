@@ -17,4 +17,16 @@ export interface RateProps {
   showScore: boolean;
   scoreTemplate: string;
   texts: string[];
+  lowThreshold: number;
+  highThreshold: number;
+  colors: string[];
+  disabledVoidColor: string;
+  icons: string[];
+  voidIcon: string;
+  disabledVoidIcon: string;
+  textColor: string;
+  id: string;
+  ariaLabel: string;
+  label: string;
+  validateEvent: boolean;
 }
