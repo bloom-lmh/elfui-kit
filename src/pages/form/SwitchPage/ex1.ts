@@ -2,6 +2,7 @@ import { defineHtml, html, useRef } from "elfui";
 
 const enabled = useRef(false);
 const textValue = useRef(true);
+const status = useRef("disabled");
 
 const updateEnabled = (event: Event): void => {
   enabled.set(Boolean((event as CustomEvent).detail));
@@ -10,6 +11,21 @@ const updateEnabled = (event: Event): void => {
 const updateText = (event: Event): void => {
   textValue.set(Boolean((event as CustomEvent).detail));
 };
+
+const updateStatus = (event: Event): void => {
+  status.set(String((event as CustomEvent).detail));
+};
+
+const code3 = `<elf-switch
+  :modelValue=\${status}
+  active-value="enabled"
+  inactive-value="disabled"
+  inline-prompt
+  width="64"
+  active-text="ON"
+  inactive-text="OFF"
+  @update:modelValue=\${updateStatus}
+/>`;
 
 const code1 = `<elf-switch v-model="enabled" label="接收系统通知" />`;
 const code2 = `<elf-switch active-text="开" inactive-text="关" />`;
@@ -38,6 +54,21 @@ const PageSwitchEx1 = defineHtml(html`
       ></elf-switch>
       <elf-switch active-text="ON" inactive-text="OFF"></elf-switch>
     </div>
+  </elf-playground>
+  <h2>Custom values / inline prompt</h2>
+  <elf-playground title="active-value / inactive-value" :code=${code3}>
+    <elf-switch
+      :modelValue=${status}
+      active-value="enabled"
+      inactive-value="disabled"
+      inline-prompt
+      width="64"
+      active-text="ON"
+      inactive-text="OFF"
+      aria-label="Service status"
+      @update:modelValue=${updateStatus}
+    ></elf-switch>
+    <span class="demo-state">{{ status }}</span>
   </elf-playground>
 `);
 

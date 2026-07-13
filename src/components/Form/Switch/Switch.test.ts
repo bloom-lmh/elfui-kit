@@ -14,7 +14,7 @@ const flush = (): Promise<void> =>
     .then(() => Promise.resolve());
 
 type SwitchHost = HTMLElement & {
-  modelValue?: boolean;
+  modelValue?: string | number | boolean;
   disabled?: boolean;
   loading?: boolean;
   inset?: boolean;
@@ -27,6 +27,12 @@ type SwitchHost = HTMLElement & {
   activeText?: string;
   inactiveText?: string;
   beforeChange?: (v: boolean) => boolean;
+  width?: string | number;
+  id?: string;
+  ariaLabel?: string;
+  activeValue?: string | number | boolean;
+  inactiveValue?: string | number | boolean;
+  inlinePrompt?: boolean;
 };
 
 const mount = async (patch: Partial<SwitchHost> = {}): Promise<SwitchHost> => {
@@ -132,5 +138,32 @@ describe("elf-switch", () => {
         .map((node) => node.textContent)
         .join("")
     ).toContain("允许提醒");
+  });
+  it("supports custom active and inactive values with form-compatible change events", async () => {
+    const el = await mount({ modelValue: "off", activeValue: "on", inactiveValue: "off" });
+    const onChange = vi.fn();
+    el.addEventListener("change", onChange as unknown as EventListener);
+    (el.shadowRoot!.querySelector(".track") as HTMLElement).click();
+    await flush();
+    expect((onChange.mock.calls[0]![0] as CustomEvent).detail).toBe("on");
+    expect(el.hasAttribute("data-checked")).toBe(true);
+  });
+
+  it("applies width, aria metadata, inline prompt, and keyboard focus", async () => {
+    const el = await mount({
+      width: 64,
+      id: "notifications",
+      ariaLabel: "Notifications",
+      inlinePrompt: true,
+      activeText: "ON",
+      inactiveText: "OFF"
+    });
+    const track = el.shadowRoot!.querySelector(".track") as HTMLElement;
+    expect(track.id).toBe("notifications");
+    expect(track.getAttribute("aria-label")).toBe("Notifications");
+    expect(el.style.getPropertyValue("--_switch-width-custom")).toBe("64px");
+    expect(el.shadowRoot!.querySelector(".inline-content")?.textContent).toContain("OFF");
+    track.focus();
+    expect(el.shadowRoot!.activeElement).toBe(track);
   });
 });

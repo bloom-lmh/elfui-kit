@@ -1,22 +1,32 @@
 export type SwitchSize = "sm" | "md" | "lg";
-
 export type SwitchColor = "primary" | "success" | "warning" | "danger" | "info" | string;
-
 export type SwitchLabelPosition = "start" | "end";
+export type SwitchValue = string | number | boolean;
 
 export interface SwitchProps {
-  modelValue: boolean;
+  modelValue: SwitchValue;
   disabled: boolean;
   size: SwitchSize;
+  width: string | number;
+  inlinePrompt: boolean;
   activeText: string;
   inactiveText: string;
+  activeIcon: string;
+  inactiveIcon: string;
   label: string;
   labelPosition: SwitchLabelPosition;
-  beforeChange?: (next: boolean) => boolean | Promise<boolean>;
+  activeValue: SwitchValue;
+  inactiveValue: SwitchValue;
+  beforeChange?: (next: SwitchValue) => boolean | Promise<boolean>;
+  validateEvent: boolean;
   loading: boolean;
   inset: boolean;
   flat: boolean;
   color: SwitchColor;
   activeColor: string;
   inactiveColor: string;
+  borderColor: string;
+  id: string;
+  tabindex: number;
+  ariaLabel: string;
 }

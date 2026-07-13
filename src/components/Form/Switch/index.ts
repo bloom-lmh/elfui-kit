@@ -11,127 +11,119 @@ import {
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
+import type { SwitchProps, SwitchValue } from "./types";
 
-export type { SwitchColor, SwitchLabelPosition, SwitchProps, SwitchSize } from "./types";
+export type { SwitchColor, SwitchLabelPosition, SwitchProps, SwitchSize, SwitchValue } from "./types";
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
+const props = defineProps<SwitchProps>({
+  modelValue: { type: null, default: false },
   disabled: { type: Boolean, default: false },
   size: { type: String, default: "md" },
+  width: { type: null, default: undefined },
+  inlinePrompt: { type: Boolean, default: false },
   activeText: { type: String, default: "" },
   inactiveText: { type: String, default: "" },
+  activeIcon: { type: String, default: "" },
+  inactiveIcon: { type: String, default: "" },
   label: { type: String, default: "" },
   labelPosition: { type: String, default: "end" },
+  activeValue: { type: null, default: true },
+  inactiveValue: { type: null, default: false },
   beforeChange: { type: Function, default: undefined },
+  validateEvent: { type: Boolean, default: true },
   loading: { type: Boolean, default: false },
   inset: { type: Boolean, default: false },
   flat: { type: Boolean, default: false },
   color: { type: String, default: "primary" },
   activeColor: { type: String, default: "" },
-  inactiveColor: { type: String, default: "" }
+  inactiveColor: { type: String, default: "" },
+  borderColor: { type: String, default: "" },
+  id: { type: String, default: "" },
+  tabindex: { type: Number, default: 0 },
+  ariaLabel: { type: String, default: "" }
 });
 
 const emit = defineEmits<{
-  "update:modelValue": [boolean];
-  change: [boolean];
+  "update:modelValue": [value: SwitchValue];
+  change: [value: SwitchValue];
 }>();
-
-const ctl = useFormControl<boolean>(props, emit, {
-  triggers: { input: false, blur: false, change: "change" }
+const ctl = useFormControl<SwitchValue>(props, emit, {
+  triggers: props.validateEvent === false ? { input: false, blur: false, change: false } : { input: false, blur: false, change: "change" }
 });
-
 const fi = useFormItem(() => props.size as string);
-
 const isDisabled = useDisabled(() => Boolean(props.disabled || props.loading));
 
 const tokenColor = (value: string): string => {
   const color = String(value || "primary");
   const map: Record<string, string> = {
-    primary: "var(--elf-primary)",
-    success: "var(--elf-success)",
-    warning: "var(--elf-warning)",
-    danger: "var(--elf-danger)",
-    info: "var(--elf-info)"
+    primary: "var(--elf-primary)", success: "var(--elf-success)", warning: "var(--elf-warning)", danger: "var(--elf-danger)", info: "var(--elf-info)"
   };
   return map[color] ?? color;
 };
 
-useHostFlag("data-checked", () => ctl.model.value);
+const checked = (): boolean => Object.is(ctl.model.value, props.activeValue);
+const nextValue = (): SwitchValue => checked() ? props.inactiveValue : props.activeValue;
+const width = (): string | null => {
+  if (props.width === undefined || props.width === null || props.width === "") return null;
+  return typeof props.width === "number" ? `${props.width}px` : String(props.width);
+};
+
+useHostFlag("data-checked", checked);
 useHostFlag("data-loading", () => Boolean(props.loading));
 useHostFlag("data-inset", () => Boolean(props.inset));
 useHostFlag("data-flat", () => Boolean(props.flat));
+useHostFlag("data-inline-prompt", () => Boolean(props.inlinePrompt));
 useHostFlag("disabled", isDisabled);
 useHostAttr("data-size", () => fi.formSize);
 useHostAttr("data-label-position", () => String(props.labelPosition || "end"));
-useHostCssVar("--_switch-active", () =>
-  props.activeColor ? String(props.activeColor) : tokenColor(String(props.color))
-);
-useHostCssVar("--_switch-inactive", () =>
-  props.inactiveColor ? String(props.inactiveColor) : "var(--elf-border-strong)"
-);
+useHostCssVar("--_switch-active", () => props.activeColor ? String(props.activeColor) : tokenColor(String(props.color)));
+useHostCssVar("--_switch-inactive", () => props.inactiveColor || "var(--elf-border-strong)");
+useHostCssVar("--_switch-border", () => props.borderColor || "transparent");
+useHostCssVar("--_switch-width-custom", width);
 
 const toggle = async (): Promise<void> => {
   if (isDisabled()) return;
-  const next = !ctl.model.value;
-  const guard = props.beforeChange as ((v: boolean) => boolean | Promise<boolean>) | undefined;
-  if (guard) {
-    const ok = await guard(next);
-    if (ok === false) return;
-  }
+  const next = nextValue();
+  const guard = props.beforeChange as ((value: SwitchValue) => boolean | Promise<boolean>) | undefined;
+  if (guard && (await guard(next)) === false) return;
   ctl.setValue(next);
-  emit("change", next);
+  ctl.dispatchChange(next);
 };
 
-const onClick = (): void => {
-  void toggle();
-};
-
+const onClick = (): void => { void toggle(); };
 const onKeyDown = (event: KeyboardEvent): void => {
   if (event.key === " " || event.key === "Enter") {
     event.preventDefault();
     void toggle();
   }
 };
-
-const ariaLabel = (): string => String(props.label || props.activeText || "Switch");
-
+const ariaLabel = (): string => String(props.ariaLabel || props.label || props.activeText || "Switch");
 defineStyle(styles);
 
-const Switch = defineHtml(html`
-  <span
-    v-if=${props.inactiveText}
-    class="state-label"
-    :class=${{ active: !ctl.model.value }}
-    @click=${onClick}
-  >
-    ${props.inactiveText}
-  </span>
+const Switch = defineHtml<SwitchProps>(html`
+  <span v-if=${props.inactiveText && !props.inlinePrompt} class="state-label" :class=${{ active: !checked() }} @click=${onClick}>${props.inactiveText}</span>
   <span class="body">
     <span
       class="track"
       part="track"
       role="switch"
-      tabindex="0"
+      :id=${props.id || null}
+      :tabindex=${isDisabled() ? -1 : props.tabindex}
       :aria-label=${ariaLabel()}
-      :aria-checked=${ctl.model.value}
+      :aria-checked=${checked()}
       :aria-disabled=${isDisabled()}
       @click=${onClick}
       @keydown=${onKeyDown}
     >
-      <span class="thumb">
-        <span v-if=${props.loading} class="spinner" aria-hidden="true"></span>
-      </span>
+      <span class="thumb"><span v-if=${props.loading} class="spinner" aria-hidden="true"></span></span>
+      <span v-if=${props.inlinePrompt && !checked()} class="inline-content"><slot name="inactive">${props.inactiveIcon || props.inactiveText}</slot></span>
+      <span v-if=${props.inlinePrompt && checked()} class="inline-content"><slot name="active">${props.activeIcon || props.activeText}</slot></span>
+      <span v-if=${!props.inlinePrompt && !checked() && props.inactiveIcon} class="action-icon"><slot name="inactive-action">${props.inactiveIcon}</slot></span>
+      <span v-if=${!props.inlinePrompt && checked() && props.activeIcon} class="action-icon"><slot name="active-action">${props.activeIcon}</slot></span>
     </span>
     <span class="main-label" part="label" @click=${onClick}><slot>${props.label}</slot></span>
   </span>
-  <span
-    v-if=${props.activeText}
-    class="state-label"
-    :class=${{ active: ctl.model.value }}
-    @click=${onClick}
-  >
-    ${props.activeText}
-  </span>
+  <span v-if=${props.activeText && !props.inlinePrompt} class="state-label" :class=${{ active: checked() }} @click=${onClick}>${props.activeText}</span>
 `);
 
 export { Switch };

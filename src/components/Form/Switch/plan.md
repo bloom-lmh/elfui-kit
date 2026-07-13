@@ -132,6 +132,16 @@
 - [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
 
+## 2026-07-13 delivered
+
+- [x] Add `active-value`, `inactive-value`, `width`, `inline-prompt`, icon/action slots, `validate-event`, `id`, `tabindex`, `aria-label`, and `border-color`.
+- [x] Route changes through FormItem validation, retain async `before-change`, and cover non-boolean values, ARIA, prompt, width, and keyboard focus in focused tests.
+- [x] Add custom-value/inline-prompt playground and API documentation.
+
+## Remaining
+
+- [ ] Icon component inputs and a reliable Custom Element `focus()` proxy remain dependent on the runtime's host method exposure behavior.
+
 ---
 
 ## 历史计划保留

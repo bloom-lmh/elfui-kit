@@ -4,7 +4,7 @@
   --_switch-active: var(--elf-primary);
   --_switch-inactive: var(--elf-border-strong);
   --_switch-thumb: #ffffff;
-  --_switch-width: 40px;
+  --_switch-width: var(--_switch-width-custom, 40px);
   --_switch-height: 22px;
   --_switch-thumb-size: 18px;
   --_switch-move: 18px;
@@ -56,7 +56,7 @@
   width: var(--_switch-width);
   height: var(--_switch-height);
   flex: 0 0 auto;
-  border: 1px solid transparent;
+  border: 1px solid var(--_switch-border, transparent);
   border-radius: var(--elf-radius-pill);
   background: var(--_switch-inactive);
   box-sizing: border-box;
@@ -68,6 +68,7 @@
 }
 
 .thumb {
+  z-index: 1;
   position: absolute;
   top: 1px;
   left: 1px;
@@ -83,6 +84,27 @@
     transform var(--elf-transition-base),
     width var(--elf-transition-base),
     box-shadow var(--elf-transition-base);
+}
+
+.inline-content,
+.action-icon {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inset: 0;
+  color: var(--elf-text-inverse, #ffffff);
+  font-size: 11px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.action-icon {
+  color: var(--elf-text-secondary);
+}
+
+:host([data-checked]) .action-icon {
+  color: var(--elf-text-inverse, #ffffff);
 }
 
 :host([data-checked]) .track {
