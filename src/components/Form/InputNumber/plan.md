@@ -16,5 +16,5 @@
 ## 后续差距
 
 - [x] 2026-07-07 补独立案例页：覆盖受控值、`min/max/step`、`precision`、`step-strictly`、`controls-position`、禁用/只读/无控制按钮。
-- [ ] 补齐 `value-on-clear`、`validate-event`、原生 ARIA 细节、`focus`/`blur` 代理和 FormItem 校验联动。
+- [x] 补齐 `value-on-clear`、`validate-event`、原生 ARIA 细节、`focus`/`blur` 代理和 FormItem 校验联动。
 - [x] 页面示例补 Template / Script 双视图和 PropsTable。
