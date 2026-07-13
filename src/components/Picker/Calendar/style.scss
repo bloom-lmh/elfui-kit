@@ -20,6 +20,20 @@
   font-weight: 700;
 }
 
+.nav {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nav:hover { background: var(--elf-bg-muted); }
+
 .week,
 .days {
   display: grid;
@@ -57,4 +71,9 @@
 
 .day.is-muted {
   color: var(--elf-text-disabled);
+}
+
+.day:disabled {
+  color: var(--elf-text-disabled);
+  cursor: not-allowed;
 }
