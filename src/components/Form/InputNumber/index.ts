@@ -1,9 +1,11 @@
 import {
   defineEmits,
+  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
   html,
+  useHost,
   useHostAttr,
   useHostFlag,
   useRef,
@@ -28,10 +30,13 @@ const props = defineProps<InputNumberProps>({
   controlsPosition: { type: String, default: "" },
   size: { type: String, default: "" },
   placeholder: { type: String, default: "" },
-  name: { type: String, default: "" }
+  name: { type: String, default: "" },
+  valueOnClear: { type: Number, default: null },
+  validateEvent: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(["update:modelValue", "change", "input", "focus", "blur"]);
+const host = useHost();
 
 const current = useRef<number | null>(null);
 const lastModel = useRef<string>("");
@@ -115,12 +120,18 @@ const commit = (value: number | null, eventName: "input" | "change"): void => {
 };
 
 const onInput = (event: Event): void => {
-  commit(numberOrNull((event.target as HTMLInputElement).value), "input");
+  const value = numberOrNull((event.target as HTMLInputElement).value);
+  commit(value === null ? numberOrNull(props.valueOnClear) : value, "input");
 };
 
 const onChange = (event: Event): void => {
-  commit(numberOrNull((event.target as HTMLInputElement).value), "change");
+  const value = numberOrNull((event.target as HTMLInputElement).value);
+  commit(value === null ? numberOrNull(props.valueOnClear) : value, "change");
 };
+
+const inputElement = (): HTMLInputElement | null => host.shadowRoot?.querySelector("input") ?? null;
+const focus = (): void => inputElement()?.focus();
+const blur = (): void => inputElement()?.blur();
 
 const decrease = (): void => {
   const base = current.value ?? 0;
@@ -143,6 +154,8 @@ const normalizedControlsPosition = (): InputNumberControlsPosition =>
 useHostAttr("size", normalizedSize);
 useHostAttr("controls-position", normalizedControlsPosition);
 useHostFlag("disabled", () => Boolean(props.disabled));
+
+defineExpose({ focus, blur });
 
 defineStyle(styles);
 
@@ -170,6 +183,10 @@ const InputNumber = defineHtml<InputNumberProps>(html`
       :max=${Number.isFinite(max()) ? max() : null}
       :step=${step()}
       :value.prop=${displayValue()}
+      role="spinbutton"
+      :aria-valuemin=${Number.isFinite(min()) ? String(min()) : null}
+      :aria-valuemax=${Number.isFinite(max()) ? String(max()) : null}
+      :aria-valuenow=${current.value === null ? null : String(current.value)}
       @input=${onInput}
       @change=${onChange}
       @focus=${(event: Event) => emit("focus", event)}

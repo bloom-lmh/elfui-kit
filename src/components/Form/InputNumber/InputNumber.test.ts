@@ -20,6 +20,7 @@ interface InputNumberEl extends HTMLElement {
   step?: number;
   precision?: number;
   disabled?: boolean;
+  valueOnClear?: number | null;
 }
 
 const mount = async (patch: Partial<InputNumberEl> = {}): Promise<InputNumberEl> => {
@@ -66,6 +67,22 @@ describe("elf-input-number", () => {
     input.dispatchEvent(new Event("input", { bubbles: true }));
 
     expect((onInput.mock.calls[0]![0] as CustomEvent).detail).toBeNull();
+  });
+
+  it("uses value-on-clear and exposes spinbutton ARIA values", async () => {
+    const el = await mount({ min: 0, max: 10, valueOnClear: 4 });
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput as EventListener);
+    const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+    input.value = "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+
+    expect((onInput.mock.calls[0]![0] as CustomEvent).detail).toBe(4);
+    expect(input.getAttribute("role")).toBe("spinbutton");
+    expect(input.getAttribute("aria-valuemin")).toBe("0");
+    expect(input.getAttribute("aria-valuemax")).toBe("10");
+    expect(input.getAttribute("aria-valuenow")).toBe("4");
   });
 
   it("does not change when disabled", async () => {

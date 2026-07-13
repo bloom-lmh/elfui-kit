@@ -15,4 +15,6 @@ export interface InputNumberProps {
   size: InputNumberSize;
   placeholder: string;
   name: string;
+  valueOnClear: number | null;
+  validateEvent: boolean;
 }
