@@ -17,6 +17,8 @@ interface InputOtpEl extends HTMLElement {
   modelValue?: string;
   length?: number;
   type?: string;
+  mask?: boolean;
+  parser?: (value: string) => string;
 }
 
 describe("elf-input-otp", () => {
@@ -44,5 +46,21 @@ describe("elf-input-otp", () => {
     input.dispatchEvent(new Event("input", { bubbles: true }));
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe("7");
+  });
+
+  it("masks cells and applies parser output", async () => {
+    const el = document.createElement("elf-input-otp") as InputOtpEl;
+    el.modelValue = "12";
+    el.mask = true;
+    el.parser = (value) => value.replace(/\D/g, "");
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    document.body.appendChild(el);
+    await tick();
+    const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+    expect(input.value).toBe("•");
+    input.value = "x7";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe("72");
   });
 });

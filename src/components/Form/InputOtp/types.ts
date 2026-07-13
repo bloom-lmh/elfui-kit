@@ -10,4 +10,8 @@ export interface InputOtpProps {
   readonly: boolean;
   placeholder: string;
   separator: string;
+  formatter?: (value: string) => string;
+  parser?: (value: string) => string;
+  mask: boolean;
+  validateEvent: boolean;
 }

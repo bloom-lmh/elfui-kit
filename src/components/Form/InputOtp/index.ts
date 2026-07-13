@@ -1,5 +1,6 @@
 import {
   defineEmits,
+  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
@@ -9,6 +10,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useFormControl } from "../../../composables";
 import type { InputOtpProps, InputOtpSize, InputOtpType } from "./types";
 
 export type { InputOtpProps, InputOtpSize, InputOtpType } from "./types";
@@ -26,17 +28,27 @@ const props = defineProps<InputOtpProps>({
   disabled: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
   placeholder: { type: String, default: "" },
-  separator: { type: String, default: "" }
+  separator: { type: String, default: "" },
+  formatter: { type: Function, default: undefined },
+  parser: { type: Function, default: undefined },
+  mask: { type: Boolean, default: false },
+  validateEvent: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(["update:modelValue", "input", "change", "focus", "blur"]);
 const host = useHost();
+const ctl = useFormControl<string>(props, emit, {
+  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+});
 
 const length = (): number => Math.min(12, Math.max(1, Number(props.length) || 6));
+const formattedValue = (): string =>
+  typeof props.formatter === "function" ? String(props.formatter(String(props.modelValue || ""))) : String(props.modelValue || "");
 const chars = (): string[] =>
-  String(props.modelValue || "")
+  formattedValue()
     .split("")
     .slice(0, length());
+const displayChar = (value: string): string => (props.mask && value ? "•" : value);
 const cells = (): OtpCell[] =>
   Array.from({ length: length() }, (_, index) => ({ index, char: chars()[index] || "" }));
 
@@ -50,9 +62,13 @@ const updateAt = (index: number, value: string, eventName: "input" | "change"): 
   if (props.disabled || props.readonly) return;
   const next = chars();
   next[index] = normalizeChar(value);
-  const output = next.join("").slice(0, length());
-  emit("update:modelValue", output);
-  emit(eventName, output);
+  const raw = next.join("").slice(0, length());
+  const output = typeof props.parser === "function" ? String(props.parser(raw)) : raw;
+  if (eventName === "input") ctl.dispatchInput(output);
+  else {
+    ctl.setValue(output);
+    ctl.dispatchChange(output);
+  }
 };
 
 const inputAt = (index: number): HTMLInputElement | null =>
@@ -83,11 +99,14 @@ const onPaste = (event: ClipboardEvent): void => {
   if (props.disabled || props.readonly) return;
   event.preventDefault();
   const text = event.clipboardData?.getData("text") || "";
-  const output = text.split("").map(normalizeChar).join("").slice(0, length());
-  emit("update:modelValue", output);
-  emit("input", output);
-  emit("change", output);
+  const raw = text.split("").map(normalizeChar).join("").slice(0, length());
+  const output = typeof props.parser === "function" ? String(props.parser(raw)) : raw;
+  ctl.dispatchInput(output);
+  ctl.dispatchChange(output);
 };
+
+const focus = (): void => focusAt(0);
+const blur = (): void => (document.activeElement as HTMLElement | null)?.blur();
 
 const inputType = (): string => (props.type === "password" ? "password" : "text");
 const inputMode = (): string | null => (props.type === "number" ? "numeric" : null);
@@ -98,6 +117,7 @@ const normalizedSize = (): InputOtpSize => {
 };
 
 useHostAttr("size", normalizedSize);
+defineExpose({ focus, blur });
 defineStyle(styles);
 
 const InputOtp = defineHtml<InputOtpProps>(html`
@@ -110,18 +130,18 @@ const InputOtp = defineHtml<InputOtpProps>(html`
         :data-index="cell.index"
         :type=${inputType()}
         :inputmode=${inputMode()}
-        :value.prop="cell.char"
+        :value.prop=${displayChar(cell.char)}
         :placeholder=${props.placeholder}
         :disabled=${props.disabled}
         :readonly=${props.readonly}
         @input=${onInput}
         @change=${onChange}
         @keydown=${onKeydown}
-        @focus=${(event: Event) => emit("focus", event)}
-        @blur=${(event: Event) => emit("blur", event)}
+        @focus=${(event: Event) => ctl.dispatchFocus(event)}
+        @blur=${(event: Event) => ctl.dispatchBlur(event)}
       />
       <span v-if="props.separator && cell.index < length() - 1" class="separator"
-        >${props.separator}</span
+        ><slot name="separator">${props.separator}</slot></span
       >
     </template>
   </div>
