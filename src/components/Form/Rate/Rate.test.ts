@@ -14,6 +14,9 @@ interface RateEl extends HTMLElement {
   modelValue?: number;
   allowHalf?: boolean;
   showScore?: boolean;
+  colors?: string[];
+  icons?: string[];
+  voidIcon?: string;
 }
 
 describe("elf-rate", () => {
@@ -53,5 +56,20 @@ describe("elf-rate", () => {
     await tick();
 
     expect(el.shadowRoot!.querySelector(".text")?.textContent).toContain("4.5");
+  });
+  it("renders threshold colors and icons", async () => {
+    const el = document.createElement("elf-rate") as RateEl;
+    el.modelValue = 4;
+    el.colors = ["red", "orange", "green"];
+    el.icons = ["1", "2", "3"];
+    el.voidIcon = "0";
+    document.body.appendChild(el);
+    await tick();
+    const stars = el.shadowRoot!.querySelectorAll(".star");
+    expect(stars[0]?.textContent).toContain("1");
+    expect(stars[2]?.textContent).toContain("2");
+    expect(stars[3]?.textContent).toContain("3");
+    expect((stars[3] as HTMLElement).style.getPropertyValue("--rate-item-color")).toBe("green");
+    expect(stars[4]?.textContent).toContain("0");
   });
 });

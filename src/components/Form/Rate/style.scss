@@ -48,7 +48,7 @@
 
 .star.is-full,
 .star.is-half {
-  color: var(--rate-color, var(--elf-warning));
+  color: var(--rate-item-color, var(--rate-color, var(--elf-warning)));
 }
 
 .star.is-half .symbol {

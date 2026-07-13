@@ -99,6 +99,27 @@ const stateOf = (item: RateViewItem): string => {
   return "empty";
 };
 
+const isReadOnly = (): boolean => Boolean(isDisabled() || props.readonly);
+
+const iconOf = (item: RateViewItem): string => {
+  const state = stateOf(item);
+  if (state === "empty") {
+    if (isReadOnly() && props.disabledVoidIcon) return String(props.disabledVoidIcon);
+    return String(props.voidIcon || props.voidCharacter || "☆");
+  }
+  const icons = Array.isArray(props.icons) ? props.icons as string[] : [];
+  const index = item.score <= props.lowThreshold ? 0 : item.score < props.highThreshold ? 1 : 2;
+  return String(icons[index] || props.character || "★");
+};
+
+const colorOf = (item: RateViewItem): string => {
+  if (isReadOnly()) return String(props.disabledColor || props.disabledVoidColor || "var(--elf-text-disabled)");
+  if (stateOf(item) === "empty") return String(props.voidColor || "var(--elf-text-disabled)");
+  const colors = Array.isArray(props.colors) ? props.colors as string[] : [];
+  const index = item.score <= props.lowThreshold ? 0 : item.score < props.highThreshold ? 1 : 2;
+  return String(colors[index] || props.color || "var(--elf-warning)");
+};
+
 const charOf = (item: RateViewItem): string =>
   stateOf(item) === "empty" ? String(props.voidCharacter || "☆") : String(props.character || "★");
 
@@ -198,12 +219,13 @@ const Rate = defineHtml(html`
         :key="item.score"
         type="button"
         :class="['star', 'is-' + stateOf(item)]"
+        :style=${{ "--rate-item-color": colorOf(item) }}
         :disabled=${isDisabled() || props.readonly}
         @click="onClick(item, $event)"
         @mousemove="onMouseMove(item, $event)"
         :aria-label="'评分 ' + item.score"
       >
-        <span class="symbol">{{ charOf(item) }}</span>
+        <span class="symbol">{{ iconOf(item) }}</span>
       </button>
     </div>
     <span v-if=${props.showText || props.showScore} class="text">${text()}</span>
