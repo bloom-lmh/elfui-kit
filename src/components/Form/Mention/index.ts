@@ -1,76 +1,165 @@
-import { defineEmits, defineHtml, defineProps, defineStyle, html, useRef } from "elfui";
+import {
+  defineEmits,
+  defineExpose,
+  defineHtml,
+  defineProps,
+  defineStyle,
+  html,
+  useRef,
+  useTemplateRef
+} from "elfui";
 
+import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
-import type { MentionOption, MentionProps } from "./types";
+import type { MentionOption, MentionProps, MentionPrefix } from "./types";
 
-export type { MentionOption, MentionProps } from "./types";
+export type {
+  MentionCheckIsWhole,
+  MentionFilterOption,
+  MentionOption,
+  MentionPlacement,
+  MentionPrefix,
+  MentionProps
+} from "./types";
 
 interface ViewOption {
   label: string;
   insertText: string;
   disabled: boolean;
   index: number;
+  raw: MentionOption;
+}
+
+interface TriggerRange {
+  start: number;
+  end: number;
+  prefix: string;
 }
 
 const props = defineProps<MentionProps>({
   modelValue: { type: String, default: "" },
   options: { type: Array, default: () => [] },
-  prefix: { type: String, default: "@" },
+  prefix: { type: [String, Array], default: "@" },
+  prefixes: { type: Array, default: () => [] },
   placeholder: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
-  rows: { type: Number, default: 3 }
+  rows: { type: Number, default: 3 },
+  split: { type: String, default: " " },
+  filterOption: { type: Function, default: undefined },
+  whole: { type: Boolean, default: false },
+  checkIsWhole: { type: Function, default: undefined },
+  loading: { type: Boolean, default: false },
+  loadingText: { type: String, default: "Loading..." },
+  placement: { type: String, default: "top" },
+  id: { type: String, default: "" },
+  name: { type: String, default: "" },
+  ariaLabel: { type: String, default: "" },
+  validateEvent: { type: Boolean, default: true }
 });
 
-const emit = defineEmits(["update:modelValue", "input", "select", "focus", "blur"]);
+const emit = defineEmits<{
+  "update:modelValue": [value: string];
+  input: [value: string];
+  select: [option: MentionOption, prefix: string];
+  focus: [event: FocusEvent];
+  blur: [event: FocusEvent];
+}>();
+
+const ctl = useFormControl<string>(props, emit, {
+  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+});
+const fi = useFormItem(() => "");
+const isDisabled = useDisabled(() => Boolean(props.disabled));
+const textareaRef = useTemplateRef<HTMLTextAreaElement>("textareaEl");
 const open = useRef(false);
 const query = useRef("");
+const activeIndex = useRef(-1);
+const range = useRef<TriggerRange | null>(null);
+const listboxId = `elf-mention-${Math.random().toString(36).slice(2)}`;
+
+const prefixes = (): string[] => {
+  if (Array.isArray(props.prefixes) && props.prefixes.length) return props.prefixes.filter(Boolean).sort((a, b) => b.length - a.length);
+  const value = props.prefix as MentionPrefix;
+  return (Array.isArray(value) ? value : [value]).filter(Boolean).sort((a, b) => b.length - a.length);
+};
 
 const options = (): ViewOption[] => {
-  const q = query.value.toLowerCase();
+  const pattern = query.value.toLowerCase();
+  const filter = props.filterOption;
   return (props.options || [])
     .map((item, index) => ({
       label: String(item.label ?? item.value ?? ""),
       insertText: String(item.value ?? item.label ?? ""),
       disabled: Boolean(item.disabled),
-      index
+      index,
+      raw: item
     }))
-    .filter((item) => !q || item.label.toLowerCase().includes(q));
+    .filter((item) => {
+      if (typeof filter === "function") return filter(query.value, item.raw);
+      return !pattern || item.label.toLowerCase().includes(pattern);
+    });
 };
 
-const parseQuery = (value: string): void => {
-  const prefix = props.prefix || "@";
-  const index = value.lastIndexOf(prefix);
-  if (index < 0) {
-    open.set(false);
+const resetActive = (): void => {
+  activeIndex.set(options().findIndex((option) => !option.disabled));
+};
+
+const isBoundary = (value: string, index: number, prefix: string): boolean => {
+  if (!props.whole) return true;
+  const check = props.checkIsWhole;
+  if (typeof check === "function") return check(value.slice(0, index), prefix);
+  if (index === 0) return true;
+  const split = String(props.split || " ");
+  return split.includes(value[index - 1]);
+};
+
+const parseQuery = (value: string, caret: number): void => {
+  const beforeCaret = value.slice(0, caret);
+  let match: TriggerRange | null = null;
+  for (const prefix of prefixes()) {
+    const start = beforeCaret.lastIndexOf(prefix);
+    if (start < 0 || !isBoundary(value, start, prefix)) continue;
+    const pattern = beforeCaret.slice(start + prefix.length);
+    if (String(props.split || " ").split("").some((separator) => pattern.includes(separator))) continue;
+    if (!match || start > match.start) match = { start, end: caret, prefix };
+  }
+  range.set(match);
+  if (!match) {
     query.set("");
-    return;
-  }
-  const tail = value.slice(index + prefix.length);
-  if (/\s/.test(tail)) {
+    activeIndex.set(-1);
     open.set(false);
     return;
   }
-  query.set(tail);
+  query.set(value.slice(match.start + match.prefix.length, caret));
   open.set(true);
+  resetActive();
 };
 
 const onInput = (event: Event): void => {
-  const value = (event.target as HTMLTextAreaElement).value;
-  emit("update:modelValue", value);
-  emit("input", value);
-  parseQuery(value);
+  const textarea = event.target as HTMLTextAreaElement;
+  const value = textarea.value;
+  ctl.dispatchInput(value);
+  parseQuery(value, textarea.selectionStart ?? value.length);
 };
 
 const selectAt = (index: number): void => {
   const option = options()[index];
-  if (!option || option.disabled) return;
-  const prefix = props.prefix || "@";
-  const base = props.modelValue || "";
-  const start = base.lastIndexOf(prefix);
-  const next = start >= 0 ? `${base.slice(0, start)}${prefix}${option.insertText} ` : base;
-  emit("update:modelValue", next);
-  emit("select", props.options?.[index]);
+  const currentRange = range.value;
+  if (!option || option.disabled || !currentRange) return;
+  const value = String(ctl.model.value || "");
+  const suffix = String(props.split || " ");
+  const next = `${value.slice(0, currentRange.start)}${currentRange.prefix}${option.insertText}${suffix}${value.slice(currentRange.end)}`;
+  ctl.dispatchInput(next);
+  emit("select", option.raw, currentRange.prefix);
   open.set(false);
+  activeIndex.set(-1);
+  queueMicrotask(() => {
+    const textarea = textareaRef.value;
+    if (!textarea) return;
+    const position = currentRange.start + currentRange.prefix.length + option.insertText.length + suffix.length;
+    textarea.focus();
+    textarea.setSelectionRange(position, position);
+  });
 };
 
 const onOptionClick = (event: Event): void => {
@@ -78,32 +167,82 @@ const onOptionClick = (event: Event): void => {
   if (Number.isInteger(index)) selectAt(index);
 };
 
+const moveActive = (step: 1 | -1): void => {
+  const items = options();
+  if (!items.length) return;
+  let index = activeIndex.value;
+  for (let attempt = 0; attempt < items.length; attempt += 1) {
+    index = (index + step + items.length) % items.length;
+    if (!items[index].disabled) {
+      activeIndex.set(index);
+      return;
+    }
+  }
+};
+
+const onKeydown = (event: KeyboardEvent): void => {
+  if (!open.value || isDisabled()) return;
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    moveActive(event.key === "ArrowDown" ? 1 : -1);
+  } else if (event.key === "Enter" && activeIndex.value >= 0) {
+    event.preventDefault();
+    selectAt(activeIndex.value);
+  } else if (event.key === "Escape") {
+    open.set(false);
+    activeIndex.set(-1);
+  }
+};
+
+const onOptionMouseenter = (event: Event): void => {
+  const index = Number((event.currentTarget as HTMLElement).dataset.index);
+  if (Number.isInteger(index) && !options()[index]?.disabled) activeIndex.set(index);
+};
+
+const focus = (): void => textareaRef.value?.focus();
+const blur = (): void => textareaRef.value?.blur();
+defineExpose({ focus, blur });
+
 defineStyle(styles);
 
 const Mention = defineHtml<MentionProps>(html`
-  <div class="mention" part="mention">
+  <div class="mention" part="mention" :class=${[`placement-${props.placement}`, { loading: Boolean(props.loading) }]} :data-state=${fi.state || null}>
     <textarea
+      ref="textareaEl"
       part="textarea"
-      :value.prop=${props.modelValue}
+      :id=${props.id || null}
+      :name=${props.name || null}
+      :value.prop=${ctl.model.value}
       :rows.prop=${props.rows}
       :placeholder=${props.placeholder}
-      :disabled=${props.disabled}
+      :disabled=${isDisabled()}
+      :aria-label=${props.ariaLabel || null}
+      role="combobox"
+      aria-autocomplete="list"
+      :aria-expanded=${open.value ? "true" : "false"}
+      :aria-controls=${listboxId}
+      :aria-activedescendant=${activeIndex.value >= 0 ? `${listboxId}-option-${activeIndex.value}` : null}
       @input=${onInput}
-      @focus=${(event: Event) => emit("focus", event)}
-      @blur=${(event: Event) => emit("blur", event)}
+      @keydown=${onKeydown}
+      @focus=${(event: FocusEvent) => ctl.dispatchFocus(event)}
+      @blur=${(event: FocusEvent) => { ctl.dispatchBlur(event); setTimeout(() => open.set(false), 120); }}
     ></textarea>
-    <div v-if=${open.value && options().length} class="panel">
+    <div v-if=${open.value && props.loading} class="panel status" role="status"><slot name="loading">${props.loadingText}</slot></div>
+    <div v-else-if=${open.value && options().length} :id=${listboxId} class="panel" role="listbox">
       <button
         v-for="item in options()"
         :key="item.index"
+        :id="\`${listboxId}-option-\${item.index}\`"
         class="option"
         type="button"
         :data-index="item.index"
         :disabled="item.disabled"
+        role="option"
+        :aria-selected="activeIndex.value === item.index ? 'true' : 'false'"
+        :class="{ active: activeIndex.value === item.index }"
         @mousedown=${onOptionClick}
-      >
-        {{ item.label }}
-      </button>
+        @mouseenter=${onOptionMouseenter}
+      ><slot :item="item">{{ item.label }}</slot></button>
     </div>
   </div>
 `);

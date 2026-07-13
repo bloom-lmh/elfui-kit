@@ -1,4 +1,8 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "elfui";
+import { PageMentionProps } from "./props";
+
+useComponents({ "page-mention-props": PageMentionProps });
+const wholeContent = useRef("");
 
 const content = useRef("请 @");
 const hashContent = useRef("发布到 #");
@@ -56,6 +60,10 @@ const onHashUpdate = (event: CustomEvent): void => {
   hashContent.set(String(event.detail || ""));
 };
 
+const onWholeUpdate = (event: CustomEvent): void => {
+  wholeContent.set(String(event.detail || ""));
+};
+
 const onSelect = (): void => undefined;
 
 const PageMention = defineHtml(html`
@@ -83,6 +91,18 @@ const PageMention = defineHtml(html`
         @update:modelValue=${onHashUpdate}
       ></elf-mention>
     </elf-playground>
+    <elf-playground title="Whole-word trigger / keyboard selection">
+      <elf-mention
+        :modelValue=${wholeContent}
+        :options.prop=${members}
+        whole
+        split=" "
+        placement="bottom"
+        aria-label="Mention a member"
+        @update:modelValue=${onWholeUpdate}
+      ></elf-mention>
+    </elf-playground>
+    <page-mention-props></page-mention-props>
   </elf-container>
 `);
 

@@ -1,17 +1,15 @@
-# Mention Element Plus API 对标计划
+# Mention Element Plus parity plan
 
-生成时间：2026-07-05
+## Baseline
 
-## 第一批实现
+- [x] Core props, events, form registration, and standalone playground.
 
-- [x] 基础 props：`model-value`、`options`、`prefix`、`placeholder`、`disabled`、`rows`。
-- [x] 基础 events：`update:modelValue`、`input`、`select`、`focus`、`blur`。
-- [x] 接入 Form 注册和单测。
+## Delivered in this batch
 
-## 后续差距
+- [x] Add `split`, `filter-option`, `whole`, `check-is-whole`, loading state, placement, default/loading slots, and form validation linkage.
+- [x] Add exact-range replacement, keyboard navigation, accessible combobox/listbox semantics, and `focus` / `blur` exposes.
+- [x] Add API reference and a whole-word/keyboard playground case.
 
-- [ ] 补齐 split、filter-option、whole、check-is-whole、loading、placement、slots、键盘导航和表单联动。
+## Compatibility note
 
-## 本轮案例页
-
-- [x] 新增独立展示页面，覆盖 Template / Script、@ 成员、自定义 prefix、rows 和 select 示例。
+- [x] Provide `prefixes` for multiple trigger strings. Native `Node.prefix` is read-only, so a `prefix` array cannot be safely assigned as a Custom Element property.

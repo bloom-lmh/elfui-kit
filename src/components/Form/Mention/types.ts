@@ -4,11 +4,29 @@ export interface MentionOption {
   disabled?: boolean;
 }
 
+export type MentionPrefix = string | string[];
+export type MentionPlacement = "top" | "bottom";
+export type MentionFilterOption = (pattern: string, option: MentionOption) => boolean;
+export type MentionCheckIsWhole = (pattern: string, prefix: string) => boolean;
+
 export interface MentionProps {
   modelValue: string;
   options: MentionOption[];
-  prefix: string;
+  prefix: MentionPrefix;
+  /** Web Component-safe alternative for multiple prefixes; `prefix` collides with Node.prefix. */
+  prefixes: string[];
   placeholder: string;
   disabled: boolean;
   rows: number;
+  split: string;
+  filterOption?: MentionFilterOption;
+  whole: boolean;
+  checkIsWhole?: MentionCheckIsWhole;
+  loading: boolean;
+  loadingText: string;
+  placement: MentionPlacement;
+  id: string;
+  name: string;
+  ariaLabel: string;
+  validateEvent: boolean;
 }
