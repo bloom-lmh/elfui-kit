@@ -4,6 +4,7 @@ import { registerComponents } from "elfui";
 import { Card } from "./Card/index";
 import { Carousel } from "./Carousel/index";
 import { Collapse } from "./Collapse/index";
+import { CollapseItem } from "./CollapseItem/index";
 import { Descriptions } from "./Descriptions/index";
 import { DescriptionsItem } from "./DescriptionsItem/index";
 import { Divider } from "./Divider/index";
@@ -25,6 +26,7 @@ registerComponents(
   Card,
   Carousel,
   Collapse,
+  CollapseItem,
   Descriptions,
   DescriptionsItem,
   Divider,

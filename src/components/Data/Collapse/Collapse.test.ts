@@ -2,9 +2,10 @@ import { registerComponents } from "elfui";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { Collapse } from "./index";
+import { CollapseItem } from "../CollapseItem/index";
 
 beforeAll(() => {
-  registerComponents(Collapse);
+  registerComponents(Collapse, CollapseItem);
 });
 
 afterEach(() => {
@@ -84,5 +85,30 @@ describe("elf-collapse", () => {
 
     expect(el.shadowRoot!.querySelector(".item")?.classList.contains("is-active")).toBe(true);
     expect(el.shadowRoot!.querySelector(".header")?.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("coordinates slotted collapse items through the same controlled model", async () => {
+    const el = document.createElement("elf-collapse") as CollapseEl;
+    el.modelValue = ["guide"];
+    el.innerHTML = `
+      <elf-collapse-item name="guide" title="Guide">Guide content</elf-collapse-item>
+      <elf-collapse-item name="api" title="API">API content</elf-collapse-item>
+    `;
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const items = el.querySelectorAll("elf-collapse-item") as NodeListOf<HTMLElement & { active?: boolean }>;
+    expect(items[0]!.active).toBe(true);
+    expect(items[1]!.active).toBe(false);
+
+    const apiHeader = items[1]!.shadowRoot!.querySelector(".header") as HTMLButtonElement;
+    apiHeader.click();
+    await tick();
+
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["guide", "api"]);
+    expect(items[1]!.active).toBe(true);
   });
 });

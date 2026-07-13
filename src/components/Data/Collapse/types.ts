@@ -20,3 +20,17 @@ export interface CollapseProps {
   items: CollapseItem[];
   props: CollapseFieldNames;
 }
+
+export interface CollapseItemProps {
+  name: string | number;
+  title: string;
+  disabled: boolean;
+  /** @internal Controlled by elf-collapse when used as a child component. */
+  active: boolean;
+}
+
+export interface CollapseItemSlots {
+  default?: unknown;
+  title?: unknown;
+  icon?: unknown;
+}

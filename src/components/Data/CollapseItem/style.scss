@@ -1,0 +1,51 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  color: var(--elf-text-primary);
+}
+
+:host + :host {
+  border-top: 1px solid var(--elf-border);
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--elf-space-4);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+}
+
+.header:disabled {
+  color: var(--elf-text-disabled);
+  cursor: not-allowed;
+}
+
+.arrow {
+  flex: 0 0 auto;
+  transition: transform 0.18s ease;
+}
+
+:host([data-active]) .arrow {
+  transform: rotate(90deg);
+}
+
+.body {
+  display: none;
+  padding: 0 var(--elf-space-4) var(--elf-space-4);
+  color: var(--elf-text-secondary);
+  line-height: 1.6;
+}
+
+:host([data-active]) .body {
+  display: block;
+}

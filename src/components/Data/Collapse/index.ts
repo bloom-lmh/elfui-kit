@@ -4,14 +4,30 @@ import {
   defineProps,
   defineStyle,
   html,
+  onMount,
+  useEventListener,
+  useHost,
   useRef,
   watchEffect
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { CollapseFieldNames, CollapseItem, CollapseModelValue, CollapseProps } from "./types";
+import type {
+  CollapseFieldNames,
+  CollapseItem,
+  CollapseItemProps,
+  CollapseModelValue,
+  CollapseProps
+} from "./types";
 
-export type { CollapseFieldNames, CollapseItem, CollapseModelValue, CollapseProps } from "./types";
+export type {
+  CollapseFieldNames,
+  CollapseItem,
+  CollapseItemProps,
+  CollapseItemSlots,
+  CollapseModelValue,
+  CollapseProps
+} from "./types";
 
 interface ViewItem {
   raw: Record<string, unknown>;
@@ -33,6 +49,8 @@ const props = defineProps<CollapseProps>({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const active = useRef<string[]>([]);
+const host = useHost();
+const hasItemChildren = useRef(false);
 
 const nextId = (): string => {
   const store = globalThis as typeof globalThis & { __elfCollapseIdSeed?: number };
@@ -61,6 +79,37 @@ watchEffect(() => {
   active.set(toArray(props.modelValue));
 });
 
+interface CollapseItemElement extends HTMLElement {
+  name?: string | number;
+  disabled?: boolean;
+  active?: boolean;
+}
+
+const itemChildren = (): CollapseItemElement[] =>
+  Array.from(host.children).filter(
+    (child): child is CollapseItemElement => child.tagName.toLowerCase() === "elf-collapse-item"
+  );
+
+const childName = (child: CollapseItemElement, index: number): string =>
+  child.name === undefined || child.name === null || child.name === "" ? String(index) : String(child.name);
+
+const syncItemChildren = (): void => {
+  const children = itemChildren();
+  hasItemChildren.set(children.length > 0);
+  children.forEach((child, index) => {
+    child.active = active.value.includes(childName(child, index));
+  });
+};
+
+const onItemsSlotChange = (): void => syncItemChildren();
+
+watchEffect(() => {
+  active.value;
+  syncItemChildren();
+});
+
+onMount(syncItemChildren);
+
 const viewItems = (): ViewItem[] => {
   const fields = fieldNames();
   const source = Array.isArray(props.items) ? props.items : [];
@@ -85,17 +134,17 @@ const headerId = (item: ViewItem): string => `${id}-header-${encodeURIComponent(
 const outputValue = (next: string[]): CollapseModelValue =>
   props.accordion ? next[0] || "" : next;
 
-const toggle = (item: ViewItem): void => {
-  if (item.disabled) return;
+const toggle = (name: string, disabled = false): void => {
+  if (disabled) return;
   const current = active.value;
-  const opened = current.includes(item.name);
+  const opened = current.includes(name);
   const next = props.accordion
     ? opened
       ? []
-      : [item.name]
+      : [name]
     : opened
-      ? current.filter((name) => name !== item.name)
-      : [...current, item.name];
+      ? current.filter((activeName) => activeName !== name)
+      : [...current, name];
   active.set(next);
   const detail = outputValue(next);
   emit("update:modelValue", detail);
@@ -105,13 +154,24 @@ const toggle = (item: ViewItem): void => {
 const onHeaderClick = (event: Event): void => {
   const name = (event.currentTarget as HTMLElement | null)?.dataset.name;
   const item = viewItems().find((entry) => entry.name === name);
-  if (item) toggle(item);
+  if (item) toggle(item.name, item.disabled);
 };
+
+useEventListener(host, "elf-collapse-toggle", (event) => {
+  event.stopPropagation();
+  const child = event.target as CollapseItemElement | null;
+  const children = itemChildren();
+  const index = child ? children.indexOf(child) : -1;
+  if (!child || index < 0) return;
+  toggle(childName(child, index), Boolean(child.disabled));
+});
 
 defineStyle(styles);
 
 const Collapse = defineHtml<CollapseProps>(html`
   <div class="collapse" part="collapse">
+    <slot v-if=${hasItemChildren} @slotchange=${onItemsSlotChange}></slot>
+    <template v-if=${!hasItemChildren}>
     <div
       v-for="item in viewItems()"
       :key="item.name"
@@ -142,6 +202,7 @@ const Collapse = defineHtml<CollapseProps>(html`
         <slot></slot>
       </div>
     </div>
+    </template>
   </div>
 `);
 
