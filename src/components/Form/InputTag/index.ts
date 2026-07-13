@@ -47,6 +47,7 @@ const emit = defineEmits([
 
 const value = useRef<string[]>([]);
 const text = useRef("");
+const dragIndex = useRef<number | null>(null);
 const ctl = useFormControl<string[]>(props, emit, {
     triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined,
 });
@@ -128,6 +129,25 @@ const onRemoveClick = (event: Event): void => {
     if (Number.isInteger(index)) removeAt(index);
 };
 
+const onDragStart = (event: DragEvent): void => {
+    if (!props.draggable || props.disabled || props.readonly) return;
+    dragIndex.set(Number((event.currentTarget as HTMLElement).dataset.index));
+    event.dataTransfer?.setData("text/plain", "input-tag");
+};
+
+const onDrop = (event: DragEvent): void => {
+    event.preventDefault();
+    const from = dragIndex.value;
+    const to = Number((event.currentTarget as HTMLElement).dataset.index);
+    dragIndex.set(null);
+    if (!props.draggable || from === null || !Number.isInteger(to) || from === to) return;
+    const next = [...value.value];
+    const [moved] = next.splice(from, 1);
+    if (!moved) return;
+    next.splice(to, 0, moved);
+    commit(next);
+};
+
 const showClear = (): boolean =>
     Boolean(
         props.clearable &&
@@ -149,7 +169,7 @@ defineStyle(styles);
 const InputTag = defineHtml<InputTagProps>(html`
     <div class="input-tag" part="wrapper" @click=${onRemoveClick}>
         <slot name="prefix"></slot>
-        <span v-for="tag in tags()" :key="tag.index" class="tag" :class=${[() => props.tagType, () => `is-${props.tagEffect}`]} :draggable=${props.draggable} part="tag">
+        <span v-for="tag in tags()" :key="tag.index" class="tag" :class=${[() => props.tagType, () => `is-${props.tagEffect}`]} :data-index="tag.index" :draggable=${props.draggable} part="tag" @dragstart=${onDragStart} @dragover=${(event: DragEvent) => props.draggable && event.preventDefault()} @drop=${onDrop}>
             {{ tag.label }}
             <button
                 v-if=${!props.disabled && !props.readonly}

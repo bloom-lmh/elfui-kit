@@ -45,4 +45,17 @@ describe("elf-input-tag", () => {
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Elf"]);
   });
+
+  it("reorders tags through drag and drop when draggable", async () => {
+    const el = await mount({ modelValue: ["Vue", "Elf"] } as Partial<InputTagEl>);
+    (el as HTMLElement & { draggable?: boolean }).draggable = true;
+    await tick();
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    const tags = el.shadowRoot!.querySelectorAll(".tag");
+    tags[0]!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
+    tags[1]!.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true }));
+
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Elf", "Vue"]);
+  });
 });
