@@ -1,18 +1,19 @@
-# Calendar Element Plus API 对标计划
+# Calendar Element Plus API 对齐计划
 
-生成时间：2026-07-05
+更新时间：2026-07-13
 
-## 第一批实现
+- [x] 单日期 `model-value`、`first-day-of-week`、`update:modelValue`、`change` 和 header slot。
+- [x] 月份导航：默认 header 提供上/下月按钮。
+- [x] `disabled-date`、`locale` 和 `aria-label`，日期网格有 button/grid 语义。
+- [x] 文档展示受控日期、本地化、禁用日期与翻月。
+- [x] 单测覆盖月份网格、事件、本地化、禁用与翻月。
 
-- [x] 基础 props：`model-value`、`first-day-of-week`。
-- [x] 基础 events：`update:modelValue`、`change`。
-- [x] 基础 slot：`header`。
-- [x] 接入 Picker 注册和单测。
+## 后续项
 
-## 后续差距
+- [ ] P0 范围选择：需要定义 `[start, end]` 的受控半选状态及区间渲染。
+- [ ] P1 `date-cell` 作用域插槽：需要先验证宏模板的循环 slot scope 协议。
 
-- [ ] 补齐 range、date-cell slot、header controls、禁用日期和本地化。
+## 验收记录
 
-## 本轮案例页
-
-- [x] 新增独立展示页面，覆盖 Template / Script、受控日期、first-day-of-week 和 header slot 示例。
+- [x] `pnpm test src/components/Picker/Calendar/Calendar.test.ts` 通过。
+- [x] `pnpm build` 通过。

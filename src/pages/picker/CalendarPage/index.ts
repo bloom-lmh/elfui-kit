@@ -1,56 +1,42 @@
 import { defineHtml, html, useRef } from "elfui";
 
 const day = useRef("2026-07-07");
-const mondayDay = useRef("2026-07-07");
+const workday = useRef("2026-07-07");
+const weekendDisabled = (date: Date): boolean => date.getDay() === 0 || date.getDay() === 6;
+const onDayUpdate = (event: CustomEvent): void => day.set(String(event.detail || ""));
+const onWorkdayUpdate = (event: CustomEvent): void => workday.set(String(event.detail || ""));
 
-const code1 = `<elf-calendar
-  :modelValue=\${day}
-  @update:modelValue=\${onDayUpdate}
-/>
-<span class="demo-state">选中：\${day}</span>`;
-
-const script1 = `const day = useRef("2026-07-07");
-
-const onDayUpdate = (event) => {
-  day.set(event.detail);
-};`;
-
-const code2 = `<elf-calendar
-  :modelValue=\${mondayDay}
-  :first-day-of-week=\${1}
-  @update:modelValue=\${onMondayUpdate}
->
-  <strong slot="header">工作日视图</strong>
-</elf-calendar>`;
-
-const script2 = `const mondayDay = useRef("2026-07-07");`;
-
-const onDayUpdate = (event: CustomEvent): void => {
-  day.set(String(event.detail || ""));
-};
-
-const onMondayUpdate = (event: CustomEvent): void => {
-  mondayDay.set(String(event.detail || ""));
-};
+const basicCode = `<elf-calendar :modelValue.prop="day" @update:modelValue="onDayUpdate" />`;
+const basicScript = `const day = useRef("2026-07-07");`;
+const localeCode = `<elf-calendar
+  :modelValue.prop="workday"
+  locale="zh-CN"
+  :first-day-of-week="1"
+  :disabled-date.prop="weekendDisabled"
+  aria-label="工作日历"
+  @update:modelValue="onWorkdayUpdate"
+/>`;
+const localeScript = `const workday = useRef("2026-07-07");
+const weekendDisabled = (date: Date): boolean => date.getDay() === 0 || date.getDay() === 6;`;
 
 const PageCalendar = defineHtml(html`
   <elf-container>
     <h1>Calendar 日历</h1>
-    <p>展示月视图日期选择，支持受控值、首日设置和 header 插槽。</p>
-
-    <elf-playground title="受控日期" :code=${code1} :script=${script1}>
+    <p>展示月视图日期选择，支持受控值、首日设置、翻月、本地化周标题和禁用日期。</p>
+    <elf-playground title="受控日期" :code=${basicCode} :script=${basicScript}>
       <elf-calendar :modelValue=${day} @update:modelValue=${onDayUpdate}></elf-calendar>
-      <span class="demo-state">选中：${day}</span>
+      <span class="demo-state">选中：{{ day.value }}</span>
     </elf-playground>
-
-    <elf-playground title="first-day-of-week / header slot" :code=${code2} :script=${script2}>
+    <elf-playground title="本地化、翻月与禁用日期" :code=${localeCode} :script=${localeScript}>
       <elf-calendar
-        :modelValue=${mondayDay}
+        :modelValue=${workday}
+        locale="zh-CN"
         :first-day-of-week=${1}
-        @update:modelValue=${onMondayUpdate}
-      >
-        <strong slot="header">工作日视图</strong>
-      </elf-calendar>
+        :disabled-date=${weekendDisabled}
+        aria-label="工作日历"
+        @update:modelValue=${onWorkdayUpdate}
+      ></elf-calendar>
+      <span class="demo-state">周末不可选；可使用标题两侧按钮翻月。</span>
     </elf-playground>
   </elf-container>
 `);
