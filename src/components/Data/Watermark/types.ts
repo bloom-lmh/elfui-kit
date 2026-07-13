@@ -1,3 +1,8 @@
+export interface WatermarkFont {
+  fontSize?: number;
+  color?: string;
+}
+
 export interface WatermarkProps {
   content: string | string[];
   image: string;
@@ -11,6 +16,7 @@ export interface WatermarkProps {
   offsetY?: number;
   fontSize: number;
   fontColor: string;
+  font: WatermarkFont;
 }
 
 export interface WatermarkSlots {

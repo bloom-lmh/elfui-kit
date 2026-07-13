@@ -1,9 +1,9 @@
 import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { WatermarkProps, WatermarkSlots } from "./types";
+import type { WatermarkFont, WatermarkProps, WatermarkSlots } from "./types";
 
-export type { WatermarkProps, WatermarkSlots } from "./types";
+export type { WatermarkFont, WatermarkProps, WatermarkSlots } from "./types";
 
 const props = defineProps<WatermarkProps>({
   content: { type: [String, Array], default: "" },
@@ -17,8 +17,14 @@ const props = defineProps<WatermarkProps>({
   offsetX: { type: Number, default: undefined },
   offsetY: { type: Number, default: undefined },
   fontSize: { type: Number, default: 16 },
-  fontColor: { type: String, default: "rgba(0,0,0,0.15)" }
+  fontColor: { type: String, default: "rgba(0,0,0,0.15)" },
+  font: { type: Object, default: () => ({}) }
 });
+
+const font = (): WatermarkFont =>
+  props.font && typeof props.font === "object" ? props.font : {};
+const fontSize = (): number => Math.max(1, Number(font().fontSize ?? props.fontSize) || 16);
+const fontColor = (): string => String(font().color || props.fontColor || "rgba(0,0,0,0.15)");
 
 const escapeXml = (value: string): string =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -36,14 +42,14 @@ const svgText = (): string => {
   const width = tileWidth();
   const height = tileHeight();
   const lines = contentLines();
-  const lineHeight = Math.max(14, Number(props.fontSize) || 16) + 4;
+  const lineHeight = Math.max(14, fontSize()) + 4;
   const startY = height / 2 - ((lines.length - 1) * lineHeight) / 2;
   const body = props.image
     ? `<image href="${escapeXml(props.image)}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet" />`
     : lines
         .map(
           (line, index) =>
-            `<text x="50%" y="${startY + index * lineHeight}" dominant-baseline="middle" text-anchor="middle" font-size="${Number(props.fontSize) || 16}" fill="${escapeXml(props.fontColor)}">${escapeXml(line)}</text>`
+            `<text x="50%" y="${startY + index * lineHeight}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize()}" fill="${escapeXml(fontColor())}">${escapeXml(line)}</text>`
         )
         .join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><g transform="rotate(${Number(props.rotate) || 0} ${width / 2} ${height / 2})">${body}</g></svg>`;

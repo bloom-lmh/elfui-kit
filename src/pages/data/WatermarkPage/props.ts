@@ -8,6 +8,7 @@ const propsRows = [
   { name: "gap-x / gap-y", type: "number", default: "100 / 100" },
   { name: "offset-x / offset-y", type: "number", default: "gap / 2" },
   { name: "font-size / font-color", type: "number / string", default: "16 / rgba(0,0,0,0.15)" },
+  { name: "font", type: "{ fontSize?: number; color?: string }", default: "{}" },
   { name: "z-index", type: "number", default: "9" }
 ];
 
