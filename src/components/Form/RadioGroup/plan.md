@@ -137,6 +137,16 @@
 - [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
 
+## 2026-07-13 delivered
+
+- [x] Add `id`, `name`, `aria-label`, `label`, and `validate-event` for the slot-based group API.
+- [x] Add FormItem change validation, inherited disabled state, fill/text-color tokens, group semantics, and Arrow-key selection.
+- [x] Add API documentation and focused tests for ARIA/name/keyboard behavior.
+
+## Remaining
+
+- [ ] Declarative `options`/`props` rendering and the separate RadioButton component remain a follow-up.
+
 ---
 
 ## 历史计划保留

@@ -22,6 +22,8 @@ type RadioHost = HTMLElement & {
   label?: string;
   disabled?: boolean;
   border?: boolean;
+  id?: string;
+  ariaLabel?: string;
 };
 
 type RadioGroupHost = HTMLElement & {
@@ -98,6 +100,18 @@ describe("elf-radio", () => {
     el.setAttribute("border", "");
     await flush();
     expect(el.hasAttribute("border")).toBe(true);
+  });
+  it("uses radio accessibility attributes", async () => {
+    const el = mount();
+    el.id = "daily";
+    el.ariaLabel = "Daily report";
+    el.value = "daily";
+    el.modelValue = "daily";
+    await flush();
+    const control = el.shadowRoot!.querySelector(".control") as HTMLButtonElement;
+    expect(control.getAttribute("role")).toBe("radio");
+    expect(control.getAttribute("aria-label")).toBe("Daily report");
+    expect(control.tabIndex).toBe(0);
   });
 });
 

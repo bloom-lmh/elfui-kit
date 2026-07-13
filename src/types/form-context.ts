@@ -51,5 +51,6 @@ export interface RadioGroupContext {
   modelValue: unknown;
   disabled: boolean;
   size: "sm" | "md" | "lg";
+  name?: string;
   changeEvent(v: unknown): void;
 }

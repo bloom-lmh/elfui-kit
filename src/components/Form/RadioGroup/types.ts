@@ -1,5 +1,3 @@
-// elf-radio-group 类型
-
 export interface RadioGroupProps {
   modelValue: unknown;
   disabled: boolean;
@@ -7,4 +5,9 @@ export interface RadioGroupProps {
   variant: "default" | "button";
   fill: string;
   textColor: string;
+  id: string;
+  name: string;
+  ariaLabel: string;
+  label: string;
+  validateEvent: boolean;
 }

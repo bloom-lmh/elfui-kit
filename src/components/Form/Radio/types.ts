@@ -1,5 +1,3 @@
-// elf-radio 类型
-
 export type RadioSize = "sm" | "md" | "lg";
 
 export interface RadioProps {
@@ -8,6 +6,10 @@ export interface RadioProps {
   label: string;
   disabled: boolean;
   size: RadioSize;
-  /** 在 group 中显示为按钮风格 */
   border: boolean;
+  id: string;
+  name: string;
+  ariaLabel: string;
+  tabindex: number;
+  validateEvent: boolean;
 }

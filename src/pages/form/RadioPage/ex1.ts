@@ -3,7 +3,7 @@ import { useReactive } from "elfui";
 
 const data = useReactive({ picked: "a" });
 
-const code1 = `<elf-radio-group v-model="data.picked">
+const code1 = `<elf-radio-group v-model="data.picked" name="radio-demo" aria-label="Choose an option">
   <elf-radio value="a" label="A 选项" />
   <elf-radio value="b" label="B 选项" />
   <elf-radio value="c" label="C 选项" />
@@ -12,7 +12,7 @@ const code1 = `<elf-radio-group v-model="data.picked">
 
 const PageRadioEx1 = defineHtml(html`
   <elf-playground title="RadioGroup 组合" :code="code1">
-    <elf-radio-group v-model="data.picked">
+    <elf-radio-group v-model="data.picked" name="radio-demo" aria-label="Choose an option">
       <elf-radio value="a" label="A 选项" />
       <elf-radio value="b" label="B 选项" />
       <elf-radio value="c" label="C 选项" />

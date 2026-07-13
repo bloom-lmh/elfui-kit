@@ -15,7 +15,7 @@ const flush = (): Promise<void> =>
     .then(() => Promise.resolve())
     .then(() => Promise.resolve());
 
-type GroupHost = HTMLElement & { modelValue?: unknown; disabled?: boolean };
+type GroupHost = HTMLElement & { modelValue?: unknown; disabled?: boolean; id?: string; ariaLabel?: string; name?: string };
 
 describe("elf-radio-group", () => {
   const mount = (): GroupHost => {
@@ -58,5 +58,30 @@ describe("elf-radio-group", () => {
     el.disabled = true;
     await flush();
     expect(el.disabled).toBe(true);
+  });
+  it("exposes radiogroup semantics and changes option with arrow keys", async () => {
+    const group = mount();
+    group.modelValue = "a";
+    group.id = "delivery";
+    group.ariaLabel = "Delivery method";
+    group.name = "delivery-method";
+    const first = document.createElement("elf-radio") as HTMLElement & { value?: unknown };
+    const second = document.createElement("elf-radio") as HTMLElement & { value?: unknown };
+    first.value = "a";
+    second.value = "b";
+    group.append(first, second);
+    group.addEventListener("update:modelValue", (event) => {
+      group.modelValue = (event as CustomEvent).detail;
+    });
+    await flush();
+
+    const root = group.shadowRoot!.querySelector("[role=radiogroup]")!;
+    expect(root.id).toBe("delivery");
+    expect(root.getAttribute("aria-label")).toBe("Delivery method");
+    const control = first.shadowRoot!.querySelector(".control") as HTMLButtonElement;
+    expect(control.getAttribute("name")).toBe("delivery-method");
+    control.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, composed: true }));
+    await flush();
+    expect(group.modelValue).toBe("b");
   });
 });
