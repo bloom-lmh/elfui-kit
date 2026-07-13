@@ -3,6 +3,7 @@ import { registerComponents } from "elfui";
 
 import { Card } from "./Card/index";
 import { Carousel } from "./Carousel/index";
+import { CarouselItem } from "./CarouselItem/index";
 import { Collapse } from "./Collapse/index";
 import { CollapseItem } from "./CollapseItem/index";
 import { Countdown } from "./Countdown/index";
@@ -26,6 +27,7 @@ import { Watermark } from "./Watermark/index";
 registerComponents(
   Card,
   Carousel,
+  CarouselItem,
   Collapse,
   CollapseItem,
   Countdown,

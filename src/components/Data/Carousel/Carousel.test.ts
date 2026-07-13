@@ -99,4 +99,68 @@ describe("elf-carousel", () => {
     (el.shadowRoot!.querySelector(".arrow-left") as HTMLButtonElement).click();
     expect(changes).toBe(1);
   });
+
+  it("uses CarouselItem labels and names for imperative navigation", async () => {
+    const el = document.createElement("elf-carousel") as HTMLElement & {
+      activeIndex: number;
+      setActiveItem: (item: number | string) => void;
+    };
+    el.setAttribute("autoplay", "false");
+    el.innerHTML = `
+      <elf-carousel-item name="welcome" label="Welcome">A</elf-carousel-item>
+      <elf-carousel-item name="plans" label="Plans">B</elf-carousel-item>
+    `;
+    document.body.appendChild(el);
+    await tick();
+
+    const items = el.querySelectorAll<HTMLElement>("elf-carousel-item");
+    expect(items[0].shadowRoot!.querySelector("[role=group]")?.getAttribute("aria-label")).toBe("Welcome 1 of 2");
+    expect(items[0].hasAttribute("active")).toBe(true);
+    expect(items[1].getAttribute("aria-hidden")).toBe("true");
+
+    el.setActiveItem("plans");
+    await tick();
+    expect(el.activeIndex).toBe(1);
+    expect(items[1].hasAttribute("active")).toBe(true);
+    expect(items[1].shadowRoot!.querySelector("[role=group]")?.getAttribute("aria-roledescription")).toBe("slide");
+  });
+
+  it("preserves a CarouselItem custom accessible label", async () => {
+    const el = document.createElement("elf-carousel");
+    el.setAttribute("autoplay", "false");
+    el.innerHTML = '<elf-carousel-item label="Decorative" aria-label="Featured announcement">A</elf-carousel-item>';
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.querySelector("elf-carousel-item")!.shadowRoot!.querySelector("[role=group]")?.getAttribute("aria-label")).toBe(
+      "Featured announcement"
+    );
+  });
+
+  it("enables card layout only for direct CarouselItem children", async () => {
+    const el = document.createElement("elf-carousel") as HTMLElement & { next: () => void };
+    el.setAttribute("type", "card");
+    el.setAttribute("autoplay", "false");
+    el.innerHTML = "<elf-carousel-item>A</elf-carousel-item><elf-carousel-item>B</elf-carousel-item>";
+    document.body.appendChild(el);
+    await tick();
+
+    const items = el.querySelectorAll<HTMLElement>("elf-carousel-item");
+    expect(items[0].style.getPropertyValue("--_card-offset")).toBe("0");
+    expect(items[1].style.getPropertyValue("--_card-offset")).toBe("1");
+    expect((el.shadowRoot!.querySelector(".track") as HTMLElement).style.transform).toBeFalsy();
+
+    el.next();
+    await tick();
+    expect(items[0].style.getPropertyValue("--_card-offset")).toBe("-1");
+    expect(items[1].style.getPropertyValue("--_card-offset")).toBe("0");
+
+    const fallback = document.createElement("elf-carousel");
+    fallback.setAttribute("type", "card");
+    fallback.setAttribute("autoplay", "false");
+    fallback.innerHTML = "<div>A</div><div>B</div>";
+    document.body.appendChild(fallback);
+    await tick();
+    expect((fallback.querySelector("div") as HTMLElement).style.getPropertyValue("--_card-offset")).toBe("");
+  });
 });

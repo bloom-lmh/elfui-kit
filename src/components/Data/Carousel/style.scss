@@ -41,6 +41,31 @@
   transition: opacity var(--_dur, 0.6s) ease;
 }
 
+:host([type="card"]) .track {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+:host([type="card"]) ::slotted(elf-carousel-item) {
+  position: absolute;
+  inset: 0;
+  width: 52%;
+  height: 100%;
+  margin: 0 auto;
+  transform: translateX(calc(var(--_card-offset, 0) * 88%)) scale(var(--_card-scale, 0.84));
+  opacity: var(--_card-opacity, 0);
+  z-index: var(--_card-z-index, 0);
+  pointer-events: none;
+  transition:
+    transform var(--_dur, 0.5s) cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity var(--_dur, 0.5s) ease;
+}
+
+:host([type="card"]) ::slotted(elf-carousel-item[active]) {
+  pointer-events: auto;
+}
+
 // ───── 箭头 ──────────────────────────────────────
 .arrows {
   position: absolute;

@@ -2,6 +2,7 @@ import { defineHtml, html } from "elfui";
 
 const propsRows = [
   { name: "effect", type: "slide | fade", default: "slide", desc: "Transition effect" },
+  { name: "type", type: "'' | card", default: "''", desc: "Card layout; requires direct elf-carousel-item children" },
   { name: "autoplay", type: "boolean", default: "true", desc: "Automatically advance slides" },
   { name: "interval", type: "number", default: "4000", desc: "Autoplay interval in ms" },
   { name: "loop", type: "boolean", default: "true", desc: "Wrap at each end" },
@@ -30,11 +31,18 @@ const exposesRows = [
   { name: "prev / next", type: "() => void", desc: "Move to the previous or next slide" }
 ];
 
+const itemRows = [
+  { name: "name", type: "string | number", default: "''", desc: "Stable item identifier for setActiveItem" },
+  { name: "label", type: "string", default: "''", desc: "Readable slide label and accessible metadata" },
+  { name: "aria-label", type: "string", default: "''", desc: "Overrides the generated slide label" }
+];
+
 const PageCarouselProps = defineHtml(html`
   <h2>API</h2>
   <elf-props-table title="Props" :rows="propsRows" />
   <elf-props-table title="Events" :rows="eventsRows" />
   <elf-props-table title="Exposes" :rows="exposesRows" />
+  <elf-props-table title="CarouselItem Props" :rows="itemRows" />
 `);
 
 export { PageCarouselProps };

@@ -22,12 +22,15 @@ export type {
   CarouselEffect,
   CarouselIndicatorPosition,
   CarouselIndicatorType,
+  CarouselItemProps,
   CarouselProps,
+  CarouselType,
   CarouselTrigger
 } from "./types";
 
 const props = defineProps({
   effect: { type: String, default: "slide" },
+  type: { type: String, default: "" },
   autoplay: { type: Boolean, default: true },
   interval: { type: Number, default: 4000 },
   loop: { type: Boolean, default: true },
@@ -62,6 +65,51 @@ const clearTimer = (): void => {
 const clampIndex = (index: number): number => {
   const max = Math.max(0, total.value - 1);
   return Math.min(max, Math.max(0, Math.trunc(Number(index)) || 0));
+};
+
+const slides = (): HTMLElement[] => Array.from(host.children) as HTMLElement[];
+
+const isCardMode = (): boolean =>
+  props.type === "card" && slides().length > 0 && slides().every((child) => child.tagName === "ELF-CAROUSEL-ITEM");
+
+const cardOffset = (index: number): number => {
+  let offset = index - active.value;
+  if (props.loop && total.value > 2) {
+    const half = total.value / 2;
+    if (offset > half) offset -= total.value;
+    if (offset < -half) offset += total.value;
+  }
+  return offset;
+};
+
+const syncSlides = (): void => {
+  slides().forEach((slide, index) => {
+    const isActive = index === active.value;
+    slide.setAttribute("index", String(index));
+    slide.setAttribute("total", String(total.value));
+    slide.toggleAttribute("active", isActive);
+    slide.setAttribute("aria-hidden", isActive ? "false" : "true");
+  });
+};
+
+const applyCard = (): void => {
+  if (!isCardMode()) {
+    slides().forEach((slide) => {
+      slide.style.removeProperty("--_card-offset");
+      slide.style.removeProperty("--_card-opacity");
+      slide.style.removeProperty("--_card-scale");
+      slide.style.removeProperty("--_card-z-index");
+    });
+    return;
+  }
+
+  slides().forEach((slide, index) => {
+    const offset = cardOffset(index);
+    slide.style.setProperty("--_card-offset", String(offset));
+    slide.style.setProperty("--_card-opacity", Math.abs(offset) <= 1 ? "1" : "0");
+    slide.style.setProperty("--_card-scale", offset === 0 ? "1" : "0.84");
+    slide.style.setProperty("--_card-z-index", String(total.value - Math.abs(offset)));
+  });
 };
 
 const startTimer = (): void => {
@@ -102,7 +150,9 @@ const setActiveItem = (item: number | string): void => {
     goTo(item);
     return;
   }
-  const index = Array.from(host.children).findIndex((child) => child.getAttribute("label") === item);
+  const index = slides().findIndex(
+    (child) => child.getAttribute("label") === item || child.getAttribute("name") === item
+  );
   if (index >= 0) goTo(index);
 };
 
@@ -115,13 +165,15 @@ const onLeave = (): void => {
 };
 
 const updateTotal = (): void => {
-  total.set(host.children.length);
+  total.set(slides().length);
   if (!initialized) {
     active.set(clampIndex(props.initialIndex));
     initialized = true;
   } else if (active.value >= total.value) {
     active.set(clampIndex(active.value));
   }
+  syncSlides();
+  applyCard();
   startTimer();
 };
 
@@ -136,7 +188,9 @@ const applyFade = (): void => {
 };
 
 const trackTransform = (): string =>
-  props.direction === "vertical"
+  isCardMode()
+    ? ""
+    : props.direction === "vertical"
     ? `translateY(-${active.value * 100}%)`
     : `translateX(-${active.value * 100}%)`;
 
@@ -184,7 +238,10 @@ onBeforeUnmount(clearTimer);
 watchEffect(() => {
   void active.value;
   void total.value;
+  void props.type;
   applyFade();
+  syncSlides();
+  applyCard();
 });
 
 defineExpose({

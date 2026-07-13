@@ -12,6 +12,6 @@
 
 ## Follow-up
 
-- [ ] P1 Add the `card` type only together with a dedicated CarouselItem layout contract; scaling arbitrary slotted nodes would be an unreliable imitation.
-- [ ] P1 Add a CarouselItem component so `label` is typed and can supply a11y metadata rather than relying on an optional child attribute.
+- [x] P1 Add the `card` type only together with a dedicated CarouselItem layout contract; ordinary slotted nodes retain the standard layout.
+- [x] P1 Add a CarouselItem component so `label` and `name` are typed, can be selected imperatively, and supply slide metadata.
 - [ ] P2 Add browser-level visual regression coverage for vertical and outside-indicator layouts.
