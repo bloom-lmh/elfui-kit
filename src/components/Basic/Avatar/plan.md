@@ -98,7 +98,7 @@
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：Avatar 本体的 `src-set`、`fit` 已完成；独立 AvatarGroup 的 `collapse-avatars`、`collapse-avatars-tooltip`、`max-collapse-avatars`、`effect`、`placement`、`popper-class`、`popper-style`、`collapse-class`、`collapse-style` 待实现。
+- [x] P1 补齐核心属性差距：Avatar 本体的 `src-set`、`fit` 已完成；独立 AvatarGroup 已实现 `collapse-avatars`、`collapse-avatars-tooltip`、`max-collapse-avatars`、`effect`、`placement`、`popper-class`、`popper-style`、`collapse-class`、`collapse-style`，并支持尺寸与形状继承、溢出弹层和卸载还原。
 - [x] P1 补齐事件差距：`error` 事件会透传原生图片错误事件，并切换到 fallback。
 - [x] P1 补齐插槽/暴露方法：default fallback 与 icon slot 均已验证；Avatar 本体无 expose。
 - [x] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。Avatar 为非交互展示组件；图片具有 alt，加载失败后回退到可读文本或插槽。
