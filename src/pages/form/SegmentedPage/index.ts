@@ -1,4 +1,7 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "elfui";
+import { PageSegmentedProps } from "./props";
+
+useComponents({ "page-segmented-props": PageSegmentedProps });
 
 const period = useRef("day");
 const density = useRef("md");
@@ -77,6 +80,7 @@ const PageSegmented = defineHtml(html`
         ></elf-segmented>
       </div>
     </elf-playground>
+    <page-segmented-props></page-segmented-props>
   </elf-container>
 `);
 

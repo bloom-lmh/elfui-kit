@@ -17,4 +17,4 @@
 
 - [x] 2026-07-07 补独立案例页：覆盖受控 `modelValue`、对象/字符串 `options`、禁用项、`block` 和 `size`。
 - [ ] 补齐自定义 option slot、name/id、validate-event 等细节。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
