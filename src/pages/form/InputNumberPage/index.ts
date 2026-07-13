@@ -1,4 +1,7 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "elfui";
+import { PageInputNumberProps } from "./props";
+
+useComponents({ "page-input-number-props": PageInputNumberProps });
 
 const count = useRef(2);
 const price = useRef(12.5);
@@ -85,6 +88,7 @@ const PageInputNumber = defineHtml(html`
       <elf-input-number readonly :modelValue=${6}></elf-input-number>
       <elf-input-number :controls=${false} placeholder="无控制按钮"></elf-input-number>
     </elf-playground>
+    <page-input-number-props></page-input-number-props>
   </elf-container>
 `);
 
