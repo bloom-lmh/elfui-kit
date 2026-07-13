@@ -22,6 +22,10 @@
   height: 100%;
 }
 
+:host([direction="vertical"]) .track {
+  flex-direction: column;
+}
+
 ::slotted(img) {
   object-fit: cover;
 }
@@ -53,6 +57,10 @@
 
 :host(:hover) .arrows,
 :host(:focus-within) .arrows {
+  opacity: 1;
+}
+
+:host([arrow="always"]) .arrows {
   opacity: 1;
 }
 
@@ -169,6 +177,25 @@
   background: #fff;
   color: rgba(0, 0, 0, 0.87);
   width: auto;
+}
+
+:host([indicator-position="outside"]) {
+  overflow: visible;
+}
+
+:host([indicator-position="outside"]) .indicators {
+  bottom: auto;
+  top: calc(100% + 10px);
+  background: var(--elf-bg-overlay);
+  box-shadow: var(--elf-shadow-1);
+}
+
+:host([indicator-position="outside"]) .dot {
+  background: var(--elf-border-color, rgba(0, 0, 0, 0.25));
+}
+
+:host([indicator-position="outside"]) .dot.is-active {
+  background: var(--elf-primary);
 }
 
 // ───── 暗色主题 ──────────────────────────────────

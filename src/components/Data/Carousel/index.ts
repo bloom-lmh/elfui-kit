@@ -1,21 +1,30 @@
-// elf-carousel — Material Design 轮播图
-
 import {
   defineEmits,
+  defineExpose,
+  defineHtml,
   defineProps,
   defineStyle,
   html,
+  onBeforeUnmount,
   onMount,
   useComputed,
   useHost,
   useRef,
-  watchEffect,
-  defineHtml
+  watchEffect
 } from "elfui";
 
 import styles from "./style.scss?inline";
 
-export type { CarouselEffect, CarouselProps } from "./types";
+export type {
+  CarouselArrow,
+  CarouselArrowStyle,
+  CarouselDirection,
+  CarouselEffect,
+  CarouselIndicatorPosition,
+  CarouselIndicatorType,
+  CarouselProps,
+  CarouselTrigger
+} from "./types";
 
 const props = defineProps({
   effect: { type: String, default: "slide" },
@@ -28,103 +37,164 @@ const props = defineProps({
   height: { type: String, default: "320px" },
   duration: { type: String, default: "0.5s" },
   pauseOnHover: { type: Boolean, default: true },
-  radius: { type: String, default: "12px" }
+  radius: { type: String, default: "12px" },
+  initialIndex: { type: Number, default: 0 },
+  trigger: { type: String, default: "hover" },
+  arrow: { type: String, default: "hover" },
+  indicatorPosition: { type: String, default: "" },
+  direction: { type: String, default: "horizontal" },
+  ariaLabel: { type: String, default: "Carousel" }
 });
 
 const emit = defineEmits(["change"]);
-
 const host = useHost();
-
 const active = useRef(0);
-
 const total = useRef(0);
 
 let timer: ReturnType<typeof setInterval> | null = null;
+let initialized = false;
 
-const clearTimer = () => {
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-  }
+const clearTimer = (): void => {
+  if (timer) clearInterval(timer);
+  timer = null;
 };
 
-const startTimer = () => {
+const clampIndex = (index: number): number => {
+  const max = Math.max(0, total.value - 1);
+  return Math.min(max, Math.max(0, Math.trunc(Number(index)) || 0));
+};
+
+const startTimer = (): void => {
   clearTimer();
-  if (!props.autoplay) return;
+  if (!props.autoplay || total.value <= 1) return;
+  timer = setInterval(doNext, Math.max(0, Number(props.interval) || 0));
+};
+
+const setActive = (index: number): boolean => {
+  const next = clampIndex(index);
+  const previous = active.value;
+  if (next === previous) return false;
+  active.set(next);
+  emit("change", next, previous);
+  return true;
+};
+
+const doPrev = (): void => {
   if (total.value <= 1) return;
-  timer = setInterval(() => doNext(), Number(props.interval));
+  const next = active.value > 0 ? active.value - 1 : props.loop ? total.value - 1 : active.value;
+  if (setActive(next)) startTimer();
 };
 
-const doPrev = () => {
-  const t = total.value;
-  if (t <= 1) return;
-  const a = active.value;
-  if (a > 0) active.set(a - 1);
-  else if (props.loop) active.set(t - 1);
-  emit("change", active.value);
-  startTimer();
+const doNext = (): void => {
+  if (total.value <= 1) return;
+  const next = active.value < total.value - 1 ? active.value + 1 : props.loop ? 0 : active.value;
+  if (setActive(next)) startTimer();
+  else clearTimer();
 };
 
-const doNext = () => {
-  const t = total.value;
-  if (t <= 1) return;
-  const a = active.value;
-  if (a < t - 1) active.set(a + 1);
-  else if (props.loop) active.set(0);
-  else {
-    clearTimer();
+const goTo = (index: number): void => {
+  if (index < 0 || index >= total.value) return;
+  if (setActive(index)) startTimer();
+};
+
+const setActiveItem = (item: number | string): void => {
+  if (typeof item === "number") {
+    goTo(item);
     return;
   }
-  emit("change", active.value);
-  startTimer();
+  const index = Array.from(host.children).findIndex((child) => child.getAttribute("label") === item);
+  if (index >= 0) goTo(index);
 };
 
-const goTo = (idx: number) => {
-  if (idx < 0 || idx >= total.value) return;
-  active.set(idx);
-  emit("change", idx);
-  startTimer();
-};
-
-const onEnter = () => {
+const onEnter = (): void => {
   if (props.pauseOnHover) clearTimer();
 };
 
-const onLeave = () => {
+const onLeave = (): void => {
   if (props.pauseOnHover) startTimer();
 };
 
-const updateTotal = () => {
-  const n = host.children.length;
-  total.set(n);
+const updateTotal = (): void => {
+  total.set(host.children.length);
+  if (!initialized) {
+    active.set(clampIndex(props.initialIndex));
+    initialized = true;
+  } else if (active.value >= total.value) {
+    active.set(clampIndex(active.value));
+  }
   startTimer();
 };
 
-const onSlotChange = () => updateTotal();
-
-onMount(() => updateTotal());
-
-const applyFade = () => {
+const applyFade = (): void => {
   if (props.effect !== "fade") return;
-  const children = Array.from(host.children) as HTMLElement[];
-  const a = active.value;
-  children.forEach((c, i) => {
-    c.style.opacity = i === a ? "1" : "0";
-    c.style.pointerEvents = i === a ? "auto" : "none";
+  Array.from(host.children).forEach((child, index) => {
+    const slide = child as HTMLElement;
+    const isActive = index === active.value;
+    slide.style.opacity = isActive ? "1" : "0";
+    slide.style.pointerEvents = isActive ? "auto" : "none";
   });
 };
 
+const trackTransform = (): string =>
+  props.direction === "vertical"
+    ? `translateY(-${active.value * 100}%)`
+    : `translateX(-${active.value * 100}%)`;
+
+const dots = useComputed(() => Array.from({ length: total.value }, (_, index) => index));
+const showArrows = useComputed(
+  () => props.arrow !== "never" && props.showArrow !== false && props.showArrow !== "false" && props.showArrow !== ""
+);
+const showIndicators = useComputed(
+  () => props.showIndicator && props.indicatorPosition !== "none" && total.value > 1
+);
+
+const indicatorIndex = (event: Event): number => {
+  const value = (event.currentTarget as HTMLElement | null)?.dataset.index;
+  return value == null ? -1 : Number(value);
+};
+
+const onIndicatorClick = (event: Event): void => {
+  if (props.trigger === "click") goTo(indicatorIndex(event));
+};
+
+const onIndicatorEnter = (event: Event): void => {
+  if (props.trigger === "hover") goTo(indicatorIndex(event));
+};
+
+const onKeydown = (event: KeyboardEvent): void => {
+  const previousKey = props.direction === "vertical" ? "ArrowUp" : "ArrowLeft";
+  const nextKey = props.direction === "vertical" ? "ArrowDown" : "ArrowRight";
+  if (event.key === previousKey) {
+    event.preventDefault();
+    doPrev();
+  } else if (event.key === nextKey) {
+    event.preventDefault();
+    doNext();
+  } else if (event.key === "Home") {
+    event.preventDefault();
+    goTo(0);
+  } else if (event.key === "End") {
+    event.preventDefault();
+    goTo(total.value - 1);
+  }
+};
+
+onMount(updateTotal);
+onBeforeUnmount(clearTimer);
 watchEffect(() => {
   void active.value;
   void total.value;
   applyFade();
 });
 
-const trackTransform = () => `translateX(-${active.value * 100}%)`;
-
-const dots = useComputed(() => Array.from({ length: total.value }, (_, i) => i));
-
-const showArrows = useComputed(() => props.showArrow !== "false" && props.showArrow !== "");
+defineExpose({
+  get activeIndex() {
+    return active.peek();
+  },
+  setActiveItem,
+  prev: doPrev,
+  next: doNext
+});
 
 defineStyle(styles);
 
@@ -132,25 +202,35 @@ const Carousel = defineHtml(html`
   <div
     class="carousel"
     :style=${{ height: props.height, borderRadius: props.radius, "--_dur": props.duration }}
-    @mouseenter=${onEnter()}
-    @mouseleave=${onLeave()}
+    role="region"
+    aria-roledescription="carousel"
+    :aria-label=${props.ariaLabel}
+    tabindex="0"
+    @mouseenter=${onEnter}
+    @mouseleave=${onLeave}
+    @keydown=${onKeydown}
   >
     <div class="track" :style=${props.effect !== "fade" ? { transform: trackTransform() } : {}}>
-      <slot @slotchange=${onSlotChange()}></slot>
+      <slot @slotchange=${updateTotal}></slot>
     </div>
 
     <div class="arrows" v-if=${showArrows}>
-      <button class="arrow arrow-left" @click=${doPrev()}>‹</button>
-      <button class="arrow arrow-right" @click=${doNext()}>›</button>
+      <button class="arrow arrow-left" type="button" aria-label="Previous slide" @click=${doPrev}>&lsaquo;</button>
+      <button class="arrow arrow-right" type="button" aria-label="Next slide" @click=${doNext}>&rsaquo;</button>
     </div>
 
-    <div class="indicators" v-if=${props.showIndicator && total > 1}>
+    <div class="indicators" v-if=${showIndicators} role="tablist" aria-label="Slide selector">
       <button
         v-for="(dot, idx) in dots"
         :key="idx"
         class="dot"
         :class="{ 'is-active': idx === active }"
-        @click.stop="goTo(idx)"
+        :data-index="idx"
+        :aria-label="'Go to slide ' + (idx + 1)"
+        :aria-current="idx === active ? 'true' : undefined"
+        type="button"
+        @click=${onIndicatorClick}
+        @mouseenter=${onIndicatorEnter}
       >
         <span v-if=${props.indicatorType === "number"}>{{ idx + 1 }}</span>
       </button>

@@ -19,6 +19,19 @@ const code3 = `<elf-carousel show-arrow="ghost" indicator-type="line" height="24
   <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:600">第三屏</div>
 </elf-carousel>`;
 
+const code4 = `<elf-carousel
+  direction="vertical"
+  initial-index="1"
+  trigger="click"
+  arrow="always"
+  height="220px"
+  :autoplay=\${false}
+>
+  <div style="height:100%;display:grid;place-items:center;background:#2563eb;color:white">First</div>
+  <div style="height:100%;display:grid;place-items:center;background:#7c3aed;color:white">Second</div>
+  <div style="height:100%;display:grid;place-items:center;background:#db2777;color:white">Third</div>
+</elf-carousel>`;
+
 const PageCarouselEx1 = defineHtml(html`
   <h2>基础滑动</h2>
   <elf-playground title="4 张图片，自动轮播，circle 箭头" :code=${code1}>
@@ -70,6 +83,23 @@ const PageCarouselEx1 = defineHtml(html`
       >
         第三屏
       </div>
+    </elf-carousel>
+  </elf-playground>
+
+  <h2>Vertical, keyboard, and click indicators</h2>
+  <elf-playground title="Use Arrow Up/Down, Home, or End while focused" :code=${code4}>
+    <elf-carousel
+      direction="vertical"
+      initial-index="1"
+      trigger="click"
+      arrow="always"
+      height="220px"
+      :autoplay=${false}
+      style="max-width:520px"
+    >
+      <div style="height:100%;display:grid;place-items:center;background:#2563eb;color:white">First</div>
+      <div style="height:100%;display:grid;place-items:center;background:#7c3aed;color:white">Second</div>
+      <div style="height:100%;display:grid;place-items:center;background:#db2777;color:white">Third</div>
     </elf-carousel>
   </elf-playground>
 `);
