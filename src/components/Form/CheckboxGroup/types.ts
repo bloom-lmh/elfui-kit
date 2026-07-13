@@ -6,4 +6,5 @@ export interface CheckboxGroupProps {
   size: "sm" | "md" | "lg";
   min: number;
   max: number;
+  ariaLabel: string;
 }

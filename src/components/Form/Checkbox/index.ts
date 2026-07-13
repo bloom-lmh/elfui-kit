@@ -8,6 +8,7 @@ import {
   inject,
   useEventListener,
   useHost,
+  useHostAttr,
   useHostFlag,
   defineHtml
 } from "elfui";
@@ -21,10 +22,20 @@ export type { CheckboxProps, CheckboxSize } from "./types";
 const props = defineProps({
   modelValue: { type: null, default: false },
   value: { type: null, default: undefined },
+  trueValue: { type: null, default: true },
+  falseValue: { type: null, default: false },
   label: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   size: { type: String, default: "" },
-  indeterminate: { type: Boolean, default: false }
+  indeterminate: { type: Boolean, default: false },
+  border: { type: Boolean, default: false },
+  checked: { type: Boolean, default: undefined },
+  id: { type: String, default: "" },
+  tabindex: { type: Number, default: 0 },
+  ariaLabel: { type: String, default: "" },
+  ariaControls: { type: String, default: "" },
+  trueLabel: { type: String, default: "" },
+  falseLabel: { type: String, default: "" }
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -37,7 +48,8 @@ const checked = (): boolean => {
   if (group) return group.modelValue.includes(props.value);
   const mv = props.modelValue;
   if (Array.isArray(mv)) return mv.includes(props.value);
-  return Boolean(mv);
+  if (props.checked !== undefined) return Boolean(props.checked);
+  return Object.is(mv, props.trueValue);
 };
 
 useHostFlag("data-checked", () => checked());
@@ -45,6 +57,8 @@ useHostFlag("data-checked", () => checked());
 useHostFlag("data-indeterminate", () => Boolean(props.indeterminate));
 
 useHostFlag("disabled", isDisabled);
+useHostFlag("bordered", () => Boolean(props.border));
+useHostAttr("size", () => String(props.size || group?.size || ""));
 
 const isInnerInteractiveClick = (e: Event): boolean => {
   const path = typeof e.composedPath === "function" ? e.composedPath() : [];
@@ -81,8 +95,9 @@ const toggle = (e?: Event): void => {
     emit("update:modelValue", next);
     emit("change", next);
   } else {
-    emit("update:modelValue", !mv);
-    emit("change", !mv);
+    const next = checked() ? props.falseValue : props.trueValue;
+    emit("update:modelValue", next);
+    emit("change", next);
   }
 };
 
@@ -104,13 +119,18 @@ const Checkbox = defineHtml(html`
   <span
     class="box"
     part="box"
-    tabindex="0"
+    :id=${props.id || null}
+    :tabindex=${isDisabled() ? -1 : props.tabindex}
     role="checkbox"
     :aria-checked=${checked()}
+    :aria-label=${props.ariaLabel || props.label || props.trueLabel || null}
+    :aria-controls=${props.ariaControls || null}
     @keydown=${onKeyDown}
     @click.stop.prevent=${toggle}
   ></span>
-  <span class="label" part="label" @click.stop.prevent=${toggle}><slot>${props.label}</slot></span>
+  <span class="label" part="label" @click.stop.prevent=${toggle}>
+    <slot>${props.label || (checked() ? props.trueLabel : props.falseLabel)}</slot>
+  </span>
 `);
 
 export { Checkbox };

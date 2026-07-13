@@ -21,7 +21,8 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   size: { type: String, default: "md" },
   min: { type: Number, default: 0 },
-  max: { type: Number, default: Infinity }
+  max: { type: Number, default: Infinity },
+  ariaLabel: { type: String, default: "" }
 });
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -60,6 +61,6 @@ provide<CheckboxGroupContext>(CHECKBOX_GROUP_KEY, {
 
 defineStyle(styles);
 
-const CheckboxGroup = defineHtml(html`<div class="group" role="group"><slot></slot></div>`);
+const CheckboxGroup = defineHtml(html`<div class="group" role="group" :aria-label=${props.ariaLabel || null}><slot></slot></div>`);
 
 export { CheckboxGroup };

@@ -17,6 +17,21 @@
   opacity: 0.5;
 }
 
+:host([bordered]) {
+  min-height: 32px;
+  padding: 0 var(--elf-space-3);
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-sm);
+}
+
+:host([size="sm"]) {
+  font-size: var(--elf-font-size-xs);
+}
+
+:host([size="lg"]) {
+  font-size: var(--elf-font-size-md);
+}
+
 .box {
   display: inline-flex;
   align-items: center;
