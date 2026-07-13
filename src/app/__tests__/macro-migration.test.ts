@@ -4,7 +4,7 @@ import { join, relative } from "node:path";
 import { compileMacroComponent } from "@elfui/compiler/macro-component";
 import { describe, expect, it } from "vitest";
 
-const srcRoot = join(process.cwd(), "ui-kit", "src");
+const srcRoot = join(process.cwd(), "src");
 const componentsRoot = join(srcRoot, "components");
 
 const collectSourceFiles = (dir: string): string[] => {
