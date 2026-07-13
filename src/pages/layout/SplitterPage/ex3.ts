@@ -1,0 +1,18 @@
+import { defineHtml, html } from "elfui";
+
+const code = `<elf-splitter disabled :modelValue=\${40}>
+  <div slot="first">禁用拖拽</div>
+  <div slot="second">固定区域</div>
+</elf-splitter>`;
+
+const PageSplitterEx3 = defineHtml(html`
+  <h2>禁用状态</h2>
+  <elf-playground title="disabled" :code=${code}>
+    <elf-splitter disabled :modelValue=${40}>
+      <div slot="first" style="padding:16px">禁用拖拽</div>
+      <div slot="second" style="padding:16px">固定区域</div>
+    </elf-splitter>
+  </elf-playground>
+`);
+
+export { PageSplitterEx3 };
