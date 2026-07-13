@@ -34,18 +34,15 @@ describe("elf-result", () => {
     expect(el.shadowRoot!.querySelector(".result")?.getAttribute("role")).toBe("status");
   });
 
-  it.each([
-    ["success", "OK"],
-    ["warning", "!"],
-    ["error", "X"],
-    ["info", "i"]
-  ])("renders the %s fallback icon", async (icon, text) => {
+  it.each(["success", "warning", "error", "info"])("renders the %s fallback SVG icon", async (icon) => {
     const el = document.createElement("elf-result") as ResultEl;
     el.icon = icon;
     document.body.appendChild(el);
     await tick();
 
-    expect(el.shadowRoot!.querySelector(".icon")?.textContent).toContain(text);
+    const iconSvg = el.shadowRoot!.querySelector(".icon-svg") as SVGElement;
+    expect(iconSvg.dataset.icon).toBe(icon);
+    expect(iconSvg.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("projects named icon, title, subtitle, and extra slots", async () => {

@@ -16,19 +16,6 @@ const normalizedIcon = (): ResultIcon => {
   return ["success", "warning", "error"].includes(value) ? value : "info";
 };
 
-const iconText = (): string => {
-  switch (normalizedIcon()) {
-    case "success":
-      return "OK";
-    case "warning":
-      return "!";
-    case "error":
-      return "X";
-    default:
-      return "i";
-  }
-};
-
 useHostAttr("icon", normalizedIcon);
 
 defineStyle(styles);
@@ -36,7 +23,49 @@ defineStyle(styles);
 const Result = defineHtml<ResultProps, Record<string, never>, ResultSlots>(html`
   <div class="result" part="result" role="status" aria-live="polite">
     <div class="icon" part="icon">
-      <slot name="icon">${iconText()}</slot>
+      <slot name="icon">
+        <svg
+          v-if=${normalizedIcon() === "success"}
+          class="icon-svg"
+          data-icon="success"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <path d="m13 24 7 7 15-16" />
+        </svg>
+        <svg
+          v-else-if=${normalizedIcon() === "warning"}
+          class="icon-svg"
+          data-icon="warning"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <path d="M24 10 40 38H8L24 10Z" />
+          <path d="M24 19v9" />
+          <path d="M24 33h.01" />
+        </svg>
+        <svg
+          v-else-if=${normalizedIcon() === "error"}
+          class="icon-svg"
+          data-icon="error"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <circle cx="24" cy="24" r="15" />
+          <path d="m19 19 10 10m0-10L19 29" />
+        </svg>
+        <svg
+          v-else
+          class="icon-svg"
+          data-icon="info"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <circle cx="24" cy="24" r="15" />
+          <path d="M24 22v10" />
+          <path d="M24 16h.01" />
+        </svg>
+      </slot>
     </div>
     <div class="title" part="title">
       <slot name="title">${props.title}</slot>

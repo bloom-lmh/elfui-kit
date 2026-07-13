@@ -1,20 +1,17 @@
-# Result Element Plus API 对标计划
+# Result Element Plus API 对齐计划
 
-生成时间：2026-07-05
+更新时间：2026-07-13
 
-## 对标定位
+## 已完成
 
-- ElfUI 组件目录：`Data/Result`
-- Element Plus 文档：`result.md`
+- [x] 核心 props：`icon`、`title`、`sub-title`。
+- [x] Slots：`icon`、`title`、`sub-title`、`extra`。
+- [x] 四种默认状态图形：success、warning、error、info 都使用主题色 SVG，且自定义 `icon` slot 可替换它们。
+- [x] 结果容器提供 `role="status"` 与 `aria-live="polite"`。
+- [x] 文档包含四种状态、extra 操作区和自定义图标案例，并同步 PropsTable。
+- [x] 单测覆盖默认图形、状态属性与命名 slots。
 
-## 第一批实现
+## 验收记录
 
-- [x] 基础 props：`icon`、`title`、`sub-title`。
-- [x] 基础 slot：`icon`、`title`、`sub-title`、`extra`。
-- [x] 注册到 Data 组件族并补单测。
-
-## 后续差距
-
-- [x] 2026-07-07 补独立案例页：覆盖四种 `icon` 状态、`title/sub-title`、`extra` 操作区和自定义 `icon` slot。
-- [ ] 补齐更细的默认插画与状态视觉。
-- [x] 页面示例补 Template / Script 双视图和 PropsTable；案例覆盖四种状态、extra 操作区和自定义 icon slot。
+- [x] `pnpm test src/components/Data/Result/Result.test.ts` 通过。
+- [x] `pnpm build` 通过。
