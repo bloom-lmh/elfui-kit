@@ -1,8 +1,6 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
 
 const compactPage = useRef(3);
-
 const simplePage = useRef(1);
 
 const readFirst = <T>(event: Event, fallback: T): T => {
@@ -10,22 +8,33 @@ const readFirst = <T>(event: Event, fallback: T): T => {
   return (Array.isArray(detail) ? detail[0] : detail) ?? fallback;
 };
 
-const onCompactChange = (event: Event): void => {
-  compactPage.set(Number(readFirst(event, compactPage.value)));
-};
+const onCompactChange = (event: Event): void => compactPage.set(Number(readFirst(event, compactPage.value)));
+const onSimpleChange = (event: Event): void => simplePage.set(Number(readFirst(event, simplePage.value)));
 
-const onSimpleChange = (event: Event): void => {
-  simplePage.set(Number(readFirst(event, simplePage.value)));
-};
+const code = `<elf-pagination
+  size="large"
+  page-count="4"
+  default-current-page="2"
+  prev-text="Back"
+  next-text="Forward"
+  layout="prev, pager, next"
+/>
 
-const code = `<elf-pagination background small layout="prev, pager, next" total="120" />
-
-<elf-pagination layout="total, prev, pager, next" total="12" />`;
+<elf-pagination background small layout="prev, pager, next" total="120" />`;
 
 const PagePaginationEx2 = defineHtml(html`
-  <h2>布局与尺寸</h2>
-  <elf-playground title="可通过 layout 组合分页部件，也可以启用背景和小尺寸" :code="code">
+  <h2>Layout, defaults, and size</h2>
+  <elf-playground title="Use page-count for known page totals and defaults for uncontrolled state" :code=${code}>
     <div style="width: 100%; display: grid; gap: 18px">
+      <elf-pagination
+        size="large"
+        page-count="4"
+        default-current-page="2"
+        prev-text="Back"
+        next-text="Forward"
+        layout="prev, pager, next"
+      ></elf-pagination>
+
       <elf-pagination
         background
         small
@@ -42,8 +51,6 @@ const PagePaginationEx2 = defineHtml(html`
         :currentPage.prop="simplePage"
         @current-change="onSimpleChange"
       ></elf-pagination>
-
-      <elf-pagination layout="total, prev, pager, next" total="0" disabled></elf-pagination>
     </div>
   </elf-playground>
 `);

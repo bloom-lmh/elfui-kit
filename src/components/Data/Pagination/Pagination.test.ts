@@ -13,8 +13,14 @@ const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolv
 interface PaginationEl extends HTMLElement {
   total?: number;
   currentPage?: number;
+  defaultCurrentPage?: number;
   pageSize?: number;
+  defaultPageSize?: number;
+  pageCount?: number;
   pageSizes?: number[];
+  prevText?: string;
+  nextText?: string;
+  size?: string;
   hideOnSinglePage?: boolean;
 }
 
@@ -107,5 +113,37 @@ describe("elf-pagination", () => {
     });
 
     expect(el.shadowRoot!.querySelector(".pagination")).toBeFalsy();
+  });
+
+  it("uses default state only as the uncontrolled initial value", async () => {
+    const el = await mount((pagination) => {
+      pagination.setAttribute("default-current-page", "3");
+      pagination.setAttribute("default-page-size", "20");
+    });
+
+    const active = el.shadowRoot!.querySelector<HTMLButtonElement>(".page.is-active")!;
+    const select = el.shadowRoot!.querySelector<HTMLSelectElement>("select")!;
+    expect(active.textContent?.trim()).toBe("3");
+    expect(select.value).toBe("20");
+
+    active.previousElementSibling?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector<HTMLButtonElement>(".page.is-active")!.textContent?.trim()).toBe("2");
+  });
+
+  it("uses explicit page-count and exposes customized accessible navigation", async () => {
+    const el = await mount((pagination) => {
+      pagination.total = 0;
+      pagination.pageCount = 4;
+      pagination.prevText = "Back";
+      pagination.nextText = "Forward";
+      pagination.size = "large";
+    });
+
+    const root = el.shadowRoot!;
+    expect(root.querySelectorAll(".page")).toHaveLength(4);
+    expect(root.querySelector(".pagination")?.classList.contains("is-large")).toBe(true);
+    expect(root.querySelector<HTMLButtonElement>(".arrow-left, .nav")?.getAttribute("aria-label")).toBe("Back");
+    expect(root.querySelectorAll<HTMLButtonElement>(".nav")[1].getAttribute("aria-label")).toBe("Forward");
   });
 });
