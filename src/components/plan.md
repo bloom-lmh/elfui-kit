@@ -118,3 +118,6 @@
 - [x] 完成 Carousel / Timeline / Tree / Table / Loading 视觉升级。
 - [x] 完成 Menu / Tabs / Steps 溢出、折叠和交互回归修复。
 - [x] 完成 Calendar / DatePicker / TimePicker 的 Vuetify 信息架构参考升级，并通过定向测试、构建和真实浏览器暗色验收。
+- [x] 完成 Splitter / InputTag / Image / Sticky 的真实交互修复，并补齐 Tour / InfiniteScroll / Picker 案例。
+- [x] 完成 AvatarGroup 暗色外观、Tree 无边框默认值及 Flex / Grid / Container 响应式布局增强。
+- [x] 本批 15 个目标测试文件共 108 条用例通过，生产构建及关键浏览器路径验收通过。
