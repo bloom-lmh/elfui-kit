@@ -2,6 +2,12 @@
 
 生成时间：2026-07-05
 
+## 2026-07-15 架构与验收记录
+
+- [x] `elf-layout` 对应 Element Plus Container：支持显式 `direction`，未显式设置时根据直接子级 `elf-aside` 自动推断方向，并在 slot 动态变化后重新计算。
+- [x] Element Plus Row/Col API 由 ElfUI `elf-grid` / `elf-grid-item` 与 `elf-flex` 承担，不在应用骨架 Layout 中重复实现。
+- [x] 9 项测试、生产构建及浏览器自动方向冒烟通过。
+
 ## 对标定位
 
 - ElfUI 组件目录：`Layout/Layout`
@@ -144,16 +150,16 @@
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`gutter`、`justify`、`align`、`tag`、`span`、`offset`、`push`、`pull`、`xs`、`sm`、`md`、`lg`、`xl`、`height`、`width`
-- [ ] P1 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：当前粗扫未发现明显缺口，进入实现时复核默认插槽、命名插槽和 expose 方法。
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P1 完成 API 归属复核：Row/Col 的栅格属性由 Grid/GridItem/Flex 提供，`height`、`width` 分属 Header/Footer 与 Aside；Layout 自身完整实现 `direction`。
+- [x] P1 复核事件差距：Layout 为纯布局组件，无自定义事件契约。
+- [x] P1 默认插槽已类型化，无需 expose 方法。
+- [x] P1 对齐显式/自动方向同步及动态 slot 更新；交互、禁用、清空、表单和 ARIA 不适用于无交互语义的布局容器。
+- [x] P2 Layout Shell 的 3 个案例均提供 Template / Script，并新增 Aside 自动横向案例。
+- [x] P2 补齐组件单测、页面冒烟、类型导出和视觉验证。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步，默认方向标记为 `auto`。
+- [x] 默认、显式覆盖、Aside 自动推断及动态增删有单测覆盖。
+- [x] Playground Template / Script 与复制内容完整。
+- [x] `pnpm build` 通过；Layout 9/9 测试通过，浏览器验证 `vertical/column → horizontal/row`。

@@ -51,6 +51,8 @@ export interface CheckboxGroupContext {
   size: "sm" | "md" | "lg";
   min: number;
   max: number;
+  variant: "default" | "button";
+  resolveValue(value: unknown): unknown;
   changeEvent(v: unknown[]): void;
 }
 
@@ -59,5 +61,7 @@ export interface RadioGroupContext {
   disabled: boolean;
   size: "sm" | "md" | "lg";
   name?: string;
+  variant: "default" | "button";
+  resolveValue(value: unknown): unknown;
   changeEvent(v: unknown): void;
 }

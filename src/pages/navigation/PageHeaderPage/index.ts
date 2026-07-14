@@ -27,7 +27,7 @@ useComponents({
 const PagePageHeader = defineHtml(html`
   <elf-container>
     <h1>PageHeader 页头</h1>
-    <p>用于详情页顶部返回区域，支持 back 事件和 icon/title/content/extra 插槽。</p>
+    <p>用于详情页顶部返回区域，支持 back 事件和 breadcrumb/icon/title/content/extra 插槽。</p>
 
     <page-page-header-ex1 />
 

@@ -2,6 +2,72 @@
 @use "../../../styles/reset";
 
 :host {
-  grid-column: span var(--_span, 1) / span var(--_span, 1);
+  --_span: var(--_base-span, 1);
+  --_total: var(--_base-total, 1);
+  --_content-width: var(--_base-content-width, 100%);
+  --_offset-width: var(--_base-offset-width, 0);
+  --_shift: var(--_base-shift, 0);
+
+  display: block;
+  grid-column: span var(--_total, 1) / span var(--_total, 1);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767.98px) {
+  :host {
+    --_span: var(--_xs-span);
+    --_total: var(--_xs-total);
+    --_content-width: var(--_xs-content-width);
+    --_offset-width: var(--_xs-offset-width);
+    --_shift: var(--_xs-shift);
+  }
+}
+
+@media (min-width: 768px) {
+  :host {
+    --_span: var(--_sm-span);
+    --_total: var(--_sm-total);
+    --_content-width: var(--_sm-content-width);
+    --_offset-width: var(--_sm-offset-width);
+    --_shift: var(--_sm-shift);
+  }
+}
+
+@media (min-width: 992px) {
+  :host {
+    --_span: var(--_md-span);
+    --_total: var(--_md-total);
+    --_content-width: var(--_md-content-width);
+    --_offset-width: var(--_md-offset-width);
+    --_shift: var(--_md-shift);
+  }
+}
+
+@media (min-width: 1200px) {
+  :host {
+    --_span: var(--_lg-span);
+    --_total: var(--_lg-total);
+    --_content-width: var(--_lg-content-width);
+    --_offset-width: var(--_lg-offset-width);
+    --_shift: var(--_lg-shift);
+  }
+}
+
+@media (min-width: 1920px) {
+  :host {
+    --_span: var(--_xl-span);
+    --_total: var(--_xl-total);
+    --_content-width: var(--_xl-content-width);
+    --_offset-width: var(--_xl-offset-width);
+    --_shift: var(--_xl-shift);
+  }
+}
+
+.grid-item {
+  width: var(--_content-width, 100%);
+  min-width: 0;
+  margin-inline-start: var(--_offset-width, 0);
+  transform: translateX(var(--_shift, 0));
   box-sizing: border-box;
 }

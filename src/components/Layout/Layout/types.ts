@@ -6,8 +6,12 @@
  *
  * 可手动指定，也可让组件自动判断（默认 vertical；嵌套场景由父结构决定）
  */
-export type LayoutDirection = "vertical" | "horizontal";
+export type LayoutDirection = "" | "vertical" | "horizontal";
 
 export interface LayoutProps {
   direction: LayoutDirection;
+}
+
+export interface LayoutSlots {
+  default?: unknown;
 }

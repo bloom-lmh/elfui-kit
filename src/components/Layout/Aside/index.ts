@@ -2,20 +2,21 @@
 //
 //   <elf-aside width="220px">导航</elf-aside>
 
-import { defineProps, defineStyle, html, useHostCssVar, defineHtml } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui";
 
 import styles from "./style.scss?inline";
+import type { AsideProps, AsideSlots } from "./types";
 
-export type { AsideProps } from "./types";
+export type { AsideProps, AsideSlots } from "./types";
 
-const props = defineProps({
-  width: { type: String, default: "240px" }
+const props = defineProps<AsideProps>({
+  width: { type: String, default: "300px" }
 });
 
 useHostCssVar("--_width", () => props.width);
 
 defineStyle(styles);
 
-const Aside = defineHtml(html`<slot></slot>`);
+const Aside = defineHtml<AsideProps, Record<string, never>, AsideSlots>(html`<slot></slot>`);
 
 export { Aside };

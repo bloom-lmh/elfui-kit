@@ -4,6 +4,7 @@ const rows = [
   { name: "model-value / active-value / inactive-value", type: "string | number | boolean", default: "false / true / false" },
   { name: "size / width / inline-prompt", type: "sm | md | lg / string | number / boolean", default: "md / auto / false" },
   { name: "active-text / inactive-text / active-icon / inactive-icon", type: "string", default: "''" },
+  { name: "active-action-icon / inactive-action-icon", type: "string", default: "''" },
   { name: "disabled / loading / validate-event", type: "boolean", default: "false / false / true" },
   { name: "id / tabindex / aria-label", type: "string / number / string", default: "'' / 0 / ''" },
   { name: "active-color / inactive-color / border-color", type: "string", default: "''" },
@@ -19,6 +20,7 @@ const PageSwitchProps = defineHtml(html`
     { name: "active / inactive", desc: "inline prompt content" },
     { name: "active-action / inactive-action", desc: "track action content" }
   ]} />
+  <elf-props-table title="暴露方法" :rows=${[{ name: "focus", type: "() => void" }]} />
 `);
 
 export { PageSwitchProps };

@@ -24,8 +24,8 @@
 
 ## 后续可选增强
 
-- [ ] P2 增加浏览器级视觉回归截图，覆盖纵向滑块及四种提示位置。
-- [ ] P2 在组件站点支持时，为提示内容提供专门的可访问性说明区域。
+- [x] P2 增加浏览器级视觉回归截图，覆盖纵向滑块及四种提示位置。
+- [x] P2 为提示内容提供专门的可访问性说明区域，并以唯一 `aria-describedby` 关联每个滑块 thumb。
 
 ## 验收记录
 
@@ -34,3 +34,4 @@
 - [x] Playground 示例使用 Template / Script 绑定语法。
 - [x] `pnpm test src/components/Form/Slider/Slider.test.ts` 通过。
 - [x] `pnpm build` 通过。
+- [x] 2026-07-15 验收：13 项组件测试通过；浏览器验证 11 个 Slider、纵向布局及 top/bottom/left/right 四种提示位置，12 个说明区域 ID 全部唯一且控制台无错误。

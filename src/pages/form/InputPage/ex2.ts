@@ -8,13 +8,13 @@ const code1 = `<elf-input size="small" placeholder="small" />
 <elf-input size="large" placeholder="large" />`;
 
 const code2 = `<elf-input disabled placeholder="禁用" />
-<elf-input readonly :modelValue=\${readonlyText} />`;
+<elf-input readonly :modelValue.prop=\${readonlyText.value} />`;
 
 const script2 = `const readonlyText = useRef("只读内容");`;
 
 const code3 = `<div style="width:240px">
   <elf-input
-    :modelValue=\${clearValue}
+    :modelValue.prop=\${clearValue.value}
     clearable
     clear-icon="clear"
     placeholder="输入后出现清空按钮"
@@ -50,14 +50,14 @@ const PageInputEx2 = defineHtml(html`
     <div style="width:200px;margin-bottom:8px">
       <elf-input disabled placeholder="禁用"></elf-input>
     </div>
-    <div style="width:200px"><elf-input readonly :modelValue=${readonlyText}></elf-input></div>
+    <div style="width:200px"><elf-input readonly :modelValue.prop=${readonlyText.value}></elf-input></div>
   </elf-playground>
 
   <h2>可清空</h2>
   <elf-playground title="clearable / clear-icon" :code=${code3} :script=${script3}>
     <div style="width:240px">
       <elf-input
-        :modelValue=${clearValue}
+        :modelValue.prop=${clearValue.value}
         clearable
         clear-icon="clear"
         placeholder="输入后出现清空按钮"

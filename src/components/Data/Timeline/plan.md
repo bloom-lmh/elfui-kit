@@ -91,10 +91,12 @@
 
 - [x] API props/types 与页面 PropsTable 同步。
 - [x] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [x] `pnpm build` 通过；目标单测通过。
 
 ## 2026-07-14 视觉升级
 
 - [x] 重构节点、轨道、事件卡片与 alternate / horizontal 布局，覆盖语义色、暗色主题和窄屏回退。
 - [x] 真实浏览器完成暗色主题视觉验收。
+
+2026-07-15 验收：Timeline 定向测试通过；浏览器验证 7 个时间轴、7 组 Template/Script 及数据项内容均正常渲染，控制台无错误。

@@ -216,6 +216,22 @@ describe("elf-slider", () => {
     expect(end.getAttribute("aria-label")).toBe("Maximum price");
     expect(start.getAttribute("aria-valuetext")).toBe("$20");
     expect(end.getAttribute("aria-valuetext")).toBe("$80");
+    const startDescription = el.shadowRoot!.getElementById(start.getAttribute("aria-describedby")!);
+    const endDescription = el.shadowRoot!.getElementById(end.getAttribute("aria-describedby")!);
+    expect(startDescription?.textContent).toContain("Minimum price: $20");
+    expect(endDescription?.textContent).toContain("Maximum price: $80");
+    expect(startDescription?.getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("uses unique description ids for every slider instance", async () => {
+    const first = await mount({ ariaLabel: "First" });
+    const second = await mount({ ariaLabel: "Second" });
+    const firstInput = first.shadowRoot!.querySelector(".native-single") as HTMLInputElement;
+    const secondInput = second.shadowRoot!.querySelector(".native-single") as HTMLInputElement;
+
+    expect(firstInput.getAttribute("aria-describedby")).not.toBe(
+      secondInput.getAttribute("aria-describedby")
+    );
   });
 
   it("applies tooltip placement and consumer classes", async () => {

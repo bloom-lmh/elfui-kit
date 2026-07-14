@@ -31,8 +31,8 @@ const itemRows = [
 
 const PageTimelineProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows" />
-  <elf-props-table title="TimelineItem" :rows="itemRows" />
+  <elf-props-table title="Props" :rows.prop=${propsRows} />
+  <elf-props-table title="TimelineItem" :rows.prop=${itemRows} />
 `);
 
 export { PageTimelineProps };

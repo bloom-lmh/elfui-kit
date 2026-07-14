@@ -83,6 +83,23 @@ describe("elf-carousel", () => {
     expect(el.shadowRoot!.querySelector(".indicators")).toBeNull();
   });
 
+  it("renders outside indicators next to the clipped carousel viewport", async () => {
+    const el = document.createElement("elf-carousel");
+    el.setAttribute("autoplay", "false");
+    el.setAttribute("indicator-position", "outside");
+    el.innerHTML = "<div>A</div><div>B</div>";
+    document.body.appendChild(el);
+    await tick();
+
+    const root = el.shadowRoot!;
+    const carousel = root.querySelector(".carousel")!;
+    const indicators = root.querySelector(".indicators")!;
+
+    expect(carousel.contains(indicators)).toBe(false);
+    expect(indicators.previousElementSibling).toBe(carousel);
+    expect(indicators.querySelectorAll(".dot")).toHaveLength(2);
+  });
+
   it("emits only for a real transition and not at a non-looping boundary", async () => {
     const el = document.createElement("elf-carousel");
     let changes = 0;

@@ -8,3 +8,23 @@ export interface InfiniteScrollProps {
   height: string | number;
   container: string | HTMLElement | null;
 }
+
+export type InfiniteScrollEmits = {
+  load: [];
+};
+
+export interface InfiniteScrollSlots {
+  default?: unknown;
+}
+
+export type InfiniteScrollDirectiveHandler = () => void;
+
+export interface InfiniteScrollDirectiveOptions {
+  handler: InfiniteScrollDirectiveHandler;
+  disabled?: boolean;
+  distance?: number;
+  delay?: number;
+  immediate?: boolean;
+}
+
+export type InfiniteScrollDirectiveValue = InfiniteScrollDirectiveHandler | InfiniteScrollDirectiveOptions;

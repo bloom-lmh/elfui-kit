@@ -3,3 +3,7 @@
 export interface FooterProps {
   height: string;
 }
+
+export interface FooterSlots {
+  default?: unknown;
+}

@@ -5,13 +5,23 @@ import {
   defineStyle,
   html,
   useHostAttr,
-  useHostCssVar
+  useHostCssVar,
+  useScrollLock
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { LoadingProps, LoadingVariant } from "./types";
+import type { LoadingEmits, LoadingProps, LoadingSlots, LoadingVariant } from "./types";
 
-export type { LoadingProps, LoadingVariant } from "./types";
+export type {
+  LoadingDirectiveValue,
+  LoadingEmits,
+  LoadingInstance,
+  LoadingOptions,
+  LoadingProps,
+  LoadingSlots,
+  LoadingTarget,
+  LoadingVariant
+} from "./types";
 
 const props = defineProps<LoadingProps>({
   loading: { type: Boolean, default: false },
@@ -19,13 +29,13 @@ const props = defineProps<LoadingProps>({
   fullscreen: { type: Boolean, default: false },
   background: { type: String, default: "rgba(255,255,255,0.72)" },
   closable: { type: Boolean, default: false },
-  variant: { type: String, default: "spinner" }
+  variant: { type: String, default: "spinner" },
+  svg: { type: String, default: "" },
+  svgViewBox: { type: String, default: "0 0 50 50" },
+  lock: { type: Boolean, default: false }
 });
 
-const emit = defineEmits<{
-  "update:loading": [loading: boolean];
-  close: [];
-}>();
+const emit = defineEmits<LoadingEmits>();
 
 const close = (): void => {
   emit("update:loading", false);
@@ -39,10 +49,11 @@ const normalizedVariant = (): LoadingVariant => {
 
 useHostAttr("fullscreen", () => (props.fullscreen ? "" : null));
 useHostCssVar("--_loading-bg", () => props.background || "rgba(255,255,255,0.72)");
+useScrollLock(() => props.loading && props.fullscreen && props.lock);
 
 defineStyle(styles);
 
-const Loading = defineHtml<LoadingProps>(html`
+const Loading = defineHtml<LoadingProps, LoadingEmits, LoadingSlots>(html`
   <div class="loading" part="loading">
     <slot></slot>
     <div
@@ -54,7 +65,15 @@ const Loading = defineHtml<LoadingProps>(html`
     >
       <div class="box">
         <span :class=${["indicator", `is-${normalizedVariant()}`]} aria-hidden="true">
-          <span v-if=${normalizedVariant() === "spinner"} class="spinner"></span>
+          <svg
+            v-if=${Boolean(props.svg)}
+            class="custom-spinner"
+            :viewBox=${props.svgViewBox}
+            focusable="false"
+          >
+            <path :d=${props.svg}></path>
+          </svg>
+          <span v-if=${!props.svg && normalizedVariant() === "spinner"} class="spinner"></span>
           <span v-if=${normalizedVariant() === "dots"} class="dot"></span>
           <span v-if=${normalizedVariant() === "dots"} class="dot"></span>
           <span v-if=${normalizedVariant() === "dots"} class="dot"></span>

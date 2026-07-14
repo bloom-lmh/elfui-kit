@@ -10,9 +10,11 @@ const code2 = `<elf-container fluid padding="lg">
   <elf-container max-width="md" padding="md">居中的正文内容</elf-container>
 </elf-container>`;
 
+const script = `// fluid 取消最大宽度限制，可在内部嵌套限宽容器。`;
+
 const PageContainerEx2 = defineHtml(html`
   <h2>不同 padding</h2>
-  <elf-playground title="0 / sm / md / lg" :code="code1">
+  <elf-playground title="0 / sm / md / lg" :code=${code1} :script=${script}>
     <elf-container
       padding="0"
       max-width="md"
@@ -40,7 +42,7 @@ const PageContainerEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>全宽与内容限宽组合</h2>
-  <elf-playground title="fluid 外壳 + 居中正文" :code=${code2}>
+  <elf-playground title="fluid 外壳 + 居中正文" :code=${code2} :script=${script}>
     <elf-container fluid padding="lg" style="border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--elf-primary) 14%,var(--elf-bg-paper)),var(--elf-bg-paper))">
       <elf-container max-width="md" padding="md">
         <small style="color:var(--elf-primary);font-weight:700">工作台布局</small>

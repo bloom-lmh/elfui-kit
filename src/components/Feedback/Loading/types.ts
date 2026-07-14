@@ -7,4 +7,39 @@ export interface LoadingProps {
   background: string;
   closable: boolean;
   variant: LoadingVariant;
+  svg: string;
+  svgViewBox: string;
+  lock: boolean;
+}
+
+export type LoadingTarget = HTMLElement | string;
+
+export interface LoadingOptions {
+  target?: LoadingTarget;
+  body?: boolean;
+  fullscreen?: boolean;
+  lock?: boolean;
+  text?: string;
+  background?: string;
+  variant?: LoadingVariant;
+  svg?: string;
+  svgViewBox?: string;
+  customClass?: string;
+  onClose?: () => void;
+}
+
+export interface LoadingInstance {
+  close: () => void;
+  setText: (text: string) => void;
+}
+
+export type LoadingDirectiveValue = boolean | (LoadingOptions & { loading?: boolean });
+
+export interface LoadingEmits {
+  "update:loading": [loading: boolean];
+  close: [];
+}
+
+export interface LoadingSlots {
+  default?: () => unknown;
 }

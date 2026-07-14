@@ -9,13 +9,12 @@
   min-height: 0;
 }
 
-/* 默认垂直堆叠（header/main/footer）；
-   含 elf-aside 的子结构由 :host([direction="horizontal"]) 显式指定 */
+/* 默认垂直堆叠；直接包含 elf-aside 时由组件自动解析为 horizontal。 */
 :host,
-:host([direction="vertical"]) {
+:host([data-direction="vertical"]) {
   flex-direction: column;
 }
 
-:host([direction="horizontal"]) {
+:host([data-direction="horizontal"]) {
   flex-direction: row;
 }

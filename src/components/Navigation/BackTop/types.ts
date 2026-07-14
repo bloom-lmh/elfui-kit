@@ -1,10 +1,5 @@
 export type BackTopShape = "circle" | "square";
 
-export interface BackTopClickDetail {
-  scrollTop: number;
-  event: Event;
-}
-
 export interface BackTopProps {
   target: string | HTMLElement | Window | (() => HTMLElement | Window | null) | null;
   visibilityHeight: number;
@@ -20,4 +15,8 @@ export interface BackTopProps {
 
 export interface BackTopElement {
   scrollToTop: () => void;
+}
+
+export interface BackTopSlots {
+  default?: unknown;
 }

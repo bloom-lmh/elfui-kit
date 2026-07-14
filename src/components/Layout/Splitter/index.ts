@@ -1,137 +1,294 @@
 import {
-    defineEmits,
-    defineHtml,
-    defineProps,
-    defineStyle,
-    html,
-    useHostAttr,
-    useHostCssVar,
-    useHostFlag,
-    useRef,
+  defineEmits,
+  defineHtml,
+  defineProps,
+  defineStyle,
+  html,
+  onMount,
+  useEffect,
+  useHost,
+  useHostAttr,
+  useHostCssVar,
+  useHostFlag,
+  useRef
 } from "elfui";
 
+import { SplitterPanel } from "./panel";
 import styles from "./style.scss?inline";
-import type { SplitterProps, SplitterSlots } from "./types";
+import type {
+  SplitterEmits,
+  SplitterPanelProps,
+  SplitterPanelSlots,
+  SplitterProps,
+  SplitterSlots
+} from "./types";
 
-export type { SplitterProps, SplitterSlots } from "./types";
+export { SplitterPanel } from "./panel";
+export type {
+  SplitterEmits,
+  SplitterPanelProps,
+  SplitterPanelSlots,
+  SplitterProps,
+  SplitterSlots
+} from "./types";
+
+type SplitterPanelElement = HTMLElement & Partial<SplitterPanelProps>;
 
 const props = defineProps<SplitterProps>({
-    modelValue: { type: Number, default: 50 },
-    min: { type: Number, default: 10 },
-    max: { type: Number, default: 90 },
-    vertical: { type: Boolean, default: false },
-    disabled: { type: Boolean, default: false },
+  modelValue: { type: Number, default: 50 },
+  min: { type: Number, default: 10 },
+  max: { type: Number, default: 90 },
+  vertical: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+  collapsible: { type: Boolean, default: false },
+  resizable: { type: Boolean, default: true },
+  storageKey: { type: String, default: "" }
 });
 
-const emit = defineEmits(["update:modelValue", "change", "resize-start", "resize-end"]);
+const emit = defineEmits<SplitterEmits>();
+const host = useHost<HTMLElement>();
+
+// State
 const dragging = useRef(false);
+const size = useRef(50);
+const collapsed = useRef(false);
+const lastExpandedSize = useRef(50);
+const firstPanel = useRef<SplitterPanelElement | null>(null);
+
+// Size helpers
+const numberOr = (value: unknown, fallback: number): number => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+const panelMin = (): number => numberOr(firstPanel.value?.min, numberOr(props.min, 10));
+const panelMax = (): number => numberOr(firstPanel.value?.max, numberOr(props.max, 90));
 
 const clamp = (value: number): number => {
-    const minVal = Number(props.min);
-    const maxVal = Number(props.max);
-    return Math.min(isNaN(maxVal) ? 90 : maxVal, Math.max(isNaN(minVal) ? 10 : minVal, value));
+  const min = Math.min(panelMin(), panelMax());
+  const max = Math.max(panelMin(), panelMax());
+  return Math.min(max, Math.max(min, value));
 };
 
-const currentSize = (): number => {
-    const mv = props.modelValue;
-    return clamp(mv != null ? Number(mv) : 50);
+const currentSize = (): number => (collapsed.value ? 0 : clamp(size.value));
+const canResize = (): boolean =>
+  !props.disabled && props.resizable && firstPanel.value?.resizable !== false;
+const canCollapse = (): boolean => Boolean(props.collapsible || firstPanel.value?.collapsible);
+
+const persist = (value: number): void => {
+  if (!props.storageKey) return;
+  try {
+    localStorage.setItem(props.storageKey, String(value));
+  } catch {
+    // Storage can be unavailable in privacy mode; resizing must keep working.
+  }
 };
 
+const hasPersistedSize = (): boolean => {
+  if (!props.storageKey) return false;
+  try {
+    return localStorage.getItem(props.storageKey) != null;
+  } catch {
+    return false;
+  }
+};
+
+const syncPanelState = (): void => {
+  if (firstPanel.value?.tagName.toLowerCase() === "elf-splitter-panel") {
+    firstPanel.value.collapsed = collapsed.value;
+  }
+};
+
+const commitSize = (value: number): void => {
+  const next = clamp(value);
+  collapsed.set(false);
+  size.set(next);
+  lastExpandedSize.set(next);
+  syncPanelState();
+  persist(next);
+  emit("update:modelValue", next);
+  emit("change", next);
+};
+
+const toggleCollapse = (): void => {
+  if (!canCollapse()) return;
+  if (collapsed.value) {
+    const restored = clamp(lastExpandedSize.value || 50);
+    collapsed.set(false);
+    size.set(restored);
+    persist(restored);
+    emit("update:modelValue", restored);
+    emit("change", restored);
+  } else {
+    lastExpandedSize.set(Math.max(size.value, panelMin()));
+    collapsed.set(true);
+    persist(0);
+    emit("update:modelValue", 0);
+    emit("change", 0);
+  }
+  syncPanelState();
+  emit("collapse", collapsed.value);
+};
+
+// Panel discovery
+const resolvePanel = (event: Event): SplitterPanelElement | null => {
+  const slot = event.currentTarget as HTMLSlotElement;
+  return (slot.assignedElements({ flatten: true })[0] as SplitterPanelElement | undefined) ?? null;
+};
+
+const onFirstSlotChange = (event: Event): void => {
+  firstPanel.set(resolvePanel(event));
+  const panel = firstPanel.value;
+  if (!panel) return;
+  if (!host.hasAttribute("model-value") && !hasPersistedSize() && panel.tagName.toLowerCase() === "elf-splitter-panel") {
+    const initial = clamp(numberOr(panel.size, 50));
+    size.set(initial);
+    lastExpandedSize.set(initial);
+  }
+  syncPanelState();
+};
+
+// Pointer and keyboard methods
 const percentageFromPointer = (bar: HTMLElement, clientX: number, clientY: number): number => {
-    const container = bar.parentElement;
-    if (!container) return currentSize();
-    const rect = container.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return currentSize();
-    const raw = props.vertical
-        ? ((clientY - rect.top) / rect.height) * 100
-        : ((clientX - rect.left) / rect.width) * 100;
-    return clamp(raw);
+  const container = bar.parentElement;
+  if (!container) return currentSize();
+  const rect = container.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return currentSize();
+  const raw = props.vertical
+    ? ((clientY - rect.top) / rect.height) * 100
+    : ((clientX - rect.left) / rect.width) * 100;
+  return clamp(raw);
 };
 
 const onPointerDown = (event: PointerEvent): void => {
-    if (props.disabled) return;
-    event.preventDefault();
-    const bar = event.currentTarget as HTMLElement;
-    try {
-        bar.setPointerCapture?.(event.pointerId);
-    } catch {
-        /* not available in test env */
-    }
-    dragging.set(true);
-    emit("resize-start", currentSize());
+  if (!canResize()) return;
+  event.preventDefault();
+  const bar = event.currentTarget as HTMLElement;
+  try {
+    bar.setPointerCapture?.(event.pointerId);
+  } catch {
+    // Pointer capture is not available in every test/browser environment.
+  }
+  dragging.set(true);
+  emit("resize-start", currentSize());
 };
 
 const onPointerMove = (event: PointerEvent): void => {
-    if (!dragging.value) return;
-    event.preventDefault();
-    const bar = event.currentTarget as HTMLElement;
-    const next = percentageFromPointer(bar, event.clientX, event.clientY);
-    emit("update:modelValue", next);
-    emit("change", next);
+  if (!dragging.value || !canResize()) return;
+  event.preventDefault();
+  commitSize(percentageFromPointer(event.currentTarget as HTMLElement, event.clientX, event.clientY));
+};
+
+const endResize = (): void => {
+  if (!dragging.value) return;
+  dragging.set(false);
+  emit("resize-end", currentSize());
 };
 
 const onPointerUp = (event: PointerEvent): void => {
-    if (!dragging.value) return;
-    dragging.set(false);
-    const bar = event.currentTarget as HTMLElement;
-    try {
-        bar.releasePointerCapture?.(event.pointerId);
-    } catch {
-        // capture may already be released
-    }
-    emit("resize-end", currentSize());
-};
-
-const onLostPointerCapture = (): void => {
-    if (dragging.value) {
-        dragging.set(false);
-        emit("resize-end", currentSize());
-    }
+  if (!dragging.value) return;
+  try {
+    (event.currentTarget as HTMLElement).releasePointerCapture?.(event.pointerId);
+  } catch {
+    // Capture may already have been released.
+  }
+  endResize();
 };
 
 const onKeyDown = (event: KeyboardEvent): void => {
-    if (props.disabled) return;
-    const step = 5;
-    const cur = currentSize();
-    let next: number;
-    const keys = props.vertical
-        ? { inc: ["ArrowDown", "ArrowRight"], dec: ["ArrowUp", "ArrowLeft"] }
-        : { inc: ["ArrowRight", "ArrowDown"], dec: ["ArrowLeft", "ArrowUp"] };
-    if (keys.inc.includes(event.key)) next = cur + step;
-    else if (keys.dec.includes(event.key)) next = cur - step;
-    else return;
+  if (!canResize()) return;
+  if (event.key === "Home" && canCollapse()) {
     event.preventDefault();
-    next = clamp(next);
-    emit("update:modelValue", next);
-    emit("change", next);
+    if (!collapsed.value) toggleCollapse();
+    return;
+  }
+  if (event.key === "End" && collapsed.value) {
+    event.preventDefault();
+    toggleCollapse();
+    return;
+  }
+
+  const increase = ["ArrowRight", "ArrowDown"].includes(event.key);
+  const decrease = ["ArrowLeft", "ArrowUp"].includes(event.key);
+  if (!increase && !decrease) return;
+  event.preventDefault();
+  commitSize(currentSize() + (increase ? 5 : -5));
 };
+
+const stopCollapsePointerDown = (event: PointerEvent): void => {
+  event.stopPropagation();
+};
+
+// Reactive synchronization and lifecycle
+useEffect(() => {
+  const next = clamp(numberOr(props.modelValue, 50));
+  if (!dragging.peek() && !collapsed.peek() && size.peek() !== next) {
+    size.set(next);
+    lastExpandedSize.set(next);
+  }
+});
+
+onMount(() => {
+  if (!props.storageKey) return;
+  try {
+    const storedValue = localStorage.getItem(props.storageKey);
+    if (storedValue == null) return;
+    const stored = Number(storedValue);
+    if (!Number.isFinite(stored)) return;
+    if (stored === 0 && canCollapse()) collapsed.set(true);
+    else {
+      size.set(clamp(stored));
+      lastExpandedSize.set(clamp(stored));
+    }
+    syncPanelState();
+  } catch {
+    // Ignore unavailable or invalid storage.
+  }
+});
 
 useHostAttr("vertical", () => (props.vertical ? "" : null));
 useHostFlag("disabled", () => Boolean(props.disabled));
+useHostFlag("collapsed", () => collapsed.value);
 useHostCssVar("--_splitter-size", () => `${currentSize()}%`);
 
 defineStyle(styles);
 
-const Splitter = defineHtml<SplitterProps, Record<string, unknown>, SplitterSlots>(html`
-    <div class="splitter" part="splitter">
-        <section class="pane first" part="first"><slot name="first"></slot></section>
-        <div
-            class="bar"
-            part="bar"
-            role="separator"
-            tabindex="0"
-            :aria-valuenow=${currentSize()}
-            aria-valuemin="0"
-            aria-valuemax="100"
-            :aria-orientation=${props.vertical ? "vertical" : "horizontal"}
-            @pointerdown=${onPointerDown}
-            @pointermove=${onPointerMove}
-            @pointerup=${onPointerUp}
-            @lostpointercapture=${onLostPointerCapture}
-            @keydown=${onKeyDown}
-        ></div>
-        <section class="pane second" part="second"><slot name="second"></slot></section>
+const Splitter = defineHtml<SplitterProps, SplitterEmits, SplitterSlots>(html`
+  <div class="splitter" part="splitter">
+    <section :class=${["pane", "first", { "is-collapsed": collapsed }]} part="first">
+      <slot name="first" @slotchange=${onFirstSlotChange}></slot>
+    </section>
+    <div
+      :class=${["bar", { "is-static": !canResize() }]}
+      part="bar"
+      role="separator"
+      :tabindex=${canResize() ? 0 : -1}
+      :aria-disabled=${!canResize() ? "true" : undefined}
+      :aria-valuenow=${currentSize()}
+      :aria-valuemin=${panelMin()}
+      :aria-valuemax=${panelMax()}
+      :aria-valuetext=${collapsed.value ? "已折叠" : `${Math.round(currentSize())}%`}
+      :aria-orientation=${props.vertical ? "vertical" : "horizontal"}
+      @pointerdown=${onPointerDown}
+      @pointermove=${onPointerMove}
+      @pointerup=${onPointerUp}
+      @lostpointercapture=${endResize}
+      @keydown=${onKeyDown}
+      @dblclick=${toggleCollapse}
+    >
+      <button
+        v-if=${canCollapse()}
+        class="collapse-button"
+        type="button"
+        :aria-label=${collapsed.value ? "展开第一个面板" : "折叠第一个面板"}
+        @pointerdown=${stopCollapsePointerDown}
+        @click.stop=${toggleCollapse}
+      >
+        ${props.vertical ? (collapsed.value ? "⌄" : "⌃") : collapsed.value ? "›" : "‹"}
+      </button>
     </div>
+    <section class="pane second" part="second"><slot name="second"></slot></section>
+  </div>
 `);
 
 export { Splitter };

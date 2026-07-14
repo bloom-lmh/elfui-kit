@@ -1,18 +1,19 @@
-import { defineHtml, html, useReactive } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
 
+const picked = useRef("a");
 
-const data = useReactive({ picked: "a" });
-
-const code1 = `<elf-radio-group v-model="data.picked" disabled>
+const code = `<elf-radio-group :modelValue.prop=\${picked.value} disabled aria-label="禁用选项">
   <elf-radio value="a" label="A" />
   <elf-radio value="b" label="B" />
 </elf-radio-group>`;
 
+const script = `const picked = useRef("a");`;
+
 const PageRadioEx3 = defineHtml(html`
-  <elf-playground title="禁用" :code="code1">
-    <elf-radio-group v-model="data.picked" disabled aria-label="Disabled choices">
-      <elf-radio value="a" label="A" />
-      <elf-radio value="b" label="B" />
+  <elf-playground title="禁用" :code=${code} :script=${script}>
+    <elf-radio-group :modelValue.prop=${picked.value} disabled aria-label="禁用选项">
+      <elf-radio value="a" label="A"></elf-radio>
+      <elf-radio value="b" label="B"></elf-radio>
     </elf-radio-group>
   </elf-playground>
 `);

@@ -27,8 +27,14 @@
 
 ## 后续差距
 
-- [ ] 对齐 Element Plus Panel 子组件、collapsible、resizable、lazy、持久化尺寸。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 对齐 Element Plus Panel 子组件、collapsible、resizable、lazy、持久化尺寸。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
+
+## 2026-07-15 验收
+
+- [x] 新增 `elf-splitter-panel`，保留原 `first/second` 插槽兼容；尺寸、拖拽、键盘、折叠与存储统一由 Splitter 状态管理。
+- [x] 19 项专项测试通过，覆盖 Panel 边界、折叠恢复、非 resizable、lazy 激活、持久化与折叠按钮指针隔离。
+- [x] 真实浏览器验证初始 34%、折叠 0%、localStorage 写入和展开按钮，控制台无错误；生产构建通过。
 
 ## 本轮案例页
 

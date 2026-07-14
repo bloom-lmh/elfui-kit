@@ -165,8 +165,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -184,4 +184,14 @@
     color: var(--elf-text-secondary);
     background-color: rgba(0, 0, 0, 0.06);
   }
+}
+
+.close.is-label {
+  width: auto;
+  min-width: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--elf-border-color);
+  border-radius: var(--elf-radius-sm);
+  font-size: var(--elf-font-size-xs);
+  white-space: nowrap;
 }

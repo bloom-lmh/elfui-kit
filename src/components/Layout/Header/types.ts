@@ -3,3 +3,7 @@
 export interface HeaderProps {
   height: string;
 }
+
+export interface HeaderSlots {
+  default?: unknown;
+}

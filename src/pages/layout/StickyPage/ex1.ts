@@ -13,9 +13,12 @@ const code = `<elf-sticky top="0" @change="onChange">
   <div class="toolbar">Toolbar</div>
 </elf-sticky>`;
 
+const script = `const stuck = useRef("未吸附");
+const onChange = (event) => stuck.set(event.detail ? "已吸附" : "未吸附");`;
+
 const PageStickyEx1 = defineHtml(html`
   <h2>顶部吸附</h2>
-  <elf-playground title="顶部吸附与状态变化" :code=${code}>
+  <elf-playground title="顶部吸附与状态变化" :code=${code} :script=${script}>
     <div
       style="width:100%;max-width:720px;height:260px;overflow:auto;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper)"
     >

@@ -1,11 +1,16 @@
 @use "../../../styles/reset";
 
 :host {
+  display: block;
+  container-type: inline-size;
+  font-family: var(--elf-font-family);
+  font-size: var(--elf-font-size-sm);
+}
+
+.transfer {
   display: flex;
   align-items: stretch;
   gap: var(--elf-space-4);
-  font-family: var(--elf-font-family);
-  font-size: var(--elf-font-size-sm);
 }
 
 // ───── 面板 ────────────────────────────────────────
@@ -163,5 +168,19 @@
       opacity: 0.38;
       cursor: not-allowed;
     }
+  }
+}
+
+@container (max-width: 560px) {
+  .transfer {
+    flex-direction: column;
+  }
+
+  .buttons {
+    flex-direction: row;
+  }
+
+  .buttons button {
+    width: min(120px, 100%);
   }
 }

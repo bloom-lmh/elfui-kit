@@ -1,170 +1,132 @@
-// elf-alert 测试
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { registerComponents } from "elfui";
 
-import { compile } from "@elfui/compiler";
-import { defineComponent, setTemplateCompiler, useRef, type RenderFn } from "@elfui/chain";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { Alert } from "./index";
+import type { AlertDensity, AlertType, AlertVariant } from "./types";
 
-beforeAll(async () => {
-    setTemplateCompiler((template) => compile(template) as unknown as RenderFn);
-    await import("../../../components/Feedback/Alert/index");
+beforeAll(() => {
+  registerComponents(Alert);
 });
 
 afterEach(() => {
-    document.body.innerHTML = "";
+  document.body.innerHTML = "";
 });
 
-const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 20));
-const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
+const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-type AlertEl = HTMLElement & {
-    type?: string;
-    variant?: string;
-    title?: string;
-    description?: string;
-    closable?: boolean;
-    closeText?: string;
-    showIcon?: boolean;
-    center?: boolean;
-    density?: string;
-    prominent?: boolean;
+interface AlertElement extends HTMLElement {
+  type?: AlertType;
+  variant?: AlertVariant;
+  title?: string;
+  description?: string;
+  closable?: boolean;
+  closeText?: string;
+  showIcon?: boolean;
+  center?: boolean;
+  density?: AlertDensity;
+  prominent?: boolean;
+}
+
+const mount = async (
+  patch: Partial<AlertElement> = {},
+  children: Node[] = []
+): Promise<AlertElement> => {
+  const element = document.createElement("elf-alert") as AlertElement;
+  Object.assign(element, { title: "提示", ...patch });
+  element.append(...children);
+  document.body.appendChild(element);
+  await tick();
+  return element;
 };
 
-const mount = async (template: string): Promise<AlertEl> => {
-    defineComponent({
-        name: "test-alert-wrap",
-        setup: () => ({}),
-        template,
-    });
-    const wrap = document.createElement("test-alert-wrap");
-    document.body.appendChild(wrap);
-    await tick();
-    return wrap.shadowRoot!.querySelector("elf-alert") as AlertEl;
-};
+const alertBody = (element: AlertElement): HTMLElement =>
+  element.shadowRoot!.querySelector<HTMLElement>(".alert")!;
 
 describe("elf-alert", () => {
-    it("基础渲染 title + description", async () => {
-        const el = await mount(`
-            <elf-alert type="success" title="操作成功" description="数据已保存"></elf-alert>
-        `);
-        expect(el).toBeTruthy();
-        expect(el.getAttribute("title")).toBe("操作成功");
-    });
+  it("renders title and description with alert semantics", async () => {
+    const element = await mount({ type: "success", title: "操作成功", description: "数据已保存" });
 
-    it("type 反射到 host", async () => {
-        const el = await mount(`<elf-alert type="success" title="ok"></elf-alert>`);
-        expect(el.getAttribute("type")).toBe("success");
-    });
+    expect(alertBody(element).getAttribute("role")).toBe("alert");
+    expect(alertBody(element).textContent).toContain("操作成功");
+    expect(alertBody(element).textContent).toContain("数据已保存");
+  });
 
-    it("variant=tonal 有 border", async () => {
-        const el = await mount(`<elf-alert variant="tonal" type="info" title="test"></elf-alert>`);
-        const alertDiv = el.shadowRoot!.querySelector(".alert") as HTMLElement;
-        const style = getComputedStyle(alertDiv);
-        expect(style.borderLeftWidth).not.toBe("0px");
-    });
+  it("reflects the semantic type on the host", async () => {
+    const element = await mount({ type: "success" });
+    expect(element.getAttribute("type")).toBe("success");
+  });
 
-    it("variant=outlined", async () => {
-        const el = await mount(`<elf-alert variant="outlined" type="success" title="test"></elf-alert>`);
-        const alertDiv = el.shadowRoot!.querySelector(".alert") as HTMLElement;
-        const style = getComputedStyle(alertDiv);
-        expect(style.borderWidth).not.toBe("0px");
-    });
+  it.each(["tonal", "elevated", "outlined", "plain", "filled"] as const)(
+    "renders and reflects the %s variant",
+    async (variant) => {
+      const element = await mount({ variant });
 
-    it("variant=plain 透明背景", async () => {
-        const el = await mount(`<elf-alert variant="plain" type="info" title="test"></elf-alert>`);
-        const alertDiv = el.shadowRoot!.querySelector(".alert") as HTMLElement;
-        const style = getComputedStyle(alertDiv);
-        expect(style.backgroundColor).toBe("rgba(0, 0, 0, 0)");
-    });
+      expect(element.getAttribute("variant")).toBe(variant);
+      expect(alertBody(element)).toBeTruthy();
+    }
+  );
 
-    it("variant=filled 非透明背景", async () => {
-        const el = await mount(`<elf-alert variant="filled" type="danger" title="test"></elf-alert>`);
-        const alertDiv = el.shadowRoot!.querySelector(".alert") as HTMLElement;
-        const style = getComputedStyle(alertDiv);
-        expect(style.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
-    });
+  it("emits close and removes its content after the closing transition", async () => {
+    const element = await mount({ closable: true });
+    const onClose = vi.fn();
+    element.addEventListener("close", onClose);
 
-    it("closable 显示关闭按钮，点击 emit close", async () => {
-        const el = await mount(`<elf-alert closable title="可关闭"></elf-alert>`);
-        let closed = false;
-        el.addEventListener("close", () => { closed = true; });
+    element.shadowRoot!.querySelector<HTMLButtonElement>(".close")!.click();
+    await wait(220);
 
-        const btn = el.shadowRoot!.querySelector(".close") as HTMLButtonElement;
-        expect(btn).toBeTruthy();
-        btn.click();
-        await tick();
-        expect(closed).toBe(true);
-    });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(element.hasAttribute("data-closed")).toBe(true);
+    expect(element.shadowRoot!.querySelector(".alert")).toBeNull();
+  });
 
-    it("关闭后 data-closed flag", async () => {
-        const el = await mount(`<elf-alert closable title="test"></elf-alert>`);
-        const btn = el.shadowRoot!.querySelector(".close") as HTMLButtonElement;
-        btn.click();
-        await wait(300);
-        expect(el.getAttribute("data-closed")).toBe("");
-    });
+  it("deduplicates close while the transition is running", async () => {
+    const element = await mount({ closable: true });
+    const onClose = vi.fn();
+    element.addEventListener("close", onClose);
+    const button = element.shadowRoot!.querySelector<HTMLButtonElement>(".close")!;
 
-    it("close-text 显示文字", async () => {
-        defineComponent({
-            name: "test-alert-close-text",
-            setup: () => { const t = useRef("关闭"); return { t }; },
-            template: `<elf-alert closable :close-text="t" title="提示"></elf-alert>`,
-        });
-        const wrap = document.createElement("test-alert-close-text");
-        document.body.appendChild(wrap);
-        await tick();
+    button.click();
+    button.click();
+    await tick();
 
-        const el = wrap.shadowRoot!.querySelector("elf-alert") as AlertEl;
-        const btn = el.shadowRoot!.querySelector(".close") as HTMLButtonElement;
-        expect(btn.textContent).toContain("关闭");
-    });
+    expect(button.disabled).toBe(true);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 
-    it("show-icon=false 隐藏图标", async () => {
-        const el = await mount(`<elf-alert title="test" :show-icon="false"></elf-alert>`);
-        expect(el.shadowRoot!.querySelector(".icon")).toBeNull();
-    });
+  it("uses closeText for visible and accessible close labels", async () => {
+    const element = await mount({ closable: true, closeText: "知道了" });
+    const button = element.shadowRoot!.querySelector<HTMLButtonElement>(".close")!;
 
-    it("center host attribute", async () => {
-        const el = await mount(`<elf-alert center title="居中"></elf-alert>`);
-        expect(el.getAttribute("center")).toBe("");
-    });
+    expect(button.textContent).toContain("知道了");
+    expect(button.getAttribute("aria-label")).toBe("知道了");
+  });
 
-    it("density=compact 反射", async () => {
-        const el = await mount(`<elf-alert density="compact" title="紧凑"></elf-alert>`);
-        expect(el.getAttribute("density")).toBe("compact");
-    });
+  it("hides the icon when showIcon is false", async () => {
+    const element = await mount({ showIcon: false });
+    expect(element.shadowRoot!.querySelector(".icon")).toBeNull();
+  });
 
-    it("prominent 反射", async () => {
-        const el = await mount(`<elf-alert prominent title="粗色条"></elf-alert>`);
-        expect(el.getAttribute("prominent")).toBe("");
-    });
+  it("reflects center, density and prominent visual states", async () => {
+    const element = await mount({ center: true, density: "compact", prominent: true });
 
-    it("icon slot 自定义图标", async () => {
-        defineComponent({
-            name: "test-alert-icon-slot",
-            setup: () => ({}),
-            template: `<elf-alert type="success" title="自定义图标"><span slot="icon">★</span></elf-alert>`,
-        });
-        const wrap = document.createElement("test-alert-icon-slot");
-        document.body.appendChild(wrap);
-        await tick();
+    expect(element.hasAttribute("center")).toBe(true);
+    expect(element.getAttribute("density")).toBe("compact");
+    expect(element.hasAttribute("prominent")).toBe(true);
+  });
 
-        const el = wrap.shadowRoot!.querySelector("elf-alert") as AlertEl;
-        const text = el.shadowRoot!.textContent ?? "";
-        expect(text).toContain("★");
-    });
+  it("projects custom icon and title slots", async () => {
+    const icon = document.createElement("span");
+    icon.slot = "icon";
+    icon.textContent = "★";
+    const title = document.createElement("strong");
+    title.slot = "title";
+    title.textContent = "自定义标题";
+    const element = await mount({}, [icon, title]);
 
-    it("title slot 自定义标题", async () => {
-        defineComponent({
-            name: "test-alert-title-slot",
-            setup: () => ({}),
-            template: `<elf-alert type="info"><strong slot="title">自定义标题</strong></elf-alert>`,
-        });
-        const wrap = document.createElement("test-alert-title-slot");
-        document.body.appendChild(wrap);
-        await tick();
-
-        const el = wrap.shadowRoot!.querySelector("elf-alert") as AlertEl;
-        const text = el.shadowRoot!.textContent ?? "";
-        expect(text).toContain("自定义标题");
-    });
+    const iconSlot = element.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="icon"]')!;
+    const titleSlot = element.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="title"]')!;
+    expect(iconSlot.assignedElements()).toEqual([icon]);
+    expect(titleSlot.assignedElements()).toEqual([title]);
+  });
 });

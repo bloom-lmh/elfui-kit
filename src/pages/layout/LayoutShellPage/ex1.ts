@@ -9,9 +9,11 @@ const code1 = `<elf-layout>
   <elf-footer height="32px">底栏</elf-footer>
 </elf-layout>`;
 
+const script = `// 组合布局为静态结构，无需额外状态。`;
+
 const PageLayoutShellEx1 = defineHtml(html`
   <h2>经典后台布局</h2>
-  <elf-playground title="顶栏 + 侧栏 + 主内容 + 底栏" :code="code1">
+  <elf-playground title="顶栏 + 侧栏 + 主内容 + 底栏" :code=${code1} :script=${script}>
     <div
       style="width: 100%; height: 280px; border-radius: var(--elf-radius-md); overflow: hidden; background: var(--elf-bg-paper); box-shadow: var(--elf-shadow-1)"
     >

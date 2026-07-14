@@ -15,7 +15,16 @@ const flush = (): Promise<void> =>
     .then(() => Promise.resolve())
     .then(() => Promise.resolve());
 
-type GroupHost = HTMLElement & { modelValue?: unknown; disabled?: boolean; id?: string; ariaLabel?: string; name?: string };
+type GroupHost = HTMLElement & {
+  modelValue?: unknown;
+  disabled?: boolean;
+  id?: string;
+  ariaLabel?: string;
+  name?: string;
+  variant?: string;
+  options?: unknown[];
+  props?: Record<string, string>;
+};
 
 describe("elf-radio-group", () => {
   const mount = (): GroupHost => {
@@ -83,5 +92,28 @@ describe("elf-radio-group", () => {
     control.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, composed: true }));
     await flush();
     expect(group.modelValue).toBe("b");
+  });
+
+  it("renders declarative options with custom field mappings", async () => {
+    const group = mount();
+    group.variant = "button";
+    group.options = [
+      { text: "Standard", id: "standard" },
+      { text: "Express", id: "express", locked: true }
+    ];
+    group.props = { label: "text", value: "id", disabled: "locked" };
+    await flush();
+
+    const radios = group.shadowRoot!.querySelectorAll("elf-radio");
+    expect(radios).toHaveLength(2);
+    expect(radios[0]!.hasAttribute("data-button")).toBe(true);
+    expect(radios[0]!.shadowRoot!.textContent).toContain("Standard");
+    expect(radios[1]!.hasAttribute("disabled")).toBe(true);
+
+    const onUpdate = vi.fn();
+    group.addEventListener("update:modelValue", onUpdate as unknown as EventListener);
+    (radios[0]!.shadowRoot!.querySelector(".control") as HTMLButtonElement).click();
+    await flush();
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe("standard");
   });
 });

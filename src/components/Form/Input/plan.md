@@ -158,19 +158,19 @@
 ## 差距与任务
 
 - [x] 2026-07-06 第一批深度对齐：补 `model-modifiers`、`formatter/parser`、`show-word-limit/word-limit-position/count-graphemes`、`clear-icon`、原生输入属性透传、hover/keydown/composition 事件、`prefix/suffix/prepend/append/password-icon` slots、`focus/blur/select/clear/input/ref/isComposing/passwordVisible` 暴露，并迁移组件模板为 `${...}`。
-- [ ] P0 补齐核心属性差距：`model-modifiers ^`、`minlength`、`show-word-limit`、`word-limit-position ^`、`clear-icon ^`、`formatter`、`parser`、`show-password`、`rows`、`autosize`、`autocomplete`、`max`、`min`、`step`、`resize`、`autofocus`、`form`、`aria-label ^ ^`、`tabindex`、`validate-event`、`input-style`、`label ^ ^`、`inputmode ^`、`count-graphemes ^`
-- [ ] P0 补齐事件差距：`keydown`、`mouseleave`、`mouseenter`、`compositionstart`、`compositionupdate`、`compositionend`
-- [ ] P1 补齐插槽/暴露方法：`prefix`、`suffix`、`prepend`、`append`、`password-icon ^`、`blur`、`clear`、`focus`、`input`、`ref`、`resizeTextarea`、`select`、`textarea`、`textareaStyle`、`isComposing ^`、`passwordVisible ^`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P0 补齐单行输入属性；`rows`、`autosize`、`resize` 明确由独立 `elf-textarea` 承担，避免在两个组件中维护同一套多行输入状态。
+- [x] P0 补齐事件：`keydown`、`mouseleave`、`mouseenter`、`compositionstart`、`compositionupdate`、`compositionend`。
+- [x] P1 补齐插槽和暴露方法，包括真实可用的 `focus` / `blur` 宿主代理。
+- [x] P1 对齐键盘、禁用、只读、清空、受控、IME、表单校验和无障碍路径。
+- [x] P2 页面案例已覆盖 Template / Script、格式化、插槽、原生属性和命令式焦点控制。
+- [x] P2 定向单测覆盖模型、格式化、IME、焦点、禁用、清空、插槽和原生属性。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 关键交互和边界状态有单测覆盖（17 tests）。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] `pnpm build` 通过；Input 定向测试 17/17 通过。
 
 ## 后续待细化
 

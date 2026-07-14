@@ -45,6 +45,8 @@ type InputHost = HTMLElement & {
   inputStyle?: string;
   countGraphemes?: (value: string) => number;
   input?: () => HTMLInputElement | null;
+  focus?: () => void;
+  blur?: () => void;
   select?: () => void;
   clear?: () => void;
 };
@@ -273,8 +275,10 @@ describe("elf-input", () => {
     await flush();
 
     const onInput = vi.fn();
+    const onUpdate = vi.fn();
     const onCompositionEnd = vi.fn();
     el.addEventListener("input", onInput as unknown as EventListener);
+    el.addEventListener("update:modelValue", onUpdate as unknown as EventListener);
     el.addEventListener("compositionend", onCompositionEnd as unknown as EventListener);
 
     const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
@@ -288,9 +292,10 @@ describe("elf-input", () => {
     await flush();
     expect(onCompositionEnd).toHaveBeenCalledTimes(1);
     expect(onInput).toHaveBeenCalledTimes(1);
+    expect((onUpdate.mock.calls[0][0] as CustomEvent).detail).toBe("拼");
   });
 
-  it("exposes input/select/clear", async () => {
+  it("exposes input/focus/blur/select/clear", async () => {
     const el = mount((node) => {
       node.modelValue = "abc";
       node.clearable = true;
@@ -301,6 +306,11 @@ describe("elf-input", () => {
     const selectSpy = vi.spyOn(input, "select").mockImplementation(() => undefined);
 
     expect(el.input?.()).toBe(input);
+    el.focus?.();
+    expect(el.shadowRoot!.activeElement).toBe(input);
+    el.blur?.();
+    expect(el.shadowRoot!.activeElement).not.toBe(input);
+
     el.select?.();
     expect(selectSpy).toHaveBeenCalledTimes(1);
 

@@ -17,7 +17,7 @@ const updateStatus = (event: Event): void => {
 };
 
 const code3 = `<elf-switch
-  :modelValue=\${status}
+  :modelValue.prop=\${status.value}
   active-value="enabled"
   inactive-value="disabled"
   inline-prompt
@@ -32,25 +32,25 @@ const code2 = `<elf-switch active-text="开" inactive-text="关" />`;
 
 const PageSwitchEx1 = defineHtml(html`
   <h2>基础</h2>
-  <elf-playground title="受控状态" :code="code1">
+  <elf-playground title="受控状态" :code=${code1}>
     <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
       <elf-switch
-        :modelValue="enabled"
+        :modelValue.prop=${enabled.value}
         label="接收系统通知"
-        @update:modelValue="updateEnabled"
+        @update:modelValue=${updateEnabled}
       ></elf-switch>
       <span slot="status" class="demo-state">{{ enabled ? "已开启" : "已关闭" }}</span>
     </div>
   </elf-playground>
 
   <h2>状态文字</h2>
-  <elf-playground title="开启与关闭文字" :code="code2">
+  <elf-playground title="开启与关闭文字" :code=${code2}>
     <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
       <elf-switch
-        :modelValue="textValue"
+        :modelValue.prop=${textValue.value}
         active-text="开"
         inactive-text="关"
-        @update:modelValue="updateText"
+        @update:modelValue=${updateText}
       ></elf-switch>
       <elf-switch active-text="开" inactive-text="关"></elf-switch>
     </div>
@@ -58,7 +58,7 @@ const PageSwitchEx1 = defineHtml(html`
   <h2>自定义值与内嵌提示</h2>
   <elf-playground title="自定义开关值与内嵌提示" :code=${code3}>
     <elf-switch
-      :modelValue=${status}
+      :modelValue.prop=${status.value}
       active-value="enabled"
       inactive-value="disabled"
       inline-prompt

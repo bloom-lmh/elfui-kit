@@ -4,10 +4,14 @@ export interface PageHeaderProps {
   icon: string;
 }
 
+export interface PageHeaderEmits {
+  back: [];
+}
+
 export interface PageHeaderSlots {
-  icon?: unknown;
-  title?: unknown;
-  content?: unknown;
-  extra?: unknown;
-  breadcrumb?: unknown;
+  icon?: () => unknown;
+  title?: () => unknown;
+  content?: () => unknown;
+  extra?: () => unknown;
+  breadcrumb?: () => unknown;
 }

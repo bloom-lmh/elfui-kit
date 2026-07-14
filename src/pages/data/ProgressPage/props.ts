@@ -35,7 +35,7 @@ const propsRows = [
 
 const PageProgressProps = defineHtml(
   html`<h2>API</h2>
-    <elf-props-table title="Props" :rows="propsRows"></elf-props-table>`
+    <elf-props-table title="Props" :rows.prop=${propsRows}></elf-props-table>`
 );
 
 export { PageProgressProps };

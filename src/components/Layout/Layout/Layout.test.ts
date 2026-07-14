@@ -13,19 +13,55 @@ afterEach(() => {
 const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
 
 describe("elf-layout", () => {
-  it("默认 direction=vertical（column）", async () => {
+  it("没有 Aside 时自动解析为 vertical", async () => {
     const el = document.createElement("elf-layout");
     document.body.appendChild(el);
     await tick();
     expect(el.shadowRoot!.querySelector("slot")).toBeTruthy();
+    expect(el.getAttribute("data-direction")).toBe("vertical");
   });
 
-  it("direction=horizontal 反射到 host", async () => {
+  it("direction=horizontal 解析到布局状态", async () => {
     const el = document.createElement("elf-layout");
     el.setAttribute("direction", "horizontal");
     document.body.appendChild(el);
     await tick();
     expect(el.getAttribute("direction")).toBe("horizontal");
+    expect(el.getAttribute("data-direction")).toBe("horizontal");
+  });
+
+  it("直接包含 Aside 时自动解析为 horizontal", async () => {
+    const el = document.createElement("elf-layout");
+    el.appendChild(document.createElement("elf-aside"));
+    el.appendChild(document.createElement("elf-main"));
+    document.body.appendChild(el);
+    await tick();
+    expect(el.getAttribute("data-direction")).toBe("horizontal");
+  });
+
+  it("显式 vertical 优先于 Aside 自动推断", async () => {
+    const el = document.createElement("elf-layout");
+    el.setAttribute("direction", "vertical");
+    el.appendChild(document.createElement("elf-aside"));
+    document.body.appendChild(el);
+    await tick();
+    expect(el.getAttribute("data-direction")).toBe("vertical");
+  });
+
+  it("slot 内容变化后重新推断方向", async () => {
+    const el = document.createElement("elf-layout");
+    document.body.appendChild(el);
+    await tick();
+    const slot = el.shadowRoot!.querySelector("slot")!;
+    el.appendChild(document.createElement("elf-aside"));
+    slot.dispatchEvent(new Event("slotchange"));
+    await tick();
+    expect(el.getAttribute("data-direction")).toBe("horizontal");
+
+    el.querySelector("elf-aside")!.remove();
+    slot.dispatchEvent(new Event("slotchange"));
+    await tick();
+    expect(el.getAttribute("data-direction")).toBe("vertical");
   });
 });
 

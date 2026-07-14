@@ -118,16 +118,16 @@
 
 ## 差距与任务
 
-- [ ] P0 补齐核心属性差距：`low-threshold`、`high-threshold`、`colors`、`disabled-void-color`、`icons`、`void-icon`、`disabled-void-icon`、`text-color`、`id`、`aria-label ^ ^`、`label ^ ^`
-- [ ] P0 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：`setCurrentValue`、`resetCurrentValue`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P0 补齐阈值、颜色、图标、禁用空态、文本颜色和无障碍标识属性。
+- [x] P0 复核 update/change/hover-change/clear payload 与清空时机。
+- [x] P1 补齐有边界约束的 `setCurrentValue` 与可恢复的 `resetCurrentValue`。
+- [x] P1 对齐箭头/Home/End 键、禁用/只读、清空、受控值、表单校验和 slider ARIA。
+- [x] P2 页面案例覆盖 Template / Script、半星、分段颜色图标、只读和受控状态。
+- [x] P2 定向单测覆盖阈值、hover、键盘、禁用、清空和命令式方法。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 关键交互和边界状态有单测覆盖（8 tests）。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] `pnpm build` 与 Rate 定向测试通过。

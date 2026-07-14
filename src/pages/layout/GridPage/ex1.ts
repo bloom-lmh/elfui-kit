@@ -21,9 +21,11 @@ const code2 = `<elf-grid gap="md" style="width: 100%">
   </elf-grid-item>
 </elf-grid>`;
 
+const script = `// span 表示子项占用的栅格列数。`;
+
 const PageGridEx1 = defineHtml(html`
   <h2>等分</h2>
-  <elf-playground title="2 列等分" :code="code1">
+  <elf-playground title="2 列等分" :code=${code1} :script=${script}>
     <elf-grid gap="md" style="width: 100%">
       <elf-grid-item span="6"
         ><div
@@ -43,7 +45,7 @@ const PageGridEx1 = defineHtml(html`
   </elf-playground>
 
   <h2>三等分</h2>
-  <elf-playground title="3 列" :code="code2">
+  <elf-playground title="3 列" :code=${code2} :script=${script}>
     <elf-grid gap="md" style="width: 100%">
       <elf-grid-item span="4"
         ><div

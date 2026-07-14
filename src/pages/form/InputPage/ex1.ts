@@ -5,7 +5,7 @@ const password = useRef("");
 
 const code1 = `<div style="width:280px">
   <elf-input
-    :modelValue=\${text}
+    :modelValue.prop=\${text.value}
     placeholder="请输入"
     @update:modelValue=\${onTextUpdate}
   />
@@ -22,7 +22,7 @@ const code2 = `<div style="width:240px;margin-bottom:8px">
   <elf-input
     type="password"
     show-password
-    :modelValue=\${password}
+    :modelValue.prop=\${password.value}
     placeholder="密码"
     @update:modelValue=\${onPasswordUpdate}
   />
@@ -56,7 +56,7 @@ const PageInputEx1 = defineHtml(html`
   <elf-playground title="text + v-model" :code=${code1} :script=${script1}>
     <div style="width:280px">
       <elf-input
-        :modelValue=${text}
+        :modelValue.prop=${text.value}
         placeholder="请输入"
         @update:modelValue=${onTextUpdate}
       ></elf-input>
@@ -70,7 +70,7 @@ const PageInputEx1 = defineHtml(html`
       <elf-input
         type="password"
         show-password
-        :modelValue=${password}
+        :modelValue.prop=${password.value}
         placeholder="密码"
         @update:modelValue=${onPasswordUpdate}
       ></elf-input>

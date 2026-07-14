@@ -44,9 +44,11 @@ const code3 = `<elf-card
   </template>
 </elf-card>`;
 
+const staticScript = `// 纯展示案例，无需额外状态。`;
+
 const PageCardEx2 = defineHtml(html`
   <h2>图片封面 + 叠加文字</h2>
-  <elf-playground title="image + overlay 属性" :code="code1">
+  <elf-playground title="image + overlay 属性" :code=${code1} :script=${staticScript}>
     <elf-card
       image="https://picsum.photos/360/180"
       image-height="180px"
@@ -66,7 +68,7 @@ const PageCardEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>水平布局</h2>
-  <elf-playground title="image-placement='left'" :code="code2">
+  <elf-playground title="image-placement='left'" :code=${code2} :script=${staticScript}>
     <elf-card
       image="https://picsum.photos/240/320"
       image-placement="left"
@@ -88,7 +90,7 @@ const PageCardEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>用户卡片（头像 + extra）</h2>
-  <elf-playground title="avatar + extra + filled" :code="code3">
+  <elf-playground title="avatar + extra + filled" :code=${code3} :script=${staticScript}>
     <elf-card
       variant="filled"
       avatar="https://i.pravatar.cc/40?img=3"

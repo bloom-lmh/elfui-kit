@@ -272,11 +272,12 @@
 
 :host([indicator-position="outside"]) {
   overflow: visible;
+  padding-bottom: 34px;
 }
 
 :host([indicator-position="outside"]) .indicators {
-  bottom: auto;
-  top: calc(100% + 10px);
+  top: auto;
+  bottom: 2px;
   background: var(--elf-bg-overlay);
   box-shadow: var(--elf-shadow-1);
 }

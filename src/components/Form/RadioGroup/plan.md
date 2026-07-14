@@ -123,19 +123,19 @@
 
 ## 差距与任务
 
-- [ ] P0 补齐核心属性差距：`value ^`、`label`、`border`、`validate-event`、`aria-label ^ ^`、`id`、`label ^ ^`、`options ^`、`props ^`、`type ^`
-- [ ] P0 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：当前粗扫未发现明显缺口，进入实现时复核默认插槽、命名插槽和 expose 方法。
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P0 补齐 label、校验、ARIA、按钮变体、颜色、声明式 `options` 和字段 `props` 映射。
+- [x] P0 复核 update/change payload，并保留 string/number/boolean/object 值类型。
+- [x] P1 默认插槽与声明式选项可并存，组契约不暴露内部状态。
+- [x] P1 对齐箭头键循环、禁用项跳过、受控同步、表单校验和 radiogroup 语义。
+- [x] P2 页面案例覆盖 Template / Script、按钮组和自定义字段 options。
+- [x] P2 定向测试验证嵌套 Custom Element 注入、字段映射、禁用和键盘路径。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 关键交互和边界状态有单测覆盖。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] `pnpm build` 与 Radio / RadioGroup 定向测试通过。
 
 ## 2026-07-13 delivered
 
@@ -145,7 +145,7 @@
 
 ## Remaining
 
-- [ ] Declarative `options`/`props` rendering and the separate RadioButton component remain a follow-up.
+- [x] Declarative `options` / `props` and the RadioButton appearance are implemented as a stable Group variant.
 
 ---
 

@@ -146,12 +146,14 @@
 - [x] P1 补齐事件差距：handleClick 已修复（disabled/loading 阻止 click 冒泡）。
 - [x] P1 补齐插槽/暴露方法：loading/icon/suffix-icon slot；defineExpose 暴露 size/type/disabled。
 - [x] P1 对齐交互行为：disabled/loading/noHover/block 状态完整。
-- [ ] P2 更新页面示例：已有基础示例，Template/Script 双视图后续统一刷新。
+- [x] P2 更新页面示例：全部案例已统一为 Template/Script 双视图，并校正展示源码与实际渲染内容。
 - [x] P2 补齐组件单测：25 条测试覆盖所有 props/flags/slots/expose/事件。
 
 ## 验收清单
 
 - [x] API props/types 与页面 PropsTable 同步。
 - [x] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例 Playground 后续统一刷新。
+- [x] 文档示例 Playground 已统一刷新。
 - [x] `pnpm build` 通过。
+
+2026-07-15 验收：Button 25 条定向测试通过；浏览器验证 37 个按钮、12 组 Template/Script、禁用及 loading 状态均正常，控制台无错误。

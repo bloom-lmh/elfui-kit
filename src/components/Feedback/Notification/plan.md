@@ -11,5 +11,10 @@
 
 ## Follow-up
 
-- [ ] P1 Add a safe rich-content renderer only after defining a trusted-content policy; `dangerouslyUseHTMLString` will not be added as an unbounded HTML injection path.
-- [ ] P2 Add browser visual regression coverage for all four corners and large close labels.
+- [x] P1 Add a safe rich-content renderer only after defining a trusted-content policy; the API accepts trusted DOM nodes/factories while HTML strings remain plain text.
+- [x] P2 Add browser visual regression coverage for all four corners and large close labels.
+
+## 2026-07-15 acceptance
+
+- [x] Added trusted DOM content and injection-regression tests, fixed non-functional position demo bindings, and added a safe-rich-content example.
+- [x] Passed 10 focused tests and the production build; real-browser verification rendered all four corners, an adaptive `关闭` label, and an interactive DOM action with no console errors.

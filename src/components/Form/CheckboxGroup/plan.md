@@ -7,5 +7,5 @@
 
 ## Follow-up
 
-- [ ] P1 Add declarative `options` rendering after validating nested custom-element injection in macro repeated templates.
-- [ ] P2 Add browser visual regression coverage for wrapped groups and disabled child states.
+- [x] P1 Add declarative `options` / `props` rendering with typed value unwrapping, verified through nested Custom Element tests.
+- [x] P2 Verify button groups, disabled children and interactive model updates in a real browser with zero console errors.

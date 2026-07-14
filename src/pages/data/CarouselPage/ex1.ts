@@ -46,6 +46,17 @@ const code5 = `<elf-carousel type="card" :autoplay=\${false} height="260px">
   </elf-carousel-item>
 </elf-carousel>`;
 
+const code6 = `<elf-carousel
+  indicator-position="outside"
+  arrow="always"
+  height="220px"
+  :autoplay=\${false}
+>
+  <div>分析</div>
+  <div>设计</div>
+  <div>交付</div>
+</elf-carousel>`;
+
 const PageCarouselEx1 = defineHtml(html`
   <h2>基础滑动</h2>
   <elf-playground title="4 张图片、自动轮播与圆形箭头" :code=${code1}>
@@ -120,6 +131,22 @@ const PageCarouselEx1 = defineHtml(html`
       <div style="height:100%;display:grid;place-items:center;background:#2563eb;color:white">第一屏</div>
       <div style="height:100%;display:grid;place-items:center;background:#7c3aed;color:white">第二屏</div>
       <div style="height:100%;display:grid;place-items:center;background:#db2777;color:white">第三屏</div>
+    </elf-carousel>
+  </elf-playground>
+
+  <h2>外置指示器</h2>
+  <elf-playground title="指示器独立占位，不覆盖轮播内容" :code=${code6}>
+    <elf-carousel
+      indicator-position="outside"
+      arrow="always"
+      height="220px"
+      :autoplay=${false}
+      radius="16px"
+      style="width:100%;max-width:800px"
+    >
+      <div style="height:100%;display:grid;place-items:center;background:#0f766e;color:#fff;font-size:28px">分析</div>
+      <div style="height:100%;display:grid;place-items:center;background:#7c3aed;color:#fff;font-size:28px">设计</div>
+      <div style="height:100%;display:grid;place-items:center;background:#db2777;color:#fff;font-size:28px">交付</div>
     </elf-carousel>
   </elf-playground>
 

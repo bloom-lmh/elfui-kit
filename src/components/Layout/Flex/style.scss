@@ -20,6 +20,12 @@
   min-height: 100%;
 }
 
+:host([fill]) ::slotted(*) {
+  box-sizing: border-box;
+  flex: 0 0 var(--_fill-ratio, 100%);
+  max-width: var(--_fill-ratio, 100%);
+}
+
 :host([direction="row"]) {
   --_dir: row;
 }
@@ -73,20 +79,4 @@
 }
 :host([wrap="nowrap"]) {
   --_wrap: nowrap;
-}
-
-:host([gap="xs"]) {
-  --_gap: var(--elf-space-1);
-}
-:host([gap="sm"]) {
-  --_gap: var(--elf-space-2);
-}
-:host([gap="md"]) {
-  --_gap: var(--elf-space-4);
-}
-:host([gap="lg"]) {
-  --_gap: var(--elf-space-6);
-}
-:host([gap="xl"]) {
-  --_gap: var(--elf-space-8);
 }

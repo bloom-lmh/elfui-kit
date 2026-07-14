@@ -13,6 +13,7 @@ import { Divider } from "./Divider/index";
 import { Empty } from "./Empty/index";
 import { Image } from "./Image/index";
 import { InfiniteScroll } from "./InfiniteScroll/index";
+import { registerInfiniteScrollDirective } from "./InfiniteScroll/directive";
 import { Pagination } from "./Pagination/index";
 import { Progress } from "./Progress/index";
 import { Result } from "./Result/index";
@@ -48,3 +49,15 @@ registerComponents(
   Tree,
   Watermark
 );
+
+registerInfiniteScrollDirective();
+
+export { infiniteScrollDirective, registerInfiniteScrollDirective } from "./InfiniteScroll/directive";
+export type {
+  InfiniteScrollDirectiveHandler,
+  InfiniteScrollDirectiveOptions,
+  InfiniteScrollDirectiveValue,
+  InfiniteScrollEmits,
+  InfiniteScrollProps,
+  InfiniteScrollSlots
+} from "./InfiniteScroll/types";

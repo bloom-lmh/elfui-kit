@@ -28,9 +28,11 @@ const code3 = `<elf-flex wrap gap="md" align="stretch" fill>
   <article style="flex:1 1 220px">统计卡片</article>
 </elf-flex>`;
 
+const script = `// justify、align、wrap 和 fill 均可独立组合。`;
+
 const PageFlexEx2 = defineHtml(html`
   <h2>主轴对齐</h2>
-  <elf-playground title="justify" :code="code1">
+  <elf-playground title="justify" :code=${code1} :script=${script}>
     <div style="width: 100%; display: flex; flex-direction: column; gap: 8px">
       <elf-flex justify="flex-start" style="background: var(--elf-bg-overlay); padding: 4px"
         ><elf-tag>flex-start</elf-tag></elf-flex
@@ -51,7 +53,7 @@ const PageFlexEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>交叉轴对齐</h2>
-  <elf-playground title="align" :code="code2">
+  <elf-playground title="align" :code=${code2} :script=${script}>
     <div style="width: 100%; display: flex; flex-direction: column; gap: 8px">
       <elf-flex
         align="flex-start"
@@ -81,7 +83,7 @@ const PageFlexEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>响应式换行</h2>
-  <elf-playground title="类似 Vuetify 的流式卡片行" :code=${code3}>
+  <elf-playground title="类似 Vuetify 的流式卡片行" :code=${code3} :script=${script}>
     <elf-flex wrap gap="md" align="stretch" fill style="width:100%">
       <article style="flex:1 1 220px;padding:20px;border:1px solid var(--elf-border);border-radius:14px;background:var(--elf-bg-paper)"><small style="color:var(--elf-text-secondary)">今日访问</small><strong style="display:block;margin-top:8px;font-size:28px">12,480</strong></article>
       <article style="flex:1 1 220px;padding:20px;border:1px solid var(--elf-border);border-radius:14px;background:var(--elf-bg-paper)"><small style="color:var(--elf-text-secondary)">活跃项目</small><strong style="display:block;margin-top:8px;font-size:28px">36</strong></article>

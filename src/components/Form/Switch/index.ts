@@ -1,11 +1,15 @@
 import {
   defineEmits,
+  defineExpose,
   defineProps,
   defineStyle,
   html,
+  useHost,
   useHostAttr,
   useHostCssVar,
   useHostFlag,
+  useRef,
+  useTemplateRef,
   defineHtml
 } from "elfui";
 
@@ -25,6 +29,8 @@ const props = defineProps<SwitchProps>({
   inactiveText: { type: String, default: "" },
   activeIcon: { type: String, default: "" },
   inactiveIcon: { type: String, default: "" },
+  activeActionIcon: { type: String, default: "" },
+  inactiveActionIcon: { type: String, default: "" },
   label: { type: String, default: "" },
   labelPosition: { type: String, default: "end" },
   activeValue: { type: null, default: true },
@@ -52,6 +58,10 @@ const ctl = useFormControl<SwitchValue>(props, emit, {
 });
 const fi = useFormItem(() => props.size as string);
 const isDisabled = useDisabled(() => Boolean(props.disabled || props.loading));
+const host = useHost();
+const trackRef = useTemplateRef<HTMLElement>("track");
+
+const slotVersion = useRef(0);
 
 const tokenColor = (value: string): string => {
   const color = String(value || "primary");
@@ -68,6 +78,17 @@ const width = (): string | null => {
   const value = String(props.width).trim();
   return /^\d+(?:\.\d+)?$/.test(value) ? `${value}px` : value;
 };
+
+const hasNamedSlot = (name: string): boolean => {
+  void slotVersion.value;
+  return Boolean(host.querySelector(`[slot="${name}"]`));
+};
+
+const hasActiveAction = (): boolean =>
+  Boolean(props.activeActionIcon || props.activeIcon || hasNamedSlot("active-action"));
+
+const hasInactiveAction = (): boolean =>
+  Boolean(props.inactiveActionIcon || props.inactiveIcon || hasNamedSlot("inactive-action"));
 
 useHostFlag("data-checked", checked);
 useHostFlag("data-loading", () => Boolean(props.loading));
@@ -98,13 +119,19 @@ const onKeyDown = (event: KeyboardEvent): void => {
     void toggle();
   }
 };
+const touchSlots = (): void => slotVersion.set(slotVersion.value + 1);
+const focus = (): void =>
+  (trackRef.value ?? host.shadowRoot?.querySelector<HTMLElement>(".track"))?.focus();
 const ariaLabel = (): string => String(props.ariaLabel || props.label || props.activeText || "Switch");
+
+defineExpose({ focus });
 defineStyle(styles);
 
 const Switch = defineHtml<SwitchProps>(html`
   <span v-if=${props.inactiveText && !props.inlinePrompt} class="state-label" :class=${{ active: !checked() }} @click=${onClick}>${props.inactiveText}</span>
   <span class="body">
     <span
+      ref="track"
       class="track"
       part="track"
       role="switch"
@@ -119,8 +146,12 @@ const Switch = defineHtml<SwitchProps>(html`
       <span class="thumb"><span v-if=${props.loading} class="spinner" aria-hidden="true"></span></span>
       <span v-if=${props.inlinePrompt && !checked()} class="inline-content"><slot name="inactive">${props.inactiveIcon || props.inactiveText}</slot></span>
       <span v-if=${props.inlinePrompt && checked()} class="inline-content"><slot name="active">${props.activeIcon || props.activeText}</slot></span>
-      <span v-if=${!props.inlinePrompt && !checked() && props.inactiveIcon} class="action-icon"><slot name="inactive-action">${props.inactiveIcon}</slot></span>
-      <span v-if=${!props.inlinePrompt && checked() && props.activeIcon} class="action-icon"><slot name="active-action">${props.activeIcon}</slot></span>
+      <span v-if=${!props.inlinePrompt && !checked() && hasInactiveAction()} class="action-icon">
+        <slot name="inactive-action" @slotchange=${touchSlots}>${props.inactiveActionIcon || props.inactiveIcon}</slot>
+      </span>
+      <span v-if=${!props.inlinePrompt && checked() && hasActiveAction()} class="action-icon">
+        <slot name="active-action" @slotchange=${touchSlots}>${props.activeActionIcon || props.activeIcon}</slot>
+      </span>
     </span>
     <span class="main-label" part="label" @click=${onClick}><slot>${props.label}</slot></span>
   </span>

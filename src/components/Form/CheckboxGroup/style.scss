@@ -10,3 +10,11 @@
   gap: var(--elf-space-3);
   align-items: center;
 }
+
+.variant-button {
+  gap: 0;
+
+  ::slotted(elf-checkbox) {
+    margin-left: -1px;
+  }
+}

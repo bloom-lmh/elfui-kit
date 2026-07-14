@@ -13,4 +13,9 @@
 
 - [ ] P1 `append-size-to`, popper styling, and `teleported` require a shared anchored-overlay primitive; native select intentionally remains in-tree.
 - [ ] P1 Support custom previous/next icon nodes after establishing the component icon rendering contract.
-- [ ] P2 Add browser visual regression coverage for compact, large, and wrapped layouts.
+- [x] P2 Add browser visual regression coverage for compact, large, and wrapped layouts.
+
+## 2026-07-15 visual acceptance
+
+- [x] Repaired controlled demo bindings and moved live state into the Playground header; added Script views and a dedicated 360px wrapped-layout example.
+- [x] Passed 8 focused tests and the production build; compact, large, and three-row wrapped layouts were screenshot-reviewed with no browser console errors.

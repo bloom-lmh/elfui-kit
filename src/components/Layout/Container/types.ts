@@ -11,3 +11,7 @@ export interface ContainerProps {
   padding: ContainerPadding;
   fluid: boolean;
 }
+
+export interface ContainerSlots {
+  default?: unknown;
+}

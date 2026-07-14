@@ -1,14 +1,15 @@
 import { registerComponents } from "elfui";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { Splitter } from "./index";
+import { Splitter, SplitterPanel } from "./index";
 
 beforeAll(() => {
-  registerComponents(Splitter);
+  registerComponents(Splitter, SplitterPanel);
 });
 
 afterEach(() => {
   document.body.innerHTML = "";
+  localStorage.clear();
 });
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 10));
@@ -19,6 +20,19 @@ interface SplitterEl extends HTMLElement {
   max?: number;
   vertical?: boolean;
   disabled?: boolean;
+  collapsible?: boolean;
+  resizable?: boolean;
+  storageKey?: string;
+}
+
+interface SplitterPanelEl extends HTMLElement {
+  size?: number;
+  min?: number;
+  max?: number;
+  collapsible?: boolean;
+  resizable?: boolean;
+  lazy?: boolean;
+  collapsed?: boolean;
 }
 
 describe("elf-splitter", () => {
@@ -203,5 +217,115 @@ describe("elf-splitter", () => {
     expect(bar.getAttribute("role")).toBe("separator");
     expect(bar.getAttribute("aria-valuenow")).toBe("50");
     expect(bar.hasAttribute("tabindex")).toBe(true);
+  });
+
+  it("uses SplitterPanel size and limits when modelValue is not explicitly bound", async () => {
+    const el = document.createElement("elf-splitter") as SplitterEl;
+    const first = document.createElement("elf-splitter-panel") as SplitterPanelEl;
+    first.slot = "first";
+    first.size = 38;
+    first.min = 15;
+    first.max = 72;
+    const second = document.createElement("elf-splitter-panel") as SplitterPanelEl;
+    second.slot = "second";
+    el.append(first, second);
+    document.body.appendChild(el);
+    await tick();
+
+    const bar = el.shadowRoot!.querySelector(".bar")!;
+    expect(el.style.getPropertyValue("--_splitter-size")).toBe("38%");
+    expect(bar.getAttribute("aria-valuemin")).toBe("15");
+    expect(bar.getAttribute("aria-valuemax")).toBe("72");
+  });
+
+  it("collapses and restores a collapsible panel", async () => {
+    const el = document.createElement("elf-splitter") as SplitterEl;
+    const first = document.createElement("elf-splitter-panel") as SplitterPanelEl;
+    first.slot = "first";
+    first.collapsible = true;
+    const second = document.createElement("elf-splitter-panel") as SplitterPanelEl;
+    second.slot = "second";
+    el.append(first, second);
+    document.body.appendChild(el);
+    await tick();
+
+    const collapseEvents: boolean[] = [];
+    const resizeStart = vi.fn();
+    el.addEventListener("collapse", (event) => collapseEvents.push((event as CustomEvent<boolean>).detail));
+    el.addEventListener("resize-start", resizeStart);
+    const button = el.shadowRoot!.querySelector<HTMLButtonElement>(".collapse-button")!;
+    button.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 7 }));
+    expect(resizeStart).not.toHaveBeenCalled();
+    button.click();
+    await tick();
+
+    expect(el.style.getPropertyValue("--_splitter-size")).toBe("0%");
+    expect(first.hasAttribute("collapsed")).toBe(true);
+    expect(collapseEvents).toEqual([true]);
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".collapse-button")!.click();
+    await tick();
+    expect(el.style.getPropertyValue("--_splitter-size")).toBe("50%");
+    expect(first.hasAttribute("collapsed")).toBe(false);
+    expect(collapseEvents).toEqual([true, false]);
+  });
+
+  it("honors a panel-level non-resizable contract", async () => {
+    const el = document.createElement("elf-splitter") as SplitterEl;
+    const first = document.createElement("elf-splitter-panel") as SplitterPanelEl;
+    first.slot = "first";
+    first.resizable = false;
+    el.appendChild(first);
+    document.body.appendChild(el);
+    await tick();
+
+    const bar = el.shadowRoot!.querySelector<HTMLElement>(".bar")!;
+    expect(bar.getAttribute("tabindex")).toBe("-1");
+    expect(bar.getAttribute("aria-disabled")).toBe("true");
+    const update = vi.fn();
+    el.addEventListener("update:modelValue", update);
+    bar.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("activates lazy panel content only after expansion", async () => {
+    const panel = document.createElement("elf-splitter-panel") as SplitterPanelEl;
+    panel.lazy = true;
+    panel.collapsed = true;
+    panel.innerHTML = "<strong>Deferred panel</strong>";
+    document.body.appendChild(panel);
+    await tick();
+    expect(panel.shadowRoot!.querySelector("slot")).toBeNull();
+
+    panel.collapsed = false;
+    await tick();
+    expect(panel.shadowRoot!.querySelector("slot")).toBeTruthy();
+  });
+
+  it("loads and persists size with storage-key", async () => {
+    localStorage.setItem("splitter-layout", "64");
+    const el = document.createElement("elf-splitter") as SplitterEl;
+    el.storageKey = "splitter-layout";
+    document.body.appendChild(el);
+    await tick();
+    expect(el.style.getPropertyValue("--_splitter-size")).toBe("64%");
+
+    const bar = el.shadowRoot!.querySelector<HTMLElement>(".bar")!;
+    bar.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    expect(localStorage.getItem("splitter-layout")).toBe("69");
+  });
+
+  it("falls back to panel size when storage-key has no saved value", async () => {
+    const el = document.createElement("elf-splitter") as SplitterEl;
+    el.storageKey = "new-layout";
+    const panel = document.createElement("elf-splitter-panel") as SplitterPanelEl;
+    panel.slot = "first";
+    panel.size = 42;
+    el.appendChild(panel);
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.style.getPropertyValue("--_splitter-size")).toBe("42%");
+    expect(localStorage.getItem("new-layout")).toBeNull();
   });
 });

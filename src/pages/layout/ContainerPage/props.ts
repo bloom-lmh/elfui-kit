@@ -6,9 +6,14 @@ const propsRows = [
   { name: "fluid", type: "boolean", default: "false", desc: "取消最大宽度限制，填满父容器" }
 ];
 
+const slotsRows = [
+  { name: "default", type: "-", default: "-", desc: "容器内容" }
+];
+
 const PageContainerProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows" />
+  <elf-props-table title="Props" :rows=${propsRows} />
+  <elf-props-table title="Slots" :rows=${slotsRows} />
 `);
 
 export { PageContainerProps };

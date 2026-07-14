@@ -18,6 +18,10 @@ interface RateEl extends HTMLElement {
   colors?: string[];
   icons?: string[];
   voidIcon?: string;
+  disabled?: boolean;
+  readonly?: boolean;
+  setCurrentValue?: (value: number) => void;
+  resetCurrentValue?: () => void;
 }
 
 describe("elf-rate", () => {
@@ -88,5 +92,55 @@ describe("elf-rate", () => {
 
     expect(el.shadowRoot!.querySelectorAll(".star.is-full")).toHaveLength(2);
     expect(onHover).not.toHaveBeenCalled();
+  });
+
+  it("supports keyboard changes and slider accessibility", async () => {
+    const el = document.createElement("elf-rate") as RateEl;
+    el.modelValue = 2;
+    document.body.appendChild(el);
+    await tick();
+
+    const root = el.shadowRoot!.querySelector(".rate") as HTMLElement;
+    expect(root.getAttribute("role")).toBe("slider");
+    expect(root.getAttribute("aria-valuenow")).toBe("2");
+
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    root.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+    await tick();
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(3);
+  });
+
+  it("exposes bounded current-value controls", async () => {
+    const el = document.createElement("elf-rate") as RateEl;
+    el.modelValue = 2;
+    document.body.appendChild(el);
+    await tick();
+
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    el.setCurrentValue?.(99);
+    await tick();
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(5);
+
+    el.resetCurrentValue?.();
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll(".star.is-full")).toHaveLength(2);
+  });
+
+  it("blocks pointer and keyboard updates when disabled", async () => {
+    const el = document.createElement("elf-rate") as RateEl;
+    el.disabled = true;
+    el.modelValue = 2;
+    document.body.appendChild(el);
+    await tick();
+
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    (el.shadowRoot!.querySelectorAll(".star")[4] as HTMLButtonElement).click();
+    el.shadowRoot!.querySelector(".rate")!.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "End" })
+    );
+    expect(onUpdate).not.toHaveBeenCalled();
   });
 });

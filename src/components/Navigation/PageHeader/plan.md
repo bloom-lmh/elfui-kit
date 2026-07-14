@@ -15,8 +15,8 @@
 
 ## 后续差距
 
-- [ ] 对齐 breadcrumb slot、默认图标策略和导航示例。
-- [ ] 页面示例补 Template / Script 双视图和 PropsTable。
+- [x] 对齐 breadcrumb slot、默认图标策略和导航示例。
+- [x] 页面示例补 Template / Script 双视图和 PropsTable。
 
 ## 本轮案例页
 
@@ -24,3 +24,4 @@
 ## 本轮记录
 
 - [x] 2026-07-11 Navigation 第一阶段：补 `breadcrumb` slot、默认图标策略复核、breadcrumb 示例和 Props/Events/Slots 表，新增 slot 单测。
+- [x] 2026-07-15 验收：7 项组件测试通过；浏览器验证 2 个 PageHeader 案例、2 个 Script 视图和 `back` 事件状态，控制台无错误。

@@ -3,6 +3,7 @@ import { registerComponents } from "elfui";
 import { Notification as NotificationElement } from "./component";
 import type {
   NotificationAppendTarget,
+  NotificationContent,
   NotificationHandle,
   NotificationOptions,
   NotificationPosition,
@@ -11,6 +12,7 @@ import type {
 
 export type {
   NotificationAppendTarget,
+  NotificationContent,
   NotificationHandle,
   NotificationOptions,
   NotificationPosition,
@@ -86,7 +88,14 @@ const createNotification = (
   const baseOffset = Math.max(0, Number(opts.offset ?? 16) || 0);
   const target = resolveAppendTarget(opts.appendTo);
   const el = document.createElement("elf-notification") as NotificationEl;
-  el.message = opts.message;
+  const content = typeof opts.message === "function" ? opts.message() : opts.message;
+  if (content instanceof Node) {
+    el.message = "";
+    el.appendChild(content);
+  } else {
+    // Strings stay text-only; the service never parses them as HTML.
+    el.message = String(content ?? "");
+  }
   el.position = position;
   el.setAttribute("position", position);
   if (opts.title) {

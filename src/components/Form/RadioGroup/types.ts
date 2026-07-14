@@ -1,3 +1,15 @@
+export interface RadioGroupOptionProps {
+  label?: string;
+  value?: string;
+  disabled?: string;
+}
+
+export type RadioGroupOption =
+  | string
+  | number
+  | boolean
+  | Record<string, unknown>;
+
 export interface RadioGroupProps {
   modelValue: unknown;
   disabled: boolean;
@@ -10,4 +22,6 @@ export interface RadioGroupProps {
   ariaLabel: string;
   label: string;
   validateEvent: boolean;
+  options: RadioGroupOption[];
+  props: RadioGroupOptionProps;
 }

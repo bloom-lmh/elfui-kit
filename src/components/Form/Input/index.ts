@@ -154,15 +154,19 @@ const getValue = (e: Event): string => (e.target as HTMLInputElement).value;
 
 const shouldLazyUpdate = (): boolean => Boolean(props.modelModifiers?.lazy);
 
-const onInput = (e: Event): void => {
-  if (isComposing.value) return;
-  const value = parseText(getValue(e));
+const commitInputValue = (rawValue: string): void => {
+  const value = parseText(rawValue);
   if (shouldLazyUpdate()) {
     emit("input", value);
   } else {
     ctl.dispatchInput(value);
   }
   queueMicrotask(syncDisplayValue);
+};
+
+const onInput = (e: Event): void => {
+  if (isComposing.value) return;
+  commitInputValue(getValue(e));
 };
 
 const onChange = (e: Event): void => {
@@ -190,10 +194,15 @@ const onCompositionStart = (e: CompositionEvent): void => {
 const onCompositionUpdate = (e: CompositionEvent): void => emit("compositionupdate", e);
 
 const onCompositionEnd = (e: CompositionEvent): void => {
+  const value = getValue(e as unknown as Event);
   isComposing.set(false);
   emit("compositionend", e);
-  onInput(e as unknown as Event);
+  commitInputValue(value);
 };
+
+const focus = (): void => getInputEl()?.focus();
+
+const blur = (): void => getInputEl()?.blur();
 
 const clear = (): void => {
   ctl.setValue("");
@@ -265,7 +274,9 @@ const ariaText = (): string | null => props.ariaLabel || props.label || props.pl
 const passwordToggleText = (): string => (pwdVisible.value ? "Hide" : "Show");
 
 defineExpose({
+  blur,
   clear,
+  focus,
   input,
   ref,
   resizeTextarea,

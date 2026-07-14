@@ -296,7 +296,12 @@ const Carousel = defineHtml(html`
             </button>
         </div>
 
-        <div class="indicators" v-if=${showIndicators} role="tablist" aria-label="轮播页选择">
+        <div
+            class="indicators"
+            v-if=${showIndicators && props.indicatorPosition !== "outside"}
+            role="tablist"
+            aria-label="轮播页选择"
+        >
             <button
                 v-for="(dot, idx) in dots"
                 :key="idx"
@@ -312,6 +317,28 @@ const Carousel = defineHtml(html`
                 <span v-if=${props.indicatorType === "number"}>{{ idx + 1 }}</span>
             </button>
         </div>
+    </div>
+
+    <div
+        class="indicators"
+        v-if=${showIndicators && props.indicatorPosition === "outside"}
+        role="tablist"
+        aria-label="轮播页选择"
+    >
+        <button
+            v-for="(dot, idx) in dots"
+            :key="idx"
+            class="dot"
+            :class="{ 'is-active': idx === active }"
+            :data-index="idx"
+            :aria-label="'切换到第 ' + (idx + 1) + ' 张'"
+            :aria-current="idx === active ? 'true' : undefined"
+            type="button"
+            @click=${onIndicatorClick}
+            @mouseenter=${onIndicatorEnter}
+        >
+            <span v-if=${props.indicatorType === "number"}>{{ idx + 1 }}</span>
+        </button>
     </div>
 `);
 

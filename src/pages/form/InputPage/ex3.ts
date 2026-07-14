@@ -1,8 +1,9 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef, useTemplateRef } from "elfui";
 
 const amount = useRef("1200");
 const nickname = useRef("ElfUI");
 const phone = useRef("");
+const commandInput = useTemplateRef<HTMLElement>("commandInput");
 
 const currencyFormatter = (value: string): string =>
   value ? `$ ${value.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}` : "";
@@ -13,7 +14,7 @@ const countGraphemes = (value: string): number => Array.from(value).length;
 
 const code1 = `<div style="width:320px;margin-bottom:8px">
   <elf-input
-    :modelValue=\${amount}
+    :modelValue.prop=\${amount.value}
     :formatter.prop=\${currencyFormatter}
     :parser.prop=\${currencyParser}
     clearable
@@ -39,7 +40,7 @@ const onAmountUpdate = (event) => {
 
 const code2 = `<div style="width:320px;margin-bottom:8px">
   <elf-input
-    :modelValue=\${nickname}
+    :modelValue.prop=\${nickname.value}
     :countGraphemes.prop=\${countGraphemes}
     maxlength="12"
     show-word-limit
@@ -63,7 +64,7 @@ const onNicknameUpdate = (event) => {
 
 const code3 = `<div style="width:320px">
   <elf-input
-    :modelValue=\${phone}
+    :modelValue.prop=\${phone.value}
     id="phone"
     name="phone"
     aria-label="手机号"
@@ -82,6 +83,15 @@ const onPhoneUpdate = (event) => {
   phone.set(String(event.detail || ""));
 };`;
 
+const code4 = `<elf-input ref="commandInput" placeholder="使用按钮控制焦点" />
+<elf-button @click=\${focusInput}>聚焦</elf-button>
+<elf-button @click=\${blurInput}>失焦</elf-button>`;
+
+const script4 = `const commandInput = useTemplateRef("commandInput");
+
+const focusInput = () => commandInput.value?.focus();
+const blurInput = () => commandInput.value?.blur();`;
+
 const onAmountUpdate = (event: CustomEvent): void => {
   amount.set(String(event.detail || ""));
 };
@@ -94,12 +104,16 @@ const onPhoneUpdate = (event: CustomEvent): void => {
   phone.set(String(event.detail || ""));
 };
 
+const focusInput = (): void => commandInput.value?.focus();
+
+const blurInput = (): void => commandInput.value?.blur();
+
 const PageInputEx3 = defineHtml(html`
   <h2>格式化与插槽</h2>
   <elf-playground title="formatter / parser / prepend / append" :code=${code1} :script=${script1}>
     <div style="width:320px;margin-bottom:8px">
       <elf-input
-        :modelValue=${amount}
+        :modelValue.prop=${amount.value}
         :formatter.prop=${currencyFormatter}
         :parser.prop=${currencyParser}
         clearable
@@ -117,7 +131,7 @@ const PageInputEx3 = defineHtml(html`
   <elf-playground title="show-word-limit / count-graphemes" :code=${code2} :script=${script2}>
     <div style="width:320px;margin-bottom:8px">
       <elf-input
-        :modelValue=${nickname}
+        :modelValue.prop=${nickname.value}
         :countGraphemes.prop=${countGraphemes}
         maxlength="12"
         show-word-limit
@@ -136,7 +150,7 @@ const PageInputEx3 = defineHtml(html`
   <elf-playground title="id / name / aria-label / inputmode" :code=${code3} :script=${script3}>
     <div style="width:320px">
       <elf-input
-        :modelValue=${phone}
+        :modelValue.prop=${phone.value}
         id="phone"
         name="phone"
         aria-label="手机号"
@@ -147,6 +161,15 @@ const PageInputEx3 = defineHtml(html`
         placeholder="手机号"
         @update:modelValue=${onPhoneUpdate}
       ></elf-input>
+    </div>
+  </elf-playground>
+
+  <h2>命令式焦点</h2>
+  <elf-playground title="focus / blur" :code=${code4} :script=${script4}>
+    <div style="display:flex;align-items:center;gap:8px;width:420px">
+      <elf-input ref="commandInput" placeholder="使用按钮控制焦点"></elf-input>
+      <elf-button @click=${focusInput}>聚焦</elf-button>
+      <elf-button @click=${blurInput}>失焦</elf-button>
     </div>
   </elf-playground>
 `);

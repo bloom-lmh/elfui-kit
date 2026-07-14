@@ -11,10 +11,12 @@ const groupRows = [
   { name: "model-value / disabled / size", type: "unknown / boolean / sm | md | lg", default: "'' / false / md" },
   { name: "variant / fill / text-color", type: "default | button / string / string", default: "default / '' / ''" },
   { name: "id / name / aria-label / label", type: "string", default: "''" },
-  { name: "validate-event", type: "boolean", default: "true" }
+  { name: "validate-event", type: "boolean", default: "true" },
+  { name: "options", type: "Array<primitive | object>", default: "[]" },
+  { name: "props", type: "{ label?, value?, disabled? }", default: "{}" }
 ];
 
-const PageRadioEx4 = defineHtml(html`
+const PageRadioProps = defineHtml(html`
   <h2>API</h2>
   <elf-props-table title="elf-radio Props" :rows=${radioRows} />
   <elf-props-table title="elf-radio-group Props" :rows=${groupRows} />
@@ -24,4 +26,4 @@ const PageRadioEx4 = defineHtml(html`
   <p>Within a group, use Arrow keys to move and select the next enabled radio. The selected item receives tab focus.</p>
 `);
 
-export { PageRadioEx4 };
+export { PageRadioProps };

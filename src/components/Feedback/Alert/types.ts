@@ -7,14 +7,24 @@ export type AlertVariant = "tonal" | "elevated" | "outlined" | "plain" | "filled
 export type AlertDensity = "default" | "compact";
 
 export interface AlertProps {
-    type: AlertType;
-    variant: AlertVariant;
-    title: string;
-    description: string;
-    closable: boolean;
-    closeText: string;
-    showIcon: boolean;
-    center: boolean;
-    density: AlertDensity;
-    prominent: boolean;
+  type: AlertType;
+  variant: AlertVariant;
+  title: string;
+  description: string;
+  closable: boolean;
+  closeText: string;
+  showIcon: boolean;
+  center: boolean;
+  density: AlertDensity;
+  prominent: boolean;
+}
+
+export interface AlertEmits {
+  close: [];
+}
+
+export interface AlertSlots {
+  default?: () => unknown;
+  title?: () => unknown;
+  icon?: () => unknown;
 }

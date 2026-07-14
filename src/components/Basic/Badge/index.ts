@@ -1,9 +1,9 @@
-import { defineHtml, defineProps, defineStyle, html, useRef } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostAttr, useHostFlag } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { BadgeProps } from "./types";
+import type { BadgeProps, BadgeSlots } from "./types";
 
-export type { BadgeProps, BadgeType } from "./types";
+export type { BadgeOffset, BadgeProps, BadgeSlots, BadgeStyle, BadgeType } from "./types";
 
 const props = defineProps<BadgeProps>({
     value: { type: String, default: "" },
@@ -14,7 +14,7 @@ const props = defineProps<BadgeProps>({
     showZero: { type: Boolean, default: true },
     color: { type: String, default: "" },
     offset: { type: [Array, String], default: "" },
-    badgeStyle: { type: [Object, String], default: "" },
+    badgeStyle: { type: Object, default: () => ({}) },
     badgeClass: { type: String, default: "" },
     content: { type: [String, Number], default: "" },
 });
@@ -49,8 +49,7 @@ const offset = (): [number, number] => {
 };
 
 const toStyleObject = (style: BadgeProps["badgeStyle"]): Record<string, string | number> => {
-    if (!style || typeof style === "string") return {};
-    return style;
+    return style || {};
 };
 
 const badgeStyle = (): Record<string, string | number> => {
@@ -75,17 +74,28 @@ const shouldShow = (): boolean => {
     return true;
 };
 
-const Badge = defineHtml<BadgeProps>(html`
+useHostAttr("type", () => props.type);
+useHostFlag("is-dot", () => props.isDot);
+useHostFlag("hidden", () => props.hidden);
+
+defineStyle(styles);
+
+const Badge = defineHtml<BadgeProps, Record<string, never>, BadgeSlots>(html`
     <div class="badge-wrapper" part="wrapper">
         <slot></slot>
-        <sup v-if=${shouldShow()} :class=${["badge", props.badgeClass]} part="badge" :style=${badgeStyle()}>
+        <sup
+            v-if=${shouldShow()}
+            :class=${["badge", props.badgeClass]}
+            part="badge"
+            :style=${badgeStyle()}
+            role="status"
+            :aria-label=${props.isDot ? "状态提示" : String(formatValue())}
+        >
             <span v-if=${!props.isDot}>
                 <slot name="content">${formatValue()}</slot>
             </span>
         </sup>
     </div>
 `);
-
-defineStyle(styles);
 
 export { Badge };

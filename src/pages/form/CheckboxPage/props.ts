@@ -17,19 +17,32 @@ const groupRows = [
   { name: "model-value", type: "unknown[]", default: "[]", desc: "Selected values" },
   { name: "disabled", type: "boolean", default: "false", desc: "Disable all children" },
   { name: "min / max", type: "number", default: "0 / Infinity", desc: "Selection bounds" },
-  { name: "aria-label", type: "string", default: "''", desc: "Group label" }
+  { name: "aria-label", type: "string", default: "''", desc: "Group label" },
+  { name: "variant / fill / text-color", type: "default | button / string / string" },
+  { name: "options", type: "Array<primitive | object>", default: "[]" },
+  { name: "props", type: "{ label?, value?, disabled? }", default: "{}" }
 ];
 
-const PageCheckboxEx4 = defineHtml(html`
+const stateCode = `<elf-checkbox
+  true-value="enabled"
+  false-value="disabled"
+  border
+  aria-label="启用通知"
+  label="通知"
+/>
+<elf-checkbox indeterminate label="全选" />
+<elf-checkbox disabled label="不可用" />`;
+
+const PageCheckboxProps = defineHtml(html`
   <h2>State mappings and accessibility</h2>
-  <elf-playground title="Use true-value / false-value for non-boolean state">
+  <elf-playground title="Use true-value / false-value for non-boolean state" :code=${stateCode}>
     <elf-checkbox true-value="enabled" false-value="disabled" border aria-label="Enable notifications" label="Notifications" />
     <elf-checkbox indeterminate label="Select all" />
     <elf-checkbox disabled label="Unavailable" />
   </elf-playground>
   <h2>API</h2>
-  <elf-props-table title="elf-checkbox Props" :rows="propsRows" />
-  <elf-props-table title="elf-checkbox-group Props" :rows="groupRows" />
+  <elf-props-table title="elf-checkbox Props" :rows=${propsRows} />
+  <elf-props-table title="elf-checkbox-group Props" :rows=${groupRows} />
 `);
 
-export { PageCheckboxEx4 };
+export { PageCheckboxProps };

@@ -7,11 +7,11 @@ export type TagVariant = "filled" | "light" | "outlined";
 export type TagEffect = "dark" | "light" | "plain";
 
 export interface TagProps {
-  type: TagColor;
-  color: TagColor;
+  type: TagColor | "";
+  color: string;
   size: TagSize;
   variant: TagVariant;
-  effect: TagEffect;
+  effect: TagEffect | "";
   closable: boolean;
   round: boolean;
   disabled: boolean;
@@ -26,3 +26,7 @@ export type TagEmits = {
   change: [checked: boolean];
   "update:checked": [checked: boolean];
 };
+
+export interface TagSlots {
+  default?: unknown;
+}

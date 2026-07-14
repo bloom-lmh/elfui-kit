@@ -66,8 +66,8 @@
 }
 
 :host([data-checked]) .box {
-  background: var(--elf-primary);
-  border-color: var(--elf-primary);
+  background: var(--_checkbox-fill, var(--elf-primary));
+  border-color: var(--_checkbox-fill, var(--elf-primary));
 
   &::after {
     transform: translate(-50%, -50%) scale(1);
@@ -76,8 +76,8 @@
 
 // 半选标记（横线）
 :host([data-indeterminate]) .box {
-  background: var(--elf-primary);
-  border-color: var(--elf-primary);
+  background: var(--_checkbox-fill, var(--elf-primary));
+  border-color: var(--_checkbox-fill, var(--elf-primary));
 
   &::after {
     background-image: none;
@@ -96,4 +96,30 @@
 
 .label {
   line-height: 1;
+}
+
+:host([data-button]) {
+  min-height: 32px;
+  padding: 0 var(--elf-space-3);
+  border: 1px solid var(--elf-border);
+  border-radius: 0;
+}
+
+:host([data-button]:first-of-type) {
+  border-radius: var(--elf-radius-sm) 0 0 var(--elf-radius-sm);
+}
+
+:host([data-button]:last-of-type) {
+  border-radius: 0 var(--elf-radius-sm) var(--elf-radius-sm) 0;
+}
+
+:host([data-button]) .box {
+  display: none;
+}
+
+:host([data-button][data-checked]) {
+  z-index: 1;
+  border-color: var(--_checkbox-fill, var(--elf-primary));
+  background: var(--_checkbox-fill, var(--elf-primary));
+  color: var(--_checkbox-text-color, white);
 }

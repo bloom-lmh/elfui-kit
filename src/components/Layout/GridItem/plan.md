@@ -1,97 +1,35 @@
 # GridItem Element Plus API 对标计划
 
-生成时间：2026-07-05
+更新时间：2026-07-15
 
 ## 对标定位
 
-- ElfUI 组件目录：`Layout/GridItem`
-- Element Plus 文档：`layout.md`
-- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
+- ElfUI 组件：`Layout/GridItem`，对应 Element Plus `Col` 的子项职责。
+- 支持 24 以内的 `span`、`offset`、`push`、`pull` 与 `xs / sm / md / lg / xl`。
+- 采用固定 Custom Element 标签，动态 `tag` 与 ElfUI 的注册模型不兼容。
+- 行级 `gutter`、`justify`、`align` 由父级 `Grid` 负责。
 
-## Element Plus API 摘要
+## 完成情况
 
-### layout.md
+- [x] 补齐 `span`、`offset`、`push`、`pull`。
+- [x] 补齐 `xs`、`sm`、`md`、`lg`、`xl`，支持数字和 `{ span, offset, push, pull }` 对象。
+- [x] 响应式值按 base → xs → sm → md → lg → xl 继承，未声明字段保持前一断点状态。
+- [x] 输入统一截断并限制在 0～24；`span` 至少为 1，避免无效布局和除零。
+- [x] 默认插槽完成类型声明；无组件事件和 expose 方法。
+- [x] Props、类型导出、PropsTable 和独立案例同步。
+- [x] 新增 offset、push、pull 和响应式断点案例，均提供 Template / Script 双视图。
 
-#### Row API
+## 架构说明
 
-- `gutter`
-- `justify`
-- `align`
-- `tag`
-- `default`
+- Props 状态、派生断点、归一化方法、宿主绑定和模板按区块集中排列。
+- 每个断点只写入宿主私有 CSS 变量；静态媒体查询负责选择生效变量，不动态注入 `<style>`。
+- offset 由宿主占用总轨道、内部内容宽度与逻辑方向 margin 共同实现；push / pull 使用相对位移，不破坏 Grid 排版流。
+- Shadow DOM 内部容器暴露 `part="item"`，默认插槽保持内容组合能力。
 
-#### Row Attributes
+## 验收记录
 
-- `gutter`
-- `justify`
-- `align`
-- `tag`
-
-#### Row Slots
-
-- `default`
-
-#### Col API
-
-- `span`
-- `offset`
-- `push`
-- `pull`
-- `xs`
-- `sm`
-- `md`
-- `lg`
-- `xl`
-- `tag`
-- `default`
-
-#### Col Attributes
-
-- `span`
-- `offset`
-- `push`
-- `pull`
-- `xs`
-- `sm`
-- `md`
-- `lg`
-- `xl`
-- `tag`
-
-#### Col Slots
-
-- `default`
-
-## 当前 ElfUI API 快照
-
-### Props
-
-- 暂无记录
-
-### Events
-
-- 暂无记录
-
-### Slots
-
-- `default`
-
-### Exposes
-
-- 暂无记录
-
-## 差距与任务
-
-- [ ] P1 补齐核心属性差距：`gutter`、`justify`、`align`、`tag`、`span`、`offset`、`push`、`pull`、`xs`、`sm`、`md`、`lg`、`xl`
-- [ ] P1 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：当前粗扫未发现明显缺口，进入实现时复核默认插槽、命名插槽和 expose 方法。
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
-
-## 验收清单
-
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] 独立 `GridItem.test.ts` 6 项测试通过，覆盖基础值、边界归一化、offset、push/pull、响应式对象和动态更新。
+- [x] 与 `Grid.test.ts` 联合执行共 10 项测试通过。
+- [x] `pnpm build` 通过。
+- [x] Playwright 真实视口验证：760px 为 span 12；1100px 为 span 4 + offset 2，总占用 span 6。
+- [x] 页面截图完成，浏览器控制台 0 error。

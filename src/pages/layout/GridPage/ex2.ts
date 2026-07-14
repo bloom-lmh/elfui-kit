@@ -31,9 +31,11 @@ const code4 = `<elf-grid auto-fit min-column-width="240px" gap="md">
   <article>窄屏自动换行</article>
 </elf-grid>`;
 
+const script = `// gutter 是 gap 的 Element Plus 兼容别名，columns 可调整总列数。`;
+
 const PageGridEx2 = defineHtml(html`
   <h2>不等分</h2>
-  <elf-playground title="左侧 8 + 右侧 4" :code="code1">
+  <elf-playground title="左侧 8 + 右侧 4" :code=${code1} :script=${script}>
     <elf-grid gap="md" style="width: 100%">
       <elf-grid-item span="8"
         ><div
@@ -53,7 +55,7 @@ const PageGridEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>不同间距</h2>
-  <elf-playground title="gap" :code="code2">
+  <elf-playground title="gap" :code=${code2} :script=${script}>
     <div style="width: 100%; display: flex; flex-direction: column; gap: 8px">
       <elf-grid gap="xs"
         ><elf-grid-item span="3"
@@ -116,7 +118,7 @@ const PageGridEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>自定义列数</h2>
-  <elf-playground title="columns=24（精细栅格）" :code="code3">
+  <elf-playground title="columns=24（精细栅格）" :code=${code3} :script=${script}>
     <elf-grid columns="24" gap="sm" style="width: 100%">
       <elf-grid-item span="6"
         ><div style="background: var(--elf-bg-overlay); padding: 6px; text-align: center">
@@ -137,7 +139,7 @@ const PageGridEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>自动响应式网格</h2>
-  <elf-playground title="auto-fit / min-column-width" :code=${code4}>
+  <elf-playground title="auto-fit / min-column-width" :code=${code4} :script=${script}>
     <elf-grid auto-fit min-column-width="240px" gap="md" style="width:100%">
       <article style="min-height:120px;padding:20px;border-radius:14px;background:color-mix(in srgb,var(--elf-primary) 10%,var(--elf-bg-paper))"><strong>团队空间</strong><p style="color:var(--elf-text-secondary)">自动适应可用宽度。</p></article>
       <article style="min-height:120px;padding:20px;border-radius:14px;background:color-mix(in srgb,var(--elf-success) 10%,var(--elf-bg-paper))"><strong>发布状态</strong><p style="color:var(--elf-text-secondary)">无需手动计算 span。</p></article>

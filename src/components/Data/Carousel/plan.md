@@ -14,9 +14,10 @@
 
 - [x] P1 Add the `card` type only together with a dedicated CarouselItem layout contract; ordinary slotted nodes retain the standard layout.
 - [x] P1 Add a CarouselItem component so `label` and `name` are typed, can be selected imperatively, and supply slide metadata.
-- [ ] P2 Add browser-level visual regression coverage for vertical and outside-indicator layouts.
+- [x] P2 Add browser-level visual regression coverage for vertical and outside-indicator layouts.
 
 ## 2026-07-14 regression
 
 - [x] Restore card labels, guarantee 100% host width and explicit vertical height, and apply one rounded clipping contract to every layout.
 - [x] Verify basic, vertical, keyboard, and card-label cases in a real dark-theme browser session.
+- [x] 2026-07-15: added a dedicated outside-indicator example, fixed indicators being clipped by the carousel viewport, passed 10 focused tests, and verified vertical/outside screenshots with no browser console errors.

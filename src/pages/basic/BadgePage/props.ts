@@ -9,7 +9,7 @@ const propsRows = [
   { name: "show-zero", type: "boolean", default: "true" },
   { name: "color", type: "string", default: "''" },
   { name: "offset", type: "[number, number] | string", default: "''" },
-  { name: "badge-style", type: "object | string", default: "''" },
+  { name: "badge-style", type: "Record<string, string | number>", default: "{}" },
   { name: "badge-class", type: "string", default: "''" },
   { name: "content", type: "string | number", default: "''" }
 ];

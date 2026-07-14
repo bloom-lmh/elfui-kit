@@ -1,9 +1,20 @@
-import { defineEmits, defineHtml, defineProps, defineStyle, html, useHost, useHostAttr, useHostFlag } from "elfui";
+import {
+    defineEmits,
+    defineHtml,
+    defineProps,
+    defineStyle,
+    html,
+    useEffect,
+    useHost,
+    useHostAttr,
+    useHostFlag,
+    useRef,
+} from "elfui";
 
 import styles from "./style.scss?inline";
-import type { TagColor, TagEmits, TagProps, TagVariant } from "./types";
+import type { TagColor, TagEmits, TagProps, TagSlots, TagVariant } from "./types";
 
-export type { TagColor, TagEffect, TagEmits, TagProps, TagSize, TagVariant } from "./types";
+export type { TagColor, TagEffect, TagEmits, TagProps, TagSize, TagSlots, TagVariant } from "./types";
 
 const props = defineProps({
     type: { type: String, default: "" },
@@ -22,12 +33,27 @@ const props = defineProps({
 const emit = defineEmits<TagEmits>();
 const host = useHost();
 
-const colors = ["primary", "secondary", "success", "warning", "danger", "info"];
+// Reactive state
+const innerChecked = useRef(props.checked === true);
+const checkable = useRef(typeof props.checked === "boolean" || host.hasAttribute("checked"));
+
+const colors: TagColor[] = ["primary", "secondary", "success", "warning", "danger", "info"];
+
+useEffect(() => {
+    if (typeof props.checked !== "boolean") return;
+    checkable.set(true);
+    innerChecked.set(props.checked);
+});
 
 const normalizedColor = (): TagColor => {
     const type = String(props.type || "");
-    if (colors.includes(type)) return type as TagColor;
-    return colors.includes(String(props.color)) ? props.color : "primary";
+    if (colors.includes(type as TagColor)) return type as TagColor;
+    return colors.includes(props.color as TagColor) ? props.color as TagColor : "primary";
+};
+
+const customColor = (): string => {
+    const color = String(props.color || "").trim();
+    return color && !colors.includes(color as TagColor) ? color : "";
 };
 
 const normalizedVariant = (): TagVariant => {
@@ -36,8 +62,26 @@ const normalizedVariant = (): TagVariant => {
     return props.variant === "filled" || props.variant === "outlined" ? props.variant : "light";
 };
 
-const isCheckable = (): boolean => host.hasAttribute("checked") || typeof props.checked === "boolean";
-const isChecked = (): boolean => props.checked === true || host.hasAttribute("checked");
+const isCheckable = (): boolean => checkable.value;
+const isChecked = (): boolean => innerChecked.value;
+
+const tagStyle = (): Record<string, string> => {
+    const color = customColor();
+    return color
+        ? {
+            "--_color": color,
+            "--_bg": `color-mix(in srgb, ${color} 12%, transparent)`,
+        }
+        : {};
+};
+
+const toggleChecked = (): void => {
+    if (!isCheckable()) return;
+    const next = !isChecked();
+    innerChecked.set(next);
+    emit("update:checked", next);
+    emit("change", next);
+};
 
 const onClose = (event: Event): void => {
     event.stopPropagation();
@@ -47,13 +91,17 @@ const onClose = (event: Event): void => {
 const onClick = (event: MouseEvent): void => {
     if (props.disabled) return;
     emit("click", event);
-    if (!isCheckable()) return;
-    const next = !isChecked();
-    emit("update:checked", next);
-    emit("change", next);
+    toggleChecked();
 };
 
-useHostAttr("color", normalizedColor);
+const onKeyDown = (event: KeyboardEvent): void => {
+    if (props.disabled || !isCheckable()) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    (event.currentTarget as HTMLElement).click();
+};
+
+useHostAttr("color", () => customColor() || normalizedColor());
 useHostAttr("variant", normalizedVariant);
 useHostFlag("disable-transitions", () => Boolean(props.disableTransitions));
 useHostFlag("hit", () => Boolean(props.hit));
@@ -61,14 +109,25 @@ useHostFlag("checked", isChecked);
 
 defineStyle(styles);
 
-const Tag = defineHtml<TagProps, TagEmits>(html`
-    <span class="tag" part="tag" :aria-pressed=${isCheckable() ? String(isChecked()) : null} @click=${onClick}>
+const Tag = defineHtml<TagProps, TagEmits, TagSlots>(html`
+    <span
+        class="tag"
+        part="tag"
+        :style=${tagStyle()}
+        :role=${isCheckable() ? "button" : null}
+        :tabindex=${isCheckable() && !props.disabled ? "0" : null}
+        :aria-pressed=${isCheckable() ? String(isChecked()) : null}
+        :aria-disabled=${props.disabled ? "true" : null}
+        @click=${onClick}
+        @keydown=${onKeyDown}
+    >
         <slot></slot>
         <button
             v-if=${props.closable && !props.disabled}
             class="close"
+            part="close"
             @click=${onClose}
-            aria-label="Close"
+            aria-label="关闭标签"
             type="button"
         >
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">

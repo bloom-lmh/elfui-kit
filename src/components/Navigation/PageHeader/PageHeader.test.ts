@@ -16,21 +16,37 @@ const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolv
 interface PageHeaderEl extends HTMLElement {
   title?: string;
   content?: string;
+  icon?: string;
 }
+
+const mount = async (patch: Partial<PageHeaderEl> = {}): Promise<PageHeaderEl> => {
+  const element = document.createElement("elf-page-header") as PageHeaderEl;
+  Object.assign(element, patch);
+  document.body.appendChild(element);
+  await tick();
+  return element;
+};
 
 describe("elf-page-header", () => {
   it("renders content and emits back", async () => {
-    const el = document.createElement("elf-page-header") as PageHeaderEl;
-    el.title = "Back";
-    el.content = "Detail";
+    const el = await mount({ title: "Back", content: "Detail" });
     const onBack = vi.fn();
     el.addEventListener("back", onBack as EventListener);
-    document.body.appendChild(el);
-    await tick();
 
     expect(el.shadowRoot!.textContent).toContain("Detail");
-    (el.shadowRoot!.querySelector(".back") as HTMLButtonElement).click();
-    expect(onBack).toHaveBeenCalled();
+    const button = el.shadowRoot!.querySelector(".back") as HTMLButtonElement;
+    expect(button.getAttribute("aria-label")).toBe("Back");
+    button.click();
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders the reviewed default back icon and supports an icon prop", async () => {
+    const defaultElement = await mount();
+    expect(defaultElement.shadowRoot!.querySelector(".icon")?.textContent).toContain("‹");
+
+    defaultElement.remove();
+    const customElement = await mount({ icon: "←" });
+    expect(customElement.shadowRoot!.querySelector(".icon")?.textContent).toContain("←");
   });
 
   it("renders breadcrumb slot", async () => {
@@ -44,5 +60,18 @@ describe("elf-page-header", () => {
 
     const slot = el.shadowRoot!.querySelector('slot[name="breadcrumb"]') as HTMLSlotElement;
     expect(slot.assignedElements()[0]).toBe(breadcrumb);
+  });
+
+  it.each(["icon", "title", "content", "extra"])("projects the %s slot", async (name) => {
+    const element = document.createElement("elf-page-header") as PageHeaderEl;
+    const child = document.createElement("span");
+    child.slot = name;
+    child.textContent = `${name} content`;
+    element.appendChild(child);
+    document.body.appendChild(element);
+    await tick();
+
+    const slot = element.shadowRoot!.querySelector<HTMLSlotElement>(`slot[name="${name}"]`)!;
+    expect(slot.assignedElements()).toEqual([child]);
   });
 });

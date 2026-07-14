@@ -44,8 +44,10 @@ const group = inject(CHECKBOX_GROUP_KEY);
 
 const isDisabled = useDisabled(() => Boolean(props.disabled) || (group?.disabled ?? false));
 
+const checkboxValue = (): unknown => group?.resolveValue(props.value) ?? props.value;
+
 const checked = (): boolean => {
-  if (group) return group.modelValue.includes(props.value);
+  if (group) return group.modelValue.includes(checkboxValue());
   const mv = props.modelValue;
   if (Array.isArray(mv)) return mv.includes(props.value);
   if (props.checked !== undefined) return Boolean(props.checked);
@@ -58,6 +60,7 @@ useHostFlag("data-indeterminate", () => Boolean(props.indeterminate));
 
 useHostFlag("disabled", isDisabled);
 useHostFlag("bordered", () => Boolean(props.border));
+useHostFlag("data-button", () => group?.variant === "button");
 useHostAttr("size", () => String(props.size || group?.size || ""));
 
 const isInnerInteractiveClick = (e: Event): boolean => {
@@ -77,13 +80,14 @@ const toggle = (e?: Event): void => {
 
   if (group) {
     const cur = group.modelValue;
-    const idx = cur.indexOf(props.value);
+    const value = checkboxValue();
+    const idx = cur.indexOf(value);
     if (idx >= 0) {
       if (cur.length <= group.min) return;
       group.changeEvent(cur.filter((_, i) => i !== idx));
     } else {
       if (cur.length >= group.max) return;
-      group.changeEvent([...cur, props.value]);
+      group.changeEvent([...cur, value]);
     }
     return;
   }

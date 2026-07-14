@@ -11,10 +11,17 @@ afterEach(() => {
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
 
 interface StickyEl extends HTMLElement {
+  offset?: number | string;
+  position?: "top" | "bottom";
+  target?: string;
   top?: number | string;
   bottom?: number | string;
   zIndex?: number | string;
+  teleported?: boolean;
+  appendTo?: string | HTMLElement;
   disabled?: boolean;
+  update(): void;
+  updateRoot(): void;
 }
 
 const mount = async (patch: Partial<StickyEl> = {}): Promise<StickyEl> => {
@@ -41,10 +48,20 @@ describe("elf-sticky", () => {
     expect(el.style.getPropertyValue("--sticky-bottom")).toBe("16px");
   });
 
+  it("supports offset and position aliases with semantic reflection", async () => {
+    const el = await mount({ offset: 24, position: "bottom" });
+
+    expect(el.getAttribute("data-position")).toBe("bottom");
+    expect(el.style.getPropertyValue("--sticky-offset")).toBe("24px");
+    expect(el.style.getPropertyValue("--sticky-bottom")).toBe("24px");
+  });
+
   it("滚动到吸附位置时触发 change", async () => {
     const el = await mount({ top: 8 });
     const onChange = vi.fn();
+    const onScroll = vi.fn();
     el.addEventListener("change", onChange as EventListener);
+    el.addEventListener("scroll", onScroll as EventListener);
     el.getBoundingClientRect = () =>
       ({
         top: 4,
@@ -64,6 +81,7 @@ describe("elf-sticky", () => {
 
     expect(el.hasAttribute("data-stuck")).toBe(true);
     expect((onChange.mock.calls[0]![0] as CustomEvent).detail).toBe(true);
+    expect((onScroll.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual({ scrollTop: 0, fixed: true });
   });
 
   it("在内部滚动容器中按容器边界判断吸附状态", async () => {
@@ -108,5 +126,34 @@ describe("elf-sticky", () => {
 
     expect(el.hasAttribute("data-stuck")).toBe(true);
     expect((onChange.mock.calls[0]![0] as CustomEvent).detail).toBe(true);
+  });
+
+  it("exposes update methods and resolves a target container", async () => {
+    const target = document.createElement("section");
+    target.id = "sticky-boundary";
+    document.body.appendChild(target);
+    const el = await mount({ target: "#sticky-boundary" });
+
+    expect(typeof el.update).toBe("function");
+    expect(typeof el.updateRoot).toBe("function");
+    expect(() => el.updateRoot()).not.toThrow();
+    expect(() => el.update()).not.toThrow();
+  });
+
+  it("projects light DOM into appendTo when teleported", async () => {
+    const target = document.createElement("div");
+    target.id = "sticky-portal";
+    document.body.appendChild(target);
+    const el = document.createElement("elf-sticky") as StickyEl;
+    el.teleported = true;
+    el.appendTo = target;
+    el.innerHTML = "<button>保存</button>";
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+    await tick();
+
+    expect(target.querySelector(".elf-sticky-portal button")?.textContent).toBe("保存");
+    expect(el.hasAttribute("data-teleported")).toBe(true);
   });
 });

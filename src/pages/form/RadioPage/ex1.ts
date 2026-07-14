@@ -1,23 +1,37 @@
-import { defineHtml, html, useReactive } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
 
+const picked = useRef("a");
 
-const data = useReactive({ picked: "a" });
+const onUpdate = (event: CustomEvent): void => picked.set(String(event.detail));
 
-const code1 = `<elf-radio-group v-model="data.picked" name="radio-demo" aria-label="Choose an option">
+const code = `<elf-radio-group
+  :modelValue.prop=\${picked.value}
+  name="radio-demo"
+  aria-label="选择一个选项"
+  @update:modelValue=\${onUpdate}
+>
   <elf-radio value="a" label="A 选项" />
   <elf-radio value="b" label="B 选项" />
   <elf-radio value="c" label="C 选项" />
 </elf-radio-group>
-<span style="font-size:12px;color:var(--elf-text-secondary)">当前: {{ data.picked }}</span>`;
+<span slot="status">当前：{{ picked }}</span>`;
+
+const script = `const picked = useRef("a");
+const onUpdate = (event) => picked.set(String(event.detail));`;
 
 const PageRadioEx1 = defineHtml(html`
-  <elf-playground title="RadioGroup 组合" :code="code1">
-    <elf-radio-group v-model="data.picked" name="radio-demo" aria-label="Choose an option">
-      <elf-radio value="a" label="A 选项" />
-      <elf-radio value="b" label="B 选项" />
-      <elf-radio value="c" label="C 选项" />
+  <elf-playground title="RadioGroup 组合" :code=${code} :script=${script}>
+    <elf-radio-group
+      :modelValue.prop=${picked.value}
+      name="radio-demo"
+      aria-label="选择一个选项"
+      @update:modelValue=${onUpdate}
+    >
+      <elf-radio value="a" label="A 选项"></elf-radio>
+      <elf-radio value="b" label="B 选项"></elf-radio>
+      <elf-radio value="c" label="C 选项"></elf-radio>
     </elf-radio-group>
-    <span style="font-size:12px;color:var(--elf-text-secondary)">当前: {{ data.picked }}</span>
+    <span slot="status" class="demo-state">当前：{{ picked }}</span>
   </elf-playground>
 `);
 

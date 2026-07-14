@@ -23,6 +23,15 @@
     border-color var(--elf-transition-fast);
 }
 
+.tag[role="button"] {
+  cursor: pointer;
+}
+
+.tag:focus-visible {
+  outline: 2px solid var(--elf-focus-ring, var(--elf-primary));
+  outline-offset: 2px;
+}
+
 /* 尺寸 */
 :host([size="sm"]) .tag {
   font-size: 10px;

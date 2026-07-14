@@ -2,6 +2,7 @@
 
 ## 本轮记录
 - [x] 第二阶段：补 `offset`、`badge-style`、`badge-class`、`content` 与 `content` slot 基础能力和页面示例。
+- [x] 2026-07-15：完成 API、类型、案例与可访问性收口；修复原生 `hidden` 属性误隐藏宿主内容的问题，17 项组件测试、生产构建与浏览器冒烟均通过。
 
 生成时间：2026-07-05
 
@@ -56,17 +57,22 @@
 - `hidden`
 - `isDot`
 - `max`
+- `offset`
+- `badgeStyle`
+- `badgeClass`
+- `content`
 - `showZero`
 - `type`
 - `value`
 
 ### Events
 
-- 暂无记录
+- 无。Badge 是被动展示组件，不额外派发交互事件。
 
 ### Slots
 
 - `default`
+- `content`
 
 ### Exposes
 
@@ -74,16 +80,16 @@
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`offset ^`、`badge-style ^`、`badge-class ^`
-- [ ] P1 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：`content ^`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P1 补齐核心属性差距：`offset ^`、`badge-style ^`、`badge-class ^`
+- [x] P1 复核事件差距：Badge 为被动展示组件，与 Element Plus 一致，无自定义事件契约。
+- [x] P1 补齐插槽/暴露方法：`content ^`
+- [x] P1 对齐边界状态与无障碍属性：覆盖最大值、零值、圆点、隐藏、动态属性同步和 `role=status`；键盘、禁用、表单联动不适用于被动展示组件。
+- [x] P2 更新页面示例：Template / Script 双视图、动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
+- [x] P2 补齐组件单测、页面冒烟、类型导出和视觉回归截图。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 关键交互和边界状态有单测覆盖。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] `pnpm build` 通过；`pnpm test src/components/Basic/Badge/Badge.test.ts` 17/17 通过。

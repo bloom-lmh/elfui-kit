@@ -12,4 +12,9 @@
 
 - [ ] P1 Add virtual scrolling and `item-size` together with a measured-list primitive; simple DOM truncation would break keyboard and checkbox behavior.
 - [ ] P1 Add a typed render-content contract after scoped-slot behavior across repeated macro templates is established.
-- [ ] P2 Add browser visual regression coverage for long labels, custom panel footers, and narrow layouts.
+- [x] P2 Add browser visual regression coverage for long labels, custom panel footers, and narrow layouts.
+
+## 2026-07-15 visual acceptance
+
+- [x] Added a 520px container-query example with long labels and both panel footers; fixed zero-width shrinkage in the demo and added a vertical narrow-layout contract.
+- [x] Passed 8 focused tests and the production build; browser measured 520px with `flex-direction: column`, screenshot reviewed, console error count 0.

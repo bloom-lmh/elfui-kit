@@ -225,6 +225,7 @@ defineExpose({
 defineStyle(styles);
 
 const Transfer = defineHtml(html`
+  <div class="transfer">
   <section class="panel panel-left" aria-label="Source transfer panel">
     <div class="panel-header">
       <input type="checkbox" :checked=${leftAllChecked()} @change="toggleAll('left', $event)" aria-label="Select all source items" />
@@ -267,6 +268,7 @@ const Transfer = defineHtml(html`
     </div>
     <footer class="panel-footer"><slot name="right-footer"></slot></footer>
   </section>
+  </div>
 `);
 
 export { Transfer };

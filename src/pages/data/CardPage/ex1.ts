@@ -26,6 +26,8 @@ const handle = () => {
   clickCount.set(clickCount.value + 1);
 };`;
 
+const staticScript = `// 纯展示案例，无需额外状态。`;
+
 const clickCount = useRef(0);
 
 const handle = (): void => {
@@ -34,7 +36,7 @@ const handle = (): void => {
 
 const PageCardEx1 = defineHtml(html`
   <h2>基础</h2>
-  <elf-playground title="标题 + 副标题 + 内容" :code=${code1}>
+  <elf-playground title="标题 + 副标题 + 内容" :code=${code1} :script=${staticScript}>
     <elf-card title="卡片标题" subtitle="副标题说明" style="max-width:400px">
       <p>这是一张 elevated 变体卡片，默认带阴影。</p>
       <p style="color:var(--elf-text-secondary);margin-top:8px">支持标题、副标题、插槽内容。</p>
@@ -42,7 +44,7 @@ const PageCardEx1 = defineHtml(html`
   </elf-playground>
 
   <h2>MD3 三种变体</h2>
-  <elf-playground title="elevated / outlined / filled" :code=${code2}>
+  <elf-playground title="elevated / outlined / filled" :code=${code2} :script=${staticScript}>
     <div style="display:flex;gap:16px;width:100%;max-width:720px">
       <elf-card variant="elevated" title="Elevated" style="flex:1">
         <p style="font-size:13px;color:var(--elf-text-secondary)">Material Design 3 默认阴影卡片</p>
@@ -75,7 +77,7 @@ const PageCardEx1 = defineHtml(html`
   </elf-playground>
 
   <h2>Element Plus 兼容 API</h2>
-  <elf-playground title="header / footer / shadow" :code=${code4}>
+  <elf-playground title="header / footer / shadow" :code=${code4} :script=${staticScript}>
     <elf-card header="订单摘要" footer="共计 ¥128.00" shadow="hover" style="max-width:360px">
       <p style="color:var(--elf-text-secondary)">Header / footer prop 也可以分别由同名 slot 覆盖。</p>
     </elf-card>

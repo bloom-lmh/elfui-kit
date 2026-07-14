@@ -18,13 +18,33 @@ const flush = (): Promise<void> =>
 
 type TextareaHost = HTMLElement & {
   modelValue?: string;
+  modelModifiers?: { trim?: boolean; lazy?: boolean };
   placeholder?: string;
   disabled?: boolean;
   readonly?: boolean;
   rows?: number;
   showCount?: boolean;
   maxlength?: number;
+  minlength?: number;
   autosize?: boolean | { minRows?: number; maxRows?: number };
+  clearable?: boolean;
+  showWordLimit?: boolean;
+  wordLimitPosition?: string;
+  formatter?: (value: string) => string;
+  parser?: (value: string) => string;
+  autocomplete?: string;
+  autofocus?: boolean;
+  form?: string;
+  ariaLabel?: string;
+  tabindex?: number;
+  inputmode?: string;
+  id?: string;
+  name?: string;
+  focus?: () => void;
+  blur?: () => void;
+  clear?: () => void;
+  select?: () => void;
+  textarea?: () => HTMLTextAreaElement | null;
 };
 
 describe("elf-textarea", () => {
@@ -123,6 +143,98 @@ describe("elf-textarea", () => {
     await flush();
     const count = el.shadowRoot!.querySelector(".count");
     expect(count?.textContent).toContain("2/10");
+  });
+
+  it("supports formatter, parser, trim and outside word limit", async () => {
+    const el = mount();
+    el.modelValue = "1200";
+    el.formatter = (value) => `$${value}`;
+    el.parser = (value) => value.replace(/[^\d]/g, "");
+    el.modelModifiers = { trim: true };
+    el.showWordLimit = true;
+    el.wordLimitPosition = "outside";
+    el.maxlength = 10;
+    await flush();
+
+    const textarea = el.shadowRoot!.querySelector("textarea") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("$1200");
+    expect(el.shadowRoot!.querySelector(".count.outside")?.textContent?.trim()).toBe("4/10");
+
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as unknown as EventListener);
+    textarea.value = "$ 1300 ";
+    textarea.dispatchEvent(new Event("input"));
+    await flush();
+    expect((onUpdate.mock.calls[0][0] as CustomEvent).detail).toBe("1300");
+    expect(textarea.value).toBe("$1300");
+  });
+
+  it("supports clearable and imperative textarea actions", async () => {
+    const el = mount();
+    el.modelValue = "content";
+    el.clearable = true;
+    await flush();
+
+    const textarea = el.shadowRoot!.querySelector("textarea") as HTMLTextAreaElement;
+    const selectSpy = vi.spyOn(textarea, "select").mockImplementation(() => undefined);
+    expect(el.textarea?.()).toBe(textarea);
+
+    el.focus?.();
+    expect(el.shadowRoot!.activeElement).toBe(textarea);
+    el.blur?.();
+    expect(el.shadowRoot!.activeElement).not.toBe(textarea);
+    el.select?.();
+    expect(selectSpy).toHaveBeenCalledTimes(1);
+
+    const onClear = vi.fn();
+    el.addEventListener("clear", onClear as unknown as EventListener);
+    (el.shadowRoot!.querySelector(".clear") as HTMLButtonElement).click();
+    await flush();
+    expect(onClear).toHaveBeenCalledTimes(1);
+    expect(textarea.value).toBe("");
+  });
+
+  it("forwards native textarea attributes and accessible name", async () => {
+    const el = mount();
+    el.id = "bio";
+    el.name = "bio";
+    el.minlength = 4;
+    el.autocomplete = "off";
+    el.form = "profile";
+    el.ariaLabel = "Biography";
+    el.tabindex = 2;
+    el.inputmode = "text";
+    await flush();
+
+    const textarea = el.shadowRoot!.querySelector("textarea") as HTMLTextAreaElement;
+    expect(textarea.id).toBe("bio");
+    expect(textarea.name).toBe("bio");
+    expect(textarea.minLength).toBe(4);
+    expect(textarea.getAttribute("form")).toBe("profile");
+    expect(textarea.getAttribute("aria-label")).toBe("Biography");
+    expect(textarea.tabIndex).toBe(2);
+    expect(textarea.inputMode).toBe("text");
+  });
+
+  it("defers model updates while composing", async () => {
+    const el = mount();
+    await flush();
+
+    const onUpdate = vi.fn();
+    const onCompositionEnd = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as unknown as EventListener);
+    el.addEventListener("compositionend", onCompositionEnd as unknown as EventListener);
+    const textarea = el.shadowRoot!.querySelector("textarea") as HTMLTextAreaElement;
+
+    textarea.dispatchEvent(new Event("compositionstart"));
+    textarea.value = "拼音";
+    textarea.dispatchEvent(new Event("input"));
+    expect(onUpdate).not.toHaveBeenCalled();
+
+    textarea.dispatchEvent(new Event("compositionend"));
+    await flush();
+    expect(onCompositionEnd).toHaveBeenCalledTimes(1);
+    expect((onUpdate.mock.calls[0][0] as CustomEvent).detail).toBe("拼音");
   });
 
   it("focus / blur 事件", async () => {

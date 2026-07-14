@@ -11,8 +11,10 @@ const code2 = `<elf-page-header content="自定义插槽">
   </div>
 </elf-page-header>`;
 
+const script2 = `// 纯插槽组合案例，无需额外状态。`;
+
 const PagePageHeaderEx2 = defineHtml(html`
-<elf-playground title="slots" :code=${code2}>
+<elf-playground title="breadcrumb / icon / title / content / extra" :code=${code2} :script=${script2}>
       <elf-page-header content="自定义插槽">
         <span slot="breadcrumb">Home / Product / Detail</span>
         <span slot="icon">←</span>

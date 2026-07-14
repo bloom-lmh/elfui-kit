@@ -124,9 +124,6 @@ const colorOf = (item: RateViewItem): string => {
   return String(colors[index] || props.color || "var(--elf-warning)");
 };
 
-const charOf = (item: RateViewItem): string =>
-  stateOf(item) === "empty" ? String(props.voidCharacter || "☆") : String(props.character || "★");
-
 const preciseValue = (item: RateViewItem, event?: MouseEvent): number => {
   if (!props.allowHalf || !event) return item.score;
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();

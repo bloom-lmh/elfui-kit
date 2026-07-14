@@ -10,20 +10,39 @@
 //     <elf-footer>底部</elf-footer>
 //   </elf-layout>
 //
-// 默认 column 方向；含侧栏时手动指定 direction="horizontal"
+// 未显式设置方向时，直接包含 elf-aside 会自动切换为 horizontal。
 
-import { defineProps, defineStyle, html, defineHtml } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, onMount, useHost, useHostAttr, useRef } from "elfui";
 
 import styles from "./style.scss?inline";
+import type { LayoutDirection, LayoutProps, LayoutSlots } from "./types";
 
-export type { LayoutDirection, LayoutProps } from "./types";
+export type { LayoutDirection, LayoutProps, LayoutSlots } from "./types";
 
-const props = defineProps({
-  direction: { type: String, default: "vertical" }
+const props = defineProps<LayoutProps>({
+  direction: { type: String, default: "" }
 });
+
+// Reactive state
+const hasAside = useRef(false);
+const host = useHost();
+
+const syncChildren = (): void => {
+  hasAside.set(Array.from(host.children).some((child) => child.tagName.toLowerCase() === "elf-aside"));
+};
+
+const resolvedDirection = (): Exclude<LayoutDirection, ""> => {
+  if (props.direction === "horizontal" || props.direction === "vertical") return props.direction;
+  return hasAside.value ? "horizontal" : "vertical";
+};
+
+const onSlotChange = (): void => syncChildren();
+
+onMount(syncChildren);
+useHostAttr("data-direction", resolvedDirection);
 
 defineStyle(styles);
 
-const Layout = defineHtml(html`<slot></slot>`);
+const Layout = defineHtml<LayoutProps, Record<string, never>, LayoutSlots>(html`<slot @slotchange=${onSlotChange}></slot>`);
 
 export { Layout };

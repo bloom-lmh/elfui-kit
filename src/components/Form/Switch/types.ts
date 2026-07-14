@@ -13,6 +13,8 @@ export interface SwitchProps {
   inactiveText: string;
   activeIcon: string;
   inactiveIcon: string;
+  activeActionIcon: string;
+  inactiveActionIcon: string;
   label: string;
   labelPosition: SwitchLabelPosition;
   activeValue: SwitchValue;

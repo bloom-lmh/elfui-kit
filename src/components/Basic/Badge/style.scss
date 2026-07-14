@@ -1,5 +1,9 @@
 @use "../../../styles/reset";
 
+:host([hidden]) {
+  display: inline-flex !important;
+}
+
 // ───── host ─────────────────────────────────────────────
 :host {
   display: inline-flex;

@@ -34,12 +34,17 @@ const commute = [
   { timestamp: "18:00", title: "返回", content: "乘坐高铁返回北京", color: "primary", icon: "🚄" }
 ];
 
-const code = `<elf-timeline :items="items" mode="alternate" />`;
+const code = `<elf-timeline :items.prop=\${commute} mode="alternate" />`;
+
+const script = `const commute = [
+  { timestamp: "08:00", title: "出发", timestamp2: "08:30", title2: "到达", side: "both" },
+  { timestamp: "10:00", title: "抵达", content: "滨海新区办公室", color: "success", icon: "📍" }
+];`;
 
 const PageTimelineEx3 = defineHtml(html`
   <h2>出行时间线（双侧 + 单侧混用）</h2>
-  <elf-playground title="side='both' 混用单侧信息" :code="code">
-    <elf-timeline :items="commute" mode="alternate"></elf-timeline>
+  <elf-playground title="side='both' 混用单侧信息" :code=${code} :script=${script}>
+    <elf-timeline :items.prop=${commute} mode="alternate"></elf-timeline>
   </elf-playground>
 `);
 

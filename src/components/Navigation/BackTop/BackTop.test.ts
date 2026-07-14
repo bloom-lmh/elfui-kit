@@ -84,7 +84,7 @@ describe("elf-back-top", () => {
     await tick();
     await tick();
 
-    expect((onClick.mock.calls[0]![0] as CustomEvent).detail.scrollTop).toBe(160);
+    expect((onClick.mock.calls[0]![0] as CustomEvent).detail).toBeInstanceOf(MouseEvent);
     expect(scrollToMock).toHaveBeenCalledWith({ top: 0, behavior: "auto" });
     expect(target.scrollTop).toBe(0);
     expect(el.shadowRoot!.querySelector(".backtop")).toBeNull();
@@ -115,6 +115,32 @@ describe("elf-back-top", () => {
     await scrollTo(target, 140);
 
     expect(el.getAttribute("shape")).toBe("square");
+    expect(el.shadowRoot!.querySelector(".backtop")).toBeTruthy();
+  });
+
+  it("uses Element Plus compatible defaults and normalizes numeric strings", async () => {
+    const { el } = await mount();
+    expect(el.style.getPropertyValue("--backtop-right")).toBe("40px");
+    expect(el.style.getPropertyValue("--backtop-bottom")).toBe("40px");
+    expect(el.style.getPropertyValue("--backtop-size")).toBe("40px");
+
+    (el as BackTopEl & { right: string }).right = "64";
+    await tick();
+    expect(el.style.getPropertyValue("--backtop-right")).toBe("64px");
+  });
+
+  it("rebinds the scroll listener when target changes", async () => {
+    const { el, target } = await mount();
+    const next = document.createElement("div");
+    next.id = "next-scroll-box";
+    document.body.appendChild(next);
+    el.target = "#next-scroll-box";
+    await tick();
+    await tick();
+
+    await scrollTo(target, 200);
+    expect(el.shadowRoot!.querySelector(".backtop")).toBeNull();
+    await scrollTo(next, 200);
     expect(el.shadowRoot!.querySelector(".backtop")).toBeTruthy();
   });
 });

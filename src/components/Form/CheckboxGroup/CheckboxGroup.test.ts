@@ -19,6 +19,9 @@ type GroupHost = HTMLElement & {
   disabled?: boolean;
   min?: number;
   max?: number;
+  variant?: string;
+  options?: unknown[];
+  props?: Record<string, string>;
 };
 
 describe("elf-checkbox-group", () => {
@@ -100,5 +103,28 @@ describe("elf-checkbox-group", () => {
     await flush();
     // disabled 通过 provide 传给子 Checkbox，不反射到 host attribute
     expect(el.disabled).toBe(true);
+  });
+
+  it("renders declarative button options with custom field mappings", async () => {
+    const group = mount();
+    group.variant = "button";
+    group.options = [
+      { text: "Read", code: "read" },
+      { text: "Write", code: "write", locked: true }
+    ];
+    group.props = { label: "text", value: "code", disabled: "locked" };
+    await flush();
+
+    const checkboxes = group.shadowRoot!.querySelectorAll("elf-checkbox");
+    expect(checkboxes).toHaveLength(2);
+    expect(checkboxes[0]!.hasAttribute("data-button")).toBe(true);
+    expect(checkboxes[0]!.shadowRoot!.textContent).toContain("Read");
+    expect(checkboxes[1]!.hasAttribute("disabled")).toBe(true);
+
+    const onUpdate = vi.fn();
+    group.addEventListener("update:modelValue", onUpdate as unknown as EventListener);
+    (checkboxes[0]!.shadowRoot!.querySelector(".box") as HTMLElement).click();
+    await flush();
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["read"]);
   });
 });

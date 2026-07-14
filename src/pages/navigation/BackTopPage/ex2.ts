@@ -16,9 +16,12 @@ const code = `<elf-back-top
   @click=\${onClick}
 />`;
 
+const script = `const times = useRef(0);
+const onClick = () => times.set(times.value + 1);`;
+
 const PageBacktopEx2 = defineHtml(html`
   <h2>Custom style</h2>
-  <elf-playground title="Square shape / custom icon / exposed click state" :code=${code}>
+  <elf-playground title="Square shape / custom icon / exposed click state" :code=${code} :script=${script}>
     <div style="display:grid;gap:12px;width:100%;max-width:760px">
       <div style="color:var(--elf-text-secondary)">
         Click count: <strong style="color:var(--elf-primary)">{{ times }}</strong>

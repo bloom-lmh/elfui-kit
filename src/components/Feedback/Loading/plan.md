@@ -10,9 +10,10 @@
 
 ## 后续差距
 
-- [ ] 补齐 `v-loading` 指令、Loading service、custom svg、lock、body/fullscreen 行为。
+- [x] 补齐 `v-loading` 指令、Loading service、custom svg、lock、body/fullscreen 行为。
 
 ## 本轮案例页
 
 - [x] 新增独立展示页面，覆盖 Template / Script、局部受控、background 和 fullscreen 示例。
 - [x] 2026-07-14 增加 `spinner / dots / pulse / bars` 四种动效与卡片刷新案例，统一圆角遮罩和暗色主题。
+- [x] 2026-07-15 完成指令与 service 生命周期、局部/body/fullscreen 定位、并发滚动锁、自定义 SVG path、公开类型和 API 表；9 项专项测试及真实浏览器交互/截图通过，控制台无错误。

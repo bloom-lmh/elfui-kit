@@ -5,41 +5,63 @@
 //   <elf-alert type="success" title="操作成功" closable />
 //   <elf-alert type="danger" title="错误" description="详情..." />
 
-import { defineEmits, defineProps, defineStyle, html, useHostFlag, useRef, defineHtml } from "elfui";
+import {
+  defineEmits,
+  defineHtml,
+  defineProps,
+  defineStyle,
+  html,
+  useHostAttr,
+  useHostFlag,
+  useRef
+} from "elfui";
 
 import styles from "./style.scss?inline";
-import type { AlertProps } from "./types";
+import type { AlertEmits, AlertProps, AlertSlots } from "./types";
 
-export type { AlertDensity, AlertProps, AlertType, AlertVariant } from "./types";
+export type {
+  AlertDensity,
+  AlertEmits,
+  AlertProps,
+  AlertSlots,
+  AlertType,
+  AlertVariant
+} from "./types";
 
 const props = defineProps({
-    type: { type: String, default: "info" },
-    variant: { type: String, default: "tonal" },
-    title: { type: String, default: "" },
-    description: { type: String, default: "" },
-    closable: { type: Boolean, default: false },
-    closeText: { type: String, default: "" },
-    showIcon: { type: Boolean, default: true },
-    center: { type: Boolean, default: false },
-    density: { type: String, default: "default" },
-    prominent: { type: Boolean, default: false },
+  type: { type: String, default: "info" },
+  variant: { type: String, default: "tonal" },
+  title: { type: String, default: "" },
+  description: { type: String, default: "" },
+  closable: { type: Boolean, default: false },
+  closeText: { type: String, default: "" },
+  showIcon: { type: Boolean, default: true },
+  center: { type: Boolean, default: false },
+  density: { type: String, default: "default" },
+  prominent: { type: Boolean, default: false }
 }) as unknown as Readonly<AlertProps>;
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits<AlertEmits>(["close"]);
 
 const closed = useRef(false);
 const closing = useRef(false);
 
 useHostFlag("data-closing", () => closing.value);
 useHostFlag("data-closed", () => closed.value);
+useHostAttr("type", () => props.type);
+useHostAttr("variant", () => props.variant);
+useHostAttr("density", () => props.density);
+useHostFlag("center", () => props.center);
+useHostFlag("prominent", () => props.prominent);
 
 const onClose = (): void => {
-    closing.set(true);
-    emit("close");
-    setTimeout(() => {
-        closed.set(true);
-        closing.set(false);
-    }, 200);
+  if (closing.value || closed.value) return;
+  closing.set(true);
+  emit("close");
+  setTimeout(() => {
+    closed.set(true);
+    closing.set(false);
+  }, 200);
 };
 
 defineStyle(styles);
@@ -111,7 +133,14 @@ const Alert = defineHtml(html`
                 <slot>${props.description}</slot>
             </div>
         </div>
-        <button v-if=${props.closable} class="close" type="button" aria-label="关闭" @click=${onClose}>
+        <button
+            v-if=${props.closable}
+            class="close"
+            type="button"
+            :aria-label=${props.closeText || "关闭"}
+            :disabled=${closing}
+            @click=${onClose}
+        >
             <span v-if=${props.closeText}>${props.closeText}</span>
             <svg
                 v-else

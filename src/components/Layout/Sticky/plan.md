@@ -1,87 +1,37 @@
-# Sticky Element Plus API 对标计划
+# Sticky / Affix Element Plus API 对标计划
 
-生成时间：2026-07-05
+更新时间：2026-07-15
 
 ## 对标定位
 
-- ElfUI 组件目录：`Layout/Sticky`
-- Element Plus 文档：`affix.md`
-- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
+- ElfUI 组件：`Layout/Sticky`，对标 Element Plus `Affix`。
+- 2026-07-15 复核官方 API：`offset`、`position`、`target`、`z-index`、`teleported`、`append-to`、`change`、`scroll`、`update`、`updateRoot`。
+- 保留原有 `top`、`bottom` 和 `disabled` 作为 ElfUI 向后兼容与扩展能力。
 
-## Element Plus API 摘要
+## 完成情况
 
-### affix.md
+- [x] 补齐 `offset` 和 `position="top | bottom"`，并保留 top / bottom 旧写法。
+- [x] 补齐 `target`，支持在当前 Shadow Root 和 document 中解析 CSS 选择器。
+- [x] 补齐 `teleported` 与 `append-to`，支持选择器或 HTMLElement 目标。
+- [x] Teleport 使用 `projectLightDom` 移动原始节点，保留事件监听、组件状态和表单能力。
+- [x] 补齐 `scroll`，事件详情为 `{ scrollTop, fixed }`；`change` 仅在 fixed 状态变化时触发。
+- [x] 暴露 `update()` 与 `updateRoot()`。
+- [x] 默认插槽、Props、事件、Expose 类型和组件导出同步。
+- [x] 被动布局组件无需键盘交互、清空态、受控值或表单校验；disabled 回到普通文档流。
+- [x] 示例全部提供 Template / Script 双视图，动态绑定使用 `${...}`。
+- [x] 新增 target、teleported、append-to、scroll 综合案例。
 
-#### API
+## 架构说明
 
-- `offset`
-- `position`
-- `target`
-- `z-index`
-- `teleported ^`
-- `append-to ^`
-- `change`
-- `scroll`
-- `default`
-- `update`
-- `updateRoot`
+- 状态、派生值、查询方法、布局更新、监听器、宿主绑定、生命周期和模板分区集中。
+- 非 Teleport 模式使用浏览器原生 `position: sticky`；Teleport 模式保留宿主占位，并按真实几何信息定位投影内容。
+- 目标容器边界会限制 Teleport 内容，超出有效范围时隐藏；容器滚动、窗口滚动和 resize 均触发布局更新。
+- 数字和数字字符串偏移统一转换为非负 px；CSS 长度字符串保持原样。
 
-#### Attributes
+## 验收记录
 
-- `offset`
-- `position`
-- `target`
-- `z-index`
-- `teleported ^`
-- `append-to ^`
-
-#### Events
-
-- `change`
-- `scroll`
-
-#### Slots
-
-- `default`
-
-#### Exposes
-
-- `update`
-- `updateRoot`
-
-## 当前 ElfUI API 快照
-
-### Props
-
-- `bottom`
-- `disabled`
-- `top`
-- `zIndex`
-
-### Events
-
-- `change`
-
-### Slots
-
-- `default`
-
-### Exposes
-
-- 暂无记录
-
-## 差距与任务
-
-- [ ] P1 补齐核心属性差距：`offset`、`position`、`target`、`teleported ^`、`append-to ^`
-- [ ] P1 补齐事件差距：`scroll`
-- [ ] P1 补齐插槽/暴露方法：`update`、`updateRoot`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
-
-## 验收清单
-
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] `Sticky.test.ts` 7 项测试通过：兼容属性、position/offset、change/scroll、滚动容器、target、Expose、Teleport 投影。
+- [x] `pnpm build` 通过。
+- [x] Playwright 页面冒烟通过，4 个案例均显示 Template / Script，控制台 0 error。
+- [x] 浏览器实际滚动验证：scrollTop 140、fixed true、Light DOM 位于 append-to、占位高度 48px。
+- [x] 视觉截图：`output/playwright/sticky-upgrade.png`。

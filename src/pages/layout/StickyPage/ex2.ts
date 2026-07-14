@@ -2,13 +2,15 @@ import { defineHtml, html } from "elfui";
 
 const rows = Array.from({ length: 10 }, (_, index) => `审批记录 ${index + 1}`);
 
-const code = `<elf-sticky bottom="0" z-index="20">
+const code = `<elf-sticky position="bottom" offset="0" z-index="20">
   <div class="actions">保存 / 提交</div>
 </elf-sticky>`;
 
+const script = `// position="bottom" 与 offset 对齐 Element Plus Affix API。`;
+
 const PageStickyEx2 = defineHtml(html`
   <h2>底部吸附</h2>
-  <elf-playground title="bottom action bar" :code="code">
+  <elf-playground title="bottom action bar" :code=${code} :script=${script}>
     <div
       style="width:100%;max-width:720px;height:260px;overflow:auto;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper)"
     >
@@ -21,7 +23,7 @@ const PageStickyEx2 = defineHtml(html`
           {{ row }}
         </div>
       </div>
-      <elf-sticky bottom="0" z-index="20">
+      <elf-sticky position="bottom" offset="0" z-index="20">
         <div
           style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;background:var(--elf-bg-paper);border-top:1px solid var(--elf-divider)"
         >

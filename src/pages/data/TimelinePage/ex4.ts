@@ -55,13 +55,23 @@ const items = [
   }
 ];
 
-const code = `<elf-timeline :items="items" mode="left" />
+const code = `<elf-timeline :items.prop=\${items} mode="left" />
 <!-- 每个 item.content 支持 HTML，可嵌入卡片、头像、按钮等组件 -->`;
+
+const script = `const items = [
+  {
+    timestamp: "2024-06-01 09:00",
+    title: "需求评审完成",
+    content: '<div class="event-card">PRD 已通过，可进入 UI 设计阶段</div>',
+    color: "primary",
+    icon: "✓"
+  }
+];`;
 
 const PageTimelineEx4 = defineHtml(html`
   <h2>自定义卡片内容（v-html）</h2>
-  <elf-playground title="item.content 中嵌入 HTML，实现卡片风格" :code="code">
-    <elf-timeline :items="items"></elf-timeline>
+  <elf-playground title="item.content 中嵌入 HTML，实现卡片风格" :code=${code} :script=${script}>
+    <elf-timeline :items.prop=${items}></elf-timeline>
   </elf-playground>
 `);
 

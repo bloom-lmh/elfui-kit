@@ -2,14 +2,14 @@ import { defineHtml, html, useRef } from "elfui";
 
 const visible = useRef(false);
 
-const clickedAt = useRef("-");
+const clickState = useRef("not clicked");
 
 const onVisible = (event: CustomEvent): void => {
   visible.set(Boolean(event.detail));
 };
 
 const onClick = (event: CustomEvent): void => {
-  clickedAt.set(`${event.detail.scrollTop}px`);
+  clickState.set(event.detail instanceof MouseEvent ? "MouseEvent received" : "clicked");
 };
 
 const code = `<elf-back-top
@@ -21,13 +21,17 @@ const code = `<elf-back-top
   @click=\${onClick}
 />`;
 
+const script = `const visible = useRef(false);
+const onVisible = (event) => visible.set(Boolean(event.detail));
+const onClick = (event) => console.log(event.detail); // MouseEvent`;
+
 const PageBacktopEx1 = defineHtml(html`
   <h2>Basic</h2>
-  <elf-playground title="Scroll threshold / smooth back to top" :code=${code}>
+  <elf-playground title="Scroll threshold / smooth back to top" :code=${code} :script=${script}>
     <div style="display:grid;gap:12px;width:100%;max-width:760px">
       <div style="display:flex;gap:16px;color:var(--elf-text-secondary);flex-wrap:wrap">
         <span>Visible: <strong>{{ visible ? 'yes' : 'no' }}</strong></span>
-        <span>Clicked at: <strong>{{ clickedAt }}</strong></span>
+        <span>Click event: <strong>{{ clickState }}</strong></span>
       </div>
       <div
         id="backtop-basic-scroll"

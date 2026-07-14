@@ -3,10 +3,12 @@
 export type NotificationType = "info" | "success" | "warning" | "error";
 export type NotificationPosition = "top-right" | "top-left" | "bottom-right" | "bottom-left";
 export type NotificationAppendTarget = string | Element;
+export type NotificationContent = string | Node | (() => Node);
 
 export interface NotificationOptions {
   title?: string;
-  message: string;
+  /** Plain text, an already-created DOM node, or a trusted DOM-node factory. HTML strings are never parsed. */
+  message: NotificationContent;
   type?: NotificationType;
   position?: NotificationPosition;
   duration?: number;

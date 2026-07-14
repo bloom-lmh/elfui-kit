@@ -7,6 +7,7 @@ import {
   html,
   inject,
   useHost,
+  useHostAttr,
   useHostFlag,
   defineHtml
 } from "elfui";
@@ -38,10 +39,12 @@ const formItem = inject(FORM_ITEM_KEY);
 
 const host = useHost();
 
+const radioValue = (): unknown => group?.resolveValue(props.value) ?? props.value;
+
 const isDisabled = useDisabled(() => Boolean(props.disabled) || (group?.disabled ?? false));
 
 const checked = (): boolean => {
-  if (group) return group.modelValue === props.value;
+  if (group) return Object.is(group.modelValue, radioValue());
   return props.modelValue === props.value;
 };
 
@@ -53,6 +56,9 @@ const tabIndex = (): number => {
 useHostFlag("data-checked", () => checked());
 
 useHostFlag("disabled", isDisabled);
+useHostFlag("border", () => Boolean(props.border || group?.variant === "button"));
+useHostFlag("data-button", () => group?.variant === "button");
+useHostAttr("size", () => String(props.size || group?.size || ""));
 
 const select = (e?: Event): void => {
   if (e) {
@@ -70,7 +76,7 @@ const select = (e?: Event): void => {
   );
 
   if (group) {
-    group.changeEvent(props.value);
+    group.changeEvent(radioValue());
   } else {
     emit("update:modelValue", props.value);
     emit("change", props.value);

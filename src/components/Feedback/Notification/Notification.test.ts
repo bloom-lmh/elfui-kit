@@ -156,6 +156,26 @@ describe("ElfNotification()", () => {
     expect(el.style.getPropertyValue("--_offset")).toBe("40px");
     expect(el.shadowRoot!.querySelector(".icon")?.textContent).toBe("@");
     expect(el.shadowRoot!.querySelector(".close")?.textContent?.trim()).toBe("Dismiss");
+    expect(el.shadowRoot!.querySelector(".close")?.classList.contains("is-label")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".close")?.getAttribute("aria-label")).toBe("Dismiss");
+  });
+
+  it("renders trusted DOM nodes without enabling HTML-string injection", async () => {
+    const { ElfNotification } = await import("../Notification/index");
+    const action = document.createElement("button");
+    action.textContent = "查看详情";
+    action.dataset.notificationAction = "details";
+
+    ElfNotification({ message: () => action, duration: 0 });
+    ElfNotification({ message: '<img src=x onerror="alert(1)">', duration: 0, position: "bottom-left" });
+    await tick();
+    await tick();
+
+    const notifications = document.body.querySelectorAll("elf-notification");
+    expect(notifications[0].querySelector("[data-notification-action='details']")).toBe(action);
+    expect(notifications[0].shadowRoot!.querySelector("slot")!.assignedElements()).toContain(action);
+    expect(notifications[1].shadowRoot!.querySelector(".message")!.textContent).toContain("<img");
+    expect(notifications[1].querySelector("img")).toBeNull();
   });
 
   it("calls onClose once and supports the showClose compatibility option", async () => {

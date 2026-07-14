@@ -43,10 +43,10 @@ const slotsRows = [
 
 const PageCardProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows" /><elf-props-table
+  <elf-props-table title="Props" :rows.prop=${propsRows} /><elf-props-table
     title="Events"
-    :rows="eventsRows"
-  /><elf-props-table title="Slots" :rows="slotsRows" />
+    :rows.prop=${eventsRows}
+  /><elf-props-table title="Slots" :rows.prop=${slotsRows} />
 `);
 
 export { PageCardProps };

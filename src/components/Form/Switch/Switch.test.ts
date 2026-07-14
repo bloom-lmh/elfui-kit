@@ -33,6 +33,9 @@ type SwitchHost = HTMLElement & {
   activeValue?: string | number | boolean;
   inactiveValue?: string | number | boolean;
   inlinePrompt?: boolean;
+  activeActionIcon?: string;
+  inactiveActionIcon?: string;
+  focus?: () => void;
 };
 
 const mount = async (patch: Partial<SwitchHost> = {}): Promise<SwitchHost> => {
@@ -172,5 +175,21 @@ describe("elf-switch", () => {
 
     expect(el.style.getPropertyValue("--_switch-width-custom")).toBe("64px");
     expect(el.shadowRoot!.querySelector(".inline-content")?.textContent).toContain("关");
+  });
+
+  it("renders action icons and exposes focus", async () => {
+    const el = await mount({
+      inactiveActionIcon: "○",
+      activeActionIcon: "✓"
+    });
+    const track = el.shadowRoot!.querySelector(".track") as HTMLElement;
+
+    expect(el.shadowRoot!.querySelector(".action-icon")?.textContent).toContain("○");
+    el.focus?.();
+    expect(el.shadowRoot!.activeElement).toBe(track);
+
+    track.click();
+    await flush();
+    expect(el.shadowRoot!.querySelector(".action-icon")?.textContent).toContain("✓");
   });
 });

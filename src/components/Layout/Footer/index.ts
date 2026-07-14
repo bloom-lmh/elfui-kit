@@ -2,20 +2,21 @@
 //
 //   <elf-footer height="40px">© 2026 ElfUI</elf-footer>
 
-import { defineProps, defineStyle, html, useHostCssVar, defineHtml } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui";
 
 import styles from "./style.scss?inline";
+import type { FooterProps, FooterSlots } from "./types";
 
-export type { FooterProps } from "./types";
+export type { FooterProps, FooterSlots } from "./types";
 
-const props = defineProps({
-  height: { type: String, default: "48px" }
+const props = defineProps<FooterProps>({
+  height: { type: String, default: "60px" }
 });
 
 useHostCssVar("--_height", () => props.height);
 
 defineStyle(styles);
 
-const Footer = defineHtml(html`<slot></slot>`);
+const Footer = defineHtml<FooterProps, Record<string, never>, FooterSlots>(html`<slot></slot>`);
 
 export { Footer };

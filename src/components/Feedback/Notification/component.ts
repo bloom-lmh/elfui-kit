@@ -44,6 +44,7 @@ const close = (): void => {
 const icon = (): string => props.icon || ICONS[String(props.type)] || "";
 const hasIcon = (): boolean => Boolean(icon());
 const canClose = (): boolean => props.closable && props.showClose;
+const hasCloseLabel = (): boolean => String(props.closeIcon).length > 1;
 
 defineExpose({ close, closing });
 defineStyle(styles);
@@ -59,10 +60,10 @@ const Notification = defineHtml(html`
     </div>
     <button
       v-if=${canClose()}
-      class="close"
+      :class=${["close", { "is-label": hasCloseLabel() }]}
       type="button"
       @click.stop=${close}
-      aria-label="Close notification"
+      :aria-label=${hasCloseLabel() ? props.closeIcon : "关闭通知"}
     >
       ${props.closeIcon}
     </button>

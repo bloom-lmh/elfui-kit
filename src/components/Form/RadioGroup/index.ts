@@ -14,9 +14,17 @@ import { useDisabled, useFormControl } from "../../../composables";
 import { RADIO_GROUP_KEY } from "../context";
 import type { RadioGroupContext } from "../context";
 import styles from "./style.scss?inline";
-import type { RadioGroupProps } from "./types";
+import type { RadioGroupOption, RadioGroupProps } from "./types";
 
-export type { RadioGroupProps } from "./types";
+export type { RadioGroupOption, RadioGroupOptionProps, RadioGroupProps } from "./types";
+
+interface RadioOptionView {
+  __elfRadioOption: true;
+  key: string;
+  label: string;
+  value: unknown;
+  disabled: boolean;
+}
 
 const props = defineProps<RadioGroupProps>({
   modelValue: { type: null, default: "" },
@@ -29,7 +37,9 @@ const props = defineProps<RadioGroupProps>({
   name: { type: String, default: "" },
   ariaLabel: { type: String, default: "" },
   label: { type: String, default: "" },
-  validateEvent: { type: Boolean, default: true }
+  validateEvent: { type: Boolean, default: true },
+  options: { type: Array, default: () => [] },
+  props: { type: Object, default: () => ({}) }
 });
 
 const emit = defineEmits<{
@@ -42,13 +52,43 @@ const ctl = useFormControl<unknown>(props, emit, {
 const isDisabled = useDisabled(() => Boolean(props.disabled));
 const host = useHost();
 
+const optionItems = (): RadioOptionView[] => {
+  const mapping = props.props || {};
+  const labelKey = mapping.label || "label";
+  const valueKey = mapping.value || "value";
+  const disabledKey = mapping.disabled || "disabled";
+
+  return (props.options || []).map((option: RadioGroupOption, index: number) => {
+    if (option === null || typeof option !== "object") {
+      return { __elfRadioOption: true, key: `${typeof option}:${String(option)}`, label: String(option), value: option, disabled: false };
+    }
+    const record = option as Record<string, unknown>;
+    const value = record[valueKey];
+    return {
+      __elfRadioOption: true,
+      key: `${typeof value}:${String(value)}:${index}`,
+      label: String(record[labelKey] ?? value ?? ""),
+      value,
+      disabled: Boolean(record[disabledKey])
+    };
+  });
+};
+
+const resolveValue = (value: unknown): unknown => {
+  if (value && typeof value === "object" && (value as Partial<RadioOptionView>).__elfRadioOption) {
+    return (value as RadioOptionView).value;
+  }
+  return value;
+};
+
 useHostCssVar("--_radio-fill", () => props.fill || "var(--elf-primary)");
-useHostCssVar("--_radio-text-color", () => props.textColor || "inherit");
+useHostCssVar("--_radio-text-color", () => props.textColor || "white");
 
 const changeEvent = (value: unknown): void => {
-  if (Object.is(ctl.model.value, value) || isDisabled()) return;
-  ctl.setValue(value);
-  ctl.dispatchChange(value);
+  const resolved = resolveValue(value);
+  if (Object.is(ctl.model.value, resolved) || isDisabled()) return;
+  ctl.setValue(resolved);
+  ctl.dispatchChange(resolved);
 };
 
 provide<RadioGroupContext>(RADIO_GROUP_KEY, {
@@ -56,6 +96,8 @@ provide<RadioGroupContext>(RADIO_GROUP_KEY, {
   get disabled() { return isDisabled(); },
   get size() { return props.size as "sm" | "md" | "lg"; },
   get name() { return props.name || undefined; },
+  get variant() { return props.variant; },
+  resolveValue,
   changeEvent
 });
 
@@ -91,7 +133,16 @@ const RadioGroup = defineHtml<RadioGroupProps>(html`
     :id=${props.id || null}
     :aria-label=${props.ariaLabel || props.label || null}
     :class=${[`variant-${props.variant}`]}
-  ><slot></slot></div>
+  >
+    <elf-radio
+      v-for="option in optionItems()"
+      :key="option.key"
+      :value.prop="option.value"
+      :label="option.label"
+      :disabled="option.disabled"
+    ></elf-radio>
+    <slot></slot>
+  </div>
 `);
 
 export { RadioGroup };

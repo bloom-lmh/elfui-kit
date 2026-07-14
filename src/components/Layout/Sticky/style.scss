@@ -1,26 +1,50 @@
 :host {
-  --sticky-top: 0px;
-  --sticky-bottom: auto;
-  --sticky-z-index: 10;
+  --sticky-offset: 0px;
+  --sticky-z-index: 100;
   display: block;
   position: sticky;
-  top: var(--sticky-top);
+  top: var(--sticky-offset);
   z-index: var(--sticky-z-index);
+  box-sizing: border-box;
 }
 
-.sticky {
-  display: block;
-}
-
-:host([data-bottom]) {
+:host([data-position="bottom"]) {
   top: auto;
-  bottom: var(--sticky-bottom);
+  bottom: var(--sticky-offset);
+}
+
+:host([data-teleported]) {
+  position: static;
+  min-height: var(--sticky-placeholder-height, 0);
 }
 
 :host([disabled]) {
   position: static;
 }
 
+:host([data-hidden]) {
+  visibility: hidden;
+}
+
+.sticky,
+.placeholder {
+  display: block;
+  min-width: 0;
+}
+
+.placeholder {
+  height: var(--sticky-placeholder-height, 0);
+}
+
 :host([data-stuck]) .sticky {
+  box-shadow: var(--sticky-shadow, none);
+}
+
+.elf-sticky-portal {
+  display: block;
+  box-sizing: border-box;
+}
+
+.elf-sticky-portal[data-fixed="true"] {
   box-shadow: var(--sticky-shadow, none);
 }

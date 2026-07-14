@@ -11,9 +11,16 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { InfiniteScrollProps } from "./types";
+import type { InfiniteScrollEmits, InfiniteScrollProps, InfiniteScrollSlots } from "./types";
 
-export type { InfiniteScrollProps } from "./types";
+export type {
+    InfiniteScrollDirectiveHandler,
+    InfiniteScrollDirectiveOptions,
+    InfiniteScrollDirectiveValue,
+    InfiniteScrollEmits,
+    InfiniteScrollProps,
+    InfiniteScrollSlots,
+} from "./types";
 
 const props = defineProps<InfiniteScrollProps>({
     disabled: { type: Boolean, default: false },
@@ -25,7 +32,7 @@ const props = defineProps<InfiniteScrollProps>({
     container: { type: [String, Object], default: null },
 });
 
-const emit = defineEmits(["load"]);
+const emit = defineEmits<InfiniteScrollEmits>();
 const host = useHost();
 let target: HTMLElement | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -66,6 +73,12 @@ const onScroll = (event: Event): void => {
     if (remaining <= Math.max(0, Number(props.distance) || 0)) scheduleLoad();
 };
 
+const checkTarget = (): void => {
+    if (!target) return;
+    const remaining = target.scrollHeight - target.scrollTop - target.clientHeight;
+    if (remaining <= Math.max(0, Number(props.distance) || 0)) scheduleLoad();
+};
+
 const resolveContainer = (): HTMLElement | null => {
     if (props.container instanceof HTMLElement) return props.container;
     if (typeof props.container === "string" && props.container.trim()) {
@@ -87,7 +100,7 @@ const attach = (): void => {
 
 onMount(() => {
     attach();
-    if (props.immediate) queueMicrotask(scheduleLoad);
+    if (props.immediate) queueMicrotask(checkTarget);
 });
 
 watchEffect(() => {
@@ -102,7 +115,7 @@ onUnmount(() => {
 
 defineStyle(styles);
 
-const InfiniteScroll = defineHtml<InfiniteScrollProps>(html`
+const InfiniteScroll = defineHtml<InfiniteScrollProps, InfiniteScrollEmits, InfiniteScrollSlots>(html`
     <div class="scroll" part="scroll" :style=${viewportStyle()}>
         <slot></slot>
     </div>

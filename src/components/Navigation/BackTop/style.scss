@@ -2,8 +2,8 @@
 
 :host {
   position: fixed;
-  right: var(--backtop-right, 32px);
-  bottom: var(--backtop-bottom, 32px);
+  right: var(--backtop-right, 40px);
+  bottom: var(--backtop-bottom, 40px);
   z-index: var(--backtop-z-index, 10);
   display: block;
   pointer-events: none;
@@ -17,8 +17,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--backtop-size, 44px);
-  height: var(--backtop-size, 44px);
+  width: var(--backtop-size, 40px);
+  height: var(--backtop-size, 40px);
   border: 1px solid color-mix(in srgb, var(--elf-primary) 24%, var(--elf-border));
   border-radius: 999px;
   background: var(--elf-bg-paper);

@@ -98,4 +98,5 @@ describe("elf-segmented", () => {
     await tick();
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
 });

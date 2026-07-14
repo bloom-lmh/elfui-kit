@@ -8,7 +8,7 @@ const apiRows = [
 
 const optsRows = [
   { name: "title", type: "string", default: "''", desc: "Notification title" },
-  { name: "message", type: "string", default: "required", desc: "Notification body" },
+  { name: "message", type: "string | Node | () => Node", default: "required", desc: "Text or trusted DOM content; HTML strings are never parsed" },
   { name: "type", type: "info | success | warning | error", default: "''", desc: "Status styling" },
   { name: "icon", type: "string", default: "''", desc: "Custom icon glyph" },
   { name: "position", type: "top-right | top-left | bottom-right | bottom-left", default: "top-right", desc: "Screen corner" },

@@ -95,6 +95,14 @@ const activeThumb = useRef<RangeThumb | null>(null);
 
 const activeTrack = useRef<HTMLElement | null>(null);
 
+const nextDescriptionId = (): string => {
+  const store = globalThis as typeof globalThis & { __elfSliderDescriptionSeed?: number };
+  store.__elfSliderDescriptionSeed = (store.__elfSliderDescriptionSeed ?? 0) + 1;
+  return `elf-slider-description-${store.__elfSliderDescriptionSeed}`;
+};
+
+const descriptionId = nextDescriptionId();
+
 const min = (): number => readNumber(props.min, 0);
 
 const max = (): number => Math.max(min(), readNumber(props.max, 100));
@@ -475,6 +483,7 @@ const Slider = defineHtml(html`
         @change=${onSingleChange}
         :aria-label=${sliderLabel()}
         :aria-valuetext=${valueText(singleValue())}
+        :aria-describedby=${`${descriptionId}-single`}
       />
       <template v-else>
         <input
@@ -489,6 +498,7 @@ const Slider = defineHtml(html`
           @change=${onStartChange}
           :aria-label=${rangeLabel("start")}
           :aria-valuetext=${valueText(values()[0])}
+          :aria-describedby=${`${descriptionId}-start`}
         />
         <input
           class="native native-end"
@@ -502,6 +512,7 @@ const Slider = defineHtml(html`
           @change=${onEndChange}
           :aria-label=${rangeLabel("end")}
           :aria-valuetext=${valueText(values()[1])}
+          :aria-describedby=${`${descriptionId}-end`}
         />
       </template>
 
@@ -529,6 +540,18 @@ const Slider = defineHtml(html`
             v-if=${props.showTooltip}
             :class=${["tooltip", `placement-${tooltipPlacement()}`, props.tooltipClass]}
           >${formatValue(values()[1])}</span>
+        </span>
+      </template>
+
+      <span v-if=${!props.range} :id=${`${descriptionId}-single`} class="sr-description" aria-live="polite">
+        ${sliderLabel()}: ${valueText(singleValue())}
+      </span>
+      <template v-else>
+        <span :id=${`${descriptionId}-start`} class="sr-description" aria-live="polite">
+          ${rangeLabel("start")}: ${valueText(values()[0])}
+        </span>
+        <span :id=${`${descriptionId}-end`} class="sr-description" aria-live="polite">
+          ${rangeLabel("end")}: ${valueText(values()[1])}
         </span>
       </template>
 

@@ -91,3 +91,23 @@
   border-color: var(--_radio-fill, var(--elf-primary));
   color: var(--_radio-text-color, var(--elf-primary));
 }
+
+:host([data-button]) {
+  border-radius: 0;
+}
+
+:host([data-button]:first-of-type) {
+  border-radius: var(--elf-radius-sm) 0 0 var(--elf-radius-sm);
+}
+
+:host([data-button]:last-of-type) {
+  border-radius: 0 var(--elf-radius-sm) var(--elf-radius-sm) 0;
+}
+
+:host([data-button]) .dot {
+  display: none;
+}
+
+:host([data-button][data-checked]) .control {
+  background: var(--_radio-fill, var(--elf-primary));
+}

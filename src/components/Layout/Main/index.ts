@@ -1,13 +1,14 @@
 // elf-main — 主内容容器（占据剩余空间）
 
-import { defineStyle, html, defineHtml } from "elfui";
+import { defineHtml, defineStyle, html } from "elfui";
 
 import styles from "./style.scss?inline";
+import type { MainProps, MainSlots } from "./types";
 
-export type { MainProps } from "./types";
+export type { MainProps, MainSlots } from "./types";
 
 defineStyle(styles);
 
-const Main = defineHtml(html`<slot></slot>`);
+const Main = defineHtml<MainProps, Record<string, never>, MainSlots>(html`<slot></slot>`);
 
 export { Main };

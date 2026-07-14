@@ -1,24 +1,36 @@
-import { defineHtml, html, useReactive } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
 
+const fruits = useRef<string[]>(["apple"]);
 
-const data = useReactive({ fruits: [] as string[] });
+const onUpdate = (event: CustomEvent): void => fruits.set([...(event.detail as string[])]);
 
-const code1 = `<elf-checkbox-group v-model="fruits" min="1" max="2">
+const code = `<elf-checkbox-group
+  :modelValue.prop=\${fruits.value}
+  min="1"
+  max="2"
+  @update:modelValue=\${onUpdate}
+>
   <elf-checkbox value="apple" label="苹果" />
   <elf-checkbox value="banana" label="香蕉" />
   <elf-checkbox value="orange" label="橙子" />
 </elf-checkbox-group>`;
 
+const script = `const fruits = useRef(["apple"]);
+const onUpdate = (event) => fruits.set([...event.detail]);`;
+
 const PageCheckboxEx3 = defineHtml(html`
-  <elf-playground title="min=1 max=2" :code="code1">
-    <elf-checkbox-group v-model="data.fruits" min="1" max="2">
-      <elf-checkbox value="apple" label="苹果" />
-      <elf-checkbox value="banana" label="香蕉" />
-      <elf-checkbox value="orange" label="橙子" />
-    </elf-checkbox-group>
-    <span style="font-size:12px;color:var(--elf-text-secondary)"
-      >选中: {{ data.fruits.join(', ') || '至少选1个' }}</span
+  <elf-playground title="min=1 max=2" :code=${code} :script=${script}>
+    <elf-checkbox-group
+      :modelValue.prop=${fruits.value}
+      min="1"
+      max="2"
+      @update:modelValue=${onUpdate}
     >
+      <elf-checkbox value="apple" label="苹果"></elf-checkbox>
+      <elf-checkbox value="banana" label="香蕉"></elf-checkbox>
+      <elf-checkbox value="orange" label="橙子"></elf-checkbox>
+    </elf-checkbox-group>
+    <span slot="status" class="demo-state">选中：{{ fruits.join(', ') }}</span>
   </elf-playground>
 `);
 

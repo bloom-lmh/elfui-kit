@@ -107,7 +107,7 @@ describe("elf-badge", () => {
 
     const badge = el.shadowRoot!.querySelector(".badge") as HTMLElement;
     expect(badge).toBeTruthy();
-    expect(badge.style.backgroundColor).toBe("rgb(255, 111, 0)");
+    expect(["#ff6f00", "rgb(255, 111, 0)"]).toContain(badge.style.backgroundColor);
   });
 
   it("默认 slot 内容正常渲染", async () => {
@@ -148,5 +148,76 @@ describe("elf-badge", () => {
     await tick();
 
     expect(el.shadowRoot!.querySelector(".badge")).toBeNull();
+  });
+
+  it("applies offset, badge style, and badge class", async () => {
+    const el = document.createElement("elf-badge") as HTMLElement & {
+      offset: [number, number];
+      badgeStyle: Record<string, string>;
+      badgeClass: string;
+      value: number;
+    };
+    el.value = 7;
+    el.offset = [8, -4];
+    el.badgeStyle = { borderRadius: "4px", minWidth: "24px" };
+    el.badgeClass = "release-badge";
+    document.body.appendChild(el);
+    await tick();
+
+    const badge = el.shadowRoot!.querySelector<HTMLElement>(".badge")!;
+    expect(badge.classList.contains("release-badge")).toBe(true);
+    expect(badge.style.getPropertyValue("--_badge-offset-x")).toBe("8px");
+    expect(badge.style.getPropertyValue("--_badge-offset-y")).toBe("-4px");
+    expect(badge.style.borderRadius).toBe("4px");
+    expect(badge.style.minWidth).toBe("24px");
+  });
+
+  it("prefers content prop and supports the content slot", async () => {
+    const propBadge = document.createElement("elf-badge") as HTMLElement & { value: number; content: string };
+    propBadge.value = 4;
+    propBadge.content = "NEW";
+    document.body.appendChild(propBadge);
+
+    const slotBadge = document.createElement("elf-badge");
+    slotBadge.setAttribute("value", "9");
+    slotBadge.innerHTML = '<strong slot="content">VIP</strong>';
+    document.body.appendChild(slotBadge);
+    await tick();
+
+    expect(propBadge.shadowRoot!.querySelector(".badge")!.textContent!.trim()).toBe("NEW");
+    const slot = slotBadge.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="content"]')!;
+    expect(slot.assignedElements()[0].textContent).toBe("VIP");
+  });
+
+  it("keeps reference content visible when hidden only suppresses the badge", async () => {
+    const el = document.createElement("elf-badge") as HTMLElement & { hidden: boolean; value: number };
+    el.innerHTML = "<button>消息</button>";
+    el.value = 3;
+    el.hidden = true;
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.shadowRoot!.querySelector(".badge")).toBeNull();
+    expect(el.querySelector("button")!.textContent).toBe("消息");
+    expect(el.shadowRoot!.querySelector("slot")).toBeTruthy();
+  });
+
+  it("reflects dynamic type and dot state and exposes an accessible status", async () => {
+    const el = document.createElement("elf-badge") as HTMLElement & {
+      value: number;
+      type: string;
+      isDot: boolean;
+    };
+    el.value = 2;
+    el.type = "success";
+    el.isDot = true;
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.getAttribute("type")).toBe("success");
+    expect(el.hasAttribute("is-dot")).toBe(true);
+    const badge = el.shadowRoot!.querySelector(".badge")!;
+    expect(badge.getAttribute("role")).toBe("status");
+    expect(badge.getAttribute("aria-label")).toBe("状态提示");
   });
 });

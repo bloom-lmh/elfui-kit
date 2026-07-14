@@ -22,9 +22,15 @@ const code = `<elf-pagination
 
 <elf-pagination background small layout="prev, pager, next" total="120" />`;
 
+const script = `const compactPage = useRef(3);
+
+const onCompactChange = (event) => {
+  compactPage.set(Number(event.detail));
+};`;
+
 const PagePaginationEx2 = defineHtml(html`
   <h2>布局、默认值与尺寸</h2>
-  <elf-playground title="已知页数、非受控默认值与紧凑布局" :code=${code}>
+  <elf-playground title="已知页数、非受控默认值与紧凑布局" :code=${code} :script=${script}>
     <div style="width: 100%; display: grid; gap: 18px">
       <elf-pagination
         size="large"
@@ -40,16 +46,16 @@ const PagePaginationEx2 = defineHtml(html`
         small
         layout="prev, pager, next"
         total="120"
-        :currentPage.prop="compactPage"
-        @current-change="onCompactChange"
+        :currentPage.prop=${compactPage.value}
+        @current-change=${onCompactChange}
       ></elf-pagination>
 
       <elf-pagination
         layout="total, prev, pager, next"
         total="12"
         hide-on-single-page
-        :currentPage.prop="simplePage"
-        @current-change="onSimpleChange"
+        :currentPage.prop=${simplePage.value}
+        @current-change=${onSimpleChange}
       ></elf-pagination>
     </div>
   </elf-playground>

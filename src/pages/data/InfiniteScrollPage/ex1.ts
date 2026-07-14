@@ -30,10 +30,10 @@ const disabled = useRef(false);
 
 const code1 = `<elf-infinite-scroll
   height="360px"
-  :distance="32"
-  :loading="loading"
-  :disabled="disabled"
-  @load="loadMore"
+  :distance=\${32}
+  :loading=\${loading}
+  :disabled=\${disabled}
+  @load=\${loadMore}
 >
   <article v-for="item in rows" :key="item.id">...</article>
 </elf-infinite-scroll>`;

@@ -12,7 +12,7 @@ import { Header } from "./Header/index";
 import { Layout } from "./Layout/index";
 import { Main } from "./Main/index";
 import { Scrollbar } from "./Scrollbar/index";
-import { Splitter } from "./Splitter/index";
+import { Splitter, SplitterPanel } from "./Splitter/index";
 import { Sticky } from "./Sticky/index";
 
 registerComponents(
@@ -27,5 +27,6 @@ registerComponents(
   Footer,
   Sticky,
   Scrollbar,
-  Splitter
+  Splitter,
+  SplitterPanel
 );

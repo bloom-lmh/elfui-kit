@@ -9,7 +9,7 @@ const propsRows = [
 
 const PageDividerProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows" />
+  <elf-props-table title="Props" :rows.prop=${propsRows} />
 `);
 
 export { PageDividerProps };

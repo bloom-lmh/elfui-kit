@@ -6,6 +6,7 @@ import { PageSliderEx4 } from "./ex4";
 import { PageSliderEx5 } from "./ex5";
 import { PageSliderEx6 } from "./ex6";
 import { PageSliderEx7 } from "./ex7";
+import { PageSliderEx8 } from "./ex8";
 import { PageSliderProps } from "./props";
 
 useComponents({
@@ -16,6 +17,7 @@ useComponents({
   "page-slider-ex5": PageSliderEx5,
   "page-slider-ex6": PageSliderEx6,
   "page-slider-ex7": PageSliderEx7,
+  "page-slider-ex8": PageSliderEx8,
   "page-slider-props": PageSliderProps
 });
 
@@ -30,6 +32,7 @@ const PageSlider = defineHtml(html`
     <page-slider-ex5></page-slider-ex5>
     <page-slider-ex6></page-slider-ex6>
     <page-slider-ex7></page-slider-ex7>
+    <page-slider-ex8></page-slider-ex8>
     <page-slider-props></page-slider-props>
   </elf-container>
 `);

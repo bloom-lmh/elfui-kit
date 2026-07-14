@@ -18,12 +18,24 @@ export type FlexAlign = "stretch" | "flex-start" | "flex-end" | "center" | "base
 /** Flex 间距尺寸 */
 export type FlexGap = "0" | "xs" | "sm" | "md" | "lg" | "xl";
 
+/** 预设间距、任意 CSS 长度、像素值，或 [水平, 垂直] 像素元组。 */
+export type FlexSize = FlexGap | string | number | [number, number];
+
 export interface FlexProps {
   direction: FlexDirection;
   justify: FlexJustify;
   align: FlexAlign;
-  gap: FlexGap;
+  /** Element Plus Space compatibility alias for align. */
+  alignment: FlexAlign | "";
+  gap: FlexSize;
+  /** Element Plus Space compatibility alias for gap. */
+  size: FlexSize | "";
   wrap: boolean;
   inline: boolean;
   fill: boolean;
+  fillRatio: number;
+}
+
+export interface FlexSlots {
+  default?: unknown;
 }

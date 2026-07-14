@@ -6,6 +6,7 @@ import {
     html,
     onMount,
     onUnmount,
+    useEffect,
     useHost,
     useHostAttr,
     useHostCssVar,
@@ -15,15 +16,17 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { BackTopClickDetail, BackTopProps, BackTopShape } from "./types";
+import type { BackTopProps, BackTopShape, BackTopSlots } from "./types";
 
-export type { BackTopClickDetail, BackTopElement, BackTopProps, BackTopShape } from "./types";
+export type { BackTopElement, BackTopProps, BackTopShape, BackTopSlots } from "./types";
 
 type ScrollContainer = Window | HTMLElement;
 
 const cssSize = (value: unknown, fallback: string): string => {
     if (value == null || value === "") return fallback;
-    return typeof value === "number" ? `${value}px` : String(value);
+    if (typeof value === "number") return `${Math.max(0, value)}px`;
+    const text = String(value).trim();
+    return /^-?\d+(?:\.\d+)?$/.test(text) ? `${Math.max(0, Number(text))}px` : text;
 };
 
 const numberProp = (value: unknown, fallback = 0): number => {
@@ -31,20 +34,23 @@ const numberProp = (value: unknown, fallback = 0): number => {
     return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const props = defineProps({
+const props = defineProps<BackTopProps>({
     target: { type: null, default: "" },
     visibilityHeight: { type: Number, default: 200 },
-    right: { type: null, default: "32px" },
-    bottom: { type: null, default: "32px" },
+    right: { type: [Number, String], default: 40 },
+    bottom: { type: [Number, String], default: 40 },
     zIndex: { type: null, default: 10 },
     smooth: { type: Boolean, default: true },
     shape: { type: String, default: "circle" },
-    size: { type: null, default: "44px" },
+    size: { type: [Number, String], default: 40 },
     icon: { type: String, default: "↑" },
     disabled: { type: Boolean, default: false },
-}) as unknown as Readonly<BackTopProps>;
+});
 
-const emit = defineEmits(["click", "visible-change"]);
+const emit = defineEmits<{
+    click: [event: MouseEvent];
+    "visible-change": [visible: boolean];
+}>();
 
 const host = useHost();
 
@@ -53,6 +59,7 @@ const visible = useRef(false);
 let scrollTarget: ScrollContainer | null = null;
 
 let cleanup = (): void => {};
+let mounted = false;
 
 const isScrollContainer = (value: unknown): value is ScrollContainer =>
     typeof value === "object" && value !== null && "addEventListener" in value;
@@ -119,23 +126,19 @@ const scrollToTop = (): void => {
     updateVisible();
 };
 
-const onClick = (event: Event): void => {
+const onClick = (event: MouseEvent): void => {
     event.preventDefault();
     event.stopPropagation();
     if (props.disabled) return;
-    const target = scrollTarget || getContainer();
-    const detail: BackTopClickDetail = {
-        scrollTop: getScrollTop(target),
-        event,
-    };
-    emit("click", detail);
+    emit("click", event);
     scrollToTop();
 };
 
 const shape = (): BackTopShape => (props.shape === "square" ? "square" : "circle");
 
-onMount(() => {
+const connect = (): void => {
     if (typeof window === "undefined") return;
+    cleanup();
     const target = getContainer();
     scrollTarget = target;
     target.addEventListener("scroll", updateVisible, { passive: true });
@@ -145,14 +148,33 @@ onMount(() => {
         window.removeEventListener("resize", updateVisible);
     };
     updateVisible();
+};
+
+useEffect(() => {
+    void props.target;
+    if (mounted) queueMicrotask(connect);
 });
 
-onUnmount(() => cleanup());
+useEffect(() => {
+    void props.visibilityHeight;
+    void props.disabled;
+    if (mounted) updateVisible();
+});
+
+onMount(() => {
+    mounted = true;
+    connect();
+});
+
+onUnmount(() => {
+    mounted = false;
+    cleanup();
+});
 
 useHostAttr("shape", shape);
-useHostCssVar("--backtop-right", () => cssSize(props.right, "32px"));
-useHostCssVar("--backtop-bottom", () => cssSize(props.bottom, "32px"));
-useHostCssVar("--backtop-size", () => cssSize(props.size, "44px"));
+useHostCssVar("--backtop-right", () => cssSize(props.right, "40px"));
+useHostCssVar("--backtop-bottom", () => cssSize(props.bottom, "40px"));
+useHostCssVar("--backtop-size", () => cssSize(props.size, "40px"));
 useHostCssVar("--backtop-z-index", () => String(props.zIndex || 10));
 useHostFlag("data-visible", () => visible.value);
 useHostFlag("disabled", () => Boolean(props.disabled));
@@ -161,7 +183,7 @@ defineExpose({ scrollToTop });
 
 defineStyle(styles);
 
-const BackTop = defineHtml(html`
+const BackTop = defineHtml<BackTopProps, Record<string, never>, BackTopSlots>(html`
     <button
         v-if=${visible && !props.disabled}
         class="backtop"

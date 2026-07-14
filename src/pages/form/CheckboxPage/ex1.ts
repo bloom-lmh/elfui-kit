@@ -1,17 +1,27 @@
-import { defineHtml, html, useReactive } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
 
+const agreed = useRef(false);
 
-const data = useReactive({ agree: false });
+const onUpdate = (event: CustomEvent): void => agreed.set(Boolean(event.detail));
 
-const code1 = `<elf-checkbox v-model="agree" label="同意条款" />
-<span>{{ agree ? '✓ 已勾选' : '未勾选' }}</span>`;
+const code = `<elf-checkbox
+  :modelValue.prop=\${agreed.value}
+  label="同意条款"
+  @update:modelValue=\${onUpdate}
+/>
+<span slot="status">{{ agreed ? '✓ 已勾选' : '未勾选' }}</span>`;
+
+const script = `const agreed = useRef(false);
+const onUpdate = (event) => agreed.set(Boolean(event.detail));`;
 
 const PageCheckboxEx1 = defineHtml(html`
-  <elf-playground title="单个 Checkbox" :code="code1">
-    <elf-checkbox v-model="data.agree" label="同意条款" />
-    <span style="font-size:12px;color:var(--elf-text-secondary)"
-      >{{ data.agree ? '✓ 已勾选' : '未勾选' }}</span
-    >
+  <elf-playground title="单个 Checkbox" :code=${code} :script=${script}>
+    <elf-checkbox
+      :modelValue.prop=${agreed.value}
+      label="同意条款"
+      @update:modelValue=${onUpdate}
+    ></elf-checkbox>
+    <span slot="status" class="demo-state">{{ agreed ? '✓ 已勾选' : '未勾选' }}</span>
   </elf-playground>
 `);
 
