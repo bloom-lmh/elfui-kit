@@ -9,4 +9,5 @@ export type ContainerPadding = "0" | "sm" | "md" | "lg";
 export interface ContainerProps {
   maxWidth: ContainerMaxWidth;
   padding: ContainerPadding;
+  fluid: boolean;
 }

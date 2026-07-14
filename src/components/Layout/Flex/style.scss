@@ -11,6 +11,15 @@
   box-sizing: border-box;
 }
 
+:host([inline]) {
+  display: inline-flex;
+}
+
+:host([fill]) {
+  width: 100%;
+  min-height: 100%;
+}
+
 :host([direction="row"]) {
   --_dir: row;
 }

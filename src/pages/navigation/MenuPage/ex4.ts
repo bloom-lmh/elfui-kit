@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const active = useRef("inbox");
 
@@ -56,24 +56,19 @@ const code2 = `<elf-menu
   :items=\${items}
   :modelValue=\${active}
   searchable
+  bordered
   rounded
   elevation
   show-toggle
   toggle-placement="header"
 >
   <template #header>...</template>
-  <template #toggle>
-    <button class="menu-demo-toggle" type="button">收起</button>
-  </template>
-  <template #search>
-    <input class="my-search" placeholder="过滤菜单..." />
-  </template>
 </elf-menu>`;
 
 const PageMenuEx4 = defineHtml(html`
   <h2>分隔线、徽章、分组与头尾区域</h2>
   <elf-playground title="完整菜单：分隔线、徽章、分组、头像、底栏" :code=${code}>
-    <elf-menu :items=${items} :modelValue=${active} rounded elevation style="height:540px">
+    <elf-menu :items=${items} :modelValue=${active} bordered rounded elevation style="height:540px">
       <template #header>
         <div style="display:flex;align-items:center;gap:12px">
           <elf-avatar size="sm" alt="User"></elf-avatar>
@@ -99,6 +94,7 @@ const PageMenuEx4 = defineHtml(html`
       :items=${items2}
       :modelValue=${active2}
       searchable
+      bordered
       rounded
       elevation
       show-toggle
@@ -110,21 +106,6 @@ const PageMenuEx4 = defineHtml(html`
           <elf-avatar size="sm" alt="User"></elf-avatar>
           <div><strong>当前用户</strong></div>
         </div>
-      </template>
-      <template #toggle>
-        <button
-          type="button"
-          aria-label="切换菜单"
-          style="width:32px;height:32px;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper);color:var(--elf-text-secondary);cursor:pointer;font-size:16px"
-        >
-          ☰
-        </button>
-      </template>
-      <template #search>
-        <input
-          style="width:100%;box-sizing:border-box;border:1px solid var(--elf-border);border-radius:999px;padding:8px 12px;background:var(--elf-bg-paper);font:inherit;font-size:13px;outline:none"
-          placeholder="过滤菜单..."
-        />
       </template>
     </elf-menu>
   </elf-playground>

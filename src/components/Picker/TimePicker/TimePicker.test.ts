@@ -30,24 +30,27 @@ describe("elf-time-picker", () => {
     const onClear = vi.fn();
     el.addEventListener("update:modelValue", onUpdate as unknown as EventListener);
     el.addEventListener("clear", onClear as unknown as EventListener);
-    const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
-    input.value = "10:45";
-    input.dispatchEvent(new Event("input"));
+    (el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement).click();
+    await tick();
+    await tick();
+    (el.shadowRoot!.querySelector('[data-clock-value="10"]') as HTMLButtonElement).click();
+    await tick();
+    (el.shadowRoot!.querySelector('[data-clock-value="45"]') as HTMLButtonElement).click();
     await tick();
 
-    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe("10:45");
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toBe("10:45");
     (el.shadowRoot!.querySelector(".clear") as HTMLElement).click();
     expect(onClear).toHaveBeenCalled();
   });
 
-  it("modelValue 回显到原生 time 输入", async () => {
+  it("modelValue 回显到时间触发器", async () => {
     const el = document.createElement("elf-time-picker") as TimePickerEl;
     el.modelValue = "09:30";
     document.body.appendChild(el);
     await tick();
     await tick();
 
-    expect((el.shadowRoot!.querySelector("input") as HTMLInputElement).value).toBe("09:30");
+    expect(el.shadowRoot!.querySelector(".field-value")?.textContent).toContain("09:30");
   });
 
   it("isRange 支持数组 v-model 并输出数组", async () => {
@@ -60,15 +63,19 @@ describe("elf-time-picker", () => {
     await tick();
     await tick();
 
-    const inputs = el.shadowRoot!.querySelectorAll("input");
-    expect((inputs[0] as HTMLInputElement).value).toBe("09:00");
-    expect((inputs[1] as HTMLInputElement).value).toBe("18:00");
+    const fields = el.shadowRoot!.querySelectorAll(".field-value");
+    expect(fields[0]?.textContent).toContain("09:00");
+    expect(fields[1]?.textContent).toContain("18:00");
 
-    (inputs[1] as HTMLInputElement).value = "19:00";
-    inputs[1]!.dispatchEvent(new Event("input"));
+    (el.shadowRoot!.querySelectorAll(".field-trigger")[1] as HTMLButtonElement).click();
+    await tick();
+    await tick();
+    (el.shadowRoot!.querySelector('[data-clock-value="7"]') as HTMLButtonElement).click();
+    await tick();
+    (el.shadowRoot!.querySelector('[data-clock-value="0"]') as HTMLButtonElement).click();
     await tick();
 
-    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["09:00", "19:00"]);
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual(["09:00", "19:00"]);
   });
 
   it("focus / blur 会触发 visible-change", async () => {
@@ -82,9 +89,12 @@ describe("elf-time-picker", () => {
     document.body.appendChild(el);
     await tick();
 
-    const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
-    input.dispatchEvent(new FocusEvent("focus"));
-    input.dispatchEvent(new FocusEvent("blur"));
+    const trigger = el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement;
+    trigger.dispatchEvent(new FocusEvent("focus"));
+    trigger.dispatchEvent(new FocusEvent("blur"));
+    trigger.click();
+    await tick();
+    trigger.click();
     await tick();
 
     expect((onVisible.mock.calls[0]![0] as CustomEvent).detail).toBe(true);
@@ -103,6 +113,8 @@ describe("elf-time-picker", () => {
     await tick();
     await tick();
 
+    (el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement).click();
+    await tick();
     (el.shadowRoot!.querySelector(".shortcut") as HTMLElement).click();
     await tick();
 
@@ -124,6 +136,8 @@ describe("elf-time-picker", () => {
     await tick();
     await tick();
 
+    (el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement).click();
+    await tick();
     const buttons = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".shortcut");
     buttons[1]!.click();
     await tick();
@@ -132,7 +146,10 @@ describe("elf-time-picker", () => {
     (el.shadowRoot!.querySelector(".clear") as HTMLButtonElement).click();
     await tick();
     expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual(["", ""]);
-    expect(Array.from(el.shadowRoot!.querySelectorAll("input"), (input) => (input as HTMLInputElement).value)).toEqual(["", ""]);
+    expect(Array.from(el.shadowRoot!.querySelectorAll(".field-value"), (field) => field.textContent?.trim())).toEqual([
+      "开始时间",
+      "结束时间"
+    ]);
 
     buttons[0]!.click();
     expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual(["09:00", "18:00"]);

@@ -10,6 +10,10 @@
 }
 
 .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--elf-space-4);
     border-radius: var(--elf-radius-md) var(--elf-radius-md) 0 0;
     overflow: hidden;
     padding: var(--elf-space-3) var(--elf-space-4);
@@ -17,6 +21,26 @@
     font-size: var(--elf-font-size-sm);
     font-weight: 700;
     color: var(--elf-text-primary);
+}
+
+.title {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+::slotted([slot="status"]) {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 70%;
+    margin: 0;
+    overflow: hidden;
+    color: var(--elf-text-secondary);
+    font-size: var(--elf-font-size-xs);
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .demo {

@@ -58,6 +58,8 @@ const toggleTheme = () => {
     }
 };
 
+const toggleCollapsed = () => collapsed.set(!collapsed.value);
+
 useEffect(() => {
     const router = getActiveRouter();
     if (!router) return;
@@ -127,7 +129,8 @@ const App = defineHtml(html`
                 <span>ElfUI</span>
             </span>
             <span class="spacer"></span>
-            <elf-button variant="text" size="sm" @click="toggleTheme">
+            <elf-button variant="text" size="sm" @click=${toggleCollapsed}> {{ collapsed ? '☰' : '✕' }} </elf-button>
+            <elf-button variant="text" size="sm" @click=${toggleTheme}>
                 {{ theme === 'light' ? '🌙' : '☀️' }}
             </elf-button>
         </elf-header>
@@ -141,15 +144,9 @@ const App = defineHtml(html`
                     :items="menuItems"
                     :modelValue="active"
                     :collapse="collapsed"
-                    show-toggle
                     @update:modelValue="onSelect"
                     @collapse-change="onChange"
                 >
-                    <template #footer>
-                        <div style="display:flex;align-items:center;justify-content:flex-end">
-                            <span style="font-size:11px;color:var(--elf-text-disabled)">v1.0.0</span>
-                        </div>
-                    </template>
                 </elf-menu>
             </elf-aside>
 

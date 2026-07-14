@@ -3,9 +3,20 @@
 :host {
   display: block;
   position: relative;
+  width: 100%;
   overflow: hidden;
+  border-radius: var(--elf-radius-lg);
   user-select: none;
   background: var(--elf-bg-overlay);
+}
+
+.carousel {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  isolation: isolate;
 }
 
 // ───── 轨道 ──────────────────────────────────────
@@ -16,7 +27,12 @@
   transition: transform var(--_dur, 0.5s) cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+.track.is-resetting {
+  transition: none;
+}
+
 ::slotted(*) {
+  display: block;
   flex: 0 0 100%;
   width: 100%;
   height: 100%;
@@ -61,7 +77,7 @@
   height: 100%;
   margin: 0 auto;
   transform: translateX(calc(var(--_card-offset, 0) * 88%)) scale(var(--_card-scale, 0.84));
-  opacity: var(--_card-opacity, 0);
+  opacity: var(--_card-opacity, 1);
   z-index: var(--_card-z-index, 0);
   pointer-events: none;
   transition:

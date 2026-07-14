@@ -1,12 +1,25 @@
 import { defineHtml, html, useRef } from "elfui";
 
-const code = `<elf-tour
-  :steps="steps"
+const code = `<elf-button @click="startTour">开始引导</elf-button>
+<elf-tour
+  :steps.prop="tourSteps"
   :visible="visible"
   :current="current"
-  @update:current="current = $event.detail"
-  @close="visible = false"
+  @update:current="onCurrentChange"
+  @close="closeTour"
+  @finish="closeTour"
 />`;
+
+const script = `const visible = useRef(false);
+const current = useRef(0);
+const tourSteps = [
+  { target: "#tour-demo-title", title: "项目概览", content: "...", placement: "bottom" },
+  { target: "#tour-demo-action", title: "主要操作", content: "...", placement: "right" }
+];
+
+const startTour = () => { current.set(0); visible.set(true); };
+const closeTour = () => visible.set(false);
+const onCurrentChange = (event) => current.set(Number(event.detail));`;
 
 const tourSteps = [
   {
@@ -47,7 +60,7 @@ const onCurrentChange = (event: Event): void => {
 
 const PageTourEx1 = defineHtml(html`
   <h2>基础引导</h2>
-  <elf-playground title="跟随目标定位" :code=${code}>
+  <elf-playground title="跟随目标定位" :code=${code} :script=${script}>
     <div
       style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start;padding:20px;border:1px solid var(--elf-border);border-radius:8px"
     >

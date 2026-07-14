@@ -1,0 +1,76 @@
+import { defineHtml, html, useComponents, useRef } from "elfui";
+
+import { PageLocaleProviderPreview } from "./preview";
+
+const localeMode = useRef("zh");
+
+const zhMessages = {
+  common: { confirm: "确认", cancel: "取消" },
+  provider: { title: "本地化提供器预览" }
+};
+
+const enMessages = {
+  common: { confirm: "Confirm", cancel: "Cancel" },
+  provider: { title: "Locale provider preview" }
+};
+
+const arMessages = {
+  common: { confirm: "تأكيد", cancel: "إلغاء" },
+  provider: { title: "معاينة موفر اللغة" }
+};
+
+const code = `<elf-locale-provider name="en-US" :messages.prop="messages">
+  <my-child></my-child>
+</elf-locale-provider>`;
+
+const currentLocaleName = (): string =>
+  localeMode.value === "zh" ? "zh-CN" : localeMode.value === "ar" ? "ar" : "en-US";
+
+const currentMessages = () =>
+  localeMode.value === "zh" ? zhMessages : localeMode.value === "ar" ? arMessages : enMessages;
+
+const isRtl = (): boolean => localeMode.value === "ar";
+
+const setLocale = (value: string): void => {
+  localeMode.set(value);
+};
+
+useComponents({ "page-locale-provider-preview": PageLocaleProviderPreview });
+
+const PageLocaleProviderEx1 = defineHtml(html`
+<elf-playground title="切换语言与 RTL" :code="code">
+      <div style="display:grid;gap:12px;width:100%;max-width:680px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <elf-button
+            size="sm"
+            :variant="localeMode === 'zh' ? 'contained' : 'outlined'"
+            @click="setLocale('zh')"
+            >中文</elf-button
+          >
+          <elf-button
+            size="sm"
+            :variant="localeMode === 'en' ? 'contained' : 'outlined'"
+            @click="setLocale('en')"
+            >English</elf-button
+          >
+          <elf-button
+            size="sm"
+            :variant="localeMode === 'ar' ? 'contained' : 'outlined'"
+            @click="setLocale('ar')"
+            >RTL</elf-button
+          >
+        </div>
+        <div style="direction:ltr">
+          <elf-locale-provider
+            :name="currentLocaleName()"
+            :rtl="isRtl()"
+            :messages.prop="currentMessages()"
+          >
+            <page-locale-provider-preview></page-locale-provider-preview>
+          </elf-locale-provider>
+        </div>
+      </div>
+    </elf-playground>
+`);
+
+export { PageLocaleProviderEx1 };

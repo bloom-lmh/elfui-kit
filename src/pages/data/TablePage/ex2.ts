@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const currentPage = useRef(1);
 
@@ -73,7 +73,7 @@ const PageTableEx2 = defineHtml(html`
       <div
         style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap"
       >
-        <span class="demo-state">{{ rangeText() }}</span>
+        <span slot="status" class="demo-state">{{ rangeText() }}</span>
         <elf-pagination
           background
           :total.prop="orders.length"

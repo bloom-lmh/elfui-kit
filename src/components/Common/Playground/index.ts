@@ -10,7 +10,16 @@
 // 默认 slot：渲染区（左侧/上方放真实组件）
 // code prop：源码字符串，通过 :code="变量" 传入，<pre><code> 纯文本展示
 
-import { defineProps, defineStyle, html, useRef, defineHtml } from "elfui";
+import {
+  defineHtml,
+  defineProps,
+  defineStyle,
+  html,
+  onMount,
+  onUnmount,
+  useHost,
+  useRef
+} from "elfui";
 
 import styles from "./style.scss?inline";
 import type { PlaygroundProps } from "./types";
@@ -25,6 +34,8 @@ const props = defineProps({
 
 const copied = useRef(false);
 const activeTab = useRef<"template" | "script">("template");
+const host = useHost();
+let statusObserver: MutationObserver | undefined;
 
 const normalizeCode = (value: string): string => {
     const text = String(value || "").replace(/\r\n/g, "\n");
@@ -139,6 +150,14 @@ const highlightedCode = (): string =>
 
 const copyText = (): string => (copied.value ? "已复制" : "复制");
 
+const syncStatusSlots = (): void => {
+  const states = host.querySelectorAll<HTMLElement>('.demo-state, [slot="status"]');
+  states.forEach((state) => {
+    state.slot = "status";
+    if (state.parentElement !== host) host.appendChild(state);
+  });
+};
+
 const onCopy = (): void => {
   const text = activeCode();
   navigator.clipboard?.writeText(text);
@@ -146,11 +165,25 @@ const onCopy = (): void => {
   setTimeout(() => copied.set(false), 1500);
 };
 
+onMount(() => {
+  syncStatusSlots();
+  statusObserver = new MutationObserver(syncStatusSlots);
+  statusObserver.observe(host, { childList: true, subtree: true });
+});
+
+onUnmount(() => {
+  statusObserver?.disconnect();
+  statusObserver = undefined;
+});
+
 defineStyle(styles);
 
 const Playground = defineHtml(html`
   <div class="wrap">
-    <div class="header" v-if=${props.title}>${props.title}</div>
+    <div class="header" v-if=${props.title}>
+      <span class="title">${props.title}</span>
+      <slot name="status"></slot>
+    </div>
     <div class="demo"><slot></slot></div>
     <div class="source" v-if=${hasSource()}>
       <div class="source-toolbar">

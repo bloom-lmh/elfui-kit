@@ -31,6 +31,27 @@ describe("elf-playground", () => {
     expect(header.textContent).toContain("Test");
   });
 
+  it("status slot 与标题在同一头部且不进入 demo", async () => {
+    const el = document.createElement("elf-playground");
+    el.setAttribute("title", "基础用法");
+    const status = document.createElement("span");
+    status.slot = "status";
+    status.className = "demo-state";
+    status.textContent = "当前值：A";
+    const demoLayout = document.createElement("div");
+    demoLayout.appendChild(status);
+    el.appendChild(demoLayout);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const headerSlot = el.shadowRoot!.querySelector<HTMLSlotElement>('.header slot[name="status"]');
+    const demoSlot = el.shadowRoot!.querySelector<HTMLSlotElement>(".demo slot:not([name])");
+    expect(status.parentElement).toBe(el);
+    expect(headerSlot?.assignedElements()).toEqual([status]);
+    expect(demoSlot?.assignedElements()).not.toContain(status);
+  });
+
   it("demo slot 渲染子元素", async () => {
     const el = document.createElement("elf-playground");
     const child = document.createElement("span");

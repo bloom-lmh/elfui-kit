@@ -35,7 +35,7 @@ const PageProgressEx1 = defineHtml(html`
             <option value="1.5">舒缓（1.5 秒）</option>
           </select>
         </label>
-        <span class="demo-state">{{ progress }}%</span>
+        <span slot="status" class="demo-state">{{ progress }}%</span>
       </div>
     </div>
   </elf-playground>

@@ -71,8 +71,9 @@ const update = (): void => {
     const target = scrollParent || window;
     const parentRect =
         target === window ? { top: 0, bottom: window.innerHeight } : (target as HTMLElement).getBoundingClientRect();
-    const topBoundary = parentRect.top + readNumber(props.top);
-    const bottomBoundary = parentRect.bottom - readNumber(props.bottom);
+    const clientEdge = target === window ? 0 : (target as HTMLElement).clientTop;
+    const topBoundary = parentRect.top + clientEdge + readNumber(props.top);
+    const bottomBoundary = parentRect.bottom - clientEdge - readNumber(props.bottom);
     const next = props.bottom !== "" && props.bottom != null ? rect.bottom >= bottomBoundary : rect.top <= topBoundary;
     if (next !== stuck.peek()) {
         stuck.set(next);

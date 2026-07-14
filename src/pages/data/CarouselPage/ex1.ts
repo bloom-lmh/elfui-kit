@@ -49,7 +49,7 @@ const code5 = `<elf-carousel type="card" :autoplay=\${false} height="260px">
 const PageCarouselEx1 = defineHtml(html`
   <h2>基础滑动</h2>
   <elf-playground title="4 张图片、自动轮播与圆形箭头" :code=${code1}>
-    <elf-carousel style="max-width:800px">
+    <elf-carousel radius="16px" style="width:100%;max-width:800px">
       <img src="https://picsum.photos/800/320?random=1" />
       <img src="https://picsum.photos/800/320?random=2" />
       <img src="https://picsum.photos/800/320?random=3" />
@@ -64,7 +64,8 @@ const PageCarouselEx1 = defineHtml(html`
       show-arrow="ghost"
       indicator-type="line"
       height="360px"
-      style="max-width:800px"
+      radius="16px"
+      style="width:100%"
     >
       <img src="https://picsum.photos/800/360?random=5" />
       <img src="https://picsum.photos/800/360?random=6" />
@@ -81,7 +82,8 @@ const PageCarouselEx1 = defineHtml(html`
       height="360px"
       :autoplay=${false}
       duration="0.3s"
-      style="max-width:800px"
+      radius="16px"
+      style="width:100%"
     >
       <div
         style="background:linear-gradient(135deg,#667eea,#764ba2);height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:600"
@@ -112,6 +114,7 @@ const PageCarouselEx1 = defineHtml(html`
       indicator-type="line"
       height="220px"
       :autoplay=${false}
+      radius="16px"
       style="width:100%;max-width:800px"
     >
       <div style="height:100%;display:grid;place-items:center;background:#2563eb;color:white">第一屏</div>
@@ -122,7 +125,13 @@ const PageCarouselEx1 = defineHtml(html`
 
   <h2>带标签的卡片轮播</h2>
   <elf-playground title="卡片模式使用 elf-carousel-item 子组件" :code=${code5}>
-    <elf-carousel type="card" height="260px" :autoplay=${false} style="max-width:800px">
+    <elf-carousel
+      type="card"
+      height="260px"
+      radius="16px"
+      :autoplay=${false}
+      style="width:100%;max-width:800px"
+    >
       <elf-carousel-item name="design" label="设计">
         <div style="height:100%;display:grid;place-items:center;background:#0f766e;color:#fff;font-size:28px">设计</div>
       </elf-carousel-item>

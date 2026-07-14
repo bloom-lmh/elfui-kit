@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const value = useRef(45);
 
@@ -31,7 +31,7 @@ const PageSliderEx6 = defineHtml(html`
         :modelValue.prop="value"
         @update:modelValue="onChange"
       ></elf-slider>
-      <p class="demo-state">强度：{{ value }}</p>
+      <p slot="status" class="demo-state">强度：{{ value }}</p>
     </div>
   </elf-playground>
 `);

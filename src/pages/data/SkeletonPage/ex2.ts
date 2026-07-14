@@ -40,7 +40,7 @@ const code2 = `<div style="display:flex;flex-direction:column;gap:16px;width:360
   </div>
 </div>`;
 
-const code3 = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:600px">
+const code3 = `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:100%;max-width:720px">
   <elf-card>
     <div style="padding:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
@@ -148,7 +148,7 @@ const PageSkeletonEx2 = defineHtml(html`
 
   <h2>Dashboard 骨架</h2>
   <elf-playground title="2×2 卡片网格" :code="code3">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:600px">
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:100%;max-width:720px">
       <elf-card style="pointer-events:none">
         <div style="padding:20px">
           <div

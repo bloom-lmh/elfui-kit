@@ -17,3 +17,4 @@
 
 - [x] `pnpm test src/components/Picker/Calendar/Calendar.test.ts` 通过。
 - [x] `pnpm build` 通过。
+- [x] 2026-07-14 移除原生年份下拉，改为日期 / 月份 / 年份三级选择；完成暗色主题和真实浏览器验收。

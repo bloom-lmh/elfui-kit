@@ -11,7 +11,7 @@ const code1 = `<div style="width:240px">
     @update:modelValue=\${onSingleUpdate}
   />
 </div>
-<span class="demo-state">当前：{{ single || '未选' }}</span>`;
+<span slot="status" class="demo-state">当前：{{ single || '未选' }}</span>`;
 
 const script1 = `const single = useRef("");
 
@@ -42,7 +42,7 @@ const PageSelectEx1 = defineHtml(html`
         @update:modelValue=${onSingleUpdate}
       ></elf-select>
     </div>
-    <span class="demo-state">当前：{{ single || '未选' }}</span>
+    <span slot="status" class="demo-state">当前：{{ single || '未选' }}</span>
   </elf-playground>
 `);
 

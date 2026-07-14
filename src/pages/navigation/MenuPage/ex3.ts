@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const active = useRef("overview");
 
@@ -57,6 +57,7 @@ const PageMenuEx3 = defineHtml(html`
   <elf-playground title="collapse / props 字段映射" :code="code1">
     <div style="display:flex;gap:20px;align-items:flex-start;width:100%;max-width:780px">
       <elf-menu
+        bordered
         style="max-width:280px"
         :items="customItems"
         :props="customProps"
@@ -65,6 +66,7 @@ const PageMenuEx3 = defineHtml(html`
         @update:modelValue="onChange"
       ></elf-menu>
       <elf-menu
+        bordered
         collapse
         show-toggle
         :items="customItems"

@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const volume = useRef(42);
 
@@ -14,7 +14,7 @@ const PageSliderEx4 = defineHtml(html`
   <elf-playground title="垂直滑块" :code="code">
     <div style="display:grid;gap:12px;justify-items:center;min-height:280px;width:120px">
       <elf-slider vertical :modelValue.prop="volume" @update:modelValue="onVolume"></elf-slider>
-      <span class="demo-state">音量 {{ volume }}</span>
+      <span slot="status" class="demo-state">音量 {{ volume }}</span>
     </div>
   </elf-playground>
 `);

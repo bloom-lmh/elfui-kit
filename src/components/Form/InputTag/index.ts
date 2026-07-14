@@ -38,14 +38,7 @@ const props = defineProps<InputTagProps>({
     validateEvent: { type: Boolean, default: true },
 });
 
-const emit = defineEmits([
-    "update:modelValue",
-    "change",
-    "input",
-    "add-tag",
-    "remove-tag",
-    "clear",
-]);
+const emit = defineEmits(["update:modelValue", "change", "input", "add-tag", "remove-tag", "clear"]);
 
 const value = useRef<string[]>([]);
 const text = useRef("");
@@ -55,29 +48,16 @@ const ctl = useFormControl<string[]>(props, emit, {
 });
 
 const normalize = (source: unknown): string[] =>
-    Array.isArray(source)
-        ? source.map((item) => String(item)).filter(Boolean)
-        : [];
+    Array.isArray(source) ? source.map((item) => String(item)).filter(Boolean) : [];
 
 watchEffect(() => {
     value.set(normalize(props.modelValue));
 });
 
-const tags = (): TagItem[] =>
-    value.value.map((label, index) => ({ label, index }));
-const visibleTags = (): TagItem[] => {
-    if (!props.collapseTags) return tags();
-    return tags().slice(0, Math.max(0, Number(props.maxCollapseTags) || 0));
-};
-const hiddenTags = (): TagItem[] => tags().slice(visibleTags().length);
-const hiddenTagCount = (): number => Math.max(0, tags().length - visibleTags().length);
-const isLimitReached = (): boolean =>
-    Number(props.max) > 0 && value.value.length >= Number(props.max);
+const tags = (): TagItem[] => value.value.map((label, index) => ({ label, index }));
+const isLimitReached = (): boolean => Number(props.max) > 0 && value.value.length >= Number(props.max);
 
-const commit = (
-    next: string[],
-    eventName: "change" | "input" = "change",
-): void => {
+const commit = (next: string[], eventName: "change" | "input" = "change"): void => {
     value.set(next);
     if (eventName === "input") ctl.dispatchInput(next);
     else {
@@ -129,11 +109,7 @@ const onBlur = (event: Event): void => {
 };
 
 const onRemoveClick = (event: Event): void => {
-    const index = Number(
-        (event.target as HTMLElement | null)
-            ?.closest("[data-index]")
-            ?.getAttribute("data-index"),
-    );
+    const index = Number((event.target as HTMLElement | null)?.closest("[data-index]")?.getAttribute("data-index"));
     if (Number.isInteger(index)) removeAt(index);
 };
 
@@ -156,13 +132,7 @@ const onDrop = (event: DragEvent): void => {
     commit(next);
 };
 
-const showClear = (): boolean =>
-    Boolean(
-        props.clearable &&
-        value.value.length &&
-        !props.disabled &&
-        !props.readonly,
-    );
+const showClear = (): boolean => Boolean(props.clearable && value.value.length && !props.disabled && !props.readonly);
 
 const normalizedSize = (): InputTagSize => {
     const size = String(props.size || "") as InputTagSize;
@@ -178,33 +148,31 @@ const InputTag = defineHtml<InputTagProps>(html`
     <div class="input-tag" part="wrapper" @click=${onRemoveClick}>
         <slot name="prefix"></slot>
         <span class="tag-strip" part="tag-strip">
-          <span v-for="tag in visibleTags()" :key="tag.index" class="tag" :class=${[() => props.tagType, () => `is-${props.tagEffect}`]} :data-index="tag.index" :draggable=${props.draggable} part="tag" @dragstart=${onDragStart} @dragover=${(event: DragEvent) => props.draggable && event.preventDefault()} @drop=${onDrop}>
-              <span class="tag-label">{{ tag.label }}</span>
-              <button
-                  v-if=${!props.disabled && !props.readonly}
-                  class="remove"
-                  type="button"
-                  :data-index="tag.index"
-                  :aria-label="'删除标签 ' + tag.label"
-              >
-                  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
-              </button>
-          </span>
-        </span>
-        <span v-if=${hiddenTagCount() > 0} class="overflow">
-          <button class="overflow-count" type="button" part="overflow-count" :aria-label="'查看 ' + hiddenTagCount() + ' 个隐藏标签'">+{{ hiddenTagCount() }}</button>
-          <span class="overflow-panel" role="list" aria-label="隐藏标签">
-            <span v-for="tag in hiddenTags()" :key="tag.index" class="hidden-tag" role="listitem">
-              <span>{{ tag.label }}</span>
-              <button
-                v-if=${!props.disabled && !props.readonly}
-                class="remove"
-                type="button"
+            <span
+                v-for="tag in tags()"
+                :key="tag.index"
+                class="tag"
+                :class=${[() => props.tagType, () => `is-${props.tagEffect}`]}
                 :data-index="tag.index"
-                :aria-label="'删除隐藏标签 ' + tag.label"
-              ><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg></button>
+                :draggable=${props.draggable}
+                part="tag"
+                @dragstart=${onDragStart}
+                @dragover=${(event: DragEvent) => props.draggable && event.preventDefault()}
+                @drop=${onDrop}
+            >
+                <span class="tag-label">{{ tag.label }}</span>
+                <button
+                    v-if=${!props.disabled && !props.readonly}
+                    class="remove"
+                    type="button"
+                    :data-index="tag.index"
+                    :aria-label="'删除标签 ' + tag.label"
+                >
+                    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                        <path d="M4 4l8 8M12 4l-8 8"></path>
+                    </svg>
+                </button>
             </span>
-          </span>
         </span>
         <input
             part="input"
@@ -217,13 +185,7 @@ const InputTag = defineHtml<InputTagProps>(html`
             @blur=${onBlur}
         />
         <slot name="suffix"></slot>
-        <button
-            v-if=${showClear()}
-            class="clear"
-            type="button"
-            aria-label="Clear tags"
-            @click=${clear}
-        >
+        <button v-if=${showClear()} class="clear" type="button" aria-label="Clear tags" @click=${clear}>
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
         </button>
     </div>

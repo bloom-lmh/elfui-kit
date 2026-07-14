@@ -24,7 +24,7 @@ const code1 = `<div style="width:320px;margin-bottom:8px">
     <span slot="append">USD</span>
   </elf-input>
 </div>
-<span class="demo-state">原始值：{{ amount }}</span>`;
+<span slot="status" class="demo-state">原始值：{{ amount }}</span>`;
 
 const script1 = `const amount = useRef("1200");
 
@@ -51,7 +51,7 @@ const code2 = `<div style="width:320px;margin-bottom:8px">
     <span slot="suffix">CN</span>
   </elf-input>
 </div>
-<span class="demo-state">昵称：{{ nickname }}</span>`;
+<span slot="status" class="demo-state">昵称：{{ nickname }}</span>`;
 
 const script2 = `const nickname = useRef("ElfUI");
 
@@ -110,7 +110,7 @@ const PageInputEx3 = defineHtml(html`
         <span slot="append">USD</span>
       </elf-input>
     </div>
-    <span class="demo-state">原始值：{{ amount }}</span>
+    <span slot="status" class="demo-state">原始值：{{ amount }}</span>
   </elf-playground>
 
   <h2>字数统计</h2>
@@ -129,7 +129,7 @@ const PageInputEx3 = defineHtml(html`
         <span slot="suffix">CN</span>
       </elf-input>
     </div>
-    <span class="demo-state">昵称：{{ nickname }}</span>
+    <span slot="status" class="demo-state">昵称：{{ nickname }}</span>
   </elf-playground>
 
   <h2>原生属性</h2>

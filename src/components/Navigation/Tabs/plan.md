@@ -161,3 +161,4 @@
 ## 本轮记录
 
 - [x] 2026-07-11 Navigation 第一阶段：补 `type/closable/addable/editable/tabPosition/stretch/beforeLeave/tabindex`、`closable/lazy` item 字段、`tab-click/tab-change/tab-remove/tab-add/edit` 事件和 `setActive/removeTab/add/currentName` 暴露方法，补 card/right/editable 案例和 PropsTable。
+- [x] 2026-07-14 为 card / border-card / editable 标签提供主题化滚动条；垂直可编辑标签限制为 300px 内部滚动，不再撑高面板。

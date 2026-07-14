@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const active = useRef("/workspace/projects");
 
@@ -47,6 +47,7 @@ const PageMenuEx1 = defineHtml(html`
       style="display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:20px;align-items:start;width:100%;max-width:820px"
     >
       <elf-menu
+        bordered
         :items="items"
         :modelValue="active"
         :defaultOpeneds="openeds"

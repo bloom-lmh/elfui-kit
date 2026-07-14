@@ -39,7 +39,7 @@ const PageSwitchEx1 = defineHtml(html`
         label="接收系统通知"
         @update:modelValue="updateEnabled"
       ></elf-switch>
-      <span class="demo-state">{{ enabled ? "已开启" : "已关闭" }}</span>
+      <span slot="status" class="demo-state">{{ enabled ? "已开启" : "已关闭" }}</span>
     </div>
   </elf-playground>
 
@@ -68,7 +68,7 @@ const PageSwitchEx1 = defineHtml(html`
       aria-label="服务状态"
       @update:modelValue=${updateStatus}
     ></elf-switch>
-    <span class="demo-state">{{ status }}</span>
+    <span slot="status" class="demo-state">{{ status }}</span>
   </elf-playground>
 `);
 

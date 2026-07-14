@@ -72,6 +72,7 @@ const PageMenuEx6 = defineHtml(html`
   <h2>hover 展开</h2>
   <elf-playground title="menu-trigger hover" :code=${code1}>
     <elf-menu
+      bordered
       :items=${items}
       :modelValue=${active}
       menu-trigger="hover"
@@ -93,6 +94,7 @@ const PageMenuEx6 = defineHtml(html`
   <elf-playground title="dark theme + custom colors" :code=${code2}>
     <div style="display:flex;gap:16px">
       <elf-menu
+        bordered
         :items=${themeItems}
         :modelValue=${activeDark}
         theme="dark"
@@ -101,6 +103,7 @@ const PageMenuEx6 = defineHtml(html`
         style="height:400px"
       ></elf-menu>
       <elf-menu
+        bordered
         :items=${themeItems}
         :modelValue=${activeCustom}
         backgroundColor="#f5f0ff"

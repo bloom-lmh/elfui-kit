@@ -21,7 +21,7 @@ const code3 = `<div style="width:240px">
     @update:modelValue=\${onClearUpdate}
   />
 </div>
-<span class="demo-state">当前：{{ clearValue || '空' }}</span>`;
+<span slot="status" class="demo-state">当前：{{ clearValue || '空' }}</span>`;
 
 const script3 = `const clearValue = useRef("");
 
@@ -64,7 +64,7 @@ const PageInputEx2 = defineHtml(html`
         @update:modelValue=${onClearUpdate}
       ></elf-input>
     </div>
-    <span class="demo-state">当前：{{ clearValue || '空' }}</span>
+    <span slot="status" class="demo-state">当前：{{ clearValue || '空' }}</span>
   </elf-playground>
 `);
 

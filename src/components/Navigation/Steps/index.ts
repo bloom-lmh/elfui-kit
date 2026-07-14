@@ -7,9 +7,11 @@ import {
     defineProps,
     defineStyle,
     html,
+    useComputed,
     useHost,
     useHostAttr,
     useHostFlag,
+    useEffect,
     useRef,
     useResizeObserver,
 } from "elfui";
@@ -52,14 +54,17 @@ const emit = defineEmits<{
 
 const host = useHost();
 const compact = useRef(false);
+const currentActive = useRef(0);
+let lastControlledActive = Number.NaN;
 
 const rawItems = (): StepItem[] => (Array.isArray(props.items) ? (props.items as StepItem[]) : []);
 const count = (): number => rawItems().length;
-const clampedActive = (): number => {
+const normalizeActive = (value: unknown): number => {
     const max = Math.max(0, count() - 1);
-    const next = Math.trunc(Number(props.active) || 0);
+    const next = Math.trunc(Number(value) || 0);
     return Math.min(max, Math.max(0, next));
 };
+const clampedActive = (): number => normalizeActive(currentActive.value);
 const direction = (): StepsDirection => (props.direction === "vertical" ? "vertical" : "horizontal");
 const size = (): StepsSize => (props.size === "sm" || props.size === "lg" ? props.size : "md");
 const normalizeStatus = (value: unknown, fallback: StepViewItem["status"]): StepViewItem["status"] =>
@@ -84,24 +89,30 @@ const inferStatus = (item: StepItem, index: number): StepViewItem["status"] => {
     return "wait";
 };
 
-const stepItems = (): StepViewItem[] => {
+const stepItems = useComputed<StepViewItem[]>(() => {
     const raw = rawItems();
     const active = clampedActive();
-    return raw.map((item, index) => ({
-        ...item,
-        key: String(item.value ?? `${item.title}-${index}`),
-        title: item.title || `Step ${index + 1}`,
-        description: item.description || "",
-        icon: item.icon || "",
-        status: inferStatus(item, index),
-        index,
-        isLast: index === raw.length - 1,
-        isActive: index === active,
-        isClickable: Boolean(props.clickable) && !item.disabled && index !== active,
-    }));
-};
+    return raw.map((item, index) => {
+        const status = inferStatus(item, index);
+        const stableKey = String(item.value ?? `${item.title}-${index}`);
+        return {
+            ...item,
+            // Status is part of the key because the current compiler keeps keyed loop bindings stable.
+            // Recreating only changed steps guarantees aria/class/icon state follows active immediately.
+            key: `${stableKey}:${status}:${index === active ? "active" : "idle"}`,
+            title: item.title || `Step ${index + 1}`,
+            description: item.description || "",
+            icon: item.icon || "",
+            status,
+            index,
+            isLast: index === raw.length - 1,
+            isActive: index === active,
+            isClickable: Boolean(props.clickable) && !item.disabled && index !== active,
+        };
+    });
+});
 
-const rootClass = (): string => {
+const rootClass = useComputed((): string => {
     const classes = ["steps", `is-${direction()}`, `size-${size()}`];
     if (compact.value) classes.push("is-compact");
     if (props.alternativeLabel) classes.push("is-alternative");
@@ -109,12 +120,12 @@ const rootClass = (): string => {
     if (props.simple) classes.push("is-simple");
     if (normalizeSpace()) classes.push("has-space");
     return classes.join(" ");
-};
+});
 
-const rootStyle = (): Record<string, string> => {
+const rootStyle = useComputed((): Record<string, string> => {
     const space = normalizeSpace();
     return space ? { "--step-space": space } : {};
-};
+});
 
 const stepItemClass = (item: StepViewItem): string => {
     const classes = ["step-item", `is-${item.status}`];
@@ -135,6 +146,7 @@ const setActive = (index: number): void => {
     const next = Math.min(items.length - 1, Math.max(0, Math.trunc(index)));
     const item = items[next]!;
     if (item.disabled || next === clampedActive()) return;
+    currentActive.set(next);
     emit("update:active", next);
     emit("change", { active: next, item });
 };
@@ -157,17 +169,30 @@ const statusIcon = (item: StepViewItem): string => {
 useResizeObserver(host, ({ width }) => {
     compact.set(width > 0 && width < 420);
 });
+useEffect(() => {
+    const controlled = normalizeActive(props.active);
+    if (controlled === lastControlledActive) return;
+    lastControlledActive = controlled;
+    currentActive.set(controlled);
+});
 useHostAttr("direction", direction);
 useHostAttr("size", size);
 useHostFlag("data-compact", () => compact.value);
 
-defineExpose({ next, prev, setActive });
+defineExpose({
+    get activeIndex() {
+        return currentActive.peek();
+    },
+    next,
+    prev,
+    setActive,
+});
 defineStyle(styles);
 
 const Steps = defineHtml<StepsProps>(html`
-    <div :class=${rootClass()} :style=${rootStyle()} role="list" :aria-orientation=${direction()}>
+    <div :class=${rootClass} :style=${rootStyle} role="list" :aria-orientation=${direction()}>
         <div
-            v-for="item in stepItems()"
+            v-for="item in stepItems"
             :key="item.key"
             :class="stepItemClass(item)"
             :style="progressStyle(item)"

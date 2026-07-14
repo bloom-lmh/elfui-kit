@@ -1,13 +1,13 @@
 import { defineHtml, html, useRef } from "elfui";
 
 const code1 = `<elf-steps
-  :active=\${basicActive}
+  :active.prop=\${basicActive.value}
   :items.prop=\${steps}
   @update:active=\${onBasicUpdate}
 />`;
 
 const code2 = `<elf-steps
-  :active=\${active}
+  :active.prop=\${active.value}
   :items.prop=\${steps}
   @update:active=\${onUpdateActive}
   @change=\${onChange}
@@ -79,7 +79,7 @@ const PageStepsEx1 = defineHtml(html`
   <h2>基础与受控</h2>
   <elf-playground title="流程状态" :code=${code1} :script=${script}>
     <elf-steps
-      :active=${basicActive}
+      :active.prop=${basicActive.value}
       :items.prop=${steps}
       @update:active=${onBasicUpdate}
     ></elf-steps>
@@ -87,7 +87,7 @@ const PageStepsEx1 = defineHtml(html`
 
   <elf-playground title="受控当前步骤" :code=${code2} :script=${script}>
     <elf-steps
-      :active=${active}
+      :active.prop=${active.value}
       :items.prop=${steps}
       @update:active=${onUpdateActive}
       @change=${onChange}

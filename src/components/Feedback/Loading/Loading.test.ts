@@ -18,6 +18,7 @@ interface LoadingEl extends HTMLElement {
   loading?: boolean;
   fullscreen?: boolean;
   closable?: boolean;
+  variant?: string;
 }
 
 describe("elf-loading", () => {
@@ -38,6 +39,18 @@ describe("elf-loading", () => {
     await tick();
 
     expect(el.shadowRoot!.querySelector(".overlay")).toBeNull();
+  });
+
+  it("支持 dots、pulse 和 bars 三种附加加载动效", async () => {
+    const el = document.createElement("elf-loading") as LoadingEl;
+    el.loading = true;
+    document.body.appendChild(el);
+
+    for (const variant of ["dots", "pulse", "bars"]) {
+      el.variant = variant;
+      await tick();
+      expect(el.shadowRoot!.querySelector(`.indicator.is-${variant}`)).toBeTruthy();
+    }
   });
 
   it("全屏加载提供可见退出按钮并发出受控更新", async () => {

@@ -17,7 +17,9 @@ const props = defineProps({
   justify: { type: String, default: "flex-start" },
   align: { type: String, default: "stretch" },
   gap: { type: String, default: "0" },
-  wrap: { type: Boolean, default: false }
+  wrap: { type: Boolean, default: false },
+  inline: { type: Boolean, default: false },
+  fill: { type: Boolean, default: false }
 });
 
 defineStyle(styles);

@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const active = useRef("platform-web");
 
@@ -62,6 +62,7 @@ const PageMenuEx5 = defineHtml(html`
   <h2>多级菜单（3 层嵌套）</h2>
   <elf-playground title="Platform > Web > React/Vue/Svelte" :code="code">
     <elf-menu
+      bordered
       :items="items"
       :modelValue="active"
       :defaultOpeneds="['platform','platform-web']"

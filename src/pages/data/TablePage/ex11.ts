@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 type Row = Record<string, unknown>;
 
@@ -139,7 +139,7 @@ const PageTableEx11 = defineHtml(html`
       <div
         style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"
       >
-        <span class="demo-state">已选择 {{ selectedCount() }} 条 · {{ message }}</span>
+        <span slot="status" class="demo-state">已选择 {{ selectedCount() }} 条 · {{ message }}</span>
         <elf-button size="small" type="primary" @click="askBatchDelete()">批量删除</elf-button>
       </div>
       <elf-table

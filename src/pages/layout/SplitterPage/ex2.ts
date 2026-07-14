@@ -8,7 +8,7 @@ const onVerticalUpdate = (event: CustomEvent): void => {
 
 const code = `<elf-splitter
   vertical
-  :modelValue=\${verticalSize}
+  :modelValue.prop=\${verticalSize}
   @update:modelValue=\${onVerticalUpdate}
 >
   <div slot="first">上方面板</div>
@@ -21,7 +21,7 @@ const PageSplitterEx2 = defineHtml(html`
   <h2>垂直分割</h2>
   <elf-playground title="vertical" :code=${code} :script=${script}>
     <div style="height:260px">
-      <elf-splitter vertical :modelValue=${verticalSize} @update:modelValue=${onVerticalUpdate}>
+      <elf-splitter vertical :modelValue.prop=${verticalSize.value} @update:modelValue=${onVerticalUpdate}>
         <div slot="first" style="padding:16px">上方面板</div>
         <div slot="second" style="padding:16px">下方面板</div>
       </elf-splitter>

@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const value = useRef(36);
 
@@ -14,7 +14,7 @@ const PageSliderEx1 = defineHtml(html`
   <elf-playground title="单值、提示与受控值" :code="code">
     <div style="display:grid;gap:14px;width:100%;max-width:680px">
       <elf-slider :modelValue.prop="value" @update:modelValue="onChange"></elf-slider>
-      <p class="demo-state">当前值：{{ value }}</p>
+      <p slot="status" class="demo-state">当前值：{{ value }}</p>
     </div>
   </elf-playground>
 `);

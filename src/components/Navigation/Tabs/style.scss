@@ -21,6 +21,7 @@
 .tabs.is-vertical {
   flex-direction: row;
   align-items: stretch;
+  min-height: 240px;
 }
 
 .tabs.is-right {
@@ -39,11 +40,38 @@
   min-width: 0;
   border-bottom: 1px solid var(--elf-divider);
   overflow-x: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 
   &::-webkit-scrollbar {
-    display: none;
+    height: 6px;
   }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    background-clip: padding-box;
+  }
+
+  &:hover {
+    scrollbar-color: color-mix(in srgb, var(--elf-text-secondary) 34%, transparent) transparent;
+
+    &::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--elf-text-secondary) 34%, transparent);
+      background-clip: padding-box;
+    }
+  }
+}
+
+.tabs.is-card .tab-list,
+.tabs.is-border-card .tab-list,
+.tabs.is-closable .tab-list {
+  scrollbar-color: color-mix(in srgb, var(--elf-text-secondary) 30%, transparent) transparent;
 }
 
 .tabs.is-vertical .tab-list {
@@ -54,6 +82,11 @@
   border-bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.tabs.is-vertical.is-closable .tab-list {
+  max-height: 300px;
+  overscroll-behavior: contain;
 }
 
 .tabs.align-center .tab-list {
@@ -139,8 +172,27 @@
   background: var(--elf-bg-overlay);
 }
 
+.tabs.is-border-card.is-vertical .tab-list {
+  flex: 0 0 196px;
+  padding: 8px;
+}
+
+.tabs.is-border-card.is-vertical .tab {
+  min-height: 42px;
+  border-color: transparent;
+  border-radius: var(--elf-radius-sm);
+}
+
+.tabs.is-border-card.is-vertical .tab.is-active {
+  border-color: color-mix(in srgb, var(--tabs-color) 45%, var(--elf-divider));
+}
+
 .tabs.is-border-card .tab-panels {
   padding: 12px;
+}
+
+.tabs.is-border-card.is-vertical .tab-panels {
+  min-height: 220px;
 }
 
 .tabs.is-compact .tab {

@@ -61,19 +61,20 @@ describe("elf-input-tag", () => {
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Elf", "Vue"]);
   });
 
-  it("collapses surplus tags without changing the input's height", async () => {
+  it("keeps surplus tags visible for a wrapping input layout", async () => {
     const el = await mount({
       modelValue: ["Vue", "React", "Solid"],
       collapseTags: true,
       maxCollapseTags: 1
     });
 
-    expect(el.shadowRoot!.querySelectorAll(".tag")).toHaveLength(1);
-    expect(el.shadowRoot!.querySelector(".overflow-count")?.textContent).toContain("+2");
+    expect(el.shadowRoot!.querySelectorAll(".tag")).toHaveLength(3);
+    expect(el.shadowRoot!.querySelector(".overflow-count")).toBeNull();
+    expect(el.shadowRoot!.querySelector(".tag-strip")?.textContent).toContain("Solid");
     expect(el.shadowRoot!.querySelector(".remove svg")).toBeTruthy();
   });
 
-  it("exposes hidden tags and allows deleting one of them", async () => {
+  it("allows deleting every visible tag after wrapping", async () => {
     const el = await mount({
       modelValue: ["Vue", "React", "Solid"],
       collapseTags: true,
@@ -82,10 +83,10 @@ describe("elf-input-tag", () => {
     const onUpdate = vi.fn();
     el.addEventListener("update:modelValue", onUpdate as EventListener);
 
-    const hidden = el.shadowRoot!.querySelectorAll(".hidden-tag");
-    expect(hidden).toHaveLength(2);
-    expect(hidden[0]?.textContent).toContain("React");
-    (hidden[0]!.querySelector(".remove") as HTMLButtonElement).click();
+    const tags = el.shadowRoot!.querySelectorAll(".tag");
+    expect(tags).toHaveLength(3);
+    expect(tags[1]?.textContent).toContain("React");
+    (tags[1]!.querySelector(".remove") as HTMLButtonElement).click();
     await tick();
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Vue", "Solid"]);

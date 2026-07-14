@@ -134,12 +134,12 @@
     border-top: none;
   }
 
-  ::slotted([slot="header"]) {
+  .menu-header-content {
     display: none;
   }
 
-  ::slotted(*) {
-    overflow: hidden;
+  .menu-header {
+    justify-content: center;
   }
 }
 

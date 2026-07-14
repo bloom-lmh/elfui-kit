@@ -1,98 +1,8 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
 
-const time = useRef("09:30");
-
-const rangeValue = useRef<[string, string]>(["09:00", "18:00"]);
-
-const fallbackTime = useRef("12:30");
-
-const visibleLog = useRef("等待聚焦");
-
-const shortcuts = [
-  { label: "上午", value: "09:00", endValue: "12:00" },
-  { label: "工作日", value: "09:00", endValue: "18:00" },
-  { label: "晚上", value: "19:00", endValue: "22:00" }
-];
-
-const updateTime = (event: CustomEvent): void => {
-  time.set(String(event.detail));
-};
-
-const updateRange = (event: CustomEvent): void => {
-  rangeValue.set((event.detail ?? ["", ""]) as [string, string]);
-};
-
-const updateFallback = (event: CustomEvent): void => {
-  fallbackTime.set(String(event.detail || ""));
-};
-
-const clearFallback = (): string => "09:00";
-
-const onVisibleChange = (event: CustomEvent): void => {
-  visibleLog.set(event.detail ? "面板已打开" : "面板已关闭");
-};
-
-const rangeText = (): string =>
-  `${rangeValue.value[0] || "--:--"} 至 ${rangeValue.value[1] || "--:--"}`;
-
-const singleCode = `<elf-time-picker
-  :modelValue=\${time}
-  :step=\${300}
-  clearable
-  @update:modelValue=\${updateTime}
-/>`;
-
-const singleScript = `const time = useRef("09:30");
-
-const updateTime = (event) => {
-  time.set(event.detail);
-};`;
-
-const rangeCode = `<elf-time-picker
-  :modelValue.prop=\${rangeValue}
-  is-range
-  start-placeholder="开始时间"
-  end-placeholder="结束时间"
-  range-separator="到"
-  :shortcuts.prop=\${shortcuts}
-  @update:modelValue=\${updateRange}
-/>`;
-
-const rangeScript = `const rangeValue = useRef(["09:00", "18:00"]);
-
-const shortcuts = [
-  { label: "上午", value: "09:00", endValue: "12:00" },
-  { label: "工作日", value: "09:00", endValue: "18:00" },
-  { label: "晚上", value: "19:00", endValue: "22:00" }
-];
-
-const updateRange = (event) => {
-  rangeValue.set(event.detail);
-};`;
-
-const controlCode = `<elf-time-picker
-  :modelValue=\${fallbackTime}
-  min="09:00"
-  max="18:00"
-  size="lg"
-  :editable=\${false}
-  :value-on-clear.prop=\${clearFallback}
-  @update:modelValue=\${updateFallback}
-  @visible-change=\${onVisibleChange}
-/>`;
-
-const controlScript = `const fallbackTime = useRef("12:30");
-const visibleLog = useRef("等待聚焦");
-
-const clearFallback = () => "09:00";
-
-const updateFallback = (event) => {
-  fallbackTime.set(event.detail || "");
-};
-
-const onVisibleChange = (event) => {
-  visibleLog.set(event.detail ? "面板已打开" : "面板已关闭");
-};`;
+import { PageTimePickerEx1 } from "./ex1";
+import { PageTimePickerEx2 } from "./ex2";
+import { PageTimePickerEx3 } from "./ex3";
 
 const propsRows = [
   {
@@ -146,63 +56,21 @@ const methodsRows = [
   { name: "handleClose()", desc: "手动标记关闭状态" }
 ];
 
+useComponents({
+  "page-time-picker-ex1": PageTimePickerEx1,
+  "page-time-picker-ex2": PageTimePickerEx2,
+  "page-time-picker-ex3": PageTimePickerEx3
+});
+
 const PageTimePicker = defineHtml(html`
   <elf-container>
     <h1>TimePicker 时间选择器</h1>
     <p>支持单时间、时间范围、步进、最小最大值、快捷项和清空。</p>
-    <elf-playground title="单时间" :code=${singleCode} :script=${singleScript}>
-      <div style="display:grid;gap:16px;width:100%;max-width:820px">
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <elf-time-picker
-            :modelValue=${time}
-            :step=${300}
-            clearable
-            @update:modelValue=${updateTime}
-          ></elf-time-picker>
-          <span class="demo-state">{{ time }}</span>
-        </div>
-      </div>
-    </elf-playground>
+    <page-time-picker-ex1 />
 
-    <elf-playground title="范围值、快捷时间与清空" :code=${rangeCode} :script=${rangeScript}>
-      <div style="display:grid;gap:16px;width:100%;max-width:820px">
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <elf-time-picker
-            :modelValue.prop=${rangeValue}
-            is-range
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            range-separator="到"
-            :shortcuts.prop=${shortcuts}
-            clearable
-            @update:modelValue=${updateRange}
-          ></elf-time-picker>
-          <span class="demo-state">{{ rangeText() }}</span>
-        </div>
-      </div>
-    </elf-playground>
+    <page-time-picker-ex2 />
 
-    <elf-playground
-      title="限制范围、不可编辑与清空回退值"
-      :code=${controlCode}
-      :script=${controlScript}
-    >
-      <div style="display:grid;gap:12px;width:100%;max-width:820px">
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <elf-time-picker
-            :modelValue=${fallbackTime}
-            min="09:00"
-            max="18:00"
-            size="lg"
-            :editable=${false}
-            :valueOnClear.prop=${clearFallback}
-            @update:modelValue=${updateFallback}
-            @visible-change=${onVisibleChange}
-          ></elf-time-picker>
-          <span class="demo-state">{{ fallbackTime }} / {{ visibleLog }}</span>
-        </div>
-      </div>
-    </elf-playground>
+    <page-time-picker-ex3 />
 
     <h2>API</h2>
     <elf-props-table title="属性" :rows=${propsRows}></elf-props-table>

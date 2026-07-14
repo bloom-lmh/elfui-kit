@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useReactive, useRef, useTemplateRef } from "elfui";
+import { defineHtml, html, useReactive, useRef, useTemplateRef } from "elfui";
+
 import type { FormRules } from "../../../components/Form";
 
 interface FormHost extends HTMLElement {
@@ -52,7 +52,12 @@ formRef.clearValidate()`;
 const PageFormEx3 = defineHtml(html`
   <h2>提交校验</h2>
   <elf-playground title="validate / resetFields / clearValidate" :code="code">
-    <div style="width:100%;max-width:620px;display:grid;gap:12px">
+    <elf-card
+      variant="outlined"
+      title="新建项目"
+      subtitle="校验结果与操作按钮保持在同一张 Card 中"
+      style="width:100%;max-width:680px"
+    >
       <elf-form
         ref="formEl"
         :model.prop="model"
@@ -79,8 +84,8 @@ const PageFormEx3 = defineHtml(html`
         <elf-button @click="reset()">重置</elf-button>
         <elf-button @click="clear()">清除校验</elf-button>
       </div>
-      <p class="demo-state">{{ message }}</p>
-    </div>
+      <p slot="status" class="demo-state">{{ message }}</p>
+    </elf-card>
   </elf-playground>
 `);
 

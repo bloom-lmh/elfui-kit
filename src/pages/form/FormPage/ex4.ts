@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useReactive, useRef } from "elfui";
+import { defineHtml, html, useReactive, useRef } from "elfui";
+
 
 const disabled = useRef(false);
 
@@ -26,12 +26,17 @@ const code = `<elf-form :model.prop="settings" label-position="right" label-widt
 const PageFormEx4 = defineHtml(html`
   <h2>布局与禁用态</h2>
   <elf-playground title="label-position / label-width / disabled" :code="code">
-    <div style="width:100%;max-width:640px;display:grid;gap:12px">
-      <div style="display:flex;justify-content:flex-end">
+    <elf-card
+      variant="outlined"
+      title="环境配置"
+      subtitle="通过 extra 插槽放置与内容相关的轻量操作"
+      style="width:100%;max-width:680px"
+    >
+      <template #extra>
         <elf-button size="small" @click="toggle()"
           >{{ disabled ? '启用表单' : '禁用表单' }}</elf-button
         >
-      </div>
+      </template>
       <elf-form
         :model.prop="settings"
         label-position="right"
@@ -48,7 +53,7 @@ const PageFormEx4 = defineHtml(html`
           <elf-textarea v-model="settings.remark" rows="3"></elf-textarea>
         </elf-form-item>
       </elf-form>
-    </div>
+    </elf-card>
   </elf-playground>
 `);
 

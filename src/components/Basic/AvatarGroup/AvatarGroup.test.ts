@@ -43,7 +43,7 @@ describe("elf-avatar-group", () => {
     await tick();
 
     expect(avatars.map((avatar) => avatar.hidden)).toEqual([false, false, true, true]);
-    expect(group.shadowRoot!.querySelector(".collapse")?.textContent).toBe("+2");
+    expect(group.shadowRoot!.querySelector(".collapse")?.textContent?.trim()).toBe("+2");
     expect(avatars[2]!.getAttribute("aria-hidden")).toBe("true");
   });
 

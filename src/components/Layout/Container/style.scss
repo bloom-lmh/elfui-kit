@@ -29,6 +29,16 @@
   max-width: 100%;
 }
 
+:host([fluid]) {
+  max-width: none;
+}
+
+@media (max-width: 600px) {
+  :host(:not([padding="0"])) {
+    padding-inline: var(--elf-space-3);
+  }
+}
+
 :host([padding="0"]) {
   padding: 0;
 }

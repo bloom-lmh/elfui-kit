@@ -20,6 +20,7 @@ interface TreeEl extends HTMLElement {
   checkStrictly?: boolean;
   accordion?: boolean;
   filterable?: boolean;
+  bordered?: boolean;
   props?: Record<string, string>;
 }
 
@@ -58,6 +59,16 @@ const labels = (el: TreeEl): string[] =>
   );
 
 describe("elf-tree", () => {
+  it("默认无边框并支持显式 bordered 外观", async () => {
+    const plain = await mount();
+    expect(plain.shadowRoot!.querySelector(".tree")!.classList.contains("is-bordered")).toBe(false);
+
+    const bordered = await mount((tree) => {
+      tree.bordered = true;
+    });
+    expect(bordered.shadowRoot!.querySelector(".tree")!.classList.contains("is-bordered")).toBe(true);
+  });
+
   it("默认只渲染根节点", async () => {
     const el = await mount();
 

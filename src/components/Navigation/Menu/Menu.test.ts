@@ -275,7 +275,9 @@ describe("elf-menu", () => {
     await tick();
     await tick();
 
-    expect(el.shadowRoot!.querySelector(".menu-header .collapse-toggle")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".menu-header")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".menu-header-content slot[name='header']")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".menu-toggle-slot--header .collapse-toggle")).toBeTruthy();
     expect(el.shadowRoot!.querySelector(".menu-footer .collapse-toggle")).toBeFalsy();
   });
 

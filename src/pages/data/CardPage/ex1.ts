@@ -71,7 +71,7 @@ const PageCardEx1 = defineHtml(html`
         <elf-button variant="text" color="primary" size="sm">了解详情</elf-button>
       </template>
     </elf-card>
-    <span class="demo-state">点击次数：{{ clickCount }}</span>
+    <span slot="status" class="demo-state">点击次数：{{ clickCount }}</span>
   </elf-playground>
 
   <h2>Element Plus 兼容 API</h2>

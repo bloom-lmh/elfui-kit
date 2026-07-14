@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const message = useRef("点击操作按钮查看反馈");
 
@@ -107,7 +107,7 @@ const PageTableEx9 = defineHtml(html`
   <elf-playground title="actions 列可直接声明行级操作，cellStyle 可按行定制样式" :code="code">
     <div style="width: 100%; display: grid; gap: 12px">
       <elf-table :data.prop="rowsData()" :columns.prop="columns" border></elf-table>
-      <p class="demo-state">{{ message }}</p>
+      <p slot="status" class="demo-state">{{ message }}</p>
       <elf-dialog v-model:open="dialogOpen" title="确认删除" size="sm">
         <p>确定删除「{{ pendingName() }}」吗？这个操作会从当前表格中移除该行。</p>
         <template #footer>

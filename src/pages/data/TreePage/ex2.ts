@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const checked = useRef<string[]>(["readme"]);
 
@@ -73,7 +73,7 @@ const PageTreeEx2 = defineHtml(html`
       default-expand-all
       filter-placeholder="搜索文件"
     ></elf-tree>
-    <p class="demo-state">已勾选：{{ checkedText() }}</p>
+    <p slot="status" class="demo-state">已勾选：{{ checkedText() }}</p>
   </elf-playground>
 
   <h2>严格勾选</h2>
@@ -87,7 +87,7 @@ const PageTreeEx2 = defineHtml(html`
       check-strictly
       default-expand-all
     ></elf-tree>
-    <p class="demo-state">严格勾选：{{ checkedStrictText() }}</p>
+    <p slot="status" class="demo-state">严格勾选：{{ checkedStrictText() }}</p>
   </elf-playground>
 `);
 

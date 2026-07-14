@@ -222,3 +222,4 @@
 ## 本轮记录
 
 - [x] 2026-07-11 Navigation 第一阶段：补 `ellipsis/ellipsisIcon/menuTrigger/showTimeout/hideTimeout/popperOffset/popperClass/popperStyle/collapseTransition/closeOnClickOutside/persistent` 兼容入口，支持 `title/route/popperClass/teleported` 字段映射，补 `handleResize/updateActiveIndex` 暴露方法，新增定向测试和 PropsTable/hover 案例。
+- [x] 2026-07-14 增加可选 `bordered` 外框；修复自定义 toggle 双触发、搜索事件与折叠 header 裁切，并将稳定 toggle 放入 header 同行。

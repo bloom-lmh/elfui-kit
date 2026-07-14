@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useReactive } from "elfui";
+import { defineHtml, html, useReactive } from "elfui";
+
 import type { FormRules } from "../../../components/Form";
 
 const formData = useReactive({
@@ -40,7 +40,12 @@ const rules: FormRules = { name: [{ required: true }], ... }`;
 const PageFormEx1 = defineHtml(html`
   <h2>综合示例</h2>
   <elf-playground title="完整表单" :code="code1">
-    <div style="width:100%;max-width:560px">
+    <elf-card
+      variant="outlined"
+      title="创建个人资料"
+      subtitle="使用 Card 组织长表单的标题和内容层级"
+      style="width:100%;max-width:620px"
+    >
       <elf-form :model="formData" :rules="rules" label-position="top">
         <elf-form-item prop="name" label="姓名" required>
           <elf-input v-model="formData.name" placeholder="2-20 字符" clearable />
@@ -85,7 +90,7 @@ const PageFormEx1 = defineHtml(html`
           />
         </elf-form-item>
       </elf-form>
-    </div>
+    </elf-card>
   </elf-playground>
 `);
 

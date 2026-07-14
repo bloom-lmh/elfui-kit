@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const checked = useRef<string[]>(["dashboard:view", "user:list"]);
 
@@ -72,9 +72,10 @@ const code = `<elf-tree
 const PageTreeEx3 = defineHtml(html`
   <h2>权限树</h2>
   <elf-playground title="常见后台权限配置：回显、勾选、禁用危险权限" :code="code">
-    <div class="demo-actions">
-      <button type="button" @click="selectAdmin()">管理员模板</button>
-      <button type="button" @click="clear()">清空</button>
+    <div slot="status" class="demo-actions" style="display:inline-flex;align-items:center;gap:6px">
+      <span class="demo-state">权限 keys：{{ checkedText() }}</span>
+      <elf-button size="small" variant="text" @click="selectAdmin()">管理员模板</elf-button>
+      <elf-button size="small" variant="text" @click="clear()">清空</elf-button>
     </div>
     <elf-tree
       :data.prop="permissions"
@@ -85,7 +86,6 @@ const PageTreeEx3 = defineHtml(html`
       show-checkbox
       default-expand-all
     ></elf-tree>
-    <p class="demo-state">权限 keys：{{ checkedText() }}</p>
   </elf-playground>
 `);
 

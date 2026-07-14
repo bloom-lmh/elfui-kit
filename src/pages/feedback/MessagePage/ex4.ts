@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 import { ElfMessage } from "../../../components/Feedback";
 
 const lastEvent = useRef("等待交互");
@@ -31,7 +31,7 @@ const PageMessageEx4 = defineHtml(html`
   <elf-playground title="位置、偏移与回调" :code="code4">
     <div style="display:grid;gap:12px">
       <elf-button color="success" @click="showBottom">底部提示</elf-button>
-      <p class="demo-state">{{ lastEvent }}</p>
+      <p slot="status" class="demo-state">{{ lastEvent }}</p>
     </div>
   </elf-playground>
 `);

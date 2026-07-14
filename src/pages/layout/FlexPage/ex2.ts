@@ -22,6 +22,12 @@ const code2 = `<elf-flex align="flex-start" gap="md">
   <elf-button size="lg">lg</elf-button>
 </elf-flex>`;
 
+const code3 = `<elf-flex wrap gap="md" align="stretch" fill>
+  <article style="flex:1 1 220px">统计卡片</article>
+  <article style="flex:1 1 220px">统计卡片</article>
+  <article style="flex:1 1 220px">统计卡片</article>
+</elf-flex>`;
+
 const PageFlexEx2 = defineHtml(html`
   <h2>主轴对齐</h2>
   <elf-playground title="justify" :code="code1">
@@ -72,6 +78,15 @@ const PageFlexEx2 = defineHtml(html`
         ><elf-button size="lg">lg</elf-button>
       </elf-flex>
     </div>
+  </elf-playground>
+
+  <h2>响应式换行</h2>
+  <elf-playground title="类似 Vuetify 的流式卡片行" :code=${code3}>
+    <elf-flex wrap gap="md" align="stretch" fill style="width:100%">
+      <article style="flex:1 1 220px;padding:20px;border:1px solid var(--elf-border);border-radius:14px;background:var(--elf-bg-paper)"><small style="color:var(--elf-text-secondary)">今日访问</small><strong style="display:block;margin-top:8px;font-size:28px">12,480</strong></article>
+      <article style="flex:1 1 220px;padding:20px;border:1px solid var(--elf-border);border-radius:14px;background:var(--elf-bg-paper)"><small style="color:var(--elf-text-secondary)">活跃项目</small><strong style="display:block;margin-top:8px;font-size:28px">36</strong></article>
+      <article style="flex:1 1 220px;padding:20px;border:1px solid var(--elf-border);border-radius:14px;background:var(--elf-bg-paper)"><small style="color:var(--elf-text-secondary)">待处理</small><strong style="display:block;margin-top:8px;font-size:28px">8</strong></article>
+    </elf-flex>
   </elf-playground>
 `);
 

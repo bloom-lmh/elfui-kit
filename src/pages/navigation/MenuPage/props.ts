@@ -25,6 +25,7 @@ const propsRows = [
   { name: "indent", type: "number", default: "20", desc: "子级缩进 px" },
   { name: "rounded", type: "boolean", default: "false", desc: "外圆角" },
   { name: "elevation", type: "boolean", default: "false", desc: "外阴影" },
+  { name: "bordered", type: "boolean", default: "false", desc: "是否显示菜单外边框" },
   { name: "showToggle", type: "boolean", default: "false", desc: "显示折叠切换按钮" },
   {
     name: "togglePlacement",

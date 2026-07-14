@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const active = useRef("/product/list");
 
@@ -67,6 +67,7 @@ const PageMenuEx2 = defineHtml(html`
   <elf-playground title="顶部导航 / 下方面板" :code=${code} :script=${script}>
     <div style="width:100%;max-width:860px">
       <elf-menu
+        bordered
         mode="horizontal"
         :items.prop=${items}
         :modelValue=${active}

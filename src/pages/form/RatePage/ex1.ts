@@ -1,0 +1,21 @@
+import { defineHtml, html, useRef } from "elfui";
+
+
+const value = useRef(3);
+
+const basicCode = `<elf-rate v-model="value" show-text></elf-rate>`;
+
+const onValue = (event: CustomEvent): void => {
+  value.set(Number(event.detail));
+};
+
+const PageRateEx1 = defineHtml(html`
+<elf-playground title="基础评分与文本" :code="basicCode">
+      <div style="display:grid;gap:12px">
+        <elf-rate :modelValue.prop="value" show-text @update:modelValue="onValue"></elf-rate>
+        <span slot="status" class="demo-state">当前评分：{{ value }}</span>
+      </div>
+    </elf-playground>
+`);
+
+export { PageRateEx1 };

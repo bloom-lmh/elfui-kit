@@ -10,7 +10,7 @@ const code1 = `<div style="width:280px">
     @update:modelValue=\${onTextUpdate}
   />
 </div>
-<span class="demo-state">当前：{{ text || '未输入' }}</span>`;
+<span slot="status" class="demo-state">当前：{{ text || '未输入' }}</span>`;
 
 const script1 = `const text = useRef("");
 
@@ -61,7 +61,7 @@ const PageInputEx1 = defineHtml(html`
         @update:modelValue=${onTextUpdate}
       ></elf-input>
     </div>
-    <span class="demo-state">当前：{{ text || '未输入' }}</span>
+    <span slot="status" class="demo-state">当前：{{ text || '未输入' }}</span>
   </elf-playground>
 
   <h2>不同类型</h2>

@@ -81,3 +81,4 @@
 - [x] 关键交互和边界状态有单测覆盖。
 - [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [x] `pnpm build` 通过；目标单测通过。
+- [x] 2026-07-14 Dashboard 案例固定为 2 × 2 卡片骨架，保持窄屏单列回退。

@@ -65,6 +65,7 @@ export interface MenuProps {
   indent: number;
   rounded: boolean;
   elevation: boolean;
+  bordered: boolean;
   showToggle: boolean;
   togglePlacement: MenuTogglePlacement;
   searchable: boolean;

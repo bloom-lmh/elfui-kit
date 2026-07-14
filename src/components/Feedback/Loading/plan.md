@@ -15,3 +15,4 @@
 ## 本轮案例页
 
 - [x] 新增独立展示页面，覆盖 Template / Script、局部受控、background 和 fullscreen 示例。
+- [x] 2026-07-14 增加 `spinner / dots / pulse / bars` 四种动效与卡片刷新案例，统一圆角遮罩和暗色主题。

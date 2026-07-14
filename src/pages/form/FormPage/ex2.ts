@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useReactive, useRef } from "elfui";
+import { defineHtml, html, useReactive, useRef } from "elfui";
+
 
 const query = useReactive({
   keyword: "",
@@ -30,7 +30,12 @@ const code = `<elf-form :model.prop="query" inline label-position="left">
 const PageFormEx2 = defineHtml(html`
   <h2>行内筛选</h2>
   <elf-playground title="inline / select / switch" :code="code">
-    <div style="display:grid;gap:12px;width:100%">
+    <elf-card
+      variant="outlined"
+      title="服务筛选"
+      subtitle="紧凑条件适合放在 Card 的内容区"
+      style="width:100%"
+    >
       <elf-form :model.prop="query" inline label-position="left" label-width="72px">
         <elf-form-item label="关键词">
           <elf-input v-model="query.keyword" placeholder="服务名 / 负责人" clearable></elf-input>
@@ -43,8 +48,8 @@ const PageFormEx2 = defineHtml(html`
         </elf-form-item>
         <elf-button type="primary" @click="search()">筛选</elf-button>
       </elf-form>
-      <p class="demo-state">{{ result }}</p>
-    </div>
+      <p slot="status" class="demo-state">{{ result }}</p>
+    </elf-card>
   </elf-playground>
 `);
 

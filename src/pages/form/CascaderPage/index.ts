@@ -1,162 +1,11 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
 
-const value = useRef<string[]>(["zhejiang", "hangzhou"]);
-const clearableValue = useRef<string[]>([]);
-const multipleValue = useRef<string[][]>([["zhejiang", "hangzhou"]]);
-const checkableValue = useRef<string[][]>([["jiangsu", "nanjing"]]);
-const panelValue = useRef<string[][]>([["zhejiang", "ningbo"]]);
-const searchValue = useRef<string[]>([]);
-const status = useRef("浙江 / 杭州");
-const multipleStatus = useRef("浙江 / 杭州");
-const checkableStatus = useRef("江苏 / 南京");
-const panelStatus = useRef("浙江 / 宁波");
-
-const options = [
-  {
-    label: "浙江",
-    value: "zhejiang",
-    children: [
-      { label: "杭州", value: "hangzhou" },
-      { label: "宁波", value: "ningbo" }
-    ]
-  },
-  {
-    label: "江苏",
-    value: "jiangsu",
-    children: [
-      { label: "南京", value: "nanjing" },
-      { label: "苏州", value: "suzhou" }
-    ]
-  },
-  {
-    label: "广东",
-    value: "guangdong",
-    children: [
-      { label: "广州", value: "guangzhou" },
-      { label: "深圳", value: "shenzhen", disabled: true }
-    ]
-  }
-];
-
-const code1 = `<elf-cascader
-  :options.prop=\${options}
-  :modelValue=\${value}
-  @update:modelValue=\${onUpdate}
-  @change=\${onChange}
-/>`;
-
-const script1 = `const value = useRef(["zhejiang", "hangzhou"]);
-const status = useRef("浙江 / 杭州");
-
-const options = [
-  {
-    label: "浙江",
-    value: "zhejiang",
-    children: [
-      { label: "杭州", value: "hangzhou" },
-      { label: "宁波", value: "ningbo" }
-    ]
-  },
-  {
-    label: "江苏",
-    value: "jiangsu",
-    children: [{ label: "南京", value: "nanjing" }]
-  }
-];
-
-const onUpdate = (event) => {
-  value.set(event.detail);
-};
-
-const onChange = (event) => {
-  status.set(event.detail.path.join(" / ") || "未选择");
-};`;
-
-const code2 = `<elf-cascader
-  :options.prop=\${options}
-  :modelValue=\${clearableValue}
-  clearable
-  placeholder="请选择地区"
-  @update:modelValue=\${onClearableUpdate}
-/>`;
-
-const script2 = `const clearableValue = useRef([]);
-
-const onClearableUpdate = (event) => {
-  clearableValue.set(event.detail);
-};`;
-
-const code3 = `<elf-cascader
-  multiple
-  clearable
-  :options.prop=\${options}
-  :modelValue=\${multipleValue}
-  @update:modelValue=\${onMultipleUpdate}
-  @change=\${onMultipleChange}
-/>`;
-
-const script3 = `const multipleValue = useRef([["zhejiang", "hangzhou"]]);
-const multipleStatus = useRef("浙江 / 杭州");
-
-const onMultipleUpdate = (event) => {
-  multipleValue.set(event.detail);
-};
-
-const onMultipleChange = (event) => {
-  multipleStatus.set(event.detail.path.map((path) => path.join(" / ")).join("、") || "未选择");
-};`;
-
-const code4 = `<elf-cascader
-  checkable
-  clearable
-  :options.prop=\${options}
-  :modelValue=\${checkableValue}
-  @update:modelValue=\${onCheckableUpdate}
-  @change=\${onCheckableChange}
-/>`;
-
-const script4 = `const checkableValue = useRef([["jiangsu", "nanjing"]]);
-const checkableStatus = useRef("江苏 / 南京");
-
-const onCheckableUpdate = (event) => {
-  checkableValue.set(event.detail);
-};
-
-const onCheckableChange = (event) => {
-  checkableStatus.set(event.detail.path.map((path) => path.join(" / ")).join("、") || "未选择");
-};`;
-
-const code5 = `<elf-cascader-panel
-  checkable
-  :options.prop=\${options}
-  :modelValue=\${panelValue}
-  @update:modelValue=\${onPanelUpdate}
-  @change=\${onPanelChange}
-/>`;
-
-const code6 = `<elf-cascader
-  filterable
-  :options.prop=\${options}
-  :modelValue=\${searchValue}
-  @update:modelValue=\${onSearchUpdate}
-/>`;
-
-const script6 = `const searchValue = useRef([]);
-
-const onSearchUpdate = (event) => {
-  searchValue.set(event.detail);
-};`;
-
-const script5 = `const panelValue = useRef([["zhejiang", "ningbo"]]);
-const panelStatus = useRef("浙江 / 宁波");
-
-const onPanelUpdate = (event) => {
-  panelValue.set(event.detail);
-};
-
-const onPanelChange = (event) => {
-  panelStatus.set(event.detail.path.map((path) => path.join(" / ")).join("、") || "未选择");
-};`;
+import { PageCascaderEx1 } from "./ex1";
+import { PageCascaderEx2 } from "./ex2";
+import { PageCascaderEx3 } from "./ex3";
+import { PageCascaderEx4 } from "./ex4";
+import { PageCascaderEx5 } from "./ex5";
+import { PageCascaderEx6 } from "./ex6";
 
 const propsRows = [
   {
@@ -237,141 +86,31 @@ const panelPropsRows = [
   { name: "props", type: "CascaderFieldNames", default: "-", desc: "字段名和勾选行为配置" }
 ];
 
-const joinPaths = (paths: unknown): string => {
-  if (!Array.isArray(paths)) return "未选择";
-  if (paths.length === 0) return "未选择";
-  if (Array.isArray(paths[0])) {
-    return (paths as string[][]).map((path) => path.join(" / ")).join("、") || "未选择";
-  }
-  return (paths as string[]).join(" / ") || "未选择";
-};
-
-const onUpdate = (event: CustomEvent): void => {
-  value.set(event.detail as string[]);
-};
-
-const onClearableUpdate = (event: CustomEvent): void => {
-  clearableValue.set(event.detail as string[]);
-};
-
-const onMultipleUpdate = (event: CustomEvent): void => {
-  multipleValue.set(event.detail as string[][]);
-};
-
-const onCheckableUpdate = (event: CustomEvent): void => {
-  checkableValue.set(event.detail as string[][]);
-};
-
-const onPanelUpdate = (event: CustomEvent): void => {
-  panelValue.set(event.detail as string[][]);
-};
-
-const onChange = (event: CustomEvent): void => {
-  const detail = event.detail as { path?: string[] };
-  status.set(joinPaths(detail.path));
-};
-
-const onMultipleChange = (event: CustomEvent): void => {
-  const detail = event.detail as { path?: string[][] };
-  multipleStatus.set(joinPaths(detail.path));
-};
-
-const onCheckableChange = (event: CustomEvent): void => {
-  const detail = event.detail as { path?: string[][] };
-  checkableStatus.set(joinPaths(detail.path));
-};
-
-const onPanelChange = (event: CustomEvent): void => {
-  const detail = event.detail as { path?: string[][] };
-  panelStatus.set(joinPaths(detail.path));
-};
+useComponents({
+  "page-cascader-ex1": PageCascaderEx1,
+  "page-cascader-ex2": PageCascaderEx2,
+  "page-cascader-ex3": PageCascaderEx3,
+  "page-cascader-ex4": PageCascaderEx4,
+  "page-cascader-ex5": PageCascaderEx5,
+  "page-cascader-ex6": PageCascaderEx6
+});
 
 const PageCascader = defineHtml(html`
   <elf-container>
     <h1>Cascader 级联选择器</h1>
     <p>从多级数据中逐级选择，适合地区、组织、分类等树状选项。</p>
 
-    <elf-playground title="基础用法" :code=${code1} :script=${script1}>
-      <div style="display:grid;gap:12px;width:260px">
-        <elf-cascader
-          :options.prop=${options}
-          :modelValue=${value}
-          @update:modelValue=${onUpdate}
-          @change=${onChange}
-        ></elf-cascader>
-        <span class="demo-state">当前路径：{{ status }}</span>
-      </div>
-    </elf-playground>
+    <page-cascader-ex1 />
 
-    <elf-playground title="可清空 / 禁用项" :code=${code2} :script=${script2}>
-      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-        <div style="width:260px">
-          <elf-cascader
-            :options.prop=${options}
-            :modelValue=${clearableValue}
-            clearable
-            placeholder="请选择地区"
-            @update:modelValue=${onClearableUpdate}
-          ></elf-cascader>
-        </div>
-        <div style="width:260px">
-          <elf-cascader :options.prop=${options} disabled placeholder="禁用状态"></elf-cascader>
-        </div>
-      </div>
-    </elf-playground>
+    <page-cascader-ex2 />
 
-    <elf-playground title="多选" :code=${code3} :script=${script3}>
-      <div style="display:grid;gap:12px;width:320px">
-        <elf-cascader
-          multiple
-          clearable
-          :options.prop=${options}
-          :modelValue=${multipleValue}
-          @update:modelValue=${onMultipleUpdate}
-          @change=${onMultipleChange}
-        ></elf-cascader>
-        <span class="demo-state">当前路径：{{ multipleStatus }}</span>
-      </div>
-    </elf-playground>
+    <page-cascader-ex3 />
 
-    <elf-playground title="选项框" :code=${code4} :script=${script4}>
-      <div style="display:grid;gap:12px;width:320px">
-        <elf-cascader
-          checkable
-          clearable
-          :options.prop=${options}
-          :modelValue=${checkableValue}
-          @update:modelValue=${onCheckableUpdate}
-          @change=${onCheckableChange}
-        ></elf-cascader>
-        <span class="demo-state">当前路径：{{ checkableStatus }}</span>
-      </div>
-    </elf-playground>
+    <page-cascader-ex4 />
 
-    <elf-playground title="独立级联选项面板" :code=${code5} :script=${script5}>
-      <div style="display:grid;gap:12px;width:max-content">
-        <elf-cascader-panel
-          checkable
-          :options.prop=${options}
-          :modelValue=${panelValue}
-          @update:modelValue=${onPanelUpdate}
-          @change=${onPanelChange}
-        ></elf-cascader-panel>
-        <span class="demo-state">当前路径：{{ panelStatus }}</span>
-      </div>
-    </elf-playground>
+    <page-cascader-ex5 />
 
-    <elf-playground title="搜索级联路径" :code=${code6} :script=${script6}>
-      <div style="display:grid;gap:12px;width:320px">
-        <elf-cascader
-          filterable
-          :options.prop=${options}
-          :modelValue=${searchValue}
-          @update:modelValue=${onSearchUpdate}
-        ></elf-cascader>
-        <span class="demo-state">输入城市或上级地区名称，搜索可选路径。</span>
-      </div>
-    </elf-playground>
+    <page-cascader-ex6 />
 
     <h2>API</h2>
     <elf-props-table title="级联选择器属性" :rows=${propsRows}></elf-props-table>

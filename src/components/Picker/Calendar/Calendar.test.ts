@@ -54,10 +54,31 @@ describe("elf-calendar", () => {
     expect(el.shadowRoot!.querySelector(".week")?.textContent).toContain("日");
     expect(Array.from(days).some((day) => day.disabled)).toBe(true);
     const header = el.shadowRoot!.querySelector(".header")!;
-    expect(header.textContent).toContain("2026-07");
+    expect(header.textContent).toContain("2026年");
+    expect(header.textContent).toContain("7月");
     (el.shadowRoot!.querySelectorAll(".nav")[1] as HTMLButtonElement).click();
     await tick();
-    expect(header.textContent).toContain("2026-08");
+    expect(header.textContent).toContain("8月");
+  });
+
+  it("通过月份和年份面板切换日期层级", async () => {
+    const el = document.createElement("elf-calendar") as CalendarEl;
+    el.modelValue = "2026-07-05";
+    el.locale = "zh-CN";
+    document.body.appendChild(el);
+    await tick();
+
+    const periodButtons = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".period-button");
+    periodButtons[0]!.click();
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll(".year-grid .choice")).toHaveLength(12);
+
+    const yearButton = Array.from(el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".year-grid .choice")).find(
+      (button) => button.textContent?.trim() === "2027"
+    )!;
+    yearButton.click();
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll(".month-grid .choice")).toHaveLength(12);
   });
 
   it("collects two clicks into a sorted range", async () => {

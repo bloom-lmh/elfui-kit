@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const stuck = useRef("未吸附");
 
@@ -15,20 +15,23 @@ const code = `<elf-sticky top="0" @change="onChange">
 
 const PageStickyEx1 = defineHtml(html`
   <h2>顶部吸附</h2>
-  <elf-playground title="top offset / change event" :code="code">
+  <elf-playground title="顶部吸附与状态变化" :code=${code}>
     <div
       style="width:100%;max-width:720px;height:260px;overflow:auto;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper)"
     >
+      <div style="height:112px;display:grid;place-items:center;padding:0 16px;background:linear-gradient(135deg,color-mix(in srgb,var(--elf-primary) 10%,var(--elf-bg-paper)),var(--elf-bg-paper));color:var(--elf-text-secondary);font-size:13px">
+        先向下滚动，工具栏抵达容器顶部时会吸附并显示阴影
+      </div>
       <elf-sticky
         top="0"
-        @change="onChange"
-        style="--sticky-shadow:0 8px 18px -16px rgba(0,0,0,.32)"
+        @change=${onChange}
+        style="--sticky-shadow:0 10px 24px -16px rgba(0,0,0,.42)"
       >
         <div
           style="display:flex;align-items:center;gap:12px;height:48px;padding:0 16px;background:var(--elf-bg-paper);border-bottom:1px solid var(--elf-divider)"
         >
           <strong>筛选工具栏</strong>
-          <span style="color:var(--elf-text-secondary);font-size:13px">{{ stuck }}</span>
+          <span style="color:var(--elf-primary);font-size:13px;font-weight:600">{{ stuck }}</span>
         </div>
       </elf-sticky>
       <div style="display:grid;gap:8px;padding:16px">

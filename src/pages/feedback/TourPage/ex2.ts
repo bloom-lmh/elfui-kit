@@ -1,6 +1,27 @@
 import { defineHtml, html, useRef } from "elfui";
 
-const code = `<elf-tour keyboard :steps="steps" :visible="visible" />`;
+const code = `<elf-button @click="startTour">开始键盘引导</elf-button>
+<elf-tour
+  keyboard
+  :steps.prop="tourSteps"
+  :visible="visible"
+  :current="current"
+  @update:current="onCurrentChange"
+  @close="closeTour"
+  @finish="finishTour"
+/>`;
+
+const script = `const visible = useRef(false);
+const current = useRef(0);
+const tourSteps = [
+  { target: "#tour-kb-a", title: "第一步", content: "...", placement: "right" },
+  { target: "#tour-kb-b", title: "第二步", content: "...", placement: "bottom" }
+];
+
+const startTour = () => { current.set(0); visible.set(true); };
+const closeTour = () => visible.set(false);
+const finishTour = () => visible.set(false);
+const onCurrentChange = (event) => current.set(Number(event.detail));`;
 
 const tourSteps = [
   {
@@ -49,7 +70,7 @@ const onCurrentChange = (event: Event): void => {
 
 const PageTourEx2 = defineHtml(html`
   <h2>键盘与焦点</h2>
-  <elf-playground title="键盘控制" :code=${code}>
+  <elf-playground title="键盘控制" :code=${code} :script=${script}>
     <div
       style="display:flex;gap:16px;flex-wrap:wrap;padding:20px;border:1px solid var(--elf-border);border-radius:8px"
     >

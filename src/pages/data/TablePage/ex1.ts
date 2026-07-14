@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const selectedKeys = useRef<string[]>(["2"]);
 
@@ -76,7 +76,7 @@ const PageTableEx1 = defineHtml(html`
         @selection-change="onSelectionChange"
         @row-click="onRowClick"
       ></elf-table>
-      <p class="demo-state">已选：{{ selectedText() }}；当前行：{{ currentRow }}</p>
+      <p slot="status" class="demo-state">已选：{{ selectedText() }}；当前行：{{ currentRow }}</p>
     </div>
   </elf-playground>
 `);

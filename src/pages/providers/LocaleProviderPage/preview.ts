@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { inject } from "elfui";
+import { defineHtml, html, inject } from "elfui";
+
 import { DEFAULT_LOCALE_CONTEXT, LOCALE_PROVIDER_KEY } from "../../../components/Providers/context";
 
 const locale = inject(LOCALE_PROVIDER_KEY, DEFAULT_LOCALE_CONTEXT) ?? DEFAULT_LOCALE_CONTEXT;

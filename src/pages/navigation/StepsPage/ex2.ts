@@ -24,7 +24,7 @@ const code1 = `<elf-steps direction="vertical" :active=\${1} :items=\${steps} />
 const code2 = `<elf-steps :active=\${1} :items=\${steps} alternative-label />`;
 const code3 = `<div class="steps-panel-demo">
   <elf-steps
-    :active=\${panelActive}
+    :active.prop=\${panelActive.value}
     :items=\${panelSteps}
     @update:active=\${onPanelActive}
   />
@@ -131,7 +131,7 @@ const PageStepsEx2 = defineHtml(html`
       style="display:grid;grid-template-columns:minmax(360px,1fr) minmax(260px,.7fr);gap:24px;align-items:start;width:100%"
     >
       <elf-steps
-        :active=${panelActive}
+        :active.prop=${panelActive.value}
         :items=${panelSteps}
         @update:active=${onPanelActive}
       ></elf-steps>

@@ -39,4 +39,5 @@ export interface TreeProps {
   filterPlaceholder: string;
   emptyText: string;
   indent: number;
+  bordered: boolean;
 }

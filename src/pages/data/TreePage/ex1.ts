@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const selected = useRef("install");
 
@@ -62,7 +62,7 @@ const PageTreeEx1 = defineHtml(html`
       @update:modelValue="onSelect"
       @update:expandedKeys="onExpanded"
     ></elf-tree>
-    <p class="demo-state">当前选中：{{ selectedText() }}；展开节点：{{ expandedText() }}</p>
+    <p slot="status" class="demo-state">当前选中：{{ selectedText() }}；展开节点：{{ expandedText() }}</p>
   </elf-playground>
 `);
 

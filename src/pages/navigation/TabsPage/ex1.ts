@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const active = useRef("activity");
 
@@ -39,7 +39,7 @@ const PageTabsEx1 = defineHtml(html`
         show-panels
         @update:modelValue=${onChange}
       ></elf-tabs>
-      <p class="demo-state">{{ message }}</p>
+      <p slot="status" class="demo-state">{{ message }}</p>
     </div>
   </elf-playground>
 `);

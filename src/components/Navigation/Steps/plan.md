@@ -100,3 +100,4 @@
 ## 本轮记录
 
 - [x] 2026-07-11 Navigation 第一阶段：补 `space/processStatus/finishStatus/alignCenter/simple` 属性、状态推断和样式，补对应单测、PropsTable 与案例。
+- [x] 2026-07-14 使用内容背景隔离连接线；水平步骤保持可读最小宽度并在窄内容区内部滚动。

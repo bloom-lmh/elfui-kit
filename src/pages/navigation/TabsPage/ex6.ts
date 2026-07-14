@@ -1,50 +1,75 @@
 import { defineHtml, html, useRef } from "elfui";
 
+type DemoTab = { label: string; value: string; icon: string; content: string };
+
 const active = useRef("reports");
-const items = [
-  { label: "收件箱", value: "inbox", icon: "收", content: "集中查看通知和待办消息。" },
-  { label: "报表", value: "reports", icon: "报", content: "查看业务报表和趋势数据。" },
-  { label: "设置", value: "settings", icon: "设", content: "管理系统和成员配置。" }
-];
+const tabItems = useRef<DemoTab[]>([
+  { label: "收件箱", value: "inbox", icon: "I", content: "集中查看通知和待办消息。" },
+  { label: "报表", value: "reports", icon: "R", content: "查看业务报表和趋势数据。" },
+  { label: "设置", value: "settings", icon: "S", content: "管理系统和成员配置。" }
+]);
 
 const onChange = (event: CustomEvent): void => {
   active.set(String(event.detail));
 };
 
 const onRemove = (event: CustomEvent): void => {
-  const removed = String(event.detail?.name ?? event.detail ?? "");
-  if (removed === active.value) active.set("reports");
+  const detail = Array.isArray(event.detail) ? event.detail : [event.detail];
+  const removed = String(detail[0] || "");
+  const next = tabItems.value.filter((item) => item.value !== removed);
+  tabItems.set(next);
+  if (active.value === removed) active.set(next[0]?.value || "");
 };
 
 const onAdd = (): void => {
-  active.set("settings");
+  const nextIndex = tabItems.value.length + 1;
+  const value = `custom-${nextIndex}`;
+  tabItems.set([
+    ...tabItems.value,
+    { label: `新标签 ${nextIndex}`, value, icon: "+", content: "这是刚刚添加的可编辑标签。" }
+  ]);
+  active.set(value);
 };
 
 const code = `<elf-tabs
   type="border-card"
   tab-position="right"
-  stretch
   editable
   show-panels
-  :items.prop=\${items}
-  :modelValue=\${active}
+  :items.prop=\${tabItems.value}
+  :modelValue.prop=\${active.value}
   @update:modelValue=\${onChange}
   @tab-remove=\${onRemove}
   @tab-add=\${onAdd}
 />`;
 
+const script = `const active = useRef("reports");
+const tabItems = useRef([...]);
+
+const onRemove = (event) => {
+  const [removed] = event.detail;
+  const next = tabItems.value.filter((item) => item.value !== removed);
+  tabItems.set(next);
+  if (active.value === removed) active.set(next[0]?.value || "");
+};
+
+const onAdd = () => {
+  const value = \`custom-\${tabItems.value.length + 1}\`;
+  tabItems.set([...tabItems.value, { label: "新标签", value, content: "新内容" }]);
+  active.set(value);
+};`;
+
 const PageTabsEx6 = defineHtml(html`
   <h2>卡片与可编辑标签</h2>
-  <elf-playground title="右侧卡片与增删操作" :code=${code}>
-    <div style="width:100%;max-width:860px">
+  <elf-playground title="新增、关闭与垂直卡片布局" :code=${code} :script=${script}>
+    <div style="width:100%;max-width:860px;min-height:260px">
       <elf-tabs
         type="border-card"
         tab-position="right"
-        stretch
         editable
         show-panels
-        :items.prop=${items}
-        :modelValue=${active}
+        :items.prop=${tabItems.value}
+        :modelValue.prop=${active.value}
         @update:modelValue=${onChange}
         @tab-remove=${onRemove}
         @tab-add=${onAdd}

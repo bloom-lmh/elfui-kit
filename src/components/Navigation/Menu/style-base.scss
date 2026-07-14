@@ -48,6 +48,10 @@
   transition: none;
 }
 
+.menu.is-bordered {
+  border: 1px solid var(--elf-divider);
+}
+
 .menu-body {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -83,18 +87,21 @@
 // ───── header / footer 插槽 ───────────────────────
 .menu-header {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: var(--elf-space-2);
-  flex-shrink: 0;
   min-width: 0;
-  padding: var(--elf-space-3);
-  border-bottom: 1px solid var(--elf-divider);
+}
+
+.menu-header-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 ::slotted([slot="header"]) {
   display: block;
-  flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
 }
 
 ::slotted([slot="footer"]) {
@@ -116,6 +123,12 @@
   display: flex;
   flex: 0 0 auto;
   align-items: center;
+}
+
+.menu-toggle-slot--header {
+  justify-content: center;
+  margin: 6px 8px;
+  padding: 0;
 }
 
 ::slotted([slot="toggle"]) {
@@ -346,4 +359,7 @@
   flex: 0 0 auto;
   width: 36px;
   height: 36px;
+  border: 1px solid var(--elf-divider);
+  border-radius: 10px;
+  background: var(--elf-bg-paper);
 }

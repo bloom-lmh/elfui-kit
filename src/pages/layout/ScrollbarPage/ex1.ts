@@ -1,79 +1,81 @@
-import { defineHtml, html, useRef } from "elfui";
-
-const palette = [
-  "linear-gradient(135deg, #6366f1, #8b5cf6)",
-  "linear-gradient(135deg, #06b6d4, #3b82f6)",
-  "linear-gradient(135deg, #f43f5e, #f59e0b)",
-  "linear-gradient(135deg, #10b981, #14b8a6)",
-  "linear-gradient(135deg, #a855f7, #ec4899)",
-  "linear-gradient(135deg, #f97316, #ef4444)"
+import { defineHtml, defineStyle, html, useRef } from "elfui";
+import styles from "./style.scss?inline";
+const messages = [
+    {
+        id: 1,
+        avatar: "https://i.pravatar.cc/80?img=12",
+        title: "Brunch this weekend?",
+        from: "Ali Connors",
+        text: "I will be in your neighborhood doing errands this weekend. Do you want to hang out?",
+    },
+    {
+        id: 2,
+        avatar: "https://i.pravatar.cc/80?img=33",
+        title: "Summer BBQ",
+        from: "to Alex, Scott, Jennifer",
+        text: "Wish I could come, but I am out of town this weekend.",
+    },
+    {
+        id: 3,
+        avatar: "https://i.pravatar.cc/80?img=48",
+        title: "Oui oui",
+        from: "Sandra Adams",
+        text: "Do you have Paris recommendations? Have you ever been?",
+    },
+    {
+        id: 4,
+        avatar: "https://i.pravatar.cc/80?img=5",
+        title: "Birthday gift",
+        from: "Trevor Hansen",
+        text: "Have any ideas about what we should get Heidi for her birthday?",
+    },
+    {
+        id: 5,
+        avatar: "https://i.pravatar.cc/80?img=25",
+        title: "Recipe to try",
+        from: "Britta Holt",
+        text: "We should eat this at the next meeting, it looks amazing.",
+    },
 ];
-
-const roles = ["前端工程师", "后端工程师", "产品经理", "设计师", "测试工程师", "运维工程师"];
-const bios = [
-  "负责核心业务模块设计与开发，主导性能与体验优化。",
-  "关注系统稳定性，推进服务端架构演进与可观测性建设。",
-  "推动产品迭代，平衡用户价值与工程成本。",
-  "沉淀设计规范，把控视觉一致性与品牌质感。",
-  "建设质量门禁，守护发布链路的安全底线。",
-  "保障基础设施高可用，优化资源调度与成本。"
-];
-
-const abbr16 = ["ZM","LS","WW","ZL","TQ","YY","WX","QH","RY","PL","ZB","YX","GH","MO","BK","SL"];
-
-function member(i: number, abbr: string[]) {
-  return {
-    id: i + 1,
-    name: "成员 " + (i + 1),
-    role: roles[i % 6],
-    initials: abbr[i],
-    level: (i % 9) + 1,
-    bio: bios[i % 6],
-    styleBg: "background:" + palette[i % 6]
-  };
-}
-
-const listA = Array.from({ length: 16 }, (_, i) => member(i, abbr16));
 
 const scrollTop = useRef(0);
 const onScroll = (event: CustomEvent): void => {
-  const d = (event.detail || {}) as { scrollTop?: number };
-  scrollTop.set(Number(d.scrollTop) || 0);
+    const detail = (event.detail || {}) as { scrollTop?: number };
+    scrollTop.set(Math.round(Number(detail.scrollTop) || 0));
 };
 
-const code = '<elf-scrollbar :height="320" always @scroll="onScroll">\n'
-  + '  <ul class="card-list">\n'
-  + '    <li v-for="m in listA" :key="m.id" class="card-item">\n'
-  + '      <span class="avatar" :style="m.styleBg">{{ m.initials }}</span>\n'
-  + '      <div class="card-meta">\n'
-  + '        <span class="card-name">{{ m.name }} <em>{{ m.role }}</em></span>\n'
-  + '        <span class="card-desc">{{ m.bio }}</span>\n'
-  + '      </div>\n'
-  + '      <span class="card-level">Lv.{{ m.level }}</span>\n'
-  + '    </li>\n'
-  + '  </ul>\n'
-  + '</elf-scrollbar>';
+const code =
+    '<elf-scrollbar :height=${220 + "px"} always @scroll="onScroll">\n' +
+    '  <ul class="mail-list">\n' +
+    '    <li v-for="item in messages" :key="item.id" class="mail-item">\n' +
+    '      <img class="mail-avatar" :src="item.avatar" alt="" />\n' +
+    '      <span class="mail-body">\n' +
+    "        <strong>{{ item.title }}</strong>\n" +
+    "        <span><em>{{ item.from }}</em> — {{ item.text }}</span>\n" +
+    "      </span>\n" +
+    "    </li>\n" +
+    "  </ul>\n" +
+    "</elf-scrollbar>";
 
-const script = 'const scrollTop = useRef(0);\n'
-  + 'const onScroll = (event) => { scrollTop.set(event.detail.scrollTop); };';
+const script =
+    "const scrollTop = useRef(0);\n" + "const onScroll = (event) => scrollTop.set(Math.round(event.detail.scrollTop));";
 
 const PageScrollbarEx1 = defineHtml(html`
-  <h2>固定高度 + 滚动事件</h2>
-  <elf-playground title="height / always / scroll — 团队花名册" :code=${code} :script=${script}>
-    <elf-scrollbar :height=${320} always @scroll=${onScroll}>
-      <ul class="card-list">
-        <li v-for="m in listA" :key="m.id" class="card-item">
-          <span class="avatar" :style="m.styleBg">{{ m.initials }}</span>
-          <div class="card-meta">
-            <span class="card-name">{{ m.name }} <em>{{ m.role }}</em></span>
-            <span class="card-desc">{{ m.bio }}</span>
-          </div>
-          <span class="card-level">Lv.{{ m.level }}</span>
-        </li>
-      </ul>
-    </elf-scrollbar>
-    <span class="demo-state">scrollTop: ${scrollTop.value}</span>
-  </elf-playground>
+    <h2>固定高度</h2>
+    <elf-playground title="消息列表 / 滚动事件" :code=${code} :script=${script}>
+        <elf-scrollbar :height=${220 + "px"} always @scroll=${onScroll}>
+            <ul class="mail-list">
+                <li v-for="item in messages" :key="item.id" class="mail-item">
+                    <img class="mail-avatar" :src="item.avatar" alt="" />
+                    <span class="mail-body">
+                        <strong>{{ item.title }}</strong>
+                        <span><em>{{ item.from }}</em> — {{ item.text }}</span>
+                    </span>
+                </li>
+            </ul>
+        </elf-scrollbar>
+        <span slot="status" class="demo-state">scrollTop: ${scrollTop.value}</span>
+    </elf-playground>
 `);
-
+defineStyle(styles);
 export { PageScrollbarEx1 };

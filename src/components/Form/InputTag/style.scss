@@ -12,9 +12,9 @@
   display: flex;
   width: 100%;
   min-height: 36px;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--elf-space-2);
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   position: relative;
   padding: 3px var(--elf-space-3);
   border: 1px solid var(--elf-border);
@@ -45,77 +45,18 @@
 }
 
 .tag-strip {
-  display: inline-flex;
+  display: flex;
   min-width: 0;
-  max-width: 65%;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
+  max-width: 100%;
+  flex-wrap: wrap;
   gap: var(--elf-space-2);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--elf-text-secondary) 35%, transparent) transparent;
 }
 
 .tag-label {
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.overflow {
-  position: relative;
-  display: inline-flex;
-  flex: 0 0 auto;
-}
-
-.overflow-count {
-  height: 24px;
-  padding: 0 var(--elf-space-2);
-  border: 0;
-  border-radius: var(--elf-radius-sm);
-  background: var(--elf-bg-muted);
-  color: var(--elf-text-secondary);
-  font-size: var(--elf-font-size-xs);
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-}
-
-.overflow-panel {
-  position: absolute;
-  z-index: 30;
-  top: calc(100% + 6px);
-  left: 0;
-  display: none;
-  width: max-content;
-  min-width: 150px;
-  max-width: 280px;
-  max-height: 220px;
-  overflow: auto;
-  padding: var(--elf-space-2);
-  border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-md);
-  background: var(--elf-bg-paper, #fff);
-  box-shadow: var(--elf-shadow-3);
-}
-
-.overflow:hover .overflow-panel,
-.overflow:focus-within .overflow-panel {
-  display: grid;
-  gap: var(--elf-space-1);
-}
-
-.hidden-tag {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--elf-space-3);
-  min-height: 28px;
-  padding: 0 var(--elf-space-2);
-  border-radius: var(--elf-radius-sm);
-}
-
-.hidden-tag:hover {
-  background: var(--elf-bg-muted);
 }
 
 .remove,
@@ -150,8 +91,8 @@
 }
 
 input {
-  min-width: 72px;
-  flex: 1 1 80px;
+  min-width: 96px;
+  flex: 1 1 140px;
   height: 28px;
   border: 0;
   outline: none;

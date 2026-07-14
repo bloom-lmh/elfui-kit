@@ -8,6 +8,10 @@
   box-sizing: border-box;
 }
 
+:host([auto-fit]) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--_min-col, 220px)), 1fr));
+}
+
 :host([gap="xs"]) {
   --_gap: var(--elf-space-1);
 }

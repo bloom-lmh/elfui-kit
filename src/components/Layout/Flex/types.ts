@@ -24,4 +24,6 @@ export interface FlexProps {
   align: FlexAlign;
   gap: FlexGap;
   wrap: boolean;
+  inline: boolean;
+  fill: boolean;
 }

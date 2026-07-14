@@ -11,6 +11,7 @@ import {
   defineProps,
   defineStyle,
   html,
+  useComputed,
   useRef,
   watchEffect,
   defineHtml
@@ -43,7 +44,8 @@ const props = defineProps({
   filterable: { type: Boolean, default: false },
   filterPlaceholder: { type: String, default: "搜索节点" },
   emptyText: { type: String, default: "暂无数据" },
-  indent: { type: Number, default: 20 }
+  indent: { type: Number, default: 20 },
+  bordered: { type: Boolean, default: false }
 });
 
 const emit = defineEmits([
@@ -567,8 +569,10 @@ defineExpose({
 
 defineStyle(styles);
 
+const rootClass = useComputed(() => (props.bordered ? "tree is-bordered" : "tree"));
+
 const Tree = defineHtml(html`
-  <div class="tree" role="tree" :aria-multiselectable=${props.showCheckbox ? "true" : "false"}>
+  <div :class=${rootClass} role="tree" :aria-multiselectable=${props.showCheckbox ? "true" : "false"}>
     <div class="tree-filter" v-if=${props.filterable}>
       <input
         type="search"

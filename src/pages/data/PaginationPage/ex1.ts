@@ -1,5 +1,5 @@
-import { defineHtml, html } from "elfui";
-import { useRef } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
 
 const page = useRef(1);
 
@@ -41,7 +41,7 @@ const PagePaginationEx1 = defineHtml(html`
         @current-change="onPageChange"
         @size-change="onSizeChange"
       ></elf-pagination>
-      <p class="demo-state">{{ stateText() }}</p>
+      <p slot="status" class="demo-state">{{ stateText() }}</p>
     </div>
   </elf-playground>
 `);

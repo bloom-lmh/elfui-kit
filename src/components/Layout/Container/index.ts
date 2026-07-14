@@ -10,7 +10,8 @@ export type { ContainerMaxWidth, ContainerPadding, ContainerProps } from "./type
 
 const props = defineProps({
   maxWidth: { type: String, default: "lg" },
-  padding: { type: String, default: "md" }
+  padding: { type: String, default: "md" },
+  fluid: { type: Boolean, default: false }
 });
 
 defineStyle(styles);

@@ -1,0 +1,27 @@
+import { defineHtml, html, useRef } from "elfui";
+
+
+const value = useRef(3);
+
+const palette = ["#ef4444", "#f59e0b", "#22c55e"];
+
+const rateIcons = ["😞", "😐", "😊"];
+
+const PageRateEx4 = defineHtml(html`
+<elf-playground title="分段颜色与图标">
+      <div style="display:grid;gap:12px">
+        <elf-rate
+          model-value="4"
+          :colors.prop=${palette}
+          :icons.prop=${rateIcons}
+          void-icon="0"
+          low-threshold="2"
+          high-threshold="4"
+          aria-label="满意度评分"
+        ></elf-rate>
+        <elf-rate model-value="2" disabled-void-icon="-" readonly></elf-rate>
+      </div>
+    </elf-playground>
+`);
+
+export { PageRateEx4 };

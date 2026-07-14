@@ -1,31 +1,7 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
 
-const message = useRef("等待返回操作");
-
-const code1 = `<elf-page-header
-  title="返回"
-  content="订单详情"
-  @back=\${onBack}
->
-  <elf-button slot="extra" size="sm">编辑</elf-button>
-</elf-page-header>`;
-
-const script1 = `const message = useRef("等待返回操作");
-
-const onBack = () => {
-  message.set("触发 back 事件");
-};`;
-
-const code2 = `<elf-page-header content="自定义插槽">
-  <span slot="breadcrumb">Home / Product / Detail</span>
-  <span slot="icon">←</span>
-  <span slot="title">回到列表</span>
-  <span slot="content">发布配置</span>
-  <div slot="extra">
-    <elf-button size="sm" variant="outlined">预览</elf-button>
-    <elf-button size="sm">保存</elf-button>
-  </div>
-</elf-page-header>`;
+import { PagePageHeaderEx1 } from "./ex1";
+import { PagePageHeaderEx2 } from "./ex2";
 
 const propsRows = [
   { name: "title", type: "string", default: "Back", desc: "返回区域文本" },
@@ -43,34 +19,19 @@ const slotsRows = [
   { name: "extra", desc: "右侧扩展操作" }
 ];
 
-const onBack = (): void => {
-  message.set("触发 back 事件");
-};
+useComponents({
+  "page-page-header-ex1": PagePageHeaderEx1,
+  "page-page-header-ex2": PagePageHeaderEx2
+});
 
 const PagePageHeader = defineHtml(html`
   <elf-container>
     <h1>PageHeader 页头</h1>
     <p>用于详情页顶部返回区域，支持 back 事件和 icon/title/content/extra 插槽。</p>
 
-    <elf-playground title="基础页头 / back" :code=${code1} :script=${script1}>
-      <elf-page-header title="返回" content="订单详情" @back=${onBack}>
-        <elf-button slot="extra" size="sm">编辑</elf-button>
-      </elf-page-header>
-      <span class="demo-state">${message}</span>
-    </elf-playground>
+    <page-page-header-ex1 />
 
-    <elf-playground title="slots" :code=${code2}>
-      <elf-page-header content="自定义插槽">
-        <span slot="breadcrumb">Home / Product / Detail</span>
-        <span slot="icon">←</span>
-        <span slot="title">回到列表</span>
-        <span slot="content">发布配置</span>
-        <div slot="extra" style="display:flex;gap:8px">
-          <elf-button size="sm" variant="outlined">预览</elf-button>
-          <elf-button size="sm">保存</elf-button>
-        </div>
-      </elf-page-header>
-    </elf-playground>
+    <page-page-header-ex2 />
 
     <h2>API</h2>
     <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>

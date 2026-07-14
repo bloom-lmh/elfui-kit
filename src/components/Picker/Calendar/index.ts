@@ -16,6 +16,8 @@ interface DayCell {
     inRange: boolean;
 }
 
+type CalendarView = "days" | "months" | "years";
+
 const props = defineProps<CalendarProps>({
     modelValue: { type: null, default: "" },
     firstDayOfWeek: { type: Number, default: 1 },
@@ -46,6 +48,8 @@ const selectedDate = (): Date => {
 const viewedDate = useRef(selectedDate());
 const selectedIso = useRef(toIso(selectedDate()));
 const rangeStart = useRef<string | null>(null);
+const view = useRef<CalendarView>("days");
+const yearPageStart = useRef(Math.floor(selectedDate().getFullYear() / 12) * 12);
 let syncedModelValue = "__elf-calendar-unset__";
 
 const syncSelectedDom = (iso: string): void => {
@@ -63,6 +67,7 @@ watchEffect(() => {
     const selected = selectedDate();
     selectedIso.set(toIso(selected));
     viewedDate.set(selected);
+    yearPageStart.set(Math.floor(selected.getFullYear() / 12) * 12);
     queueMicrotask(() => syncSelectedDom(selectedIso.peek()));
 });
 
@@ -70,6 +75,30 @@ const monthTitle = (): string => {
     const date = viewedDate.value;
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
 };
+
+const yearTitle = (): string => `${viewedDate.value.getFullYear()}年`;
+
+const monthLabel = (): string =>
+    String(props.locale || "").toLowerCase().startsWith("zh")
+        ? `${viewedDate.value.getMonth() + 1}月`
+        : new Intl.DateTimeFormat(props.locale || undefined, { month: "long" }).format(viewedDate.value);
+
+const monthItems = (): Array<{ id: number; label: string; active: boolean }> =>
+    Array.from({ length: 12 }, (_, month) => ({
+        id: month,
+        label: new Intl.DateTimeFormat(props.locale || undefined, { month: "short" }).format(
+            new Date(viewedDate.value.getFullYear(), month, 1),
+        ),
+        active: month === viewedDate.value.getMonth(),
+    }));
+
+const yearItems = (): Array<{ id: number; active: boolean }> =>
+    Array.from({ length: 12 }, (_, index) => {
+        const id = yearPageStart.value + index;
+        return { id, active: id === viewedDate.value.getFullYear() };
+    });
+
+const yearRangeTitle = (): string => `${yearPageStart.value}–${yearPageStart.value + 11}`;
 
 const weekDays = (): string[] => {
     const formatter = new Intl.DateTimeFormat(props.locale || undefined, { weekday: "short" });
@@ -136,33 +165,105 @@ const shiftMonth = (offset: number): void => {
     viewedDate.set(new Date(date.getFullYear(), date.getMonth() + offset, 1));
 };
 
+const shiftPeriod = (offset: number): void => {
+    const date = viewedDate.value;
+    if (view.value === "days") {
+        shiftMonth(offset);
+        return;
+    }
+    if (view.value === "months") {
+        viewedDate.set(new Date(date.getFullYear() + offset, date.getMonth(), 1));
+        return;
+    }
+    yearPageStart.set(yearPageStart.value + offset * 12);
+};
+
+const showDays = (): void => view.set("days");
+
+const showMonths = (): void => view.set(view.value === "months" ? "days" : "months");
+
+const showYears = (): void => {
+    yearPageStart.set(Math.floor(viewedDate.value.getFullYear() / 12) * 12);
+    view.set(view.value === "years" ? "days" : "years");
+};
+
+const selectMonth = (event: Event): void => {
+    const month = Number((event.currentTarget as HTMLElement).dataset.month);
+    if (!Number.isFinite(month)) return;
+    const date = viewedDate.value;
+    viewedDate.set(new Date(date.getFullYear(), month, 1));
+    showDays();
+};
+
+const selectYear = (event: Event): void => {
+    const year = Number((event.currentTarget as HTMLElement).dataset.year);
+    if (!Number.isFinite(year)) return;
+    const date = viewedDate.value;
+    viewedDate.set(new Date(year, date.getMonth(), 1));
+    view.set("months");
+};
+
 defineStyle(styles);
 
 const Calendar = defineHtml<CalendarProps>(html`
     <section class="calendar" part="calendar">
         <header class="header">
-            <button class="nav" type="button" aria-label="上个月" @click=${() => shiftMonth(-1)}>‹</button>
-            <slot name="header">${monthTitle()}</slot>
-            <button class="nav" type="button" aria-label="下个月" @click=${() => shiftMonth(1)}>›</button>
+            <button class="nav" type="button" aria-label="上一时间段" @click=${() => shiftPeriod(-1)}>‹</button>
+            <div class="header-title">
+                <template v-if=${view.value === "years"}>
+                    <span class="period-label">${yearRangeTitle()}</span>
+                </template>
+                <template v-else>
+                    <button class="period-button" type="button" @click=${showYears}>${yearTitle()}</button>
+                    <button class="period-button" type="button" @click=${showMonths}>${monthLabel()}</button>
+                </template>
+            </div>
+            <button class="nav" type="button" aria-label="下一时间段" @click=${() => shiftPeriod(1)}>›</button>
         </header>
-        <div class="week">
-            <span v-for="name in weekDays()" :key="name">{{ name }}</span>
+        <div v-if=${view.value === "days"} class="calendar-body">
+            <div class="week">
+                <span v-for="name in weekDays()" :key="name">{{ name }}</span>
+            </div>
+            <div class="days" role="grid" :aria-label=${props.ariaLabel || "Calendar"}>
+                <button
+                    v-for="day in days()"
+                    :key="day.iso"
+                    type="button"
+                    :class="['day', { 'is-muted': day.muted, 'is-current': day.current, 'is-disabled': day.disabled, 'is-range-start': day.rangeStart, 'is-range-end': day.rangeEnd, 'is-in-range': day.inRange }]"
+                    :data-date="day.iso"
+                    :disabled="day.disabled"
+                    :aria-label="day.iso"
+                    :aria-selected="day.current ? 'true' : 'false'"
+                    @click=${select}
+                >
+                    {{ day.label }}
+                </button>
+            </div>
         </div>
-        <div class="days" role="grid" :aria-label=${props.ariaLabel || "Calendar"}>
+        <div v-if=${view.value === "months"} class="choice-grid month-grid" aria-label="选择月份">
             <button
-                v-for="day in days()"
-                :key="day.iso"
+                v-for="option in monthItems()"
+                :key="option.id"
                 type="button"
-                :class="['day', { 'is-muted': day.muted, 'is-current': day.current, 'is-disabled': day.disabled, 'is-range-start': day.rangeStart, 'is-range-end': day.rangeEnd, 'is-in-range': day.inRange }]"
-                :data-date="day.iso"
-                :disabled="day.disabled"
-                :aria-label="day.iso"
-                :aria-selected="day.current ? 'true' : 'false'"
-                @click=${select}
-            >
-                {{ day.label }}
-            </button>
+                :class="['choice', { 'is-active': option.active }]"
+                :data-month="option.id"
+                @click=${selectMonth}
+            >{{ option.label }}</button>
         </div>
+        <div v-if=${view.value === "years"} class="choice-grid year-grid" aria-label="选择年份">
+            <button
+                v-for="option in yearItems()"
+                :key="option.id"
+                type="button"
+                :class="['choice', { 'is-active': option.active }]"
+                :data-year="option.id"
+                @click=${selectYear}
+            >{{ option.id }}</button>
+        </div>
+        <footer class="calendar-footer">
+            <button type="button" class="today-button" @click=${() => { viewedDate.set(new Date()); showDays(); }}>今天</button>
+            <slot name="header"><span class="month-title">${monthTitle()}</span></slot>
+        </footer>
     </section>
 `);
 

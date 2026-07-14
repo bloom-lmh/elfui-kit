@@ -69,6 +69,7 @@ describe("elf-steps", () => {
       active: 2,
       item: items[2]
     });
+    expect(el.shadowRoot!.querySelectorAll(".step-item")[2]!.className).toContain("is-active");
   });
 
   it("supports process-status and finish-status inference", async () => {

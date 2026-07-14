@@ -75,7 +75,7 @@
 - [ ] `Layout/Header`
 - [ ] `Layout/Layout`
 - [ ] `Layout/Main`
-- [ ] `Layout/Scrollbar`
+- [x] `Layout/Scrollbar`
 - [ ] `Layout/Splitter`
 - [ ] `Layout/Sticky`
 - [ ] `Navigation/Anchor`
@@ -111,3 +111,10 @@
 - [ ] 所有组件页面示例支持 Template / Script 视图；动态绑定统一使用 `${...}`。
 - [ ] 每个组件至少覆盖基础用法、受控状态、禁用/清空/空数据、键盘或可访问性核心路径。
 - [ ] `pnpm verify` 通过；大范围变更前可先用 `npm --prefix ui-kit run build` 和目标测试分批验证。
+
+## 2026-07-14 体验升级批次
+
+- [x] 完成 Form / Upload / InfiniteScroll / Skeleton 案例布局修复。
+- [x] 完成 Carousel / Timeline / Tree / Table / Loading 视觉升级。
+- [x] 完成 Menu / Tabs / Steps 溢出、折叠和交互回归修复。
+- [x] 完成 Calendar / DatePicker / TimePicker 的 Vuetify 信息架构参考升级，并通过定向测试、构建和真实浏览器暗色验收。

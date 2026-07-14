@@ -92,6 +92,7 @@ const props = defineProps({
     indent: { type: Number, default: 20 },
     rounded: { type: Boolean, default: false },
     elevation: { type: Boolean, default: false },
+    bordered: { type: Boolean, default: false },
     showToggle: { type: Boolean, default: false },
     togglePlacement: { type: String, default: "header" },
     searchable: { type: Boolean, default: false },
@@ -179,8 +180,6 @@ const matchesSearch = (item: MenuViewItem): boolean => {
     return item.label.toLowerCase().includes(kw) || item.index.toLowerCase().includes(kw);
 };
 
-const onSearchInput = (e: Event) => searchText.set((e.target as HTMLInputElement).value);
-
 const onCustomToggleClick = (event: Event): void => {
     const isToggle = event
         .composedPath()
@@ -191,10 +190,7 @@ const onCustomToggleClick = (event: Event): void => {
 const onCustomSearchInput = (event: Event): void => {
     const input = event
         .composedPath()
-        .find(
-            (node): node is HTMLInputElement =>
-                node instanceof HTMLInputElement && node.getAttribute("slot") === "search",
-        );
+        .find((node): node is HTMLInputElement => node instanceof HTMLInputElement);
     if (input) searchText.set(input.value);
 };
 
@@ -673,6 +669,7 @@ const Menu = defineHtml(html`
                 "is-horizontal": isHorizontal,
                 "is-collapsed": isCollapsed,
                 "is-ellipsis": props.ellipsis,
+                "is-bordered": props.bordered,
                 "is-no-collapse-transition": !props.collapseTransition,
             },
         ]}
@@ -681,17 +678,17 @@ const Menu = defineHtml(html`
         @keydown=${onKeydown}
     >
         <div class="menu-header">
-            <slot name="header"></slot>
-            <div v-if=${showHeaderToggle()} class="menu-toggle-slot" @click=${toggleCollapse}>
+            <div class="menu-header-content"><slot name="header"></slot></div>
+            <div v-if=${showHeaderToggle()} class="menu-toggle-slot menu-toggle-slot--header">
                 <slot name="toggle">
-                    <button class="collapse-toggle collapse-toggle--header" type="button" :title=${toggleTitle()}>
-                        <span class="toggle-icon">${isCollapsed ? "☰" : "✕"}</span>
+                    <button class="collapse-toggle collapse-toggle--header" type="button" :title=${toggleTitle()} @click=${toggleCollapse}>
+                        <span class="toggle-icon">${isCollapsed ? "›" : "‹"}</span>
                     </button>
                 </slot>
             </div>
         </div>
 
-        <div class="menu-search" v-if=${props.searchable && !isHorizontal && !isCollapsed} @input=${onSearchInput}>
+        <div class="menu-search" v-if=${props.searchable && !isHorizontal && !isCollapsed} @input=${onCustomSearchInput}>
             <slot name="search">
                 <input class="search-input" :placeholder=${props.searchPlaceholder || "搜索..."} />
             </slot>
@@ -830,10 +827,10 @@ const Menu = defineHtml(html`
 
             <div class="menu-footer">
                 <slot name="footer"></slot>
-                <div v-if=${showFooterToggle()} class="menu-toggle-slot" @click=${toggleCollapse}>
+                <div v-if=${showFooterToggle()} class="menu-toggle-slot">
                     <slot name="toggle">
-                        <button class="collapse-toggle" type="button" :title=${toggleTitle()}>
-                            <span class="toggle-icon">${isCollapsed ? "☰" : "✕"}</span>
+                        <button class="collapse-toggle" type="button" :title=${toggleTitle()} @click=${toggleCollapse}>
+                            <span class="toggle-icon">${isCollapsed ? "›" : "‹"}</span>
                         </button>
                     </slot>
                 </div>

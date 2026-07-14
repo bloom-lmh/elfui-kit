@@ -1,30 +1,9 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
 
-const typeCode = `<elf-text>默认文本</elf-text>
-<elf-text type="primary">主要文本</elf-text>
-<elf-text type="success">成功文本</elf-text>
-<elf-text type="warning">警告文本</elf-text>
-<elf-text type="danger">危险文本</elf-text>
-<elf-text type="info">信息文本</elf-text>`;
-
-const styleCode = `<elf-text strong>加粗</elf-text>
-<elf-text italic>斜体</elf-text>
-<elf-text mark>标记</elf-text>
-<elf-text deleted>删除</elf-text>
-<elf-text inserted>插入</elf-text>`;
-
-const tagCode = `<elf-text tag="p">段落文本</elf-text>
-<elf-text tag="strong">strong 标签</elf-text>
-<elf-text tag="mark">mark 标签</elf-text>`;
-
-const clampCode = `<div style="width:260px">
-  <elf-text truncated>单行截断：很长的文本超出容器时自动省略号。</elf-text>
-</div>
-<div style="width:320px;margin-top:12px">
-  <elf-text line-clamp="2">多行截断：这里展示两行截断效果，内容保持段落阅读感，同时避免卡片被撑得太高。</elf-text>
-</div>`;
-
-const script1 = `// Text 是纯展示组件，通过 props 控制语义、样式和截断`;
+import { PageTextEx1 } from "./ex1";
+import { PageTextEx2 } from "./ex2";
+import { PageTextEx3 } from "./ex3";
+import { PageTextEx4 } from "./ex4";
 
 const propsRows = [
   { name: "type", type: "primary|success|warning|danger|info", default: "''" },
@@ -39,42 +18,25 @@ const propsRows = [
   { name: "italic", type: "boolean", default: "false" }
 ];
 
+useComponents({
+  "page-text-ex1": PageTextEx1,
+  "page-text-ex2": PageTextEx2,
+  "page-text-ex3": PageTextEx3,
+  "page-text-ex4": PageTextEx4
+});
+
 const PageText = defineHtml(html`
   <elf-container>
     <h1>Text 文本</h1>
     <p>用于语义文本、尺寸和文本装饰，支持单行截断、多行截断和 tag 渲染。</p>
 
-    <elf-playground title="语义类型" :code=${typeCode} :script=${script1}>
-      <elf-text>默认文本</elf-text>
-      <elf-text type="primary">主要文本</elf-text>
-      <elf-text type="success">成功文本</elf-text>
-      <elf-text type="warning">警告文本</elf-text>
-      <elf-text type="danger">危险文本</elf-text>
-      <elf-text type="info">信息文本</elf-text>
-    </elf-playground>
+    <page-text-ex1 />
 
-    <elf-playground title="文本样式" :code=${styleCode}>
-      <elf-text strong>加粗</elf-text>
-      <elf-text italic>斜体</elf-text>
-      <elf-text mark>标记</elf-text>
-      <elf-text deleted>删除</elf-text>
-      <elf-text inserted>插入</elf-text>
-    </elf-playground>
+    <page-text-ex2 />
 
-    <elf-playground title="tag" :code=${tagCode}>
-      <elf-text tag="p">段落文本</elf-text>
-      <elf-text tag="strong">strong 标签</elf-text>
-      <elf-text tag="mark">mark 标签</elf-text>
-    </elf-playground>
+    <page-text-ex3 />
 
-    <elf-playground title="截断" :code=${clampCode}>
-      <div style="width:260px">
-        <elf-text truncated>这是一段很长很长的单行文本，超出容器时会被截断。</elf-text>
-      </div>
-      <div style="width:320px;margin-top:12px">
-        <elf-text line-clamp="2">这里展示两行截断。内容会保持段落阅读感，同时避免卡片被撑得太高。</elf-text>
-      </div>
-    </elf-playground>
+    <page-text-ex4 />
 
     <h2>API</h2>
     <elf-props-table title="Props" :rows=${propsRows} />

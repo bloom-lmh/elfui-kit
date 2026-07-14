@@ -25,6 +25,12 @@ const code3 = `<elf-grid columns="24" gap="sm" style="width: 100%">
   </elf-grid-item>
 </elf-grid>`;
 
+const code4 = `<elf-grid auto-fit min-column-width="240px" gap="md">
+  <article>自动适应可用宽度</article>
+  <article>无需手动计算 span</article>
+  <article>窄屏自动换行</article>
+</elf-grid>`;
+
 const PageGridEx2 = defineHtml(html`
   <h2>不等分</h2>
   <elf-playground title="左侧 8 + 右侧 4" :code="code1">
@@ -127,6 +133,15 @@ const PageGridEx2 = defineHtml(html`
           6/24
         </div></elf-grid-item
       >
+    </elf-grid>
+  </elf-playground>
+
+  <h2>自动响应式网格</h2>
+  <elf-playground title="auto-fit / min-column-width" :code=${code4}>
+    <elf-grid auto-fit min-column-width="240px" gap="md" style="width:100%">
+      <article style="min-height:120px;padding:20px;border-radius:14px;background:color-mix(in srgb,var(--elf-primary) 10%,var(--elf-bg-paper))"><strong>团队空间</strong><p style="color:var(--elf-text-secondary)">自动适应可用宽度。</p></article>
+      <article style="min-height:120px;padding:20px;border-radius:14px;background:color-mix(in srgb,var(--elf-success) 10%,var(--elf-bg-paper))"><strong>发布状态</strong><p style="color:var(--elf-text-secondary)">无需手动计算 span。</p></article>
+      <article style="min-height:120px;padding:20px;border-radius:14px;background:color-mix(in srgb,var(--elf-warning) 12%,var(--elf-bg-paper))"><strong>资源用量</strong><p style="color:var(--elf-text-secondary)">窄屏自动换行。</p></article>
     </elf-grid>
   </elf-playground>
 `);

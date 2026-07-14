@@ -1,77 +1,10 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useComponents } from "elfui";
 
-const date = useRef("2026-06-17");
-const month = useRef("2026-06");
-const start = useRef("2026-06-01");
-const end = useRef("2026-06-30");
-const dates = useRef<string[]>(["2026-06-10", "2026-06-14"]);
-const actionValue = useRef("2026-06-12");
-
-const shortcuts = [
-  { label: "今天", value: "2026-06-17" },
-  { label: "本月", value: "2026-06-01", endValue: "2026-06-30" },
-  { label: "下周一", value: "2026-06-22" }
-];
-
-const readDetail = <T>(event: Event, fallback: T): T =>
-  ((event as CustomEvent).detail ?? fallback) as T;
-
-const updateDate = (event: Event): void => {
-  date.set(String(readDetail(event, "")));
-};
-
-const updateMonth = (event: Event): void => {
-  month.set(String(readDetail(event, "")));
-};
-
-const updateStart = (event: Event): void => {
-  start.set(String(readDetail(event, "")));
-};
-
-const updateEnd = (event: Event): void => {
-  end.set(String(readDetail(event, "")));
-};
-
-const updateDates = (event: Event): void => {
-  const detail = readDetail<unknown>(event, []);
-  dates.set(Array.isArray(detail) ? detail.map(String) : []);
-};
-
-const updateAction = (event: Event): void => {
-  actionValue.set(String(readDetail(event, "")));
-};
-
-const basicCode = `<elf-date-picker
-  model-value="2026-06-17"
-  clearable
-/>`;
-
-const rangeCode = `<elf-date-picker
-  model-value="2026-06-01"
-  end-value="2026-06-30"
-  range
-  clearable
-  :shortcuts.prop="shortcuts"
-/>`;
-
-const monthCode = `<elf-date-picker
-  type="month"
-  show-header
-  header="选择账期"
-/>`;
-
-const multipleCode = `<elf-date-picker
-  multiple
-  clearable
-  :modelValue.prop="dates"
-/>`;
-
-const actionsCode = `<elf-date-picker
-  actions
-  clearable
-  show-header
-  header="带确认的日期选择"
-/>`;
+import { PageDatePickerEx1 } from "./ex1";
+import { PageDatePickerEx2 } from "./ex2";
+import { PageDatePickerEx3 } from "./ex3";
+import { PageDatePickerEx4 } from "./ex4";
+import { PageDatePickerEx5 } from "./ex5";
 
 const propsRows = [
   { name: "modelValue", type: "string | string[]", default: "''", desc: "当前值，多选时为数组" },
@@ -101,77 +34,28 @@ const eventRows = [
   { name: "clear", type: "void", desc: "清空" }
 ];
 
-const selectedDates = (): string => dates.value.join("，") || "暂无";
+useComponents({
+  "page-date-picker-ex1": PageDatePickerEx1,
+  "page-date-picker-ex2": PageDatePickerEx2,
+  "page-date-picker-ex3": PageDatePickerEx3,
+  "page-date-picker-ex4": PageDatePickerEx4,
+  "page-date-picker-ex5": PageDatePickerEx5
+});
 
 const PageDatePicker = defineHtml(html`
   <elf-container>
     <h1>DatePicker 日期选择器</h1>
     <p>用于单日期、日期范围、月份和多日期选择；需要明确提交的场景可以开启动作栏。</p>
 
-    <elf-playground title="基础日期" :code="basicCode">
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <elf-date-picker
-          :modelValue="date"
-          clearable
-          @update:modelValue="updateDate"
-        ></elf-date-picker>
-        <span class="demo-state">{{ date }}</span>
-      </div>
-    </elf-playground>
+    <page-date-picker-ex1 />
 
-    <elf-playground title="范围与快捷项" :code="rangeCode">
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <elf-date-picker
-          :modelValue="start"
-          :endValue="end"
-          range
-          clearable
-          :shortcuts.prop="shortcuts"
-          @update:modelValue="updateStart"
-          @update:endValue="updateEnd"
-        ></elf-date-picker>
-        <span class="demo-state">{{ start }} 至 {{ end }}</span>
-      </div>
-    </elf-playground>
+    <page-date-picker-ex2 />
 
-    <elf-playground title="月份与头部" :code="monthCode">
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <elf-date-picker
-          :modelValue="month"
-          type="month"
-          show-header
-          header="选择账期"
-          @update:modelValue="updateMonth"
-        ></elf-date-picker>
-        <span class="demo-state">{{ month }}</span>
-      </div>
-    </elf-playground>
+    <page-date-picker-ex3 />
 
-    <elf-playground title="多日期" :code="multipleCode">
-      <div style="display:grid;gap:12px;max-width:620px">
-        <elf-date-picker
-          multiple
-          clearable
-          :modelValue.prop="dates"
-          @update:modelValue="updateDates"
-        ></elf-date-picker>
-        <span class="demo-state">已选：{{ selectedDates() }}</span>
-      </div>
-    </elf-playground>
+    <page-date-picker-ex4 />
 
-    <elf-playground title="动作栏确认" :code="actionsCode">
-      <div style="display:grid;gap:12px;max-width:620px">
-        <elf-date-picker
-          :modelValue="actionValue"
-          actions
-          clearable
-          show-header
-          header="带确认的日期选择"
-          @update:modelValue="updateAction"
-        ></elf-date-picker>
-        <span class="demo-state">提交值：{{ actionValue }}</span>
-      </div>
-    </elf-playground>
+    <page-date-picker-ex5 />
 
     <h2>API</h2>
     <elf-props-table title="Props" :rows="propsRows"></elf-props-table>
