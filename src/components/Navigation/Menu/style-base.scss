@@ -44,6 +44,14 @@
   transition: width var(--elf-transition-base);
 }
 
+.composition-slot {
+  display: none;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
 .menu.is-no-collapse-transition {
   transition: none;
 }

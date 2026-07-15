@@ -6,6 +6,7 @@ import { PageMenuEx4 } from "./ex4";
 import { PageMenuEx5 } from "./ex5";
 import { PageMenuEx6 } from "./ex6";
 import { PageMenuEx7 } from "./ex7";
+import { PageMenuEx8 } from "./ex8";
 import { PageMenuProps } from "./props";
 
 useComponents({
@@ -16,6 +17,7 @@ useComponents({
   "page-menu-ex5": PageMenuEx5,
   "page-menu-ex6": PageMenuEx6,
   "page-menu-ex7": PageMenuEx7,
+  "page-menu-ex8": PageMenuEx8,
   "page-menu-props": PageMenuProps
 });
 
@@ -32,6 +34,7 @@ const PageMenu = defineHtml(html`
     <page-menu-ex5></page-menu-ex5>
     <page-menu-ex6></page-menu-ex6>
     <page-menu-ex7></page-menu-ex7>
+    <page-menu-ex8></page-menu-ex8>
     <page-menu-props></page-menu-props>
   </elf-container>
 `);

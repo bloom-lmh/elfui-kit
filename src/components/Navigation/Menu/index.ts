@@ -7,6 +7,7 @@ import {
     defineStyle,
     html,
     onMount,
+    onUnmount,
     useComputed,
     useEventListener,
     useHost,
@@ -19,9 +20,36 @@ import {
 import baseStyles from "./style-base.scss?inline";
 import modeStyles from "./style-mode.scss?inline";
 import themeStyles from "./style-theme.scss?inline";
-import type { MenuFieldNames, MenuMode, MenuTogglePlacement } from "./types";
+import type {
+    MenuFieldNames,
+    MenuItemClickDetail,
+    MenuMode,
+    MenuPopperStyle,
+    MenuProps,
+    MenuSlots,
+    MenuTogglePlacement,
+    MenuTrigger,
+} from "./types";
 
-export type { MenuFieldNames, MenuItem, MenuMode, MenuProps, MenuTogglePlacement } from "./types";
+export type {
+    MenuExpose,
+    MenuFieldNames,
+    MenuItem,
+    MenuItemClickDetail,
+    MenuItemGroupProps,
+    MenuItemGroupSlots,
+    MenuItemProps,
+    MenuItemSlots,
+    MenuMode,
+    MenuPopperStyle,
+    MenuProps,
+    MenuSlots,
+    MenuTheme,
+    MenuTogglePlacement,
+    MenuTrigger,
+    SubMenuProps,
+    SubMenuSlots,
+} from "./types";
 
 const SIGNATURE_SEP = "::elf-menu::";
 
@@ -39,14 +67,28 @@ interface MenuViewItem {
     group: boolean;
     route: unknown;
     popperClass: string;
+    popperStyle: MenuPopperStyle;
     teleported: boolean;
+    popperOffset?: number;
+    showTimeout?: number;
+    hideTimeout?: number;
+    expandCloseIcon: string;
+    expandOpenIcon: string;
+    collapseCloseIcon: string;
+    collapseOpenIcon: string;
+    source?: HTMLElement;
     level: number;
     indexPath: string[];
     hasChildren: boolean;
     children: MenuViewItem[];
 }
 
-const props = defineProps({
+interface MenuRuntimeProps extends MenuProps {
+    /** @deprecated Use menuTrigger. */
+    trigger: MenuTrigger | "";
+}
+
+const props = defineProps<MenuRuntimeProps>({
     items: { type: Array, default: () => [] },
     modelValue: { type: String, default: "" },
     defaultActive: { type: String, default: "" },
@@ -80,7 +122,15 @@ const props = defineProps({
             badge: "badge",
             route: "route",
             popperClass: "popperClass",
+            popperStyle: "popperStyle",
             teleported: "teleported",
+            popperOffset: "popperOffset",
+            showTimeout: "showTimeout",
+            hideTimeout: "hideTimeout",
+            expandCloseIcon: "expandCloseIcon",
+            expandOpenIcon: "expandOpenIcon",
+            collapseCloseIcon: "collapseCloseIcon",
+            collapseOpenIcon: "collapseOpenIcon",
         }),
     },
     backgroundColor: { type: String, default: "" },
@@ -100,7 +150,13 @@ const props = defineProps({
     trigger: { type: String, default: "click" },
 });
 
-const emit = defineEmits(["update:modelValue", "select", "open", "close", "collapse-change"]);
+const emit = defineEmits<{
+    "update:modelValue": [index: string];
+    select: [index: string, indexPath: string[], item: MenuRawItem];
+    open: [index: string, indexPath: string[], item: MenuRawItem];
+    close: [index: string, indexPath: string[], item: MenuRawItem];
+    "collapse-change": [collapsed: boolean];
+}>();
 
 const host = useHost();
 
@@ -118,6 +174,29 @@ const collapsed = useRef(Boolean(props.collapse));
 
 const searchText = useRef("");
 
+const compositionVersion = useRef(0);
+
+const panelLeft = useRef("0px");
+
+const popupTop = useRef("8px");
+
+const nestedPopupTop = useRef("0px");
+
+const lastHorizontalRootIndex = useRef("");
+
+const hoveredIndex = useRef("");
+
+const hoveredIndex2 = useRef("");
+
+const lastHoveredIndex = useRef("");
+
+const lastHoveredIndex2 = useRef("");
+
+let compositionObserver: MutationObserver | undefined;
+let documentClickHandler: ((event: Event) => void) | undefined;
+let resizeObserver: ResizeObserver | undefined;
+let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+
 const fieldNames = (): Required<MenuFieldNames> => {
     const o = (props.props || {}) as MenuFieldNames;
     return {
@@ -132,7 +211,15 @@ const fieldNames = (): Required<MenuFieldNames> => {
         group: o.group || "group",
         route: o.route || "route",
         popperClass: o.popperClass || "popperClass",
+        popperStyle: o.popperStyle || "popperStyle",
         teleported: o.teleported || "teleported",
+        popperOffset: o.popperOffset || "popperOffset",
+        showTimeout: o.showTimeout || "showTimeout",
+        hideTimeout: o.hideTimeout || "hideTimeout",
+        expandCloseIcon: o.expandCloseIcon || "expandCloseIcon",
+        expandOpenIcon: o.expandOpenIcon || "expandOpenIcon",
+        collapseCloseIcon: o.collapseCloseIcon || "collapseCloseIcon",
+        collapseOpenIcon: o.collapseOpenIcon || "collapseOpenIcon",
     };
 };
 
@@ -143,6 +230,15 @@ const isCollapsed = useComputed(() => !isHorizontal.value && collapsed.value);
 const _collapsed = () => isCollapsed.value;
 
 const objectStyle = (value: unknown): Record<string, string> => {
+    if (typeof value === "string") {
+        return Object.fromEntries(
+            value
+                .split(";")
+                .map((declaration) => declaration.split(":"))
+                .filter((parts) => parts.length >= 2 && parts[0]?.trim())
+                .map(([property, ...rest]) => [property!.trim(), rest.join(":").trim()]),
+        );
+    }
     if (!value || typeof value !== "object" || Array.isArray(value)) return {};
     return Object.fromEntries(
         Object.entries(value as Record<string, string | number>).map(([key, item]) => [key, String(item)]),
@@ -198,12 +294,27 @@ useEventListener(host, "click", onCustomToggleClick);
 useEventListener(host, "input", onCustomSearchInput);
 
 onMount(() => {
-    const onDocClick = (e: Event) => {
+    documentClickHandler = (e: Event) => {
         if (!isHorizontal.value) return;
         if (!props.closeOnClickOutside) return;
         if (!host.contains(e.target as HTMLElement)) openKeys.set([]);
     };
-    document.addEventListener("click", onDocClick, true);
+    document.addEventListener("click", documentClickHandler, true);
+
+    compositionObserver = new MutationObserver(() => compositionVersion.set(compositionVersion.peek() + 1));
+    compositionObserver.observe(host, { attributes: true, childList: true, subtree: true, characterData: true });
+
+    if (typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(() => handleResize());
+        resizeObserver.observe(host);
+    }
+});
+
+onUnmount(() => {
+    if (documentClickHandler) document.removeEventListener("click", documentClickHandler, true);
+    compositionObserver?.disconnect();
+    resizeObserver?.disconnect();
+    clearHoverTimer();
 });
 
 const hostStyle = useComputed(() => {
@@ -263,7 +374,12 @@ const normalizeItems = (rawItems: unknown, level = 0, ancestors: string[] = []):
                 group: false,
                 route: undefined,
                 popperClass: "",
+                popperStyle: {},
                 teleported: true,
+                expandCloseIcon: "",
+                expandOpenIcon: "",
+                collapseCloseIcon: "",
+                collapseOpenIcon: "",
                 level,
                 indexPath: ancestors,
                 hasChildren: false,
@@ -272,7 +388,7 @@ const normalizeItems = (rawItems: unknown, level = 0, ancestors: string[] = []):
         if (isGroup) {
             const groupIndex = String(item[fields.index] ?? [...ancestors, `__group_${level}_${fi}`].join("/"));
             const groupLabel = String(item[fields.group] ?? "");
-            const children = normalizeItems(item[fields.children], level + 1, [...ancestors, groupIndex]);
+            const children = normalizeItems(item[fields.children], level + 1, ancestors);
             return {
                 raw: item,
                 index: groupIndex,
@@ -285,7 +401,15 @@ const normalizeItems = (rawItems: unknown, level = 0, ancestors: string[] = []):
                 group: true,
                 route: item[fields.route],
                 popperClass: String(item[fields.popperClass] ?? ""),
+                popperStyle: (item[fields.popperStyle] ?? {}) as MenuPopperStyle,
                 teleported: item[fields.teleported] !== false,
+                popperOffset: toOptionalNumber(item[fields.popperOffset]),
+                showTimeout: toOptionalNumber(item[fields.showTimeout]),
+                hideTimeout: toOptionalNumber(item[fields.hideTimeout]),
+                expandCloseIcon: String(item[fields.expandCloseIcon] ?? ""),
+                expandOpenIcon: String(item[fields.expandOpenIcon] ?? ""),
+                collapseCloseIcon: String(item[fields.collapseCloseIcon] ?? ""),
+                collapseOpenIcon: String(item[fields.collapseOpenIcon] ?? ""),
                 level,
                 indexPath: ancestors,
                 hasChildren: children.length > 0,
@@ -306,7 +430,15 @@ const normalizeItems = (rawItems: unknown, level = 0, ancestors: string[] = []):
             group: false,
             route: item[fields.route],
             popperClass: String(item[fields.popperClass] ?? ""),
+            popperStyle: (item[fields.popperStyle] ?? {}) as MenuPopperStyle,
             teleported: item[fields.teleported] !== false,
+            popperOffset: toOptionalNumber(item[fields.popperOffset]),
+            showTimeout: toOptionalNumber(item[fields.showTimeout]),
+            hideTimeout: toOptionalNumber(item[fields.hideTimeout]),
+            expandCloseIcon: String(item[fields.expandCloseIcon] ?? ""),
+            expandOpenIcon: String(item[fields.expandOpenIcon] ?? ""),
+            collapseCloseIcon: String(item[fields.collapseCloseIcon] ?? ""),
+            collapseOpenIcon: String(item[fields.collapseOpenIcon] ?? ""),
             level,
             indexPath: ancestors,
             hasChildren: children.length > 0,
@@ -315,7 +447,97 @@ const normalizeItems = (rawItems: unknown, level = 0, ancestors: string[] = []):
     });
 };
 
-const tree = (): MenuViewItem[] => normalizeItems(props.items);
+const toOptionalNumber = (value: unknown): number | undefined => {
+    if (value === undefined || value === null || value === "") return undefined;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : undefined;
+};
+
+const elementValue = (element: HTMLElement, name: string): unknown => {
+    const value = (element as unknown as Record<string, unknown>)[name];
+    if (value !== undefined && value !== null && value !== "") return value;
+    const attribute = name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+    return element.getAttribute(attribute) ?? undefined;
+};
+
+const elementBoolean = (element: HTMLElement, name: string, fallback = false): boolean => {
+    const value = elementValue(element, name);
+    if (value === undefined) return fallback;
+    return value !== false && value !== "false";
+};
+
+const titleText = (element: HTMLElement): string => {
+    const title = elementValue(element, "title");
+    if (title !== undefined) return String(title);
+    const source = Array.from(element.children).find(
+        (child): child is HTMLElement => child instanceof HTMLElement && child.slot === "title",
+    );
+    return source?.textContent?.trim() || "";
+};
+
+const compositionChildren = (parent: HTMLElement): HTMLElement[] =>
+    Array.from(parent.children).filter(
+        (child): child is HTMLElement => child instanceof HTMLElement && [
+            "elf-menu-item",
+            "elf-sub-menu",
+            "elf-menu-item-group",
+        ].includes(child.tagName.toLowerCase()),
+    );
+
+const compositionItem = (
+    element: HTMLElement,
+    level: number,
+    ancestors: string[],
+    fallbackIndex: string,
+): MenuViewItem => {
+    const tag = element.tagName.toLowerCase();
+    const group = tag === "elf-menu-item-group";
+    const submenu = tag === "elf-sub-menu";
+    const index = group ? `__group_${fallbackIndex}` : String(elementValue(element, "index") ?? fallbackIndex);
+    const title = titleText(element) || index;
+    const children = submenu || group
+        ? compositionChildren(element).map((child, childIndex) =>
+            compositionItem(child, level + 1, group ? ancestors : [...ancestors, index], `${fallbackIndex}-${childIndex}`))
+        : [];
+
+    return {
+        raw: { source: element },
+        index,
+        label: title,
+        title,
+        icon: String(elementValue(element, "icon") ?? ""),
+        disabled: elementBoolean(element, "disabled"),
+        badge: String(elementValue(element, "badge") ?? ""),
+        divider: false,
+        group,
+        route: elementValue(element, "route"),
+        popperClass: String(elementValue(element, "popperClass") ?? ""),
+        popperStyle: (elementValue(element, "popperStyle") ?? {}) as MenuPopperStyle,
+        teleported: elementBoolean(element, "teleported", level === 0),
+        popperOffset: toOptionalNumber(elementValue(element, "popperOffset")),
+        showTimeout: toOptionalNumber(elementValue(element, "showTimeout")),
+        hideTimeout: toOptionalNumber(elementValue(element, "hideTimeout")),
+        expandCloseIcon: String(elementValue(element, "expandCloseIcon") ?? ""),
+        expandOpenIcon: String(elementValue(element, "expandOpenIcon") ?? ""),
+        collapseCloseIcon: String(elementValue(element, "collapseCloseIcon") ?? ""),
+        collapseOpenIcon: String(elementValue(element, "collapseOpenIcon") ?? ""),
+        source: element,
+        level,
+        indexPath: ancestors,
+        hasChildren: children.length > 0,
+        children,
+    };
+};
+
+const compositionItems = (): MenuViewItem[] => {
+    compositionVersion.value;
+    return compositionChildren(host).map((child, index) => compositionItem(child, 0, [], String(index)));
+};
+
+const tree = (): MenuViewItem[] => {
+    const composed = compositionItems();
+    return composed.length > 0 ? composed : normalizeItems(props.items);
+};
 
 const findItem = (index: string, items = tree()): MenuViewItem | undefined => {
     for (const item of items) {
@@ -335,7 +557,7 @@ const getVisibleItems = (items = tree()): MenuViewItem[] => {
     for (const item of items) {
         if (props.searchable && searchText.value && !matchesSearch(item) && !item.hasChildren) continue;
         out.push(item);
-        if (!_collapsed() && item.hasChildren && (isOpen(item.index) || (props.searchable && searchText.value)))
+        if (!_collapsed() && item.hasChildren && (item.group || isOpen(item.index) || (props.searchable && searchText.value)))
             out.push(...getVisibleItems(item.children));
     }
     return out;
@@ -354,20 +576,28 @@ const activeHorizontalRoot = (): MenuViewItem | undefined => {
     const roots = tree();
     const opened = openKeys.value.find((k) => roots.some((r) => r.index === k));
     if (opened) return roots.find((r) => r.index === opened);
-    return roots.find((r) => r.index === activeKey.value);
+    return roots.find((root) => root.index === activeKey.value || flattenPanelItems(root.children).some(
+        (item) => item.index === activeKey.value,
+    ));
+};
+
+const horizontalPanelRoot = (): MenuViewItem | undefined => {
+    const current = activeHorizontalRoot();
+    if (current?.hasChildren) return current;
+    return findItem(lastHorizontalRootIndex.value);
+};
+
+const isHorizontalPanelVisible = (): boolean => {
+    const root = horizontalPanelRoot();
+    return Boolean(root && isOpen(root.index));
 };
 
 const getHorizontalPanelItems = (): MenuViewItem[] => {
-    const root = activeHorizontalRoot();
-    if (!root?.hasChildren || !isOpen(root.index)) return [];
+    const root = horizontalPanelRoot();
+    if (!root?.hasChildren) return [];
+    if (!props.persistent && !isOpen(root.index)) return [];
     return flattenPanelItems(root.children);
 };
-
-const panelLeft = useRef("0px");
-
-const popupTop = useRef("8px");
-
-const nestedPopupTop = useRef("0px");
 
 const alignPanel = (item: MenuViewItem) => {
     if (!isHorizontal.value) return;
@@ -415,6 +645,7 @@ const closeBranch = (item: MenuViewItem) => {
 const openBranch = (item: MenuViewItem) => {
     if (props.uniqueOpened || isHorizontal.value) openKeys.set([...item.indexPath, item.index]);
     else if (!openKeys.value.includes(item.index)) openKeys.set([...openKeys.value, item.index]);
+    if (isHorizontal.value && item.level === 0) lastHorizontalRootIndex.set(item.index);
     emitOpen(item);
     alignPanel(item);
     // 展开后滚动到可见
@@ -447,6 +678,14 @@ const selectItem = (item: MenuViewItem) => {
     activeKey.set(item.index);
     emit("update:modelValue", item.index);
     emit("select", item.index, [...item.indexPath, item.index], item.raw);
+    if (item.source) {
+        const detail: MenuItemClickDetail = {
+            index: item.index,
+            indexPath: [...item.indexPath, item.index],
+            route: item.route as MenuItemClickDetail["route"],
+        };
+        item.source.dispatchEvent(new CustomEvent("click", { detail, bubbles: true, composed: true }));
+    }
     navigate(item);
 };
 
@@ -494,12 +733,6 @@ const handleResize = (): void => {
 
 defineExpose({ open, close, select, handleResize, updateActiveIndex });
 
-const hoveredIndex = useRef("");
-
-const hoveredIndex2 = useRef("");
-
-let hoverTimer: ReturnType<typeof setTimeout> | null = null;
-
 const clearHoverTimer = () => {
     if (hoverTimer) {
         clearTimeout(hoverTimer);
@@ -519,17 +752,22 @@ const runAfter = (delay: unknown, callback: () => void): void => {
     }, timeout);
 };
 
+const itemShowTimeout = (item: MenuViewItem): number => item.showTimeout ?? (Number(props.showTimeout) || 0);
+
+const itemHideTimeout = (item?: MenuViewItem): number => item?.hideTimeout ?? (Number(props.hideTimeout) || 0);
+
 const onItemEnter = (item: MenuViewItem) => {
     if (item.divider || item.group) return;
     clearHoverTimer();
     if (_collapsed()) {
         clearHoverTimer();
         hoveredIndex.set(item.hasChildren ? item.index : "");
+        if (item.hasChildren) lastHoveredIndex.set(item.index);
         hoveredIndex2.set("");
         if (item.hasChildren) alignCollapsePopup(item);
     } else if (menuTrigger() === "hover" && item.hasChildren) {
         // 关闭其他已展开的同级项，再展开当前
-        runAfter(props.showTimeout, () => {
+        runAfter(itemShowTimeout(item), () => {
             const currentOpen = openKeys.peek();
             const path = [...item.indexPath, item.index];
             const siblingsOpen = currentOpen.filter((k) => !path.includes(k));
@@ -540,16 +778,16 @@ const onItemEnter = (item: MenuViewItem) => {
     }
 };
 
-const onItemLeave = () => {
+const onItemLeave = (item?: MenuViewItem) => {
     clearHoverTimer();
     if (_collapsed()) {
-        runAfter(props.hideTimeout, () => {
+        runAfter(itemHideTimeout(item), () => {
             hoveredIndex.set("");
             hoveredIndex2.set("");
         });
     } else if (menuTrigger() === "hover") {
         const idx = hoveredIndex.peek();
-        runAfter(props.hideTimeout, () => {
+        runAfter(itemHideTimeout(item), () => {
             if (idx) {
                 const item = findItem(idx);
                 if (item && isOpen(idx)) closeBranch(item);
@@ -563,6 +801,7 @@ const onSubItemEnter = (item: MenuViewItem) => {
     clearHoverTimer();
     if (item.hasChildren) {
         hoveredIndex2.set(item.index);
+        lastHoveredIndex2.set(item.index);
         alignNestedPopup(item);
     }
 };
@@ -575,16 +814,22 @@ const onSubItemLeave = () => {
 };
 
 const getHoveredChildren = (): MenuViewItem[] => {
-    const idx = hoveredIndex.value;
+    const idx = hoveredIndex.value || (props.persistent ? lastHoveredIndex.value : "");
     if (!idx) return [];
     return findItem(idx)?.children ?? [];
 };
 
 const getHoveredChildren2 = (): MenuViewItem[] => {
-    const idx = hoveredIndex2.value;
+    const idx = hoveredIndex2.value || (props.persistent ? lastHoveredIndex2.value : "");
     if (!idx) return [];
     return findItem(idx)?.children ?? [];
 };
+
+const collapsePopupRoot = (): MenuViewItem | undefined =>
+    findItem(hoveredIndex.value || (props.persistent ? lastHoveredIndex.value : ""));
+
+const nestedPopupRoot = (): MenuViewItem | undefined =>
+    findItem(hoveredIndex2.value || (props.persistent ? lastHoveredIndex2.value : ""));
 
 const onPopupEnter = () => clearHoverTimer();
 
@@ -615,6 +860,23 @@ const itemStyle = (item: MenuViewItem): Record<string, string> => {
     return { paddingLeft: `${12 + item.level * (Number(props.indent) || 20)}px` };
 };
 
+const itemAriaCurrent = (item: MenuViewItem): "page" | undefined => isActive(item.index) ? "page" : undefined;
+
+const itemTabIndex = (item: MenuViewItem): number => {
+    if (item.disabled || item.divider || item.group) return -1;
+    const focusable = getVisibleItems().filter((entry) => !entry.disabled && !entry.divider && !entry.group);
+    return isActive(item.index) || (!activeKey.value && focusable[0]?.index === item.index) ? 0 : -1;
+};
+
+const itemArrow = (item: MenuViewItem): string => {
+    if (_collapsed()) {
+        if (isOpen(item.index) && item.collapseOpenIcon) return item.collapseOpenIcon;
+        return item.collapseCloseIcon || "›";
+    }
+    if (isOpen(item.index) && item.expandOpenIcon) return item.expandOpenIcon;
+    return item.expandCloseIcon || "›";
+};
+
 const popperClass = (base: string, item?: MenuViewItem): unknown[] => [
     base,
     String(props.popperClass || ""),
@@ -627,15 +889,38 @@ const popperStyle = (extra: Record<string, string> = {}): Record<string, string>
     ...extra,
 });
 
-const horizontalPanelStyle = (): Record<string, string> => popperStyle({ left: panelLeft.value });
+const horizontalPanelStyle = (): Record<string, string> => {
+    const item = horizontalPanelRoot();
+    const offset = item?.popperOffset ?? (Number(props.popperOffset) || 0);
+    return {
+        ...popperStyle(),
+        ...objectStyle(item?.popperStyle),
+        left: panelLeft.value,
+        marginTop: `${offset}px`,
+    };
+};
 
-const collapsePopupStyle = (): Record<string, string> => popperStyle({ top: popupTop.value });
+const collapsePopupStyle = (): Record<string, string> => {
+    const item = collapsePopupRoot();
+    const offset = item?.popperOffset ?? (Number(props.popperOffset) || 0);
+    return { ...popperStyle(), ...objectStyle(item?.popperStyle), top: popupTop.value, marginLeft: `${offset}px` };
+};
 
-const nestedPopupStyle = (): Record<string, string> => popperStyle({ top: nestedPopupTop.value });
+const nestedPopupStyle = (): Record<string, string> => {
+    const item = nestedPopupRoot();
+    const offset = item?.popperOffset ?? (Number(props.popperOffset) || 0);
+    return {
+        ...popperStyle(),
+        ...objectStyle(item?.popperStyle),
+        top: nestedPopupTop.value,
+        marginLeft: `${offset}px`,
+    };
+};
 
 const nestedPopperClass = (): unknown[] => [
-    ...popperClass("collapse-popup", findItem(hoveredIndex2.value)),
+    ...popperClass("collapse-popup", nestedPopupRoot()),
     "collapse-popup--nested",
+    { "is-hidden": !hoveredIndex2.value },
 ];
 
 const onKeydown = (e: KeyboardEvent) => {
@@ -646,13 +931,45 @@ const onKeydown = (e: KeyboardEvent) => {
         target.click();
         return;
     }
-    if (!["ArrowDown", "ArrowUp"].includes(e.key)) return;
+    const index = target.dataset.index || "";
+    const item = findItem(index);
+    if (e.key === "ArrowRight" && item?.hasChildren) {
+        e.preventDefault();
+        open(item.index);
+        requestAnimationFrame(() => {
+            const firstChild = shadow?.querySelector<HTMLElement>(`[data-index="${item.children[0]?.index}"]`);
+            firstChild?.focus();
+        });
+        return;
+    }
+    if (e.key === "ArrowLeft" && item) {
+        const parentIndex = item.indexPath.at(-1);
+        if (parentIndex) {
+            e.preventDefault();
+            close(parentIndex);
+            shadow?.querySelector<HTMLElement>(`[data-index="${parentIndex}"]`)?.focus();
+        }
+        return;
+    }
+    if (e.key === "Escape") {
+        e.preventDefault();
+        openKeys.set([]);
+        hoveredIndex.set("");
+        hoveredIndex2.set("");
+        return;
+    }
+    if (!["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
     const root = target.getRootNode() as ParentNode;
-    const items = Array.from(root.querySelectorAll<HTMLElement>(".menu-item:not(.is-disabled):not(.is-divider)"));
+    const items = Array.from(root.querySelectorAll<HTMLElement>(".menu-item:not(.is-disabled):not(.is-divider):not(.is-group)"));
     const idx = items.indexOf(target);
     if (idx < 0) return;
     e.preventDefault();
-    items[(idx + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus();
+    const nextIndex = e.key === "Home"
+        ? 0
+        : e.key === "End"
+            ? items.length - 1
+            : (idx + (["ArrowDown", "ArrowRight"].includes(e.key) ? 1 : -1) + items.length) % items.length;
+    items[nextIndex]?.focus();
 };
 
 defineStyle(baseStyles);
@@ -661,7 +978,7 @@ defineStyle(modeStyles);
 
 defineStyle(themeStyles);
 
-const Menu = defineHtml(html`
+const Menu = defineHtml<MenuRuntimeProps, Record<string, never>, MenuSlots>(html`
     <nav
         :class=${[
             "menu",
@@ -675,8 +992,10 @@ const Menu = defineHtml(html`
         ]}
         :style=${hostStyle}
         role="navigation"
+        aria-label="Menu"
         @keydown=${onKeydown}
     >
+        <slot class="composition-slot"></slot>
         <div class="menu-header">
             <div class="menu-header-content"><slot name="header"></slot></div>
             <div v-if=${showHeaderToggle()} class="menu-toggle-slot menu-toggle-slot--header">
@@ -706,14 +1025,19 @@ const Menu = defineHtml(html`
                         :disabled="item.disabled || item.divider || item.group"
                         :title="item.label"
                         role="menuitem"
+                        :tabindex=${itemTabIndex(item)}
+                        :aria-current=${itemAriaCurrent(item)}
+                        :aria-disabled=${item.disabled ? "true" : undefined}
+                        :aria-haspopup=${item.hasChildren ? "menu" : undefined}
+                        :aria-expanded=${item.hasChildren ? String(isOpen(item.index)) : undefined}
                         @click="onItemClick(item, $event)"
                         @mouseenter="onItemEnter(item)"
-                        @mouseleave=${onItemLeave}
+                        @mouseleave="onItemLeave(item)"
                     >
                         <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
                         <span class="menu-label">{{ item.label }}</span>
                         <span v-if="item.badge" class="menu-badge">{{ item.badge }}</span>
-                        <span v-if="item.hasChildren" class="menu-arrow">›</span>
+                        <span v-if="item.hasChildren" class="menu-arrow" aria-hidden="true">{{ itemArrow(item) }}</span>
                     </button>
                     <button v-if=${props.ellipsis} class="menu-ellipsis" type="button" aria-label="more">
                         ${props.ellipsisIcon || "..."}
@@ -721,8 +1045,12 @@ const Menu = defineHtml(html`
                 </div>
                 <div
                     v-if=${getHorizontalPanelItems().length > 0}
-                    :class=${popperClass("horizontal-panel", activeHorizontalRoot())}
+                    :class=${[
+                        ...popperClass("horizontal-panel", horizontalPanelRoot()),
+                        { "is-hidden": !isHorizontalPanelVisible() },
+                    ]}
                     role="menu"
+                    :aria-hidden=${String(!isHorizontalPanelVisible())}
                     :style=${horizontalPanelStyle()}
                 >
                     <template v-for="item in getHorizontalPanelItems()" :key="item.index">
@@ -731,16 +1059,22 @@ const Menu = defineHtml(html`
                         <button
                             v-else
                             type="button"
+                            :data-index="item.index"
                             :class="['menu-item', itemClass(item)]"
                             :disabled="item.disabled"
                             :title="item.label"
                             role="menuitem"
+                            :tabindex=${itemTabIndex(item)}
+                            :aria-current=${itemAriaCurrent(item)}
+                            :aria-disabled=${item.disabled ? "true" : undefined}
+                            :aria-haspopup=${item.hasChildren ? "menu" : undefined}
+                            :aria-expanded=${item.hasChildren ? String(isOpen(item.index)) : undefined}
                             @click="onItemClick(item, $event)"
                         >
                             <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
                             <span class="menu-label">{{ item.label }}</span>
                             <span v-if="item.badge" class="menu-badge">{{ item.badge }}</span>
-                            <span v-if="item.hasChildren" class="menu-arrow">›</span>
+                            <span v-if="item.hasChildren" class="menu-arrow" aria-hidden="true">{{ itemArrow(item) }}</span>
                         </button>
                     </template>
                 </div>
@@ -749,7 +1083,7 @@ const Menu = defineHtml(html`
         </template>
 
         <template v-else>
-            <div class="menu-body">
+            <div class="menu-body" role="menu">
                 <template v-for="item in getVisibleItems()" :key="item.index">
                     <hr v-if="item.divider" class="menu-divider" />
                     <strong v-else-if="item.group" class="menu-group-title">{{ item.label }}</strong>
@@ -762,22 +1096,31 @@ const Menu = defineHtml(html`
                         :disabled="item.disabled"
                         :title="isCollapsed ? item.label : ''"
                         role="menuitem"
+                        :tabindex=${itemTabIndex(item)}
+                        :aria-current=${itemAriaCurrent(item)}
+                        :aria-disabled=${item.disabled ? "true" : undefined}
+                        :aria-haspopup=${item.hasChildren ? "menu" : undefined}
+                        :aria-expanded=${item.hasChildren ? String(isOpen(item.index)) : undefined}
                         @click="onItemClick(item, $event)"
                         @mouseenter="onItemEnter(item)"
-                        @mouseleave=${onItemLeave}
+                        @mouseleave="onItemLeave(item)"
                     >
                         <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
                         <span class="menu-label">{{ item.label }}</span>
                         <span v-if="item.badge" class="menu-badge">{{ item.badge }}</span>
-                        <span v-if="item.hasChildren && !isCollapsed" class="menu-arrow">›</span>
+                        <span v-if="item.hasChildren && !isCollapsed" class="menu-arrow" aria-hidden="true">{{ itemArrow(item) }}</span>
                     </button>
                 </template>
                 <div v-if=${getVisibleItems().length === 0} class="menu-empty">暂无结果</div>
 
                 <div
                     v-if=${isCollapsed && getHoveredChildren().length > 0}
-                    :class=${popperClass("collapse-popup", findItem(hoveredIndex.value))}
+                    :class=${[
+                        ...popperClass("collapse-popup", collapsePopupRoot()),
+                        { "is-hidden": !hoveredIndex.value },
+                    ]}
                     role="menu"
+                    :aria-hidden=${String(!hoveredIndex.value)}
                     :style=${collapsePopupStyle()}
                     @mouseenter=${onPopupEnter}
                     @mouseleave=${onPopupLeave}
@@ -791,6 +1134,10 @@ const Menu = defineHtml(html`
                         :disabled="item.disabled"
                         :title="item.label"
                         role="menuitem"
+                        :tabindex=${itemTabIndex(item)}
+                        :aria-current=${itemAriaCurrent(item)}
+                        :aria-disabled=${item.disabled ? "true" : undefined}
+                        :aria-haspopup=${item.hasChildren ? "menu" : undefined}
                         @click="onItemClick(item, $event)"
                         @mouseenter="onSubItemEnter(item)"
                         @mouseleave=${onSubItemLeave}
@@ -798,7 +1145,7 @@ const Menu = defineHtml(html`
                         <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
                         <span class="menu-label">{{ item.label }}</span>
                         <span v-if="item.badge" class="menu-badge">{{ item.badge }}</span>
-                        <span v-if="item.hasChildren" class="menu-arrow">›</span>
+                        <span v-if="item.hasChildren" class="menu-arrow" aria-hidden="true">{{ itemArrow(item) }}</span>
                     </button>
                     <div
                         v-if=${getHoveredChildren2().length > 0}
@@ -815,6 +1162,9 @@ const Menu = defineHtml(html`
                             :disabled="item.disabled"
                             :title="item.label"
                             role="menuitem"
+                            :tabindex=${itemTabIndex(item)}
+                            :aria-current=${itemAriaCurrent(item)}
+                            :aria-disabled=${item.disabled ? "true" : undefined}
                             @click="onItemClick(item, $event)"
                         >
                             <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>

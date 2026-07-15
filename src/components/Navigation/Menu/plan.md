@@ -206,20 +206,21 @@
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`ellipsis`、`ellipsis-icon ^`、`popper-offset ^`、`menu-trigger`、`collapse-transition`、`popper-effect ^`、`close-on-click-outside ^`、`popper-class ^`、`popper-style ^`、`show-timeout ^`、`hide-timeout ^`、`persistent ^`、`index ^`、`popper-class`、`show-timeout`、`hide-timeout`、`disabled`、`teleported`、`popper-offset`、`expand-close-icon`、`expand-open-icon`、`collapse-close-icon`、`collapse-open-icon`、`route`、`title`
-- [ ] P1 补齐事件差距：`click`
-- [ ] P1 补齐插槽/暴露方法：`title`、`open`、`close`、`handleResize`、`updateActiveIndex ^`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P1 补齐核心属性差距：`ellipsis`、`ellipsis-icon ^`、`popper-offset ^`、`menu-trigger`、`collapse-transition`、`popper-effect ^`、`close-on-click-outside ^`、`popper-class ^`、`popper-style ^`、`show-timeout ^`、`hide-timeout ^`、`persistent ^`、`index ^`、`popper-class`、`show-timeout`、`hide-timeout`、`disabled`、`teleported`、`popper-offset`、`expand-close-icon`、`expand-open-icon`、`collapse-close-icon`、`collapse-open-icon`、`route`、`title`
+- [x] P1 补齐事件差距：`click`
+- [x] P1 补齐插槽/暴露方法：`title`、`open`、`close`、`handleResize`、`updateActiveIndex ^`
+- [x] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
+- [x] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
+- [x] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 关键交互和边界状态有单测覆盖。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
 ## 本轮记录
 
 - [x] 2026-07-11 Navigation 第一阶段：补 `ellipsis/ellipsisIcon/menuTrigger/showTimeout/hideTimeout/popperOffset/popperClass/popperStyle/collapseTransition/closeOnClickOutside/persistent` 兼容入口，支持 `title/route/popperClass/teleported` 字段映射，补 `handleResize/updateActiveIndex` 暴露方法，新增定向测试和 PropsTable/hover 案例。
 - [x] 2026-07-14 增加可选 `bordered` 外框；修复自定义 toggle 双触发、搜索事件与折叠 header 裁切，并将稳定 toggle 放入 header 同行。
+- [x] 2026-07-15 完成组合式 `SubMenu / MenuItem / MenuItemGroup`，补齐子菜单级浮层样式、偏移、超时与状态图标，增加 `MenuItem click`、持久浮层、ARIA 和完整方向键导航；20 项定向单测、生产构建及真实浏览器交互通过（控制台 0 error）。`teleported` 保留层级语义，真实跨 Shadow DOM 锚定传送继续由 Dropdown 的共享浮层任务统一承接。

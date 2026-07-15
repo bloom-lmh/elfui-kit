@@ -41,6 +41,7 @@ const propsRows = [
   { name: "showTimeout / hideTimeout", type: "number", default: "0 / 300", desc: "hover 展开和关闭延迟" },
   { name: "popperOffset", type: "number", default: "4", desc: "浮层偏移距离" },
   { name: "popperClass / popperStyle", type: "string / object", default: "-", desc: "浮层样式扩展" },
+  { name: "popperEffect", type: "string", default: "light", desc: "浮层主题" },
   { name: "collapseTransition", type: "boolean", default: "true", desc: "是否启用折叠过渡" },
   { name: "closeOnClickOutside", type: "boolean", default: "true", desc: "水平浮层点击外部是否关闭" },
   { name: "persistent", type: "boolean", default: "true", desc: "保留浮层渲染的兼容属性" }
@@ -62,11 +63,38 @@ const methodsRows = [
   { name: "updateActiveIndex(index)", desc: "同步当前激活 index" }
 ];
 
+const subMenuRows = [
+  { name: "index", type: "string", default: "-", desc: "子菜单唯一标识（必填）" },
+  { name: "title / icon / badge", type: "string", default: "-", desc: "标题、图标和徽章" },
+  { name: "disabled", type: "boolean", default: "false", desc: "禁用整个子菜单" },
+  { name: "popperClass / popperStyle", type: "string / object", default: "-", desc: "当前子菜单浮层样式" },
+  { name: "showTimeout / hideTimeout", type: "number", default: "继承 Menu", desc: "当前子菜单展开与关闭延迟" },
+  { name: "popperOffset", type: "number", default: "继承 Menu", desc: "当前子菜单浮层偏移" },
+  { name: "teleported", type: "boolean", default: "按层级", desc: "浮层传送语义兼容属性" },
+  { name: "expand*Icon / collapse*Icon", type: "string", default: "-", desc: "展开、折叠状态图标" },
+  { name: "title", type: "slot", default: "-", desc: "自定义子菜单标题内容" }
+];
+
+const menuItemRows = [
+  { name: "index", type: "string", default: "-", desc: "菜单项唯一标识（必填）" },
+  { name: "title / icon / badge", type: "string", default: "-", desc: "标题、图标和徽章" },
+  { name: "route", type: "string / object", default: "-", desc: "router 模式的目标地址" },
+  { name: "disabled", type: "boolean", default: "false", desc: "禁用菜单项" },
+  { name: "click", type: "(detail) => void", default: "-", desc: "点击菜单项时触发" },
+  { name: "default / title", type: "slot", default: "-", desc: "自定义菜单项标题内容" }
+];
+
+const menuItemGroupRows = [
+  { name: "title", type: "string", default: "-", desc: "分组标题，也可通过 title 插槽提供" },
+  { name: "default", type: "slot", default: "-", desc: "分组内的 MenuItem" }
+];
+
 const slotsRows = [
-  { name: "default", desc: "菜单项" },
+  { name: "default", desc: "组合式 MenuItem / SubMenu / MenuItemGroup" },
   { name: "header", desc: "顶部区域（头像/logo）" },
   { name: "search", desc: "自定义搜索区域，覆盖默认搜索输入" },
-  { name: "footer", desc: "底部区域（退出按钮）" }
+  { name: "footer", desc: "底部区域（退出按钮）" },
+  { name: "toggle", desc: "自定义折叠按钮" }
 ];
 
 const PageMenuProps = defineHtml(html`
@@ -75,6 +103,9 @@ const PageMenuProps = defineHtml(html`
   <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
   <elf-props-table title="Methods" :rows=${methodsRows}></elf-props-table>
   <elf-props-table title="Slots" :rows=${slotsRows}></elf-props-table>
+  <elf-props-table title="SubMenu Props" :rows=${subMenuRows}></elf-props-table>
+  <elf-props-table title="MenuItem Props / Events" :rows=${menuItemRows}></elf-props-table>
+  <elf-props-table title="MenuItemGroup API" :rows=${menuItemGroupRows}></elf-props-table>
 `);
 
 export { PageMenuProps };

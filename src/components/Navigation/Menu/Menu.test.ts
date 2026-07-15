@@ -31,6 +31,24 @@ interface MenuEl extends HTMLElement {
   router?: boolean;
   updateActiveIndex?: (index: string) => void;
   handleResize?: () => void;
+  open?: (index: string) => void;
+  close?: (index: string) => void;
+}
+
+interface SubMenuEl extends HTMLElement {
+  index?: string;
+  title?: string;
+  popperOffset?: number;
+  popperStyle?: Record<string, string>;
+  expandCloseIcon?: string;
+  expandOpenIcon?: string;
+}
+
+interface MenuItemEl extends HTMLElement {
+  index?: string;
+  title?: string;
+  route?: string | Record<string, unknown>;
+  disabled?: boolean;
 }
 
 const items = [
@@ -377,5 +395,127 @@ describe("elf-menu", () => {
     expect(window.location.hash).toBe("#/home");
 
     el.handleResize!();
+  });
+
+  it("supports elf-sub-menu, elf-menu-item-group and elf-menu-item composition", async () => {
+    const el = document.createElement("elf-menu") as MenuEl;
+    const subMenu = document.createElement("elf-sub-menu") as SubMenuEl;
+    subMenu.index = "workspace";
+    const subMenuTitle = document.createElement("span");
+    subMenuTitle.slot = "title";
+    subMenuTitle.textContent = "Workspace";
+
+    const group = document.createElement("elf-menu-item-group");
+    (group as unknown as { title: string }).title = "Delivery";
+    const project = document.createElement("elf-menu-item") as MenuItemEl;
+    project.index = "workspace/projects";
+    project.title = "Projects";
+    project.route = { path: "/projects" };
+    const disabled = document.createElement("elf-menu-item") as MenuItemEl;
+    disabled.index = "workspace/archive";
+    disabled.title = "Archive";
+    disabled.disabled = true;
+
+    group.append(project, disabled);
+    subMenu.append(subMenuTitle, group);
+    el.append(subMenu);
+    el.defaultOpeneds = ["workspace"];
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    expect(labels(el)).toEqual(["Workspace", "Projects", "Archive"]);
+    expect(el.shadowRoot!.querySelector(".menu-group-title")?.textContent).toContain("Delivery");
+    expect(el.shadowRoot!.querySelector('[data-index="workspace"]')?.getAttribute("aria-expanded")).toBe("true");
+
+    const onItemClick = vi.fn();
+    project.addEventListener("click", onItemClick);
+    (el.shadowRoot!.querySelector('[data-index="workspace/projects"]') as HTMLElement).click();
+    await tick();
+
+    const detail = (onItemClick.mock.calls[0]![0] as CustomEvent).detail;
+    expect(detail).toEqual({
+      index: "workspace/projects",
+      indexPath: ["workspace", "workspace/projects"],
+      route: { path: "/projects" }
+    });
+  });
+
+  it("honors submenu popper overrides and custom expand icons", async () => {
+    const el = document.createElement("elf-menu") as MenuEl;
+    el.mode = "horizontal";
+    const subMenu = document.createElement("elf-sub-menu") as SubMenuEl;
+    subMenu.index = "products";
+    subMenu.title = "Products";
+    subMenu.popperOffset = 18;
+    subMenu.popperStyle = { width: "280px" };
+    subMenu.expandCloseIcon = "+";
+    subMenu.expandOpenIcon = "−";
+    const item = document.createElement("elf-menu-item") as MenuItemEl;
+    item.index = "products/cloud";
+    item.title = "Cloud";
+    subMenu.append(item);
+    el.append(subMenu);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const trigger = el.shadowRoot!.querySelector('[data-index="products"]') as HTMLElement;
+    expect(trigger.textContent).toContain("+");
+    trigger.click();
+    await tick();
+
+    const panel = el.shadowRoot!.querySelector(".horizontal-panel") as HTMLElement;
+    expect(trigger.textContent).toContain("−");
+    expect(panel.style.width).toBe("280px");
+    expect(panel.style.marginTop).toBe("18px");
+  });
+
+  it("supports roving focus, ArrowRight open, ArrowLeft close and Escape", async () => {
+    const el = await mount();
+    const workspace = el.shadowRoot!.querySelector('[data-index="/workspace"]') as HTMLElement;
+    workspace.focus();
+    workspace.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    await tick();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    const project = el.shadowRoot!.querySelector('[data-index="/workspace/projects"]') as HTMLElement;
+    expect(workspace.getAttribute("aria-expanded")).toBe("true");
+    expect(el.shadowRoot!.activeElement).toBe(project);
+
+    project.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    await tick();
+    expect(workspace.getAttribute("aria-expanded")).toBe("false");
+
+    workspace.click();
+    await tick();
+    workspace.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await tick();
+    expect(workspace.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("keeps inactive poppers only when persistent is enabled", async () => {
+    const persistentMenu = await mount();
+    persistentMenu.mode = "horizontal";
+    await tick();
+    await tick();
+    (persistentMenu.shadowRoot!.querySelector('[data-index="/workspace"]') as HTMLElement).click();
+    await tick();
+    (persistentMenu.shadowRoot!.querySelector('.horizontal-panel [data-index="/workspace/projects"]') as HTMLElement).click();
+    await tick();
+
+    expect(persistentMenu.shadowRoot!.querySelector(".horizontal-panel")?.classList.contains("is-hidden")).toBe(true);
+
+    const disposableMenu = await mount();
+    disposableMenu.mode = "horizontal";
+    (disposableMenu as unknown as { persistent: boolean }).persistent = false;
+    await tick();
+    await tick();
+    (disposableMenu.shadowRoot!.querySelector('[data-index="/workspace"]') as HTMLElement).click();
+    await tick();
+    (disposableMenu.shadowRoot!.querySelector('.horizontal-panel [data-index="/workspace/projects"]') as HTMLElement).click();
+    await tick();
+
+    expect(disposableMenu.shadowRoot!.querySelector(".horizontal-panel")).toBeNull();
   });
 });

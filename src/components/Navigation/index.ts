@@ -10,13 +10,16 @@ import { Dropdown } from "./Dropdown/index";
 import { DropdownItem } from "./DropdownItem/index";
 import { DropdownMenu } from "./DropdownMenu/index";
 import { Menu } from "./Menu/index";
+import { MenuItem } from "./MenuItem/index";
+import { MenuItemGroup } from "./MenuItemGroup/index";
 import { PageHeader } from "./PageHeader/index";
 import { Step } from "./Step/index";
 import { Steps } from "./Steps/index";
 import { TabPane } from "./TabPane/index";
 import { Tabs } from "./Tabs/index";
+import { SubMenu } from "./SubMenu/index";
 
-registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, DropdownMenu, DropdownItem, Menu, Steps, Step, Tabs, TabPane, PageHeader);
+registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, DropdownMenu, DropdownItem, Menu, MenuItem, MenuItemGroup, SubMenu, Steps, Step, Tabs, TabPane, PageHeader);
 
 export type {
   AnchorChangeDetail,
@@ -66,6 +69,25 @@ export type {
   DropdownTriggerMode,
   DropdownVirtualRef
 } from "./Dropdown/types";
+export type {
+  MenuExpose,
+  MenuFieldNames,
+  MenuItem,
+  MenuItemClickDetail,
+  MenuItemGroupProps,
+  MenuItemGroupSlots,
+  MenuItemProps,
+  MenuItemSlots,
+  MenuMode,
+  MenuPopperStyle,
+  MenuProps,
+  MenuSlots,
+  MenuTheme,
+  MenuTogglePlacement,
+  MenuTrigger,
+  SubMenuProps,
+  SubMenuSlots
+} from "./Menu/types";
 export type {
   StepProps,
   StepSlots,
