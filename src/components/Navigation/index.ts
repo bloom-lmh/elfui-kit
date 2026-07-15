@@ -7,12 +7,14 @@ import { BackTop } from "./BackTop/index";
 import { Breadcrumb } from "./Breadcrumb/index";
 import { BreadcrumbItem } from "./BreadcrumbItem/index";
 import { Dropdown } from "./Dropdown/index";
+import { DropdownItem } from "./DropdownItem/index";
+import { DropdownMenu } from "./DropdownMenu/index";
 import { Menu } from "./Menu/index";
 import { PageHeader } from "./PageHeader/index";
 import { Steps } from "./Steps/index";
 import { Tabs } from "./Tabs/index";
 
-registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, Menu, Steps, Tabs, PageHeader);
+registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, DropdownMenu, DropdownItem, Menu, Steps, Tabs, PageHeader);
 
 export type {
   AnchorChangeDetail,
@@ -43,17 +45,24 @@ export type {
   DropdownButtonProps,
   DropdownButtonType,
   DropdownCommandDetail,
+  DropdownCommand,
   DropdownEffect,
   DropdownElement,
   DropdownEmits,
   DropdownExpose,
   DropdownFieldNames,
   DropdownItem,
+  DropdownItemProps,
+  DropdownItemSlots,
+  DropdownMenuProps,
+  DropdownMenuSlots,
   DropdownPlacement,
   DropdownProps,
   DropdownSize,
   DropdownSlots,
-  DropdownTrigger
+  DropdownTrigger,
+  DropdownTriggerMode,
+  DropdownVirtualRef
 } from "./Dropdown/types";
 export type {
   StepItem,

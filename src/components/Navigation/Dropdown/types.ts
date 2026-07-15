@@ -1,10 +1,24 @@
 // elf-dropdown 类型定义
 
-export type DropdownTrigger = "click" | "hover" | "contextmenu";
-export type DropdownPlacement = "bottom-start" | "bottom-end" | "top-start" | "top-end";
+export type DropdownTriggerMode = "click" | "hover" | "contextmenu";
+export type DropdownTrigger = DropdownTriggerMode | DropdownTriggerMode[];
+export type DropdownPlacement =
+  | "bottom"
+  | "bottom-start"
+  | "bottom-end"
+  | "top"
+  | "top-start"
+  | "top-end";
 export type DropdownSize = "sm" | "md" | "lg";
 export type DropdownButtonType = "default" | "primary" | "success" | "warning" | "danger" | "info";
 export type DropdownEffect = "light" | "dark" | string;
+export type DropdownCommand = string | number | Record<string, unknown>;
+
+export interface DropdownVirtualRef {
+  getBoundingClientRect: () => DOMRect | DOMRectReadOnly;
+  addEventListener?: EventTarget["addEventListener"];
+  removeEventListener?: EventTarget["removeEventListener"];
+}
 
 export interface DropdownButtonProps {
   class?: string;
@@ -25,7 +39,7 @@ export interface DropdownFieldNames {
 
 export interface DropdownItem {
   label?: string;
-  command?: string;
+  command?: DropdownCommand;
   icon?: string;
   disabled?: boolean;
   divided?: boolean;
@@ -35,7 +49,7 @@ export interface DropdownItem {
 }
 
 export interface DropdownCommandDetail {
-  command: string;
+  command: DropdownCommand;
   item: DropdownItem;
 }
 
@@ -50,7 +64,7 @@ export interface DropdownProps {
   effect: DropdownEffect;
   triggerKeys: string[];
   virtualTriggering: boolean;
-  virtualRef?: HTMLElement | null;
+  virtualRef?: DropdownVirtualRef | null;
   showArrow: boolean;
   showTimeout: number;
   hideTimeout: number;
@@ -66,7 +80,7 @@ export interface DropdownProps {
   disabled: boolean;
   hideOnClick: boolean;
   splitButton: boolean;
-  maxHeight: string;
+  maxHeight: string | number;
   props: DropdownFieldNames;
 }
 
@@ -77,10 +91,30 @@ export type DropdownEmits = {
 };
 
 export interface DropdownSlots {
-  default?: () => unknown;
+  default?: unknown;
   trigger?: () => unknown;
   main?: () => unknown;
   dropdown?: () => unknown;
+}
+
+export interface DropdownMenuProps {
+  role: string;
+}
+
+export interface DropdownMenuSlots {
+  default?: unknown;
+}
+
+export interface DropdownItemProps {
+  command: DropdownCommand;
+  disabled: boolean;
+  divided: boolean;
+  icon: string;
+}
+
+export interface DropdownItemSlots {
+  default?: unknown;
+  icon?: unknown;
 }
 
 export interface DropdownExpose {

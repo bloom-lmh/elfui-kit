@@ -9,7 +9,10 @@ import {
     defineProps,
     defineStyle,
     html,
+    onMount,
+    onUnmount,
     useClickOutside,
+    useEffect,
     useEscapeKey,
     useEventListener,
     useHost,
@@ -21,6 +24,7 @@ import {
 import styles from "./style.scss?inline";
 import type {
     DropdownButtonType,
+    DropdownCommand,
     DropdownCommandDetail,
     DropdownEmits,
     DropdownFieldNames,
@@ -30,11 +34,14 @@ import type {
     DropdownSize,
     DropdownSlots,
     DropdownTrigger,
+    DropdownTriggerMode,
+    DropdownVirtualRef,
 } from "./types";
 
 export type {
     DropdownButtonProps,
     DropdownButtonType,
+    DropdownCommand,
     DropdownCommandDetail,
     DropdownEffect,
     DropdownElement,
@@ -42,11 +49,17 @@ export type {
     DropdownExpose,
     DropdownFieldNames,
     DropdownItem,
+    DropdownItemProps,
+    DropdownItemSlots,
+    DropdownMenuProps,
+    DropdownMenuSlots,
     DropdownPlacement,
     DropdownProps,
     DropdownSize,
     DropdownSlots,
     DropdownTrigger,
+    DropdownTriggerMode,
+    DropdownVirtualRef,
 } from "./types";
 
 const DROPDOWN_OPEN_EVENT = "elf-dropdown-open";
@@ -63,7 +76,8 @@ const DEFAULT_FIELDS: Required<DropdownFieldNames> = {
 
 const BUTTON_TYPES = new Set<DropdownButtonType>(["primary", "success", "warning", "danger", "info"]);
 
-const DEFAULT_TRIGGER_KEYS = ["Enter", " ", "Space", "ArrowDown"];
+const DEFAULT_TRIGGER_KEYS = ["Enter", " ", "Space", "ArrowDown", "NumpadEnter"];
+const TRIGGER_MODES = new Set<DropdownTriggerMode>(["click", "hover", "contextmenu"]);
 
 type RawItem = Record<string, unknown>;
 
@@ -71,7 +85,7 @@ interface ViewItem {
     raw: RawItem;
     key: string;
     label: string;
-    command: string;
+    command: DropdownCommand;
     icon: string;
     disabled: boolean;
     divided: boolean;
@@ -99,8 +113,9 @@ const normalizeItems = (source: unknown[], fields: Required<DropdownFieldNames>,
         const item = (raw || {}) as RawItem;
         const childSource = Array.isArray(item[fields.children]) ? (item[fields.children] as unknown[]) : [];
         const label = String(item[fields.label] ?? item[fields.command] ?? index);
-        const command = String(item[fields.command] ?? label);
-        const key = path ? `${path}/${command || index}` : `${command || index}`;
+        const command = (item[fields.command] ?? label) as DropdownCommand;
+        const commandKey = typeof command === "object" ? index : String(command || index);
+        const key = path ? `${path}/${commandKey}` : commandKey;
         return {
             raw: item,
             key,
@@ -121,14 +136,19 @@ const toStyleObject = (value: unknown): Record<string, string> => {
     );
 };
 
-const resolveTrigger = (value: unknown): DropdownTrigger => {
-    const next = String(value || "click");
-    return next === "hover" || next === "contextmenu" ? next : "click";
+const resolveTriggers = (value: unknown): DropdownTriggerMode[] => {
+    const source = Array.isArray(value) ? value : [value || "click"];
+    const resolved = source
+        .map((item) => String(item) as DropdownTriggerMode)
+        .filter((item) => TRIGGER_MODES.has(item));
+    return resolved.length > 0 ? Array.from(new Set(resolved)) : ["click"];
 };
 
 const resolvePlacement = (value: unknown): DropdownPlacement => {
     const next = String(value || "bottom-start");
-    return next === "bottom-end" || next === "top-start" || next === "top-end" ? next : "bottom-start";
+    return next === "bottom" || next === "bottom-end" || next === "top" || next === "top-start" || next === "top-end"
+        ? next
+        : "bottom-start";
 };
 
 const resolveButtonType = (value: unknown): DropdownButtonType => {
@@ -149,19 +169,24 @@ const asStringList = (value: unknown, fallback: string[]): string[] =>
 
 const positiveDelay = (value: unknown): number => Math.max(0, Number(value) || 0);
 
+const cssSize = (value: unknown, fallback: string): string => {
+    if (value == null || value === "") return fallback;
+    return typeof value === "number" ? `${Math.max(0, value)}px` : String(value);
+};
+
 // ─── component setup ────────────────────────────────────────
 
 const props = defineProps<DropdownProps>({
     items: { type: Array, default: () => [] },
     label: { type: String, default: "下拉菜单" },
-    trigger: { type: String, default: "click" },
+    trigger: { type: [String, Array], default: "click" },
     placement: { type: String, default: "bottom-start" },
     size: { type: String, default: "md" },
     type: { type: String, default: "default" },
     buttonProps: { type: Object, default: () => ({}) },
     effect: { type: String, default: "light" },
     // default factory 会被编译器提升，只能写字面量，不能闭包模块常量
-    triggerKeys: { type: Array, default: () => ["Enter", " ", "Space", "ArrowDown"] },
+    triggerKeys: { type: Array, default: () => ["Enter", " ", "Space", "ArrowDown", "NumpadEnter"] },
     virtualTriggering: { type: Boolean, default: false },
     virtualRef: { type: Object, default: null },
     showArrow: { type: Boolean, default: true },
@@ -179,7 +204,7 @@ const props = defineProps<DropdownProps>({
     disabled: { type: Boolean, default: false },
     hideOnClick: { type: Boolean, default: true },
     splitButton: { type: Boolean, default: false },
-    maxHeight: { type: String, default: "280px" },
+    maxHeight: { type: [String, Number], default: "280px" },
     props: {
         type: Object,
         default: () => ({
@@ -196,27 +221,25 @@ const props = defineProps<DropdownProps>({
 
 const emit = defineEmits<DropdownEmits>();
 
-const open = useRef(false);
-const selectedCommand = useRef("");
-const selectedLabel = useRef("");
 const host = useHost();
+
+const open = useRef(false);
+const selectedCommand = useRef<DropdownCommand | null>(null);
+const selectedLabel = useRef("");
+const virtualStyle = useRef<Record<string, string>>({});
 
 let hoverCloseTimer: ReturnType<typeof setTimeout> | null = null;
 let hoverOpenTimer: ReturnType<typeof setTimeout> | null = null;
-
-const getMenuEl = (): HTMLElement | null => host.shadowRoot?.querySelector(".menu") ?? null;
-
-const getFocusableItems = (): HTMLElement[] => {
-    const menu = getMenuEl();
-    if (!menu) return [];
-    return Array.from(menu.querySelectorAll<HTMLElement>(".item:not(:disabled), .sub-trigger:not(:disabled)"));
-};
+let cleanupVirtualTrigger = (): void => {};
+let mounted = false;
 
 // ─── derived ────────────────────────────────────────────────
 
 const isDisabled = (): boolean => Boolean(props.disabled);
 
-const triggerMode = (): DropdownTrigger => resolveTrigger(props.trigger);
+const triggerModes = (): DropdownTriggerMode[] => resolveTriggers(props.trigger);
+
+const hasTrigger = (mode: DropdownTriggerMode): boolean => triggerModes().includes(mode);
 
 const placement = (): DropdownPlacement => resolvePlacement(props.placement);
 
@@ -240,8 +263,9 @@ const buttonClass = (base: string): unknown[] => [base, `is-${buttonType()}`, St
 const buttonStyle = (): Record<string, string> => toStyleObject(buttonPropsMap().style);
 
 const menuStyle = (): Record<string, string> => ({
-    "--dropdown-max-height": String(props.maxHeight || "280px"),
+    "--dropdown-max-height": cssSize(props.maxHeight, "280px"),
     ...toStyleObject(props.popperStyle),
+    ...(props.virtualTriggering ? virtualStyle.value : {}),
 });
 
 const menuClass = (): unknown[] => [
@@ -250,18 +274,42 @@ const menuClass = (): unknown[] => [
         "is-open": open.value,
         [`is-${placement()}`]: true,
         [`is-${String(props.effect || "light")}`]: true,
+        "is-virtual": Boolean(props.virtualTriggering),
     },
     String(props.popperClass || ""),
 ];
 
 const shouldRenderMenu = (): boolean => Boolean(props.persistent) || open.value;
 
+const shouldRenderTrigger = (): boolean => !props.virtualTriggering;
+
+const hasCompositionalMenu = (): boolean => Boolean(host.querySelector("elf-dropdown-menu"));
+
+const menuRole = (): string => hasCompositionalMenu() ? "presentation" : String(props.role || "menu");
+
 const triggerLabel = (): string => selectedLabel.value || String(props.label || "");
 
 const isSelected = (item: ViewItem): boolean =>
-    Boolean(selectedCommand.value) && item.command === selectedCommand.value;
+    selectedCommand.value !== null && item.command === selectedCommand.value;
+
+const virtualRef = (): DropdownVirtualRef | null => {
+    const candidate = props.virtualRef as DropdownVirtualRef | null | undefined;
+    return candidate && typeof candidate.getBoundingClientRect === "function" ? candidate : null;
+};
 
 // ─── open / close ───────────────────────────────────────────
+
+const getMenuEl = (): HTMLElement | null => host.shadowRoot?.querySelector(".menu") ?? null;
+
+const getFocusableItems = (): HTMLElement[] => {
+    const menu = getMenuEl();
+    if (!menu) return [];
+    const dataItems = Array.from(menu.querySelectorAll<HTMLElement>(".item:not(:disabled), .sub-trigger:not(:disabled)"));
+    const composedItems = Array.from(host.querySelectorAll<HTMLElement>("elf-dropdown-item:not([disabled])"))
+        .map((item) => item.shadowRoot?.querySelector<HTMLElement>(".dropdown-item") ?? null)
+        .filter((item): item is HTMLElement => Boolean(item));
+    return [...dataItems, ...composedItems];
+};
 
 const clearHoverCloseTimer = (): void => {
     if (!hoverCloseTimer) return;
@@ -280,8 +328,42 @@ const clearHoverTimers = (): void => {
     clearHoverCloseTimer();
 };
 
+const updateVirtualPosition = (): void => {
+    if (!props.virtualTriggering || typeof window === "undefined") {
+        virtualStyle.set({});
+        return;
+    }
+    const reference = virtualRef();
+    if (!reference) return;
+    const referenceRect = reference.getBoundingClientRect();
+    const panelRect = getMenuEl()?.getBoundingClientRect();
+    const panelWidth = panelRect?.width || 192;
+    const panelHeight = panelRect?.height || 0;
+    const gap = 6;
+    const currentPlacement = placement();
+    const isTop = currentPlacement.startsWith("top");
+    const isEnd = currentPlacement.endsWith("end");
+    const isCenter = currentPlacement === "top" || currentPlacement === "bottom";
+    const rawLeft = isEnd
+        ? referenceRect.right - panelWidth
+        : isCenter
+          ? referenceRect.left + (referenceRect.width - panelWidth) / 2
+          : referenceRect.left;
+    const rawTop = isTop
+        ? referenceRect.top - panelHeight - gap
+        : referenceRect.bottom + gap;
+    virtualStyle.set({
+        position: "fixed",
+        left: `${Math.max(8, Math.min(rawLeft, window.innerWidth - panelWidth - 8))}px`,
+        top: `${Math.max(8, rawTop)}px`,
+        right: "auto",
+        bottom: "auto",
+    });
+};
+
 const focusFirstEnabledItem = (): void => {
     queueMicrotask(() => {
+        updateVirtualPosition();
         getFocusableItems()[0]?.focus();
     });
 };
@@ -350,7 +432,7 @@ const scheduleHide = (): void => {
 
 const onTriggerClick = (event: Event): void => {
     if (isDisabled()) return;
-    if (triggerMode() !== "click") return;
+    if (!hasTrigger("click")) return;
     event.preventDefault();
     toggle();
 };
@@ -363,19 +445,19 @@ const onTriggerKeydown = (event: KeyboardEvent): void => {
 };
 
 const onContextMenu = (event: Event): void => {
-    if (isDisabled() || triggerMode() !== "contextmenu") return;
+    if (isDisabled() || !hasTrigger("contextmenu")) return;
     event.preventDefault();
     show();
 };
 
 const onMouseEnter = (): void => {
-    if (isDisabled() || triggerMode() !== "hover") return;
+    if (isDisabled() || !hasTrigger("hover")) return;
     clearHoverCloseTimer();
     scheduleShow();
 };
 
 const onMouseLeave = (): void => {
-    if (triggerMode() !== "hover") return;
+    if (!hasTrigger("hover")) return;
     clearHoverOpenTimer();
     scheduleHide();
 };
@@ -401,6 +483,20 @@ const onItemClick = (item: ViewItem, event?: Event): void => {
     };
     emit("command", detail);
 
+    if (props.hideOnClick !== false) closeDropdown();
+};
+
+const onCompositionalCommand = (event: CustomEvent<{
+    command: DropdownCommand;
+    label: string;
+    item: DropdownItem;
+}>): void => {
+    event.stopPropagation();
+    if (isDisabled()) return;
+    const detail = event.detail;
+    selectedCommand.set(detail.command);
+    selectedLabel.set(detail.label);
+    emit("command", { command: detail.command, item: detail.item });
     if (props.hideOnClick !== false) closeDropdown();
 };
 
@@ -453,16 +549,47 @@ const onMenuKeydown = (event: KeyboardEvent): void => {
     }
 };
 
+const connectVirtualTrigger = (): void => {
+    cleanupVirtualTrigger();
+    if (!props.virtualTriggering || typeof window === "undefined") return;
+    const target = virtualRef();
+    const canListen = target && typeof target.addEventListener === "function" && typeof target.removeEventListener === "function";
+    if (canListen) {
+        target.addEventListener!("click", onTriggerClick as EventListener);
+        target.addEventListener!("keydown", onTriggerKeydown as EventListener);
+        target.addEventListener!("contextmenu", onContextMenu as EventListener);
+        target.addEventListener!("mouseenter", onMouseEnter as EventListener);
+        target.addEventListener!("mouseleave", onMouseLeave as EventListener);
+    }
+    window.addEventListener("resize", updateVirtualPosition, { passive: true });
+    window.addEventListener("scroll", updateVirtualPosition, { passive: true, capture: true });
+    cleanupVirtualTrigger = () => {
+        if (canListen) {
+            target.removeEventListener!("click", onTriggerClick as EventListener);
+            target.removeEventListener!("keydown", onTriggerKeydown as EventListener);
+            target.removeEventListener!("contextmenu", onContextMenu as EventListener);
+            target.removeEventListener!("mouseenter", onMouseEnter as EventListener);
+            target.removeEventListener!("mouseleave", onMouseLeave as EventListener);
+        }
+        window.removeEventListener("resize", updateVirtualPosition);
+        window.removeEventListener("scroll", updateVirtualPosition, { capture: true });
+    };
+    updateVirtualPosition();
+};
+
 // ─── host bindings ──────────────────────────────────────────
 
 useHostFlag("data-open", () => open.value);
+useHostFlag("data-virtual-triggering", () => Boolean(props.virtualTriggering));
 useHostFlag("disabled", isDisabled);
 useHostAttr("size", size);
 useHostAttr("type", buttonType);
 useHostAttr("effect", () => String(props.effect || "light"));
 useHostAttr("placement", placement);
 
-useClickOutside(host, () => {
+useClickOutside(host, (event) => {
+    const reference = virtualRef();
+    if (props.virtualTriggering && reference && event.composedPath().includes(reference as EventTarget)) return;
     if (props.closeOnClickOutside !== false) hide();
 });
 
@@ -474,6 +601,35 @@ useEventListener<CustomEvent<HTMLElement>>(document, DROPDOWN_OPEN_EVENT, (event
     if (event.detail !== host) closeDropdown();
 });
 
+useEventListener<CustomEvent<{
+    command: DropdownCommand;
+    label: string;
+    item: DropdownItem;
+}>>(host, "elf-dropdown-item-command", onCompositionalCommand);
+
+useEffect(() => {
+    void props.virtualTriggering;
+    void props.virtualRef;
+    void props.trigger;
+    if (mounted) queueMicrotask(connectVirtualTrigger);
+});
+
+useEffect(() => {
+    void props.placement;
+    if (mounted && props.virtualTriggering) queueMicrotask(updateVirtualPosition);
+});
+
+onMount(() => {
+    mounted = true;
+    connectVirtualTrigger();
+});
+
+onUnmount(() => {
+    mounted = false;
+    clearHoverTimers();
+    cleanupVirtualTrigger();
+});
+
 defineExpose({ show, hide, toggle, handleOpen, handleClose });
 defineStyle(styles);
 
@@ -482,7 +638,7 @@ defineStyle(styles);
 const Dropdown = defineHtml<DropdownProps, DropdownEmits, DropdownSlots>(html`
     <div class="dropdown" @mouseenter=${onMouseEnter} @mouseleave=${onMouseLeave} @contextmenu=${onContextMenu}>
         <button
-            v-if=${!props.splitButton}
+            v-if=${shouldRenderTrigger() && !props.splitButton}
             :class=${buttonClass("trigger")}
             :style=${buttonStyle()}
             part="trigger"
@@ -494,13 +650,15 @@ const Dropdown = defineHtml<DropdownProps, DropdownEmits, DropdownSlots>(html`
             @click=${onTriggerClick}
             @keydown=${onTriggerKeydown}
         >
-            <slot name="trigger">
-                <span class="label">${triggerLabel()}</span>
-                <span class="arrow" v-if=${props.showArrow} aria-hidden="true">▼</span>
+            <slot>
+                <slot name="trigger">
+                    <span class="label">${triggerLabel()}</span>
+                    <span class="arrow" v-if=${props.showArrow} aria-hidden="true">▼</span>
+                </slot>
             </slot>
         </button>
 
-        <template v-else>
+        <template v-if=${shouldRenderTrigger() && props.splitButton}>
             <button
                 :class=${buttonClass("split-main")}
                 :style=${buttonStyle()}
@@ -509,7 +667,7 @@ const Dropdown = defineHtml<DropdownProps, DropdownEmits, DropdownSlots>(html`
                 :disabled=${buttonDisabled()}
                 @click=${onMainClick}
             >
-                <slot name="main">${triggerLabel()}</slot>
+                <slot><slot name="main">${triggerLabel()}</slot></slot>
             </button>
             <button
                 :class=${buttonClass("split-toggle")}
@@ -532,7 +690,7 @@ const Dropdown = defineHtml<DropdownProps, DropdownEmits, DropdownSlots>(html`
             :class=${menuClass()}
             :style=${menuStyle()}
             part="menu"
-            :role=${String(props.role || "menu")}
+            :role=${menuRole()}
             @keydown=${onMenuKeydown}
         >
             <slot name="dropdown">

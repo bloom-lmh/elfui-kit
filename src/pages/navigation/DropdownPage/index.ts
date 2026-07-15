@@ -4,13 +4,14 @@ import { PageDropdownEx1 } from "./ex1";
 import { PageDropdownEx2 } from "./ex2";
 import { PageDropdownEx3 } from "./ex3";
 import { PageDropdownEx4 } from "./ex4";
+import { PageDropdownEx5 } from "./ex5";
 
 const propsRows = [
   { name: "items", type: "DropdownItem[]", default: "[]", desc: "菜单项，支持 children 嵌套" },
-  { name: "trigger", type: "click | hover | contextmenu", default: "click", desc: "触发方式" },
+  { name: "trigger", type: "DropdownTriggerMode | DropdownTriggerMode[]", default: "click", desc: "一种或多种触发方式" },
   {
     name: "placement",
-    type: "bottom-start | bottom-end | top-start | top-end",
+    type: "bottom | bottom-start | bottom-end | top | top-start | top-end",
     default: "bottom-start",
     desc: "弹层位置"
   },
@@ -18,9 +19,25 @@ const propsRows = [
   { name: "hideOnClick", type: "boolean", default: "true", desc: "点击菜单后自动关闭" },
   { name: "type", type: "default | primary | success | warning | danger | info", default: "default", desc: "按钮类型" },
   { name: "showTimeout / hideTimeout", type: "number", default: "120 / 180", desc: "hover 展开和关闭延迟" },
-  { name: "triggerKeys", type: "string[]", default: "Enter / Space / ArrowDown", desc: "键盘触发键" },
+  { name: "triggerKeys", type: "string[]", default: "Enter / Space / ArrowDown / NumpadEnter", desc: "键盘触发键" },
+  { name: "virtualTriggering / virtualRef", type: "boolean / DropdownVirtualRef", default: "false / -", desc: "使用外部元素或虚拟矩形作为触发目标" },
+  { name: "maxHeight", type: "string | number", default: "280px", desc: "菜单最大高度" },
   { name: "popperClass / popperStyle", type: "string / object", default: "-", desc: "弹层自定义样式" },
-  { name: "closeOnClickOutside", type: "boolean", default: "true", desc: "点击外部是否关闭" }
+  { name: "closeOnClickOutside", type: "boolean", default: "true", desc: "点击外部是否关闭" },
+  { name: "teleported / appendTo", type: "boolean / string | HTMLElement", default: "true / body", desc: "兼容入口；等待公共锚定浮层实现" }
+];
+
+const slotsRows = [
+  { name: "default", type: "unknown", desc: "自定义触发内容" },
+  { name: "trigger / main", type: "unknown", desc: "ElfUI 兼容触发器与分裂主按钮" },
+  { name: "dropdown", type: "DropdownMenu", desc: "组合式菜单内容" }
+];
+
+const itemRows = [
+  { name: "command", type: "string | number | object", default: "''", desc: "命令值" },
+  { name: "disabled", type: "boolean", default: "false", desc: "禁用菜单项" },
+  { name: "divided", type: "boolean", default: "false", desc: "显示上分割线" },
+  { name: "icon / icon slot", type: "string / unknown", default: "''", desc: "图标或自定义图标" }
 ];
 
 const eventsRows = [
@@ -39,7 +56,8 @@ useComponents({
   "page-dropdown-ex1": PageDropdownEx1,
   "page-dropdown-ex2": PageDropdownEx2,
   "page-dropdown-ex3": PageDropdownEx3,
-  "page-dropdown-ex4": PageDropdownEx4
+  "page-dropdown-ex4": PageDropdownEx4,
+  "page-dropdown-ex5": PageDropdownEx5
 });
 
 const PageDropdown = defineHtml(html`
@@ -55,10 +73,14 @@ const PageDropdown = defineHtml(html`
 
     <page-dropdown-ex4 />
 
+    <page-dropdown-ex5 />
+
     <h2>API</h2>
     <elf-props-table title="Dropdown Props" :rows=${propsRows}></elf-props-table>
     <elf-props-table title="Dropdown Events" :rows=${eventsRows}></elf-props-table>
     <elf-props-table title="Dropdown Expose" :rows=${exposeRows}></elf-props-table>
+    <elf-props-table title="Dropdown Slots" :rows=${slotsRows}></elf-props-table>
+    <elf-props-table title="DropdownItem Props / Slots" :rows=${itemRows}></elf-props-table>
   </elf-container>
 `);
 

@@ -448,4 +448,112 @@ describe("elf-dropdown", () => {
     const menuitems = el.shadowRoot!.querySelectorAll('[role="menuitem"]');
     expect(menuitems.length).toBeGreaterThan(0);
   });
+
+  it("supports the default trigger slot and compositional menu items", async () => {
+    const el = document.createElement("elf-dropdown") as DropdownElement;
+    el.trigger = "click";
+    el.innerHTML = `
+      <span class="custom-trigger">Account actions</span>
+      <elf-dropdown-menu slot="dropdown">
+        <elf-dropdown-item command="profile" icon="fallback"><span slot="icon">P</span>Profile</elf-dropdown-item>
+        <elf-dropdown-item command="locked" disabled>Locked</elf-dropdown-item>
+        <elf-dropdown-item command="logout" divided>Logout</elf-dropdown-item>
+      </elf-dropdown-menu>
+    `;
+    const onCommand = vi.fn();
+    el.addEventListener("command", onCommand as EventListener);
+    document.body.appendChild(el);
+    await flush();
+
+    const triggerSlot = el.shadowRoot!.querySelector(".trigger slot:not([name])") as HTMLSlotElement;
+    expect(triggerSlot.assignedElements()[0]?.textContent).toContain("Account actions");
+
+    await openByClick(el);
+    const items = Array.from(el.querySelectorAll("elf-dropdown-item"));
+    expect(menu(el)?.getAttribute("role")).toBe("presentation");
+    expect(items[1]!.hasAttribute("disabled")).toBe(true);
+    const iconSlot = items[0]!.shadowRoot!.querySelector('slot[name="icon"]') as HTMLSlotElement;
+    expect(iconSlot.assignedElements()[0]?.textContent).toBe("P");
+    expect(items[0]!.shadowRoot!.querySelector(".dropdown-item")?.getAttribute("aria-label")).toBe("Profile");
+
+    (items[0]!.shadowRoot!.querySelector(".dropdown-item") as HTMLElement).click();
+    await flush();
+
+    expect((onCommand.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+      command: "profile",
+      item: expect.objectContaining({ label: "Profile", command: "profile" })
+    });
+    expect(el.hasAttribute("data-open")).toBe(false);
+  });
+
+  it("preserves non-string commands from compositional items", async () => {
+    const el = document.createElement("elf-dropdown") as DropdownElement;
+    el.trigger = "click";
+    el.innerHTML = `<elf-dropdown-item slot="dropdown">Open record</elf-dropdown-item>`;
+    const item = el.querySelector("elf-dropdown-item") as HTMLElement & { command?: unknown };
+    const command = { id: 42 };
+    item.command = command;
+    const onCommand = vi.fn();
+    el.addEventListener("command", onCommand as EventListener);
+    document.body.appendChild(el);
+    await flush();
+
+    await openByClick(el);
+    (item.shadowRoot!.querySelector(".dropdown-item") as HTMLElement).click();
+    await flush();
+
+    expect((onCommand.mock.calls[0]![0] as CustomEvent).detail.command).toEqual(command);
+  });
+
+  it("supports multiple trigger modes", async () => {
+    const el = await mount({ trigger: ["click", "contextmenu"] });
+    const root = el.shadowRoot!.querySelector(".dropdown")!;
+
+    root.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
+    await flush();
+    expect(el.hasAttribute("data-open")).toBe(true);
+
+    el.handleClose();
+    await flush();
+    trigger(el).click();
+    await flush();
+    expect(el.hasAttribute("data-open")).toBe(true);
+  });
+
+  it("supports an HTMLElement virtual trigger and fixed positioning", async () => {
+    const reference = document.createElement("button");
+    const addListener = vi.spyOn(reference, "addEventListener");
+    reference.getBoundingClientRect = vi.fn(() => ({
+      left: 100,
+      top: 20,
+      right: 160,
+      bottom: 80,
+      width: 60,
+      height: 60,
+      x: 100,
+      y: 20,
+      toJSON: () => ({})
+    })) as unknown as Element["getBoundingClientRect"];
+    document.body.appendChild(reference);
+
+    const el = await mount({
+      virtualTriggering: true,
+      virtualRef: reference,
+      trigger: "click",
+      maxHeight: 240
+    });
+    expect(el.shadowRoot!.querySelector(".trigger, .split-toggle")).toBeNull();
+    expect(addListener).toHaveBeenCalledWith("click", expect.any(Function));
+
+    reference.click();
+    await flush(3);
+
+    const menuEl = menu(el)!;
+    expect(el.hasAttribute("data-virtual-triggering")).toBe(true);
+    expect(el.hasAttribute("data-open")).toBe(true);
+    expect(menuEl.style.position).toBe("fixed");
+    expect(menuEl.style.left).toBe("100px");
+    expect(menuEl.style.top).toBe("86px");
+    expect(menuEl.style.getPropertyValue("--dropdown-max-height")).toBe("240px");
+  });
 });

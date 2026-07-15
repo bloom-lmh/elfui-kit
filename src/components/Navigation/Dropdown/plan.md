@@ -1,169 +1,33 @@
 # Dropdown Element Plus API 对标计划
 
 生成时间：2026-07-05
+最近更新：2026-07-15
 
 ## 对标定位
 
-- ElfUI 组件目录：`Navigation/Dropdown`
-- Element Plus 文档：`dropdown.md`
-- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
+- ElfUI 组件：`Navigation/Dropdown`、`DropdownMenu`、`DropdownItem`
+- 对标 Element Plus Dropdown 的公开属性、组合式结构、事件、暴露方法与键盘交互。
+- 保留 ElfUI `items` 数据模式、嵌套子菜单、`trigger/main` 插槽和结构化 command detail 扩展。
 
-## Element Plus API 摘要
+## 已完成
 
-### dropdown.md
+- [x] 对齐 type、size、buttonProps、maxHeight、splitButton、disabled、placement、effect 与 hideOnClick。
+- [x] 支持 click、hover、contextmenu 单触发或多触发数组，以及 triggerKeys、showTimeout、hideTimeout。
+- [x] 支持 virtualTriggering 与 virtualRef，外部 HTMLElement 可直接响应鼠标和键盘事件。
+- [x] 支持 role、tabindex、showArrow、popperClass、popperStyle、persistent 与点击外部关闭。
+- [x] 新增 `elf-dropdown-menu`、`elf-dropdown-item` 及 default、dropdown、icon 插槽。
+- [x] DropdownItem 支持 string、number、object command，以及 disabled、divided、icon。
+- [x] 提供 handleOpen、handleClose，并保留 show、hide、toggle 兼容方法。
+- [x] 数据模式和组合模式统一触发 command、visible-change，分裂按钮统一触发 click。
+- [x] 覆盖禁用、保持展开、嵌套、字段映射、键盘导航、多实例互斥和虚拟触发测试。
+- [x] 页面案例覆盖基础、保持展开、触发方式、兼容配置、组合式菜单和虚拟触发。
 
-#### Dropdown API
+## 剩余基础设施任务
 
-- `type`
-- `size`
-- `button-props`
-- `max-height`
-- `split-button`
-- `disabled`
-- `placement`
-- `effect`
-- `trigger`
-- `trigger-keys ^`
-- `virtual-triggering ^`
-- `virtual-ref ^`
-- `hide-on-click`
-- `show-arrow ^`
-- `show-timeout`
-- `hide-timeout`
-- `role`
-- `tabindex`
-- `popper-class`
-- `popper-style ^`
-- `popper-options`
-- `teleported ^`
-- `append-to ^`
-- `persistent ^`
-- `default`
-- `dropdown`
-- `click`
-- `command`
-- `visible-change`
-- `handleOpen`
-- `handleClose`
+- [ ] 实现共享锚定浮层：让 teleported、appendTo 和完整 popperOptions 在滚动、缩放、变换祖先及视口碰撞场景下保持准确；完成后 Dropdown 再接入真实传送行为。
 
-#### Dropdown Attributes
+## 实现说明
 
-- `type`
-- `size`
-- `button-props`
-- `max-height`
-- `split-button`
-- `disabled`
-- `placement`
-- `effect`
-- `trigger`
-- `trigger-keys ^`
-- `virtual-triggering ^`
-- `virtual-ref ^`
-- `hide-on-click`
-- `show-arrow ^`
-- `show-timeout`
-- `hide-timeout`
-- `role`
-- `tabindex`
-- `popper-class`
-- `popper-style ^`
-- `popper-options`
-- `teleported ^`
-- `append-to ^`
-- `persistent ^`
-
-#### Dropdown Slots
-
-- `default`
-- `dropdown`
-
-#### Dropdown Events
-
-- `click`
-- `command`
-- `visible-change`
-
-#### Dropdown Exposes
-
-- `handleOpen`
-- `handleClose`
-
-#### Dropdown-Menu API
-
-- `default`
-
-#### Dropdown-Menu Slots
-
-- `default`
-
-#### Dropdown-Item API
-
-- `command`
-- `disabled`
-- `divided`
-- `icon`
-- `default`
-- `icon ^`
-
-#### Dropdown-Item Attributes
-
-- `command`
-- `disabled`
-- `divided`
-- `icon`
-
-#### Dropdown-Item Slots
-
-- `default`
-- `icon ^`
-
-## 当前 ElfUI API 快照
-
-### Props
-
-- `disabled`
-- `hideOnClick`
-- `items`
-- `label`
-- `maxHeight`
-- `placement`
-- `props`
-- `size`
-- `splitButton`
-- `trigger`
-
-### Events
-
-- `click`
-- `command`
-- `visible-change`
-
-### Slots
-
-- `main`
-- `trigger`
-
-### Exposes
-
-- 暂无记录
-
-## 差距与任务
-
-- [ ] P1 补齐核心属性差距：`type`、`button-props`、`effect`、`trigger-keys ^`、`virtual-triggering ^`、`virtual-ref ^`、`show-arrow ^`、`show-timeout`、`hide-timeout`、`role`、`tabindex`、`popper-class`、`popper-style ^`、`popper-options`、`teleported ^`、`append-to ^`、`persistent ^`、`command`、`divided`、`icon`
-- [ ] P1 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：`dropdown`、`icon ^`、`handleOpen`、`handleClose`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
-
-## 验收清单
-
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
-## 本轮记录
-
-- [x] 2026-07-11 Navigation 第一阶段：补 `type/buttonProps/effect/triggerKeys/showArrow/showTimeout/hideTimeout/role/tabindex/popperClass/popperStyle/persistent/closeOnClickOutside` 兼容入口，新增 `handleOpen/handleClose` 暴露方法，补键盘触发、非持久面板、popper 样式和页面案例。
-- [x] 2026-07-12 质量重构：类型完整化（Emits/Slots/Expose/Element）、纯函数抽离、host 同步 size/type/effect/placement、禁用态全路径拦截、Escape 仅在打开时关闭、菜单内 Arrow/Home/End 焦点导航、menuitem role、`dropdown` 插槽、单测扩展到 26 项（含 field names / splitButton / contextmenu / keyboard）。
+- 当前 `teleported`、`appendTo`、`popperOptions` 保留为兼容入口，但不会伪装成已完成行为。
+- ElfUI 默认 trigger 继续使用 `click` 以保持现有版本兼容；显式传入 `hover` 可获得 Element Plus 默认交互。
+- `command` 事件保留 `{ command, item }` 结构，避免破坏现有调用方；其中 command 支持 Element Plus 的 string、number 和 object。
