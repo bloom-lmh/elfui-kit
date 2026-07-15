@@ -20,9 +20,12 @@ const propsRows = [
   { name: "placeholder", type: "string", default: "请选择", desc: "占位文本" },
   { name: "disabled", type: "boolean", default: "false", desc: "禁用状态" },
   { name: "clearable", type: "boolean", default: "false", desc: "是否可清空" },
+  { name: "clearIcon / valueOnClear / emptyValues", type: "string / value | function / unknown[]", default: "× / - / ['', null, undefined]", desc: "清空图标与空值语义" },
   { name: "teleported / appendTo / persistent", type: "boolean / selector | HTMLElement / boolean", default: "true / body / true", desc: "浮层挂载与持久化" },
   { name: "placement / fitInputWidth", type: "CascaderPlacement / boolean", default: "bottom-start / false", desc: "浮层方向与输入宽度匹配" },
   { name: "popperClass / popperStyle / popperOptions", type: "string / object / object", default: "'' / {} / {}", desc: "浮层样式和定位修饰器" },
+  { name: "fallbackPlacements", type: "CascaderPlacement[]", default: "bottom/top start/end", desc: "碰撞时的候选方向" },
+  { name: "effect / tagType / tagEffect", type: "string", default: "light / info / light", desc: "面板和多选标签外观" },
   { name: "multiple", type: "boolean", default: "false", desc: "是否允许选择多个叶子节点" },
   { name: "checkable", type: "boolean", default: "false", desc: "是否显示选项框并支持父子勾选" },
   { name: "checkStrictly", type: "boolean", default: "false", desc: "父子节点选择互不关联" },
@@ -52,7 +55,8 @@ const propsRows = [
   { name: "filterMethod", type: "(node, keyword) => boolean", default: "-", desc: "Custom search result matcher" },
   { name: "beforeFilter", type: "(keyword) => boolean | Promise<boolean>", default: "-", desc: "Cancels or asynchronously gates a search" },
   { name: "separator", type: "string", default: "' / '", desc: "回显路径分隔符" },
-  { name: "props", type: "CascaderFieldNames", default: "-", desc: "自定义字段名" }
+  { name: "props", type: "CascaderFieldNames", default: "-", desc: "自定义字段名、lazy/lazyLoad 与勾选行为" },
+  { name: "validateEvent", type: "boolean", default: "true", desc: "是否触发表单 change/blur 校验" }
 ];
 
 const eventsRows = [
@@ -69,7 +73,15 @@ const methodsRows = [
   { name: "getCheckedNodes(leafOnly?)", desc: "获取当前选中节点快照" },
   { name: "clearCheckedNodes()", desc: "清空面板已选节点" },
   { name: "togglePopperVisible(visible?)", desc: "手动展开或收起下拉面板" },
-  { name: "presentText()", desc: "读取当前回显文本" }
+  { name: "presentText()", desc: "读取当前回显文本" },
+  { name: "getContentElement()", desc: "读取当前下拉面板元素" }
+];
+
+const slotsRows = [
+  { name: "default", desc: "自定义级联节点；接收 node 和 data" },
+  { name: "suggestion-item", desc: "自定义过滤结果；接收 node 和 data" },
+  { name: "tag", desc: "自定义多选标签；接收已选节点 data" },
+  { name: "prefix / header / footer / empty", desc: "输入前缀、面板头尾和空状态" }
 ];
 
 const panelPropsRows = [
@@ -124,6 +136,7 @@ const PageCascader = defineHtml(html`
     <elf-props-table title="级联选择器属性" :rows=${propsRows}></elf-props-table>
     <elf-props-table title="级联选择器事件" :rows=${eventsRows}></elf-props-table>
     <elf-props-table title="级联选择器方法" :rows=${methodsRows}></elf-props-table>
+    <elf-props-table title="级联选择器插槽" :rows=${slotsRows}></elf-props-table>
     <elf-props-table title="独立面板属性" :rows=${panelPropsRows}></elf-props-table>
   </elf-container>
 `);

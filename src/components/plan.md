@@ -47,7 +47,7 @@
 - [ ] `Feedback/Tooltip`
 - [ ] `Feedback/Tour`
 - [x] `Form/Autocomplete`
-- [ ] `Form/Cascader`
+- [x] `Form/Cascader`
 - [x] `Form/Checkbox`
 - [x] `Form/CheckboxGroup`
 - [ ] `Form/Form`

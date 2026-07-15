@@ -37,6 +37,7 @@ export interface CascaderPopperOptions {
 export type CascaderFilterMethod = (node: CascaderNodeSnapshot, keyword: string) => boolean;
 /** May cancel a search before its result list is rendered. */
 export type CascaderBeforeFilter = (keyword: string) => boolean | Promise<boolean>;
+export type CascaderValueOnClear = CascaderValue | (() => CascaderValue);
 
 export interface CascaderOption {
   label?: string;
@@ -82,6 +83,7 @@ export interface CascaderProps {
   placeholder: string;
   disabled: boolean;
   clearable: boolean;
+  clearIcon: string;
   multiple: boolean;
   checkable: boolean;
   separator: string;
@@ -110,6 +112,12 @@ export interface CascaderProps {
   persistent: boolean;
   placement: CascaderPlacement;
   fitInputWidth: boolean;
+  fallbackPlacements: CascaderPlacement[];
+  effect: string;
+  tagType: string;
+  tagEffect: string;
+  emptyValues: unknown[];
+  valueOnClear?: CascaderValueOnClear;
   validateEvent: boolean;
   virtualScroll: boolean;
   itemSize: number;
@@ -140,3 +148,36 @@ export interface CascaderPanelProps {
   itemSize: number;
   height: number;
 }
+
+export type CascaderEmits = {
+  "update:modelValue": [value: CascaderModelValue];
+  change: [detail: CascaderChangeDetail];
+  "expand-change": [value: CascaderPathValue];
+  blur: [event: FocusEvent];
+  focus: [event: FocusEvent];
+  clear: [];
+  "visible-change": [visible: boolean];
+  "remove-tag": [value: CascaderValue | CascaderPathValue];
+};
+
+export interface CascaderSlots {
+  default?: unknown;
+  empty?: unknown;
+  prefix?: unknown;
+  "suggestion-item"?: unknown;
+  tag?: unknown;
+  header?: unknown;
+  footer?: unknown;
+}
+
+export interface CascaderExpose {
+  clear: () => void;
+  open: () => void;
+  close: () => void;
+  togglePopperVisible: (visible?: boolean) => void;
+  getCheckedNodes: (leafOnly?: boolean) => CascaderNodeSnapshot[];
+  presentText: () => string;
+  getContentElement: () => HTMLElement | null;
+}
+
+export type CascaderElement = HTMLElement & CascaderExpose & Partial<CascaderProps>;

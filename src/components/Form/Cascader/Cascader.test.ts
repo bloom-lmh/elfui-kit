@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { computeAnchoredPosition } from "../../Common/anchored-overlay";
 import type { CascaderOption } from "./types";
 
 beforeAll(async () => {
@@ -19,7 +20,7 @@ const flushFilter = async (): Promise<void> => {
 };
 
 interface CascaderEl extends HTMLElement {
-  modelValue?: unknown[] | unknown[][];
+  modelValue?: unknown;
   options?: CascaderOption[];
   clearable?: boolean;
   disabled?: boolean;
@@ -36,6 +37,9 @@ interface CascaderEl extends HTMLElement {
   appendTo?: string | HTMLElement;
   fitInputWidth?: boolean;
   popperOptions?: Record<string, unknown>;
+  emptyValues?: unknown[];
+  valueOnClear?: unknown | (() => unknown);
+  clearIcon?: string;
   props?: Record<string, unknown>;
   clear?: () => void;
 }
@@ -175,6 +179,25 @@ describe("elf-cascader", () => {
     expect(onClear).toHaveBeenCalledTimes(1);
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual([]);
     expect(el.shadowRoot!.querySelector(".placeholder")).toBeTruthy();
+  });
+
+  it("supports custom empty values, clear value, and clear icon", async () => {
+    const empty = await mount({ modelValue: 0, emptyValues: [0], clearable: true });
+    expect(empty.shadowRoot!.querySelector(".placeholder")).toBeTruthy();
+
+    const el = await mount({
+      modelValue: ["zhejiang", "hangzhou"],
+      clearable: true,
+      clearIcon: "clear",
+      valueOnClear: () => 0
+    });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    const clear = el.shadowRoot!.querySelector<HTMLButtonElement>(".clear")!;
+    expect(clear.textContent).toBe("clear");
+    clear.click();
+    await tick();
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(0);
   });
 
   it("multiple 多选叶子节点时输出二维路径数组", async () => {
@@ -359,6 +382,40 @@ describe("elf-cascader", () => {
     expect(el.shadowRoot!.querySelector(".filter-option")?.textContent).toContain("宁波");
   });
 
+  it("loads lazy children and recovers after a rejected request", async () => {
+    const resolveLoader = vi.fn((_node: unknown, resolve: (children: CascaderOption[]) => void) => {
+      resolve([{ label: "动态子项", value: "child", leaf: true }]);
+    });
+    const el = await mount({
+      options: [{ label: "动态节点", value: "dynamic" }],
+      props: { lazy: true, lazyLoad: resolveLoader }
+    });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    (el.shadowRoot!.querySelector(".trigger") as HTMLElement).click();
+    await tick();
+    (el.shadowRoot!.querySelector(".option") as HTMLButtonElement).click();
+    await tick();
+
+    expect(resolveLoader).toHaveBeenCalledTimes(1);
+    expect(el.shadowRoot!.querySelectorAll(".column")).toHaveLength(2);
+    expect(el.shadowRoot!.textContent).toContain("动态子项");
+    (el.shadowRoot!.querySelectorAll(".column")[1]!.querySelector(".option") as HTMLButtonElement).click();
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["dynamic", "child"]);
+
+    const rejectLoader = vi.fn((_node: unknown, _resolve: unknown, reject: () => void) => reject());
+    const rejected = await mount({
+      options: [{ label: "失败节点", value: "failed" }],
+      props: { lazy: true, lazyLoad: rejectLoader }
+    });
+    (rejected.shadowRoot!.querySelector(".trigger") as HTMLElement).click();
+    await tick();
+    const option = rejected.shadowRoot!.querySelector(".option") as HTMLButtonElement;
+    option.click();
+    option.click();
+    expect(rejectLoader).toHaveBeenCalledTimes(2);
+  });
+
   it("renders removable multiple tags and emits the removed model item", async () => {
     const el = await mount({
       multiple: true,
@@ -454,5 +511,22 @@ describe("elf-cascader", () => {
     await frame();
     await tick();
     expect(dropdown.style.left).toBe("150px");
+  });
+
+  it("chooses the best configured fallback placement", () => {
+    const result = computeAnchoredPosition(
+      { left: 260, top: 180, right: 320, bottom: 220, width: 60, height: 40 },
+      { width: 180, height: 120 },
+      { width: 320, height: 240 },
+      {
+        placement: "bottom-start",
+        fallbackPlacements: ["top-end"],
+        padding: 8,
+        flip: true
+      }
+    );
+
+    expect(result.placement).toBe("top-end");
+    expect(result.left).toBe(132);
   });
 });

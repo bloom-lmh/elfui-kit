@@ -103,6 +103,16 @@
   font-size: var(--elf-font-size-xs);
 }
 
+.tag.is-dark {
+  border-color: var(--elf-primary);
+  background: var(--elf-primary);
+  color: var(--elf-text-on-primary);
+}
+
+.tag.is-plain {
+  background: transparent;
+}
+
 .tag-label {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -229,6 +239,17 @@
   position: fixed;
 }
 
+.dropdown.is-effect-dark {
+  border-color: color-mix(in srgb, var(--elf-text-primary) 72%, transparent);
+  background: var(--elf-text-primary);
+  color: var(--elf-bg-paper);
+
+  .option,
+  .filter-option {
+    color: inherit;
+  }
+}
+
 .dropdown.placement-top,
 .dropdown.placement-top-start,
 .dropdown.placement-top-end {
@@ -293,6 +314,10 @@
     &:hover {
       background: transparent;
     }
+  }
+
+  &.is-loading {
+    cursor: progress;
   }
 }
 

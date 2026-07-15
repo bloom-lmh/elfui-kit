@@ -27,6 +27,7 @@ export interface AnchoredPositionOptions {
   offset?: readonly [crossAxis: number, mainAxis: number];
   padding?: number;
   flip?: boolean;
+  fallbackPlacements?: readonly AnchoredPlacement[];
 }
 
 export interface AnchoredPosition {
@@ -90,14 +91,25 @@ export const computeAnchoredPosition = (
 ): AnchoredPosition => {
   const padding = Math.max(0, Number(options.padding) || 0);
   const offset = options.offset || [0, 6];
-  const preferred = rawPosition(anchor, overlay, options.placement, offset);
-  const opposite = oppositePlacement(options.placement);
-  const alternate = rawPosition(anchor, overlay, opposite, offset);
-  const useAlternate = options.flip !== false
-    && overflowScore(alternate, overlay, viewport, padding)
-      < overflowScore(preferred, overlay, viewport, padding);
-  const placement = useAlternate ? opposite : options.placement;
-  const position = useAlternate ? alternate : preferred;
+  const placements = options.flip === false
+    ? [options.placement]
+    : Array.from(new Set([
+        options.placement,
+        ...(options.fallbackPlacements || []),
+        oppositePlacement(options.placement)
+      ]));
+  const candidates = placements.map((placement) => ({
+    placement,
+    position: rawPosition(anchor, overlay, placement, offset)
+  }));
+  const best = candidates.reduce((current, candidate) =>
+    overflowScore(candidate.position, overlay, viewport, padding)
+      < overflowScore(current.position, overlay, viewport, padding)
+      ? candidate
+      : current
+  );
+  const placement = best.placement;
+  const position = best.position;
   const viewportLeft = viewport.offsetLeft || 0;
   const viewportTop = viewport.offsetTop || 0;
 

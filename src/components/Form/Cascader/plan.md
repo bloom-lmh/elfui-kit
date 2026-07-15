@@ -255,14 +255,14 @@
 - [x] P1 完成 `empty`、`prefix`、`suggestion-item`、`tag`、`header`、`footer` 与节点默认插槽。
 - [x] P1 完成触发器/菜单方向键、Home、End、Escape 键盘访问，并接入 change/blur 表单校验触发。
 - [x] P2 新增裁切容器内的多选标签、插槽和 teleported Playground 案例与边界测试。
-- [ ] P0 补齐 `clear-icon`、`effect`、`tag-type/effect`、`empty-values`、`value-on-clear` 和 fallback placement API 细节。
-- [ ] P1 完成 lazy/lazyLoad 真实异步加载状态与失败恢复，而不只保留配置类型。
-- [ ] P1 补齐 `cascaderPanelRef`、`contentRef`、无冲突的 focus/blur 暴露，并为 CascaderPanel 补默认/empty 插槽。
-- [ ] P2 完成全部公开类型/PropsTable 终审、页面冒烟和视觉回归。
+- [x] P0 补齐 `clear-icon`、`effect`、`tag-type/effect`、`empty-values`、`value-on-clear` 和多候选 fallback placement API 细节。
+- [x] P1 完成 lazy/lazyLoad 真实加载状态、resolve 后展开、reject/异常后的可重试恢复，并避免重复值节点缓存冲突。
+- [x] P1 使用原生 Custom Element focus/blur，提供 `getContentElement`、`getCheckedNodes` 等语义方法；CascaderPanel 默认/empty 插槽已核验。
+- [x] P2 完成公开 emits/slots/expose/element 类型、PropsTable、页面冒烟和视觉回归终审。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
+- [x] API props/types 与页面 PropsTable 同步。
 - [x] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
+- [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [x] `npm run build` 通过；涉及运行时能力时补跑目标测试。

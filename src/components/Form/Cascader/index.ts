@@ -26,6 +26,7 @@ import styles from "./style.scss?inline";
 import type {
     CascaderBeforeFilter,
     CascaderChangeDetail,
+    CascaderEmits,
     CascaderExpandTrigger,
     CascaderFilterMethod,
     CascaderFieldNames,
@@ -37,13 +38,18 @@ import type {
     CascaderPopperModifier,
     CascaderPopperOptions,
     CascaderProps,
+    CascaderSlots,
     CascaderShowCheckedStrategy,
     CascaderValue,
+    CascaderValueOnClear,
 } from "./types";
 
 export type {
     CascaderBeforeFilter,
     CascaderChangeDetail,
+    CascaderElement,
+    CascaderEmits,
+    CascaderExpose,
     CascaderExpandTrigger,
     CascaderFilterMethod,
     CascaderFieldNames,
@@ -59,13 +65,25 @@ export type {
     CascaderProps,
     CascaderSize,
     CascaderShowCheckedStrategy,
+    CascaderSlots,
     CascaderValue,
+    CascaderValueOnClear,
 } from "./types";
 
 const CASCADER_OPEN_EVENT = "elf-cascader-open";
 
 type RawOption = Record<string, unknown>;
 type CheckState = "checked" | "indeterminate" | "unchecked";
+
+const LAZY_CHILDREN = Symbol("elf-cascader-lazy-children");
+const LAZY_RESOLVED = Symbol("elf-cascader-lazy-resolved");
+const LAZY_LOADING = Symbol("elf-cascader-lazy-loading");
+
+type LazyOption = RawOption & {
+    [LAZY_CHILDREN]?: RawOption[];
+    [LAZY_RESOLVED]?: boolean;
+    [LAZY_LOADING]?: boolean;
+};
 
 interface CascaderColumn {
     key: string;
@@ -94,6 +112,7 @@ const props = defineProps<CascaderProps>({
     placeholder: { type: String, default: "请选择" },
     disabled: { type: Boolean, default: false },
     clearable: { type: Boolean, default: false },
+    clearIcon: { type: String, default: "×" },
     multiple: { type: Boolean, default: false },
     checkable: { type: Boolean, default: false },
     separator: { type: String, default: " / " },
@@ -121,6 +140,12 @@ const props = defineProps<CascaderProps>({
     persistent: { type: Boolean, default: true },
     placement: { type: String, default: "bottom-start" },
     fitInputWidth: { type: Boolean, default: false },
+    fallbackPlacements: { type: Array, default: () => ["bottom-start", "top-start", "bottom-end", "top-end"] },
+    effect: { type: String, default: "light" },
+    tagType: { type: String, default: "info" },
+    tagEffect: { type: String, default: "light" },
+    emptyValues: { type: Array, default: () => ["", null, undefined] },
+    valueOnClear: { type: null, default: undefined },
     validateEvent: { type: Boolean, default: true },
     virtualScroll: { type: Boolean, default: false },
     itemSize: { type: Number, default: 34 },
@@ -144,16 +169,7 @@ const props = defineProps<CascaderProps>({
     },
 });
 
-const emit = defineEmits<{
-    "update:modelValue": [value: CascaderModelValue];
-    change: [detail: CascaderChangeDetail];
-    "expand-change": [value: CascaderPathValue];
-    blur: [event: FocusEvent];
-    focus: [event: FocusEvent];
-    clear: [];
-    "visible-change": [visible: boolean];
-    "remove-tag": [value: CascaderValue | CascaderPathValue];
-}>();
+const emit = defineEmits<CascaderEmits>();
 
 const fi = useFormItem(() => props.size as string);
 const formItem = inject(FORM_ITEM_KEY);
@@ -167,6 +183,7 @@ const filtering = useRef(false);
 const filteredPaths = useRef<RawOption[][]>([]);
 const overlayStyle = useRef<Record<string, string>>({});
 const resolvedPlacement = useRef<CascaderPlacement>("bottom-start");
+const lazyRevision = useRef(0);
 
 let filterTimer: ReturnType<typeof setTimeout> | null = null;
 let filterRequest = 0;
@@ -236,14 +253,19 @@ const showPrefix = (): boolean => isMultiple() && config().showPrefix;
 const showCheckedStrategy = (): CascaderShowCheckedStrategy =>
     props.showCheckedStrategy === "parent" ? "parent" : "child";
 
+const isEmptyValue = (value: unknown): boolean =>
+    (Array.isArray(props.emptyValues) ? props.emptyValues : ["", null, undefined])
+        .some((item) => Object.is(item, value));
+
 const normalizePathValue = (value: unknown): CascaderPathValue => {
     if (!Array.isArray(value)) return value == null || value === "" ? [] : [value as CascaderValue];
     return (value as unknown[]).filter((item) => item != null && item !== "").map((item) => item as CascaderValue);
 };
 
 const toValuePaths = (value: unknown): CascaderPathValue[] => {
+    if (!Array.isArray(value) && isEmptyValue(value)) return [];
     if (!shouldEmitPath()) {
-        const values = Array.isArray(value) ? value : value == null || value === "" ? [] : [value];
+        const values = (Array.isArray(value) ? value : [value]).filter((item) => !isEmptyValue(item));
         return values
             .map((item) => findPathByValue(item as CascaderValue))
             .filter((path) => path.length > 0)
@@ -280,15 +302,21 @@ const optionDisabled = (option: RawOption): boolean => {
 };
 
 const optionChildren = (option: RawOption): RawOption[] => {
+    void lazyRevision.value;
     const fields = fieldNames();
     const children = option[fields.children];
-    return Array.isArray(children) ? (children as RawOption[]) : [];
+    if (Array.isArray(children)) return children as RawOption[];
+    return (option as LazyOption)[LAZY_CHILDREN] || [];
 };
 
 const optionLeaf = (option: RawOption): boolean => {
     const leaf = config().leaf;
     if (typeof leaf === "function") return leaf(option as CascaderOption);
     if (leaf in option) return Boolean(option[leaf]);
+    if (config().lazy && config().lazyLoad) {
+        void lazyRevision.value;
+        if (!(option as LazyOption)[LAZY_RESOLVED]) return false;
+    }
     return optionChildren(option).length === 0;
 };
 
@@ -403,6 +431,12 @@ const visibleTagEntries = (): CascaderTagEntry[] => {
 const collapsedTagEntries = (): CascaderTagEntry[] => tagEntries().slice(visibleTagEntries().length);
 
 const collapseTooltipText = (): string => collapsedTagEntries().map((entry) => entry.label).join("\n");
+
+const tagClass = (): unknown[] => [
+    "tag",
+    `is-${String(props.tagType || "info")}`,
+    `is-${String(props.tagEffect || "light")}`,
+];
 
 const modelValueFromPaths = (paths: CascaderPathValue[]): CascaderModelValue => {
     if (shouldEmitPath()) {
@@ -618,6 +652,38 @@ const emitExpand = (path: RawOption[]): void => {
     emit("expand-change", pathValues(path));
 };
 
+const isLazyLoading = (option: RawOption): boolean => {
+    void lazyRevision.value;
+    return Boolean((option as LazyOption)[LAZY_LOADING]);
+};
+
+const loadLazyChildren = (path: RawOption[]): void => {
+    const option = path[path.length - 1];
+    const loader = config().lazyLoad;
+    if (!option || !config().lazy || !loader) return;
+    const state = option as LazyOption;
+    if (state[LAZY_LOADING] || state[LAZY_RESOLVED]) return;
+    state[LAZY_LOADING] = true;
+    lazyRevision.set(lazyRevision.peek() + 1);
+
+    const finish = (children: CascaderOption[] = []): void => {
+        state[LAZY_CHILDREN] = children as RawOption[];
+        state[LAZY_RESOLVED] = true;
+        state[LAZY_LOADING] = false;
+        lazyRevision.set(lazyRevision.peek() + 1);
+        activePath.set([...path]);
+    };
+    const reject = (): void => {
+        state[LAZY_LOADING] = false;
+        lazyRevision.set(lazyRevision.peek() + 1);
+    };
+    try {
+        loader(nodeSnapshot(path), finish, reject);
+    } catch {
+        reject();
+    }
+};
+
 const onOptionPathClick = (path: RawOption[], event?: Event): void => {
     event?.preventDefault();
     event?.stopPropagation();
@@ -626,6 +692,11 @@ const onOptionPathClick = (path: RawOption[], event?: Event): void => {
     if (optionDisabled(option)) return;
     activePath.set(path);
     const hasChildren = optionChildren(option).length > 0;
+    if (!hasChildren && !optionLeaf(option)) {
+        emitExpand(path);
+        loadLazyChildren(path);
+        return;
+    }
     if (hasChildren) emitExpand(path);
     if (isMultiple()) {
         if (isCheckStrictly()) {
@@ -648,7 +719,8 @@ const onOptionHover = (event: Event): void => {
     const path = findPathByKey(key);
     const option = path[path.length - 1];
     if (!option || optionDisabled(option)) return;
-    if (optionChildren(option).length === 0) return;
+    if (optionChildren(option).length === 0 && !optionLeaf(option)) loadLazyChildren(path);
+    if (optionChildren(option).length === 0 && optionLeaf(option)) return;
     activePath.set(path);
     emitExpand(path);
 };
@@ -671,8 +743,14 @@ const clear = (event?: Event): void => {
     event?.stopPropagation();
     selectedValues.set([]);
     activePath.set([]);
-    emit("update:modelValue", []);
-    emit("change", { value: [], path: [], selected: [], multiple: isMultiple() });
+    const configured = props.valueOnClear as CascaderValueOnClear | undefined;
+    const value = configured === undefined
+        ? []
+        : typeof configured === "function"
+          ? configured()
+          : configured;
+    emit("update:modelValue", value);
+    emit("change", { value, path: [], selected: [], multiple: isMultiple() });
     emit("clear");
     if (props.validateEvent) formItem?.validateTrigger("change");
 };
@@ -810,7 +888,8 @@ const optionClass = (option: RawOption, column: CascaderColumn): Record<string, 
     "is-selected": isSelected(option, column),
     "is-indeterminate": isIndeterminate(option, column),
     "is-disabled": optionDisabled(option),
-    "has-children": optionChildren(option).length > 0,
+    "has-children": !optionLeaf(option),
+    "is-loading": isLazyLoading(option),
 });
 
 const nodeSnapshot = (path: RawOption[]): CascaderNodeSnapshot | null => {
@@ -872,6 +951,11 @@ const overflowPadding = (): number =>
 
 const flipEnabled = (): boolean => popperModifier("flip")?.enabled !== false;
 
+const fallbackPlacements = (): CascaderPlacement[] =>
+    (Array.isArray(props.fallbackPlacements) ? props.fallbackPlacements : [])
+        .map(resolvePlacement)
+        .filter((item, index, source) => source.indexOf(item) === index);
+
 const shouldRenderDropdown = (): boolean => Boolean(props.persistent) || open.value;
 
 const getTriggerEl = (): HTMLElement | null => host.shadowRoot?.querySelector<HTMLElement>(".trigger") || null;
@@ -881,6 +965,7 @@ const dropdownClass = (): unknown[] => [
     "dropdown",
     props.popperClass,
     `placement-${props.teleported ? resolvedPlacement.value : placement()}`,
+    `is-effect-${String(props.effect || "light")}`,
     { "is-teleported": props.teleported, "is-open": open.value },
 ];
 
@@ -922,6 +1007,7 @@ const updateOverlayPosition = (): void => {
             offset: popperOffset(),
             padding: overflowPadding(),
             flip: flipEnabled(),
+            fallbackPlacements: fallbackPlacements(),
         },
     );
     resolvedPlacement.set(next.placement);
@@ -1029,10 +1115,11 @@ defineExpose({
     togglePopperVisible,
     getCheckedNodes,
     presentText: displayLabel,
+    getContentElement: getDropdownEl,
 });
 defineStyle(styles);
 
-const Cascader = defineHtml<CascaderProps>(html`
+const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
     <div
         class="trigger"
         part="trigger"
@@ -1062,7 +1149,7 @@ const Cascader = defineHtml<CascaderProps>(html`
         <span v-else-if=${!hasValue()} class="placeholder">${props.placeholder}</span>
         <slot v-else-if=${isMultiple() && hasValue()} name="tag" :data=${getCheckedNodes()}>
             <span class="tags value">
-                <span v-for="entry in visibleTagEntries()" :key="entry.key" class="tag">
+                <span v-for="entry in visibleTagEntries()" :key="entry.key" :class=${tagClass()}>
                     <span class="tag-label">{{ entry.label }}</span>
                     <button
                         type="button"
@@ -1074,14 +1161,14 @@ const Cascader = defineHtml<CascaderProps>(html`
                 </span>
                 <span
                     v-if="collapsedTagEntries().length > 0"
-                    class="tag collapsed-tag"
+                    :class=${[...tagClass(), "collapsed-tag"]}
                     :title=${props.collapseTagsTooltip ? collapseTooltipText() : null}
                 >+{{ collapsedTagEntries().length }}</span>
             </span>
         </slot>
         <span v-else class="value">${displayLabel()}</span>
         <span class="suffix" part="suffix">
-            <button v-if=${showClear()} type="button" class="clear" aria-label="清空" @click=${clear}>×</button>
+            <button v-if=${showClear()} type="button" class="clear" aria-label="清空" @click=${clear}>${props.clearIcon}</button>
             <span v-else class="arrow" aria-hidden="true">▼</span>
         </span>
     </div>
@@ -1141,7 +1228,7 @@ const Cascader = defineHtml<CascaderProps>(html`
                             {{ optionLabel(option) }}
                         </slot>
                     </span>
-                    <span v-if="optionChildren(option).length > 0" class="option-arrow">›</span>
+                    <span v-if="!optionLeaf(option)" class="option-arrow">{{ isLazyLoading(option) ? '…' : '›' }}</span>
                     <span v-else-if="isSelected(option, column) && !props.checkable" class="check">✓</span>
                 </button>
             </div>
