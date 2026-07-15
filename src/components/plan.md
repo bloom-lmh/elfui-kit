@@ -85,7 +85,7 @@
 - [ ] `Navigation/Menu`
 - [x] `Navigation/PageHeader`
 - [x] `Navigation/Steps`
-- [ ] `Navigation/Tabs`
+- [x] `Navigation/Tabs`
 - [ ] `Picker/Calendar`
 - [ ] `Picker/ColorPicker`
 - [ ] `Picker/DatePicker`

@@ -5,6 +5,7 @@ import { PageTabsEx3 } from "./ex3";
 import { PageTabsEx4 } from "./ex4";
 import { PageTabsEx5 } from "./ex5";
 import { PageTabsEx6 } from "./ex6";
+import { PageTabsEx7 } from "./ex7";
 import { PageTabsProps } from "./props";
 
 useComponents({
@@ -14,6 +15,7 @@ useComponents({
   "page-tabs-ex4": PageTabsEx4,
   "page-tabs-ex5": PageTabsEx5,
   "page-tabs-ex6": PageTabsEx6,
+  "page-tabs-ex7": PageTabsEx7,
   "page-tabs-props": PageTabsProps
 });
 
@@ -27,6 +29,7 @@ const PageTabs = defineHtml(html`
     <page-tabs-ex2></page-tabs-ex2>
     <page-tabs-ex5></page-tabs-ex5>
     <page-tabs-ex6></page-tabs-ex6>
+    <page-tabs-ex7></page-tabs-ex7>
     <page-tabs-ex3></page-tabs-ex3>
     <page-tabs-ex4></page-tabs-ex4>
     <page-tabs-props></page-tabs-props>

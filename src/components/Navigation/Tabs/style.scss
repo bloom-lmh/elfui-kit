@@ -239,6 +239,13 @@
   text-overflow: ellipsis;
 }
 
+.tab-label slot::slotted(*) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
 .tab-badge {
   min-width: 18px;
   height: 18px;
@@ -287,11 +294,13 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 34px;
+  width: auto;
+  min-width: 34px;
   height: 34px;
+  padding: 0 9px;
   margin-inline: 8px 4px;
   border: 1px solid var(--elf-divider);
-  border-radius: 50%;
+  border-radius: var(--elf-radius-sm);
   background: color-mix(in srgb, var(--tabs-color) 7%, var(--elf-bg-paper));
   color: var(--elf-text-secondary);
   font: inherit;
@@ -301,6 +310,13 @@
     background var(--elf-transition-fast),
     color var(--elf-transition-fast),
     transform var(--elf-transition-fast);
+}
+
+.tab-add slot::slotted(*) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .tab-add:hover {

@@ -1,57 +1,90 @@
 import {
   defineEmits,
   defineExpose,
+  defineHtml,
   defineProps,
   defineStyle,
   html,
+  onMount,
   useComputed,
+  useHost,
+  useHostFlag,
   useRef,
-  watchEffect,
-  defineHtml
+  watchEffect
 } from "elfui";
 
 import styles from "./style.scss?inline";
 import type {
+  TabPaneName,
   TabsAlign,
   TabsBeforeLeave,
   TabsDensity,
   TabsDirection,
   TabsFieldNames,
+  TabsPaneContext,
   TabsPosition,
-  TabsTransition
+  TabsProps,
+  TabsSlots,
+  TabsTransition,
+  TabsType
 } from "./types";
 
 export type {
+  TabPaneName,
+  TabPaneProps,
+  TabPaneSlots,
   TabsAlign,
   TabsBeforeLeave,
   TabsDensity,
   TabsDirection,
+  TabsExpose,
   TabsFieldNames,
   TabsItem,
+  TabsPaneContext,
   TabsPosition,
   TabsProps,
-  TabsType,
-  TabsTransition
+  TabsSlots,
+  TabsTransition,
+  TabsType
 } from "./types";
 
 type TabsRawItem = Record<string, unknown>;
 
+interface TabPaneElement extends HTMLElement {
+  label?: string;
+  name?: TabPaneName;
+  disabled?: boolean;
+  closable?: boolean;
+  lazy?: boolean;
+  active?: boolean;
+  rendered?: boolean;
+  panelId?: string;
+  labelledBy?: string;
+}
+
 interface TabsViewItem {
   raw: TabsRawItem;
+  key: string;
   label: string;
-  value: string;
+  value: TabPaneName;
   icon: string;
   badge: string;
   disabled: boolean;
   closable: boolean;
   lazy: boolean;
   content: string;
+  labelSlot: string;
 }
 
-const props = defineProps({
+interface LabelCloneRecord {
+  element: HTMLElement;
+  signature: string;
+}
+
+const props = defineProps<TabsProps>({
   items: { type: Array, default: () => [] },
-  modelValue: { type: String, default: "" },
-  defaultValue: { type: String, default: "" },
+  modelValue: { type: [String, Number], default: "" },
+  defaultValue: { type: [String, Number], default: "" },
   alignTabs: { type: String, default: "start" },
   density: { type: String, default: "default" },
   direction: { type: String, default: "horizontal" },
@@ -85,34 +118,70 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(["update:modelValue", "change", "tab-click", "tab-change", "tab-remove", "tab-add", "edit"]);
+const emit = defineEmits<{
+  "update:modelValue": [value: TabPaneName];
+  change: [value: TabPaneName, item: TabsRawItem];
+  "tab-click": [context: TabsPaneContext & { item: TabsRawItem; event?: Event }];
+  "tab-change": [value: TabPaneName];
+  "tab-remove": [value: TabPaneName];
+  "tab-add": [];
+  edit: [value: TabPaneName | undefined, action: "add" | "remove"];
+}>();
 
-const active = useRef("");
-
+const host = useHost();
+const active = useRef<TabPaneName | "">("");
 const syncKey = useRef("");
+const hasPaneChildren = useRef(false);
+const visitedKeys = new Set<string>();
+const labelClones = new Map<TabPaneElement, LabelCloneRecord>();
+
+const instanceId = (() => {
+  const store = globalThis as typeof globalThis & { __elfTabsIdSeed?: number };
+  store.__elfTabsIdSeed = (store.__elfTabsIdSeed ?? 0) + 1;
+  return `elf-tabs-${store.__elfTabsIdSeed}`;
+})();
+
+const nameKey = (value: unknown): string => String(value ?? "");
+const sameName = (left: unknown, right: unknown): boolean => nameKey(left) === nameKey(right);
+const hasName = (value: unknown): value is TabPaneName => value !== undefined && value !== null && value !== "";
 
 const fieldNames = (): Required<TabsFieldNames> => {
-  const o = (props.props || {}) as TabsFieldNames;
+  const value = props.props || {};
   return {
-    label: o.label || "label",
-    value: o.value || "value",
-    icon: o.icon || "icon",
-    disabled: o.disabled || "disabled",
-    closable: o.closable || "closable",
-    lazy: o.lazy || "lazy",
-    badge: o.badge || "badge",
-    content: o.content || "content"
+    label: value.label || "label",
+    value: value.value || "value",
+    icon: value.icon || "icon",
+    disabled: value.disabled || "disabled",
+    closable: value.closable || "closable",
+    lazy: value.lazy || "lazy",
+    badge: value.badge || "badge",
+    content: value.content || "content"
   };
 };
 
-const items = (): TabsViewItem[] => {
+const paneChildren = (): TabPaneElement[] =>
+  Array.from(host.children).filter(
+    (child): child is TabPaneElement => child.tagName.toLowerCase() === "elf-tab-pane"
+  );
+
+const labelSource = (pane: TabPaneElement): HTMLElement | null =>
+  Array.from(pane.children).find(
+    (child): child is HTMLElement => child instanceof HTMLElement && child.slot === "label"
+  ) ?? null;
+
+const labelSlotName = (index: number): string => `${instanceId}-label-${index}`;
+const tabId = (item: TabsViewItem): string => `${instanceId}-tab-${encodeURIComponent(item.key)}`;
+const panelId = (item: TabsViewItem): string => `${instanceId}-panel-${encodeURIComponent(item.key)}`;
+
+const dataItems = (): TabsViewItem[] => {
   const fields = fieldNames();
   const source = Array.isArray(props.items) ? props.items : [];
   return source.map((raw, index) => {
     const item = (raw || {}) as TabsRawItem;
-    const value = String(item[fields.value] ?? index);
+    const value = (item[fields.value] ?? index) as TabPaneName;
     return {
       raw: item,
+      key: nameKey(value),
       label: String(item[fields.label] ?? value),
       value,
       icon: String(item[fields.icon] ?? ""),
@@ -120,120 +189,60 @@ const items = (): TabsViewItem[] => {
       disabled: Boolean(item[fields.disabled]),
       closable: Boolean(item[fields.closable]),
       lazy: Boolean(item[fields.lazy]),
-      content: String(item[fields.content] ?? "")
+      content: String(item[fields.content] ?? ""),
+      labelSlot: ""
     };
   });
 };
 
-const firstEnabledValue = (): string => items().find((item) => !item.disabled)?.value ?? "";
+const paneItems = (): TabsViewItem[] =>
+  paneChildren().map((pane, index) => {
+    const value = hasName(pane.name) ? pane.name : index;
+    const source = labelSource(pane);
+    const raw: TabsRawItem = {
+      label: pane.label || source?.textContent?.trim() || String(value),
+      value,
+      disabled: Boolean(pane.disabled),
+      closable: Boolean(pane.closable),
+      lazy: Boolean(pane.lazy)
+    };
+    return {
+      raw,
+      key: nameKey(value),
+      label: String(raw.label),
+      value,
+      icon: "",
+      badge: "",
+      disabled: Boolean(pane.disabled),
+      closable: Boolean(pane.closable),
+      lazy: Boolean(pane.lazy),
+      content: "",
+      labelSlot: source ? labelSlotName(index) : ""
+    };
+  });
 
-watchEffect(() => {
-  const next = String(props.modelValue || props.defaultValue || firstEnabledValue());
-  const sig = `${props.modelValue || ""}::${props.defaultValue || ""}::${firstEnabledValue()}`;
-  if (syncKey.peek() === sig) return;
-  syncKey.set(sig);
-  active.set(next);
-});
-
-const activeItem = (): TabsViewItem | undefined =>
-  items().find((item) => item.value === active.value);
-
-const isActive = (item: TabsViewItem): boolean => item.value === active.value;
-
-const commitActive = (item: TabsViewItem): void => {
-  active.set(item.value);
-  emit("update:modelValue", item.value);
-  emit("change", item.value, item.raw);
-  emit("tab-change", item.value);
-};
-
-const runBeforeLeave = (
-  item: TabsViewItem,
-  oldValue: string,
-  commit: () => void
-): void => {
-  const guard = props.beforeLeave as TabsBeforeLeave | null | undefined;
-  if (typeof guard !== "function") {
-    commit();
-    return;
-  }
-  const result = guard(item.value, oldValue);
-  if (result && typeof (result as Promise<boolean | void>).then === "function") {
-    void (result as Promise<boolean | void>).then((allowed) => {
-      if (allowed !== false) commit();
-    });
-    return;
-  }
-  if (result !== false) commit();
-};
-
-const select = (value: string): void => {
-  const item = items().find((entry) => entry.value === String(value));
-  if (!item || item.disabled || item.value === active.value) return;
-  const oldValue = active.value;
-  runBeforeLeave(item, oldValue, () => commitActive(item));
-};
-
-const onTabClick = (item: TabsViewItem, event?: Event): void => {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  emit("tab-click", { name: item.value, item: item.raw, event });
-  select(item.value);
-};
-
+const viewItems = (): TabsViewItem[] => hasPaneChildren.value ? paneItems() : dataItems();
+const firstEnabledName = (): TabPaneName | "" => viewItems().find((item) => !item.disabled)?.value ?? "";
+const activeItem = (): TabsViewItem | undefined => viewItems().find((item) => sameName(item.value, active.value));
+const isActive = (item: TabsViewItem): boolean => sameName(item.value, active.value);
 const isClosable = (item: TabsViewItem): boolean =>
   (Boolean(props.closable) || Boolean(props.editable) || item.closable) && !item.disabled;
-
-const nextAfterRemove = (item: TabsViewItem): string => {
-  const list = items().filter((entry) => !entry.disabled && entry.value !== item.value);
-  if (!list.length) return "";
-  const currentIndex = items().findIndex((entry) => entry.value === item.value);
-  return (list.find((entry) => items().findIndex((candidate) => candidate.value === entry.value) > currentIndex) || list[list.length - 1]!).value;
-};
-
-const remove = (value: string): void => {
-  const item = items().find((entry) => entry.value === String(value));
-  if (!item || !isClosable(item)) return;
-  emit("tab-remove", item.value);
-  emit("edit", item.value, "remove");
-  if (item.value !== active.value) return;
-  const next = nextAfterRemove(item);
-  if (next) select(next);
-};
-
-const onRemoveClick = (item: TabsViewItem, event: Event): void => {
-  event.preventDefault();
-  event.stopPropagation();
-  remove(item.value);
-};
-
-const add = (): void => {
-  emit("tab-add");
-  emit("edit", undefined, "add");
-};
-
-const setActive = (value: string): void => select(value);
-
-const currentName = (): string => active.value;
+const showPanels = (): boolean => hasPaneChildren.value || Boolean(props.showPanels);
+const renderedPanels = (): TabsViewItem[] =>
+  viewItems().filter((item) => !item.lazy || isActive(item) || visitedKeys.has(item.key));
 
 const transition = (): TabsTransition => {
   const value = String(props.transition || "fade");
-  return value === "slide" || value === "scale" || value === "none" || value === "custom"
-    ? value
-    : "fade";
+  return value === "slide" || value === "scale" || value === "none" || value === "custom" ? value : "fade";
 };
 
 const tabPosition = (): TabsPosition => {
   const value = String(props.tabPosition || "");
-  if (value === "right" || value === "bottom" || value === "left" || value === "top") {
-    return value;
-  }
+  if (value === "right" || value === "bottom" || value === "left" || value === "top") return value;
   return (props.direction as TabsDirection) === "vertical" ? "left" : "top";
 };
 
-const tabType = (): string => {
+const tabType = (): TabsType => {
   const value = String(props.type || "line");
   return value === "card" || value === "border-card" ? value : "line";
 };
@@ -258,17 +267,233 @@ const rootClass = () => ({
   "is-hide-slider": Boolean(props.hideSlider),
   "is-compact": (props.density as TabsDensity) === "compact",
   "is-comfortable": (props.density as TabsDensity) === "comfortable",
+  "has-pane-children": hasPaneChildren.value,
   "align-center": (props.alignTabs as TabsAlign) === "center",
   "align-end": (props.alignTabs as TabsAlign) === "end",
   "align-title": (props.alignTabs as TabsAlign) === "title",
   [`transition-${transition()}`]: true
 });
 
-defineExpose({ select, setActive, removeTab: remove, add, currentName });
+const paneContext = (item: TabsViewItem): TabsPaneContext => ({
+  name: item.value,
+  label: item.label,
+  disabled: item.disabled,
+  closable: item.closable,
+  lazy: item.lazy
+});
+
+const tabButtons = (): HTMLButtonElement[] =>
+  Array.from(host.shadowRoot?.querySelectorAll<HTMLButtonElement>(".tab") ?? []);
+const tabListRef = (): HTMLElement | null => host.shadowRoot?.querySelector<HTMLElement>(".tab-list") ?? null;
+const tabBarRef = (): HTMLElement | null => host.shadowRoot?.querySelector<HTMLElement>(".tab-slider") ?? null;
+
+const syncLabelClone = (pane: TabPaneElement, index: number): void => {
+  const source = labelSource(pane);
+  const existing = labelClones.get(pane);
+  if (!source) {
+    existing?.element.remove();
+    labelClones.delete(pane);
+    return;
+  }
+
+  const signature = source.outerHTML;
+  const slot = labelSlotName(index);
+  if (existing && existing.signature === signature && existing.element.slot === slot) return;
+
+  existing?.element.remove();
+  const clone = source.cloneNode(true) as HTMLElement;
+  clone.slot = slot;
+  clone.dataset.elfTabsLabelClone = instanceId;
+  host.appendChild(clone);
+  labelClones.set(pane, { element: clone, signature });
+};
+
+const syncPaneChildren = (): void => {
+  const children = paneChildren();
+  hasPaneChildren.set(children.length > 0);
+
+  for (const [pane, record] of labelClones) {
+    if (children.includes(pane)) continue;
+    record.element.remove();
+    labelClones.delete(pane);
+  }
+
+  const items = paneItems();
+  children.forEach((pane, index) => {
+    const item = items[index]!;
+    syncLabelClone(pane, index);
+    pane.active = isActive(item);
+    pane.rendered = visitedKeys.has(item.key);
+    pane.panelId = panelId(item);
+    pane.labelledBy = tabId(item);
+  });
+};
+
+const commitActive = (item: TabsViewItem): void => {
+  active.set(item.value);
+  visitedKeys.add(item.key);
+  emit("update:modelValue", item.value);
+  emit("change", item.value, item.raw);
+  emit("tab-change", item.value);
+};
+
+const runBeforeLeave = (item: TabsViewItem, oldValue: TabPaneName | "", commit: () => void): void => {
+  const guard = props.beforeLeave as TabsBeforeLeave | null | undefined;
+  if (typeof guard !== "function") {
+    commit();
+    return;
+  }
+
+  try {
+    const result = guard(item.value, oldValue);
+    if (result && typeof (result as Promise<boolean | void>).then === "function") {
+      void Promise.resolve(result).then((allowed) => {
+        if (allowed !== false) commit();
+      }).catch(() => undefined);
+      return;
+    }
+    if (result !== false) commit();
+  } catch {
+    // A thrown guard blocks navigation, matching a rejected guard promise.
+  }
+};
+
+const select = (value: TabPaneName): void => {
+  const item = viewItems().find((entry) => sameName(entry.value, value));
+  if (!item || item.disabled || isActive(item)) return;
+  runBeforeLeave(item, active.value, () => commitActive(item));
+};
+
+const onTabClick = (item: TabsViewItem, event: Event): void => {
+  event.preventDefault();
+  event.stopPropagation();
+  emit("tab-click", { ...paneContext(item), item: item.raw, event });
+  select(item.value);
+};
+
+const focusTab = (value: TabPaneName): void => {
+  queueMicrotask(() => {
+    const index = viewItems().findIndex((item) => sameName(item.value, value));
+    tabButtons()[index]?.focus();
+  });
+};
+
+const onTabKeydown = (item: TabsViewItem, event: KeyboardEvent): void => {
+  if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  const enabled = viewItems().filter((entry) => !entry.disabled);
+  const currentIndex = Math.max(0, enabled.findIndex((entry) => sameName(entry.value, item.value)));
+  let nextIndex = currentIndex;
+  if (event.key === "Home") nextIndex = 0;
+  else if (event.key === "End") nextIndex = enabled.length - 1;
+  else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+    nextIndex = (currentIndex + 1) % enabled.length;
+  } else {
+    nextIndex = (currentIndex - 1 + enabled.length) % enabled.length;
+  }
+  const next = enabled[nextIndex];
+  if (!next) return;
+  select(next.value);
+  focusTab(next.value);
+};
+
+const nextAfterRemove = (item: TabsViewItem): TabPaneName | "" => {
+  const all = viewItems();
+  const available = all.filter((entry) => !entry.disabled && !sameName(entry.value, item.value));
+  if (available.length === 0) return "";
+  const currentIndex = all.findIndex((entry) => sameName(entry.value, item.value));
+  return available.find((entry) => all.indexOf(entry) > currentIndex)?.value ?? available[available.length - 1]!.value;
+};
+
+const removeTab = (value: TabPaneName): void => {
+  const item = viewItems().find((entry) => sameName(entry.value, value));
+  if (!item || !isClosable(item)) return;
+  emit("tab-remove", item.value);
+  emit("edit", item.value, "remove");
+  if (!isActive(item)) return;
+  const next = nextAfterRemove(item);
+  if (hasName(next)) select(next);
+};
+
+const onRemoveClick = (item: TabsViewItem, event: Event): void => {
+  event.preventDefault();
+  event.stopPropagation();
+  removeTab(item.value);
+};
+
+const add = (): void => {
+  emit("tab-add");
+  emit("edit", undefined, "add");
+};
+
+const currentName = (): TabPaneName | "" => active.value;
+const setActive = (value: TabPaneName): void => select(value);
+const scrollToActiveTab = (): void => {
+  const index = viewItems().findIndex((item) => isActive(item));
+  tabButtons()[index]?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+};
+const removeFocus = (): void => {
+  const root = host.shadowRoot;
+  if (root?.activeElement instanceof HTMLElement) root.activeElement.blur();
+};
+const update = (): DOMRect | null => tabBarRef()?.getBoundingClientRect() ?? null;
+const onPanesSlotChange = (): void => syncPaneChildren();
+
+watchEffect(() => {
+  const next = hasName(props.modelValue)
+    ? props.modelValue
+    : hasName(props.defaultValue)
+      ? props.defaultValue
+      : firstEnabledName();
+  const signature = `${nameKey(props.modelValue)}::${nameKey(props.defaultValue)}::${nameKey(firstEnabledName())}::${hasPaneChildren.value}`;
+  if (syncKey.peek() === signature) return;
+  syncKey.set(signature);
+  active.set(next);
+  if (hasName(next)) visitedKeys.add(nameKey(next));
+});
+
+watchEffect(() => {
+  void active.value;
+  void props.closable;
+  void props.editable;
+  syncPaneChildren();
+});
+
+onMount(syncPaneChildren);
+useHostFlag("data-composed", () => hasPaneChildren.value);
+
+defineExpose({
+  select,
+  setActive,
+  removeTab,
+  add,
+  currentName,
+  scrollToActiveTab,
+  removeFocus,
+  update,
+  get tabListRef() {
+    return tabListRef();
+  },
+  get tabBarRef() {
+    return tabBarRef();
+  },
+  get tabNavRef() {
+    return {
+      scrollToActiveTab,
+      removeFocus,
+      get tabListRef() {
+        return tabListRef();
+      },
+      get tabBarRef() {
+        return tabBarRef();
+      }
+    };
+  }
+});
 
 defineStyle(styles);
 
-const Tabs = defineHtml(html`
+const Tabs = defineHtml<TabsProps, Record<string, never>, TabsSlots>(html`
   <div :class=${["tabs", rootClass()]} :style=${hostStyle}>
     <div
       class="tab-list"
@@ -276,18 +501,24 @@ const Tabs = defineHtml(html`
       :aria-orientation=${tabPosition() === "left" || tabPosition() === "right" ? "vertical" : "horizontal"}
     >
       <button
-        v-for="item in items()"
-        :key="item.value"
+        v-for="item in viewItems()"
+        :key="item.key"
         type="button"
         role="tab"
+        :id="tabId(item)"
+        :aria-controls="panelId(item)"
         :class="['tab', { 'is-active': isActive(item), 'is-disabled': item.disabled }]"
         :disabled="item.disabled"
         :aria-selected="isActive(item) ? 'true' : 'false'"
-        :tabindex=${props.tabindex}
+        :tabindex="isActive(item) ? props.tabindex : -1"
         @click="onTabClick(item, $event)"
+        @keydown="onTabKeydown(item, $event)"
       >
         <span v-if="item.icon" class="tab-icon">{{ item.icon }}</span>
-        <span class="tab-label">{{ item.label }}</span>
+        <span class="tab-label">
+          <slot v-if="item.labelSlot" :name="item.labelSlot">{{ item.label }}</slot>
+          <span v-else>{{ item.label }}</span>
+        </span>
         <span v-if="item.badge" class="tab-badge">{{ item.badge }}</span>
         <span
           v-if="isClosable(item)"
@@ -310,21 +541,30 @@ const Tabs = defineHtml(html`
         aria-label="新增标签"
         @click=${add}
       >
-        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          <path d="M8 3.25v9.5M3.25 8h9.5"></path>
-        </svg>
+        <slot name="add-icon">
+          <slot name="addIcon">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M8 3.25v9.5M3.25 8h9.5"></path>
+            </svg>
+          </slot>
+        </slot>
       </button>
     </div>
-    <div v-if=${props.showPanels} class="tab-panels">
-      <section
-        v-for="item in items()"
-        v-show="isActive(item)"
-        :key="item.value"
-        :class="['tab-panel', { 'is-active': isActive(item) }]"
-        role="tabpanel"
-      >
-        {{ item.content }}
-      </section>
+    <div v-if=${showPanels()} class="tab-panels">
+      <slot v-if=${hasPaneChildren} @slotchange=${onPanesSlotChange}></slot>
+      <template v-if=${!hasPaneChildren}>
+        <section
+          v-for="item in renderedPanels()"
+          v-show="isActive(item)"
+          :key="item.key"
+          :id="panelId(item)"
+          :aria-labelledby="tabId(item)"
+          :class="['tab-panel', { 'is-active': isActive(item) }]"
+          role="tabpanel"
+        >
+          {{ item.content }}
+        </section>
+      </template>
     </div>
   </div>
 `);

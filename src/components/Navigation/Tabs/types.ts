@@ -4,9 +4,10 @@ export type TabsDirection = "horizontal" | "vertical";
 export type TabsType = "line" | "card" | "border-card";
 export type TabsPosition = "top" | "right" | "bottom" | "left";
 export type TabsTransition = "fade" | "slide" | "scale" | "none" | "custom";
+export type TabPaneName = string | number;
 export type TabsBeforeLeave = (
-  newName: string,
-  oldName: string
+  newName: TabPaneName,
+  oldName: TabPaneName
 ) => boolean | void | Promise<boolean | void>;
 
 export interface TabsFieldNames {
@@ -22,7 +23,7 @@ export interface TabsFieldNames {
 
 export interface TabsItem {
   label?: string;
-  value?: string;
+  value?: TabPaneName;
   icon?: string;
   disabled?: boolean;
   closable?: boolean;
@@ -34,8 +35,8 @@ export interface TabsItem {
 
 export interface TabsProps {
   items: TabsItem[];
-  modelValue: string;
-  defaultValue: string;
+  modelValue: TabPaneName | "";
+  defaultValue: TabPaneName | "";
   alignTabs: TabsAlign;
   density: TabsDensity;
   direction: TabsDirection;
@@ -55,4 +56,44 @@ export interface TabsProps {
   transition: TabsTransition;
   transitionDuration: number;
   props: TabsFieldNames;
+}
+
+export interface TabPaneProps {
+  label?: string;
+  name?: TabPaneName;
+  disabled?: boolean;
+  closable?: boolean;
+  lazy?: boolean;
+}
+
+export interface TabPaneSlots {
+  default?: unknown;
+  label?: unknown;
+}
+
+export interface TabsSlots {
+  default?: unknown;
+  "add-icon"?: unknown;
+  addIcon?: unknown;
+}
+
+export interface TabsPaneContext {
+  name: TabPaneName;
+  label: string;
+  disabled: boolean;
+  closable: boolean;
+  lazy: boolean;
+}
+
+export interface TabsExpose {
+  currentName: () => TabPaneName | "";
+  select: (value: TabPaneName) => void;
+  setActive: (value: TabPaneName) => void;
+  removeTab: (value: TabPaneName) => void;
+  add: () => void;
+  scrollToActiveTab: () => void;
+  removeFocus: () => void;
+  update: () => DOMRect | null;
+  readonly tabListRef: HTMLElement | null;
+  readonly tabBarRef: HTMLElement | null;
 }

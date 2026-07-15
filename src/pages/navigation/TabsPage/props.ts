@@ -7,8 +7,8 @@ const propsRows = [
     default: "[]",
     desc: "tab 数据，支持 label/value/icon/badge/content"
   },
-  { name: "modelValue", type: "string", default: "''", desc: "当前激活值，支持 v-model" },
-  { name: "defaultValue", type: "string", default: "''", desc: "非受控初始激活值" },
+  { name: "modelValue", type: "string | number", default: "''", desc: "当前激活值，支持 v-model" },
+  { name: "defaultValue", type: "string | number", default: "''", desc: "非受控初始激活值" },
   {
     name: "alignTabs",
     type: "start | center | end | title",
@@ -46,11 +46,11 @@ const propsRows = [
 ];
 
 const eventsRows = [
-  { name: "update:modelValue", type: "(value: string) => void", desc: "激活项变化时触发" },
+  { name: "update:modelValue", type: "(value: string | number) => void", desc: "激活项变化时触发" },
   { name: "change", type: "(value, item) => void", desc: "激活项变化时触发" },
   { name: "tab-click", type: "({ name, item, event }) => void", desc: "点击标签时触发" },
-  { name: "tab-change", type: "(name: string) => void", desc: "激活标签变化时触发" },
-  { name: "tab-remove", type: "(name: string) => void", desc: "关闭标签时触发" },
+  { name: "tab-change", type: "(name: string | number) => void", desc: "激活标签变化时触发" },
+  { name: "tab-remove", type: "(name: string | number) => void", desc: "关闭标签时触发" },
   { name: "tab-add", type: "() => void", desc: "点击新增按钮时触发" },
   { name: "edit", type: "(name, action) => void", desc: "新增或移除时触发" }
 ];
@@ -60,13 +60,39 @@ const methodsRows = [
   { name: "setActive(value)", desc: "选择指定 tab" },
   { name: "removeTab(value)", desc: "触发关闭指定 tab" },
   { name: "add()", desc: "触发新增 tab" },
-  { name: "currentName()", desc: "读取当前激活名称" }
+  { name: "currentName()", desc: "读取当前激活名称" },
+  { name: "scrollToActiveTab()", desc: "将当前标签滚动到可视区域" },
+  { name: "removeFocus()", desc: "移除标签导航焦点" },
+  { name: "update()", desc: "重新读取激活指示条位置" },
+  { name: "tabListRef / tabBarRef", desc: "标签列表和激活指示条元素引用" }
+];
+
+const paneRows = [
+  { name: "label", type: "string", default: "''", desc: "标签标题，可由 label 插槽覆盖" },
+  { name: "name", type: "string | number", default: "索引", desc: "标签唯一名称" },
+  { name: "disabled", type: "boolean", default: "false", desc: "禁用标签" },
+  { name: "closable", type: "boolean", default: "false", desc: "允许关闭当前标签" },
+  { name: "lazy", type: "boolean", default: "false", desc: "首次激活时才创建面板内容" }
+];
+
+const slotsRows = [
+  { name: "default", type: "elf-tab-pane[]", desc: "组合式标签面板" },
+  { name: "add-icon", type: "unknown", desc: "自定义新增按钮内容" },
+  { name: "addIcon", type: "unknown", desc: "旧版新增按钮插槽别名" }
+];
+
+const paneSlotsRows = [
+  { name: "default", type: "unknown", desc: "面板内容" },
+  { name: "label", type: "unknown", desc: "富标签内容" }
 ];
 
 const PageTabsProps = defineHtml(html`
   <h2>API</h2>
   <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>
   <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
+  <elf-props-table title="TabPane Props" :rows=${paneRows}></elf-props-table>
+  <elf-props-table title="Tabs Slots" :rows=${slotsRows}></elf-props-table>
+  <elf-props-table title="TabPane Slots" :rows=${paneSlotsRows}></elf-props-table>
   <elf-props-table title="Methods" :rows=${methodsRows}></elf-props-table>
 `);
 

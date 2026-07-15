@@ -13,9 +13,10 @@ import { Menu } from "./Menu/index";
 import { PageHeader } from "./PageHeader/index";
 import { Step } from "./Step/index";
 import { Steps } from "./Steps/index";
+import { TabPane } from "./TabPane/index";
 import { Tabs } from "./Tabs/index";
 
-registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, DropdownMenu, DropdownItem, Menu, Steps, Step, Tabs, PageHeader);
+registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, DropdownMenu, DropdownItem, Menu, Steps, Step, Tabs, TabPane, PageHeader);
 
 export type {
   AnchorChangeDetail,
@@ -77,3 +78,21 @@ export type {
   StepsExpose,
   StepsSlots
 } from "./Steps/types";
+export type {
+  TabPaneName,
+  TabPaneProps,
+  TabPaneSlots,
+  TabsAlign,
+  TabsBeforeLeave,
+  TabsDensity,
+  TabsDirection,
+  TabsExpose,
+  TabsFieldNames,
+  TabsItem,
+  TabsPaneContext,
+  TabsPosition,
+  TabsProps,
+  TabsSlots,
+  TabsTransition,
+  TabsType
+} from "./Tabs/types";
