@@ -8,6 +8,17 @@
   --_line-clamp: 1;
 }
 
+:host([tag="p"]),
+:host([tag="div"]),
+:host([tag="h1"]),
+:host([tag="h2"]),
+:host([tag="h3"]),
+:host([tag="h4"]),
+:host([tag="h5"]),
+:host([tag="h6"]) {
+  display: block;
+}
+
 :host([type="primary"]) {
   --_text-color: var(--elf-primary);
 }
@@ -28,14 +39,17 @@
   --_text-color: var(--elf-info);
 }
 
+:host([size="small"]),
 :host([size="sm"]) {
   --_text-size: var(--elf-font-size-sm);
 }
 
+:host([size="default"]),
 :host([size="md"]) {
   --_text-size: var(--elf-font-size-md);
 }
 
+:host([size="large"]),
 :host([size="lg"]) {
   --_text-size: var(--elf-font-size-lg);
 }

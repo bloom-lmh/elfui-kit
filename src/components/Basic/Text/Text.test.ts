@@ -17,7 +17,7 @@ interface TextEl extends HTMLElement {
     type?: string;
     size?: string;
     truncated?: boolean;
-    lineClamp?: number;
+    lineClamp?: number | string;
     tag?: string;
     mark?: boolean;
     deleted?: boolean;
@@ -51,6 +51,14 @@ describe("elf-text", () => {
         expect(el.getAttribute("size")).toBe("lg");
     });
 
+    it("支持 Element Plus 标准 size 值", async () => {
+        const el = document.createElement("elf-text") as TextEl;
+        el.size = "large";
+        document.body.appendChild(el);
+        await tick();
+        expect(el.getAttribute("size")).toBe("large");
+    });
+
     it("truncated flag 反射到 host", async () => {
         const el = document.createElement("elf-text") as TextEl;
         el.truncated = true;
@@ -65,6 +73,18 @@ describe("elf-text", () => {
         document.body.appendChild(el);
         await tick();
         expect(el.style.getPropertyValue("--_line-clamp")).toBe("3");
+    });
+
+    it("line-clamp 接受数字字符串并修正非法值", async () => {
+        const el = document.createElement("elf-text") as TextEl;
+        el.lineClamp = "2";
+        document.body.appendChild(el);
+        await tick();
+        expect(el.style.getPropertyValue("--_line-clamp")).toBe("2");
+
+        el.lineClamp = "invalid";
+        await tick();
+        expect(el.style.getPropertyValue("--_line-clamp")).toBe("1");
     });
 
     it("mark flag 反射", async () => {
@@ -136,9 +156,22 @@ describe("elf-text", () => {
         expect(inner).toBeTruthy();
     });
 
+    it("支持 sub、sup 与语义标题标签", async () => {
+        const el = document.createElement("elf-text") as TextEl;
+        el.tag = "sub";
+        document.body.appendChild(el);
+        await tick();
+        expect(el.shadowRoot!.querySelector("sub.text")).toBeTruthy();
+
+        el.tag = "h2";
+        await tick();
+        expect(el.shadowRoot!.querySelector("h2.text")).toBeTruthy();
+        expect(el.getAttribute("tag")).toBe("h2");
+    });
+
     it("非法 tag 回退 span", async () => {
         const el = document.createElement("elf-text") as TextEl;
-        el.tag = "h1";
+        el.tag = "script";
         el.textContent = "text";
         document.body.appendChild(el);
         await tick();

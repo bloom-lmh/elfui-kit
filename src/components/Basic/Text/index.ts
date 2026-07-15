@@ -1,15 +1,15 @@
 import { defineHtml, defineProps, defineStyle, html, useHost, useHostAttr, useHostCssVar, useHostFlag } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { TextProps, TextSize, TextSlots, TextType } from "./types";
+import type { TextProps, TextSize, TextSlots, TextTag, TextType } from "./types";
 
-export type { TextProps, TextSize, TextSlots, TextType } from "./types";
+export type { TextProps, TextSize, TextSlots, TextTag, TextType } from "./types";
 
 const props = defineProps<TextProps>({
     type: { type: String, default: "" },
     size: { type: String, default: "" },
     truncated: { type: Boolean, default: false },
-    lineClamp: { type: Number, default: undefined },
+    lineClamp: { type: [Number, String], default: undefined },
     tag: { type: String, default: "span" },
     mark: { type: Boolean, default: false },
     deleted: { type: Boolean, default: false },
@@ -27,19 +27,29 @@ const normalizedType = (): TextType => {
 
 const normalizedSize = (): TextSize => {
     const value = String(props.size || "") as TextSize;
-    return value === "sm" || value === "md" || value === "lg" ? value : "";
+    return ["small", "default", "large", "sm", "md", "lg"].includes(value) ? value : "";
 };
 
-const normalizedTag = (): string => {
-    const value = String(props.tag || "span").toLowerCase();
-    return ["span", "p", "div", "strong", "em", "mark", "del", "ins"].includes(value) ? value : "span";
+const textTags: readonly TextTag[] = [
+    "span", "p", "div", "b", "strong", "i", "em", "sub", "sup", "mark", "del", "ins",
+    "h1", "h2", "h3", "h4", "h5", "h6",
+];
+
+const normalizedTag = (): TextTag => {
+    const value = String(props.tag || "span").toLowerCase() as TextTag;
+    return textTags.includes(value) ? value : "span";
+};
+
+const lineClampValue = (): number => {
+    const rawValue = props.lineClamp ?? host.getAttribute("line-clamp") ?? 1;
+    const value = Number.parseInt(String(rawValue), 10);
+    return Number.isFinite(value) ? Math.max(1, value) : 1;
 };
 
 useHostAttr("type", normalizedType);
 useHostAttr("size", normalizedSize);
+useHostAttr("tag", normalizedTag);
 useHostFlag("truncated", () => Boolean(props.truncated));
-const lineClampValue = (): number => Math.max(1, Number(props.lineClamp || host.getAttribute("line-clamp") || 1));
-
 useHostFlag("data-line-clamp", () => Boolean(props.lineClamp || host.getAttribute("line-clamp")));
 useHostFlag("mark", () => Boolean(props.mark));
 useHostFlag("deleted", () => Boolean(props.deleted));
@@ -53,11 +63,21 @@ defineStyle(styles);
 const Text = defineHtml<TextProps, Record<string, never>, TextSlots>(html`
     <p v-if=${normalizedTag() === "p"} class="text" part="text"><slot></slot></p>
     <div v-else-if=${normalizedTag() === "div"} class="text" part="text"><slot></slot></div>
+    <b v-else-if=${normalizedTag() === "b"} class="text" part="text"><slot></slot></b>
     <strong v-else-if=${normalizedTag() === "strong"} class="text" part="text"><slot></slot></strong>
+    <i v-else-if=${normalizedTag() === "i"} class="text" part="text"><slot></slot></i>
     <em v-else-if=${normalizedTag() === "em"} class="text" part="text"><slot></slot></em>
+    <sub v-else-if=${normalizedTag() === "sub"} class="text" part="text"><slot></slot></sub>
+    <sup v-else-if=${normalizedTag() === "sup"} class="text" part="text"><slot></slot></sup>
     <mark v-else-if=${normalizedTag() === "mark"} class="text" part="text"><slot></slot></mark>
     <del v-else-if=${normalizedTag() === "del"} class="text" part="text"><slot></slot></del>
     <ins v-else-if=${normalizedTag() === "ins"} class="text" part="text"><slot></slot></ins>
+    <h1 v-else-if=${normalizedTag() === "h1"} class="text" part="text"><slot></slot></h1>
+    <h2 v-else-if=${normalizedTag() === "h2"} class="text" part="text"><slot></slot></h2>
+    <h3 v-else-if=${normalizedTag() === "h3"} class="text" part="text"><slot></slot></h3>
+    <h4 v-else-if=${normalizedTag() === "h4"} class="text" part="text"><slot></slot></h4>
+    <h5 v-else-if=${normalizedTag() === "h5"} class="text" part="text"><slot></slot></h5>
+    <h6 v-else-if=${normalizedTag() === "h6"} class="text" part="text"><slot></slot></h6>
     <span v-else class="text" part="text"><slot></slot></span>
 `);
 
