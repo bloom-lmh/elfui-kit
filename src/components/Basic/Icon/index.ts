@@ -10,6 +10,7 @@ const props = defineProps<IconProps>({
     size: { type: [Number, String], default: "1em" },
     color: { type: String, default: "" },
     ariaLabel: { type: String, default: "" },
+    loading: { type: Boolean, default: false },
 });
 
 const size = (): string => {
@@ -28,7 +29,7 @@ defineStyle(styles);
 
 const Icon = defineHtml<IconProps, Record<string, never>, IconSlots>(html`
     <span
-        class="icon"
+        :class=${{ icon: true, "is-loading": props.loading }}
         part="icon"
         :aria-hidden=${props.ariaLabel ? "false" : "true"}
         :aria-label=${props.ariaLabel || null}

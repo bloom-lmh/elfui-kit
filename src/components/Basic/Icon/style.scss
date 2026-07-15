@@ -26,3 +26,21 @@
         height: 100%;
     }
 }
+
+:host(.is-loading) .icon,
+.icon.is-loading {
+  animation: elf-icon-rotate 2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.is-loading) .icon,
+  .icon.is-loading {
+    animation: none;
+  }
+}
+
+@keyframes elf-icon-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

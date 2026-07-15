@@ -13,7 +13,7 @@
 - [x] `Basic/Avatar`
 - [x] `Basic/Badge`
 - [x] `Basic/Button`
-- [ ] `Basic/Icon`
+- [x] `Basic/Icon`
 - [x] `Basic/Link`
 - [x] `Basic/Tag`
 - [ ] `Basic/Text`

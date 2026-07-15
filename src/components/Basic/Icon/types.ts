@@ -3,6 +3,7 @@ export interface IconProps {
   size: number | string;
   color: string;
   ariaLabel: string;
+  loading: boolean;
 }
 
 export interface IconSlots {

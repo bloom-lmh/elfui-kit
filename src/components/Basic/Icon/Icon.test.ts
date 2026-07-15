@@ -18,6 +18,7 @@ interface IconEl extends HTMLElement {
     size?: number | string;
     color?: string;
     ariaLabel?: string;
+    loading?: boolean;
 }
 
 describe("elf-icon", () => {
@@ -117,5 +118,21 @@ describe("elf-icon", () => {
         await tick();
         const span = el.shadowRoot!.querySelector("[part='icon']");
         expect(span).toBeTruthy();
+    });
+
+    it("数值 size 不小于 1px", async () => {
+        const el = document.createElement("elf-icon") as IconEl;
+        el.size = 0;
+        document.body.appendChild(el);
+        await tick();
+        expect(el.style.getPropertyValue("--_icon-size")).toBe("1px");
+    });
+
+    it("loading 为内部图标添加旋转状态类", async () => {
+        const el = document.createElement("elf-icon") as IconEl;
+        el.loading = true;
+        document.body.appendChild(el);
+        await tick();
+        expect(el.shadowRoot!.querySelector(".icon")?.classList.contains("is-loading")).toBe(true);
     });
 });

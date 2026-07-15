@@ -1,6 +1,7 @@
 # Icon Element Plus API 对标计划
 
 ## 本轮记录
+- [x] 第四阶段：确定图标集合采用独立包 / 默认插槽按需引入策略，核心组件不全量内置 SVG；补 `loading` / `is-loading` 旋转、减少动态效果兼容、案例与测试。
 - [x] 第二阶段：补 `aria-label` 可访问性属性和页面 PropsTable。
 - [x] 第三阶段：页面补 Script 视图；单测扩展到 10 条覆盖 name/size/color/CSS 变量/aria-label/role/slot/part。
 
@@ -20,5 +21,5 @@
 ## 后续差距
 
 - [x] 补独立案例页：覆盖 `name`、`size`、`color` 属性和默认插槽。
-- [ ] SVG 图标库 / icon collection：需要产品决策（内置 SVG sprite 还是依赖外部图标库、按需引入还是全量打包），暂不在此阶段实施。
+- [x] SVG 图标库 / icon collection：对齐 Element Plus 的拆包方式，核心包只提供图标容器；图标通过默认插槽按需引入，未来集合以独立包发布，避免全量 SVG 进入主包。
 - [x] 页面示例补 Script 视图和 PropsTable。
