@@ -27,7 +27,7 @@
 - [x] `Data/Empty`
 - [x] `Data/Image`
 - [x] `Data/InfiniteScroll`
-- [ ] `Data/Pagination`
+- [x] `Data/Pagination`
 - [x] `Data/Progress`
 - [x] `Data/Result`
 - [x] `Data/Skeleton`

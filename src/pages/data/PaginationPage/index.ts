@@ -2,12 +2,14 @@ import { defineHtml, html, useComponents } from "elfui";
 import { PagePaginationEx1 } from "./ex1";
 import { PagePaginationEx2 } from "./ex2";
 import { PagePaginationEx3 } from "./ex3";
+import { PagePaginationEx4 } from "./ex4";
 import { PagePaginationProps } from "./props";
 
 useComponents({
   "page-pagination-ex1": PagePaginationEx1,
   "page-pagination-ex2": PagePaginationEx2,
   "page-pagination-ex3": PagePaginationEx3,
+  "page-pagination-ex4": PagePaginationEx4,
   "page-pagination-props": PagePaginationProps
 });
 
@@ -18,6 +20,7 @@ const PagePagination = defineHtml(html`
     <page-pagination-ex1></page-pagination-ex1>
     <page-pagination-ex2></page-pagination-ex2>
     <page-pagination-ex3></page-pagination-ex3>
+    <page-pagination-ex4></page-pagination-ex4>
     <page-pagination-props></page-pagination-props>
   </elf-container>
 `);

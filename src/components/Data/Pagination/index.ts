@@ -1,27 +1,68 @@
 import {
   defineEmits,
+  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
   html,
   onMount,
+  onUnmount,
   useHost,
   useRef,
   watchEffect
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import type {
+  PaginationEmits,
+  PaginationPopperStyle,
+  PaginationProps,
+  PaginationSlots
+} from "./types";
 
-export type { PaginationLayoutPart, PaginationProps, PaginationSize } from "./types";
+export type {
+  PaginationElement,
+  PaginationEmits,
+  PaginationExpose,
+  PaginationLayoutPart,
+  PaginationPopperStyle,
+  PaginationProps,
+  PaginationSize,
+  PaginationSlots
+} from "./types";
 
-const props = defineProps({
+type PagerItem = { key: string; label: string; page: number; ellipsis: boolean };
+
+const toStyleObject = (value: PaginationPopperStyle): Record<string, string> => {
+  if (!value) return {};
+  if (typeof value === "string") {
+    return Object.fromEntries(
+      value
+        .split(";")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .map((item) => {
+          const separator = item.indexOf(":");
+          return separator < 0
+            ? [item, ""]
+            : [item.slice(0, separator).trim(), item.slice(separator + 1).trim()];
+        })
+    );
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [key, String(item)])
+  );
+};
+
+const props = defineProps<PaginationProps>({
   total: { type: Number, default: 0 },
   currentPage: { type: Number, default: undefined },
   defaultCurrentPage: { type: Number, default: 1 },
   pageSize: { type: Number, default: undefined },
   defaultPageSize: { type: Number, default: 10 },
   pageCount: { type: Number, default: 0 },
-  pageSizes: { type: Array, default: () => [10, 20, 50, 100] },
+  pageSizes: { type: Array, default: () => [10, 20, 30, 40, 50, 100] },
   pagerCount: { type: Number, default: 7 },
   layout: { type: String, default: "total, sizes, prev, pager, next, jumper" },
   background: { type: Boolean, default: false },
@@ -29,85 +70,44 @@ const props = defineProps({
   small: { type: Boolean, default: false },
   prevText: { type: String, default: "" },
   nextText: { type: String, default: "" },
+  prevIcon: { type: String, default: "" },
+  nextIcon: { type: String, default: "" },
+  teleported: { type: Boolean, default: true },
+  appendSizeTo: { type: [String, Object], default: "body" },
+  popperClass: { type: String, default: "" },
+  popperStyle: { type: [String, Object], default: "" },
   disabled: { type: Boolean, default: false },
   hideOnSinglePage: { type: Boolean, default: false },
   ariaLabel: { type: String, default: "分页导航" }
 });
 
-const emit = defineEmits([
-  "update:currentPage",
-  "update:pageSize",
-  "current-change",
-  "size-change",
-  "change",
-  "prev-click",
-  "next-click"
-]);
+const emit = defineEmits<PaginationEmits>();
 
 const host = useHost();
 const initialSize = Math.max(1, Math.trunc(Number(props.defaultPageSize) || 10));
 const page = useRef(Math.max(1, Math.trunc(Number(props.defaultCurrentPage) || 1)));
 const size = useRef(initialSize);
 const jumpValue = useRef(String(page.value));
+const sizeOpen = useRef(false);
+const sizeActiveIndex = useRef(-1);
+const sizeOverlayStyle = useRef<Record<string, string>>({});
+const sizePlacement = useRef<"bottom-start" | "top-start">("bottom-start");
+let overlayFrame = 0;
+let cleanupAnchoredOverlay = (): void => {};
 
 const total = (): number => Math.max(0, Number(props.total) || 0);
 const pageSize = (): number => Math.max(1, Math.trunc(Number(size.value) || initialSize));
+const pageSizes = (): number[] => Array.from(new Set(
+  (Array.isArray(props.pageSizes) ? props.pageSizes : [])
+    .map((item) => Math.trunc(Number(item)))
+    .filter((item) => Number.isFinite(item) && item > 0)
+));
 const pageCount = (): number => {
   const explicit = Math.trunc(Number(props.pageCount) || 0);
   return explicit > 0 ? explicit : Math.max(1, Math.ceil(total() / pageSize()));
 };
 const clampPage = (value: number): number =>
   Math.min(Math.max(1, Math.trunc(Number(value) || 1)), pageCount());
-
-const syncPage = (next: number): void => {
-  const normalized = clampPage(next);
-  if (normalized === page.peek()) return;
-  page.set(normalized);
-  jumpValue.set(String(normalized));
-};
-
-const emitPage = (next: number): void => {
-  const normalized = clampPage(next);
-  if (normalized === page.value) return;
-  page.set(normalized);
-  jumpValue.set(String(normalized));
-  emit("update:currentPage", normalized);
-  emit("current-change", normalized);
-  emit("change", normalized, pageSize());
-};
-
-const emitSize = (next: number): void => {
-  const normalized = Math.max(1, Math.trunc(Number(next) || pageSize()));
-  if (normalized === size.value) return;
-  const previousPage = page.value;
-  size.set(normalized);
-  const nextPage = clampPage(previousPage);
-  page.set(nextPage);
-  jumpValue.set(String(nextPage));
-  emit("update:pageSize", normalized);
-  emit("size-change", normalized);
-  if (nextPage !== previousPage) {
-    emit("update:currentPage", nextPage);
-    emit("current-change", nextPage);
-  }
-  emit("change", nextPage, normalized);
-};
-
-// Defaults establish initial uncontrolled state. A supplied v-model prop takes over afterwards.
-watchEffect(() => {
-  if (props.pageSize != null) {
-    const nextSize = Math.max(1, Math.trunc(Number(props.pageSize) || initialSize));
-    if (nextSize !== size.peek()) size.set(nextSize);
-  }
-});
-
-watchEffect(() => {
-  if (props.currentPage != null) syncPage(Number(props.currentPage));
-});
-
-watchEffect(() => {
-  syncPage(page.value);
-});
 
 const hasPart = (part: string): boolean =>
   String(props.layout || "")
@@ -161,15 +161,237 @@ const pageItems = (): PagerItem[] => {
   return items;
 };
 
-const go = (next: number): void => {
-  if (!props.disabled) emitPage(next);
-};
 const isPageActive = (item: PagerItem): boolean => !item.ellipsis && item.page === page.value;
 const pageLabel = (item: PagerItem): string =>
   item.ellipsis ? `跳转到第 ${item.page} 页` : `第 ${item.page} 页`;
 const isSizeSelected = (item: unknown): boolean => Number(item) === size.value;
+const selectedSizeLabel = (): string => `${pageSize()} 条/页`;
+const sizeOptionId = (index: number): string => `elf-pagination-size-${index}`;
+const sizePanelClass = (): unknown[] => [
+  "size-panel",
+  props.popperClass,
+  `placement-${sizePlacement.value}`,
+  { "is-teleported": props.teleported }
+];
+const sizePanelStyle = (): Record<string, string> => ({
+  ...toStyleObject(props.popperStyle),
+  ...(props.teleported ? sizeOverlayStyle.value : {})
+});
+const sizeAppendTarget = (): string =>
+  typeof props.appendSizeTo === "string" ? props.appendSizeTo : "element";
+const getSizeTrigger = (): HTMLButtonElement | null =>
+  host.shadowRoot?.querySelector<HTMLButtonElement>(".size-trigger") || null;
+const getSizePanel = (): HTMLElement | null =>
+  host.shadowRoot?.querySelector<HTMLElement>(".size-panel") || null;
 const prevLabel = (): string => props.prevText || "上一页";
 const nextLabel = (): string => props.nextText || "下一页";
+const defaultPageSize = (): number => {
+  const attribute = host.getAttribute("default-page-size");
+  return Math.max(1, Math.trunc(Number(attribute ?? props.defaultPageSize) || initialSize));
+};
+const defaultCurrentPage = (): number => {
+  const attribute = host.getAttribute("default-current-page");
+  return Math.max(1, Math.trunc(Number(attribute ?? props.defaultCurrentPage) || 1));
+};
+
+const syncPage = (next: number): void => {
+  const normalized = clampPage(next);
+  if (normalized === page.peek()) return;
+  page.set(normalized);
+  jumpValue.set(String(normalized));
+};
+
+const emitPage = (next: number): void => {
+  const normalized = clampPage(next);
+  if (normalized === page.value) return;
+  page.set(normalized);
+  jumpValue.set(String(normalized));
+  emit("update:currentPage", normalized);
+  emit("current-change", normalized);
+  emit("change", normalized, pageSize());
+};
+
+const emitSize = (next: number): void => {
+  const normalized = Math.max(1, Math.trunc(Number(next) || pageSize()));
+  if (normalized === size.value) return;
+  const previousPage = page.value;
+  size.set(normalized);
+  const nextPage = clampPage(previousPage);
+  page.set(nextPage);
+  jumpValue.set(String(nextPage));
+  emit("update:pageSize", normalized);
+  emit("size-change", normalized);
+  if (nextPage !== previousPage) {
+    emit("update:currentPage", nextPage);
+    emit("current-change", nextPage);
+  }
+  emit("change", nextPage, normalized);
+};
+
+const go = (next: number): void => {
+  if (!props.disabled) emitPage(next);
+};
+
+const updateSizeOverlayPosition = (): void => {
+  if (!props.teleported || typeof window === "undefined") {
+    sizeOverlayStyle.set({});
+    sizePlacement.set("bottom-start");
+    return;
+  }
+  const trigger = getSizeTrigger();
+  const panel = getSizePanel();
+  if (!trigger || !panel) return;
+
+  const anchorRect = trigger.getBoundingClientRect();
+  const panelRect = panel.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const next = computeAnchoredPosition(
+    anchorRect,
+    { width: Math.max(anchorRect.width, panelRect.width, 112), height: panelRect.height },
+    {
+      width: viewport?.width || window.innerWidth,
+      height: viewport?.height || window.innerHeight,
+      offsetLeft: viewport?.offsetLeft || 0,
+      offsetTop: viewport?.offsetTop || 0
+    },
+    { placement: "bottom-start", offset: [0, 6], padding: 8, flip: true }
+  );
+  sizePlacement.set(next.placement as "bottom-start" | "top-start");
+  sizeOverlayStyle.set({
+    position: "fixed",
+    left: `${next.left}px`,
+    top: `${next.top}px`,
+    minWidth: `${Math.max(anchorRect.width, 112)}px`
+  });
+};
+
+const requestSizeOverlayUpdate = (): void => {
+  if (typeof window === "undefined") return;
+  if (overlayFrame) cancelAnimationFrame(overlayFrame);
+  overlayFrame = requestAnimationFrame(() => {
+    overlayFrame = 0;
+    updateSizeOverlayPosition();
+  });
+};
+
+const syncSizeTopLayer = (): void => {
+  const panel = getSizePanel() as (HTMLElement & {
+    showPopover?: () => void;
+    hidePopover?: () => void;
+  }) | null;
+  if (!panel) return;
+  try {
+    if (props.teleported && sizeOpen.value) panel.showPopover?.();
+    else panel.hidePopover?.();
+  } catch {
+    // Conditional rendering can disconnect the panel before its popover state settles.
+  }
+  if (sizeOpen.value) requestSizeOverlayUpdate();
+};
+
+const connectSizeOverlay = (): void => {
+  cleanupAnchoredOverlay();
+  if (!props.teleported || !sizeOpen.value || typeof window === "undefined") return;
+  const trigger = getSizeTrigger();
+  const panel = getSizePanel();
+  const observer = typeof ResizeObserver !== "undefined"
+    ? new ResizeObserver(requestSizeOverlayUpdate)
+    : undefined;
+  if (trigger) observer?.observe(trigger);
+  if (panel) observer?.observe(panel);
+  window.addEventListener("resize", requestSizeOverlayUpdate, { passive: true });
+  window.addEventListener("scroll", requestSizeOverlayUpdate, { passive: true, capture: true });
+  window.visualViewport?.addEventListener("resize", requestSizeOverlayUpdate, { passive: true });
+  window.visualViewport?.addEventListener("scroll", requestSizeOverlayUpdate, { passive: true });
+  cleanupAnchoredOverlay = () => {
+    observer?.disconnect();
+    window.removeEventListener("resize", requestSizeOverlayUpdate);
+    window.removeEventListener("scroll", requestSizeOverlayUpdate, { capture: true });
+    window.visualViewport?.removeEventListener("resize", requestSizeOverlayUpdate);
+    window.visualViewport?.removeEventListener("scroll", requestSizeOverlayUpdate);
+  };
+};
+
+const openSizeMenu = (): void => {
+  if (props.disabled || pageSizes().length === 0 || sizeOpen.value) return;
+  const selectedIndex = pageSizes().findIndex(isSizeSelected);
+  sizeActiveIndex.set(selectedIndex >= 0 ? selectedIndex : 0);
+  sizeOpen.set(true);
+  queueMicrotask(() => {
+    syncSizeTopLayer();
+    connectSizeOverlay();
+  });
+};
+
+const closeSizeMenu = (returnFocus = false): void => {
+  const panel = getSizePanel() as (HTMLElement & { hidePopover?: () => void }) | null;
+  try {
+    panel?.hidePopover?.();
+  } catch {
+    // The browser may already have closed a disconnected popover.
+  }
+  sizeOpen.set(false);
+  sizeActiveIndex.set(-1);
+  cleanupAnchoredOverlay();
+  if (returnFocus) getSizeTrigger()?.focus();
+};
+
+const toggleSizeMenu = (): void => {
+  if (sizeOpen.value) closeSizeMenu();
+  else openSizeMenu();
+};
+
+const setSizeActive = (index: number): void => {
+  if (index >= 0 && index < pageSizes().length) sizeActiveIndex.set(index);
+};
+
+const moveSizeActive = (step: number): void => {
+  if (!sizeOpen.value) {
+    openSizeMenu();
+    return;
+  }
+  const count = pageSizes().length;
+  if (!count) return;
+  sizeActiveIndex.set((sizeActiveIndex.value + step + count) % count);
+};
+
+const selectPageSize = (value: number): void => {
+  if (props.disabled) return;
+  emitSize(value);
+  closeSizeMenu(true);
+};
+
+const onSizeTriggerKeydown = (event: KeyboardEvent): void => {
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    moveSizeActive(event.key === "ArrowDown" ? 1 : -1);
+    return;
+  }
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    if (!sizeOpen.value) openSizeMenu();
+    else {
+      const value = pageSizes()[sizeActiveIndex.value];
+      if (value != null) selectPageSize(value);
+    }
+    return;
+  }
+  if (event.key === "Escape" && sizeOpen.value) {
+    event.preventDefault();
+    closeSizeMenu(true);
+  }
+};
+
+const onSizePanelKeydown = (event: KeyboardEvent): void => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeSizeMenu(true);
+  }
+};
+
+const onDocumentPointerDown = (event: PointerEvent): void => {
+  if (sizeOpen.value && !event.composedPath().includes(host)) closeSizeMenu();
+};
 
 const prev = (): void => {
   if (props.disabled || isFirst()) return;
@@ -185,9 +407,6 @@ const next = (): void => {
   emitPage(nextPage);
 };
 
-const onSizeChange = (event: Event): void => {
-  if (!props.disabled) emitSize(Number((event.target as HTMLSelectElement).value));
-};
 const onJumpInput = (event: Event): void => jumpValue.set((event.target as HTMLInputElement).value);
 const commitJump = (): void => {
   if (!props.disabled) emitPage(Number(jumpValue.value));
@@ -199,15 +418,32 @@ const onJumpKeydown = (event: KeyboardEvent): void => {
   }
 };
 
-const defaultPageSize = (): number => {
-  const attribute = host.getAttribute("default-page-size");
-  return Math.max(1, Math.trunc(Number(attribute ?? props.defaultPageSize) || initialSize));
-};
+// Defaults establish initial uncontrolled state. A supplied v-model prop takes over afterwards.
+watchEffect(() => {
+  if (props.pageSize != null) {
+    const nextSize = Math.max(1, Math.trunc(Number(props.pageSize) || initialSize));
+    if (nextSize !== size.peek()) size.set(nextSize);
+  }
+});
 
-const defaultCurrentPage = (): number => {
-  const attribute = host.getAttribute("default-current-page");
-  return Math.max(1, Math.trunc(Number(attribute ?? props.defaultCurrentPage) || 1));
-};
+watchEffect(() => {
+  if (props.currentPage != null) syncPage(Number(props.currentPage));
+});
+
+watchEffect(() => {
+  syncPage(page.value);
+});
+
+watchEffect(() => {
+  void props.teleported;
+  void props.popperClass;
+  void props.popperStyle;
+  void props.appendSizeTo;
+  if (sizeOpen.value) queueMicrotask(() => {
+    syncSizeTopLayer();
+    connectSizeOverlay();
+  });
+});
 
 // Custom-element properties assigned before connection are finalized by mount time.
 // Sample defaults once here without turning them into reactive controlled values.
@@ -218,11 +454,20 @@ onMount(() => {
   if (props.currentPage == null) {
     syncPage(defaultCurrentPage());
   }
+  document.addEventListener("pointerdown", onDocumentPointerDown);
 });
+
+onUnmount(() => {
+  document.removeEventListener("pointerdown", onDocumentPointerDown);
+  cleanupAnchoredOverlay();
+  if (overlayFrame) cancelAnimationFrame(overlayFrame);
+});
+
+defineExpose({ openSizeMenu, closeSizeMenu });
 
 defineStyle(styles);
 
-const Pagination = defineHtml(html`
+const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>(html`
   <nav
     v-if=${!isHidden()}
     class="pagination"
@@ -232,14 +477,47 @@ const Pagination = defineHtml(html`
   >
     <span v-if=${hasPart("total")} class="total">${totalText()}</span>
 
-    <label v-if=${hasPart("sizes")} class="sizes">
-      <span class="sr-only">每页条数</span>
-      <select :value=${size.value} :disabled=${props.disabled} @change=${onSizeChange}>
-        <option v-for="item in props.pageSizes" :key="item" :value="item" :selected="isSizeSelected(item)">
+    <div v-if=${hasPart("sizes")} class="sizes">
+      <button
+        class="size-trigger"
+        part="size-trigger"
+        type="button"
+        aria-haspopup="listbox"
+        :aria-expanded=${String(sizeOpen.value)}
+        :aria-activedescendant=${sizeOpen.value && sizeActiveIndex.value >= 0 ? sizeOptionId(sizeActiveIndex.value) : null}
+        :disabled=${props.disabled}
+        @click=${toggleSizeMenu}
+        @keydown=${onSizeTriggerKeydown}
+      >
+        <span>${selectedSizeLabel()}</span>
+        <span class="size-chevron" aria-hidden="true"></span>
+      </button>
+      <div
+        v-if=${sizeOpen.value}
+        :popover=${props.teleported ? "manual" : undefined}
+        :class=${sizePanelClass()}
+        :style=${sizePanelStyle()}
+        part="size-dropdown"
+        role="listbox"
+        aria-label="每页条数"
+        :data-append-size-to=${sizeAppendTarget()}
+        @keydown=${onSizePanelKeydown}
+      >
+        <button
+          v-for="(item, index) in pageSizes()"
+          :key="item"
+          :id="sizeOptionId(index)"
+          type="button"
+          role="option"
+          :aria-selected="isSizeSelected(item) ? 'true' : 'false'"
+          :class="{ 'is-selected': isSizeSelected(item), 'is-active': index === sizeActiveIndex.value }"
+          @mouseenter="setSizeActive(index)"
+          @click="selectPageSize(item)"
+        >
           {{ item }} 条/页
-        </option>
-      </select>
-    </label>
+        </button>
+      </div>
+    </div>
 
     <button
       v-if=${hasPart("prev")}
@@ -249,8 +527,11 @@ const Pagination = defineHtml(html`
       :aria-label=${prevLabel()}
       @click=${prev}
     >
-      <span v-if=${!props.prevText} class="chevron chevron-left"></span>
       <span v-if=${props.prevText}>${props.prevText}</span>
+      <slot v-else name="prev-icon">
+        <span v-if=${props.prevIcon} class="prop-icon" aria-hidden="true">${props.prevIcon}</span>
+        <span v-else class="chevron chevron-left" aria-hidden="true"></span>
+      </slot>
     </button>
 
     <div v-if=${hasPart("pager")} class="pager" role="list" aria-label="Page list">
@@ -277,8 +558,11 @@ const Pagination = defineHtml(html`
       :aria-label=${nextLabel()}
       @click=${next}
     >
-      <span v-if=${!props.nextText} class="chevron chevron-right"></span>
       <span v-if=${props.nextText}>${props.nextText}</span>
+      <slot v-else name="next-icon">
+        <span v-if=${props.nextIcon} class="prop-icon" aria-hidden="true">${props.nextIcon}</span>
+        <span v-else class="chevron chevron-right" aria-hidden="true"></span>
+      </slot>
     </button>
 
     <label v-if=${hasPart("jumper")} class="jumper">
@@ -299,7 +583,5 @@ const Pagination = defineHtml(html`
     <slot></slot>
   </nav>
 `);
-
-type PagerItem = { key: string; label: string; page: number; ellipsis: boolean };
 
 export { Pagination };

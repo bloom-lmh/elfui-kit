@@ -32,7 +32,7 @@
   border: 0;
 }
 
-.sizes select,
+.size-trigger,
 .jumper input {
   min-height: 32px;
   border: 1px solid var(--elf-border);
@@ -51,8 +51,82 @@
   }
 }
 
-.sizes select {
-  padding: 0 28px 0 var(--elf-space-2);
+.sizes {
+  position: relative;
+  display: inline-flex;
+}
+
+.size-trigger {
+  display: inline-flex;
+  min-width: 112px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--elf-space-2);
+  padding: 0 var(--elf-space-2);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+.size-chevron {
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--elf-transition-fast);
+}
+
+.size-trigger[aria-expanded="true"] .size-chevron {
+  transform: rotate(225deg) translate(-1px, -1px);
+}
+
+.size-panel {
+  position: absolute;
+  z-index: var(--elf-z-dropdown, 2100);
+  top: calc(100% + 6px);
+  left: 0;
+  display: grid;
+  min-width: max(100%, 112px);
+  max-height: 240px;
+  margin: 0;
+  padding: var(--elf-space-1);
+  overflow: auto;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  background: var(--elf-bg-paper);
+  box-shadow: var(--elf-shadow-2);
+  color: var(--elf-text-primary);
+
+  &[popover] {
+    inset: auto;
+  }
+
+  button {
+    min-height: 32px;
+    padding: 0 var(--elf-space-3);
+    border: 0;
+    border-radius: var(--elf-radius-sm);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+
+    &:hover,
+    &.is-active {
+      background: var(--elf-bg-overlay);
+      color: var(--elf-primary);
+    }
+
+    &.is-selected {
+      color: var(--elf-primary);
+      font-weight: 600;
+    }
+  }
 }
 
 .jumper input {
@@ -120,6 +194,16 @@
   color: var(--elf-text-disabled);
 }
 
+.nav ::slotted(svg) {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.prop-icon {
+  line-height: 1;
+}
+
 .is-background .page:not(.is-active),
 .is-background .nav {
   background: var(--elf-bg-overlay);
@@ -134,7 +218,7 @@
     height: 28px;
   }
 
-  .sizes select,
+  .size-trigger,
   .jumper input {
     min-height: 28px;
   }
@@ -149,7 +233,7 @@
     height: 40px;
   }
 
-  .sizes select,
+  .size-trigger,
   .jumper input {
     min-height: 40px;
   }

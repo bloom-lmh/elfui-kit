@@ -1,7 +1,10 @@
+import { registerComponents } from "elfui";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
-beforeAll(async () => {
-  await import("../../../components");
+import { Pagination } from "./index";
+
+beforeAll(() => {
+  registerComponents(Pagination);
 });
 
 afterEach(() => {
@@ -20,8 +23,17 @@ interface PaginationEl extends HTMLElement {
   pageSizes?: number[];
   prevText?: string;
   nextText?: string;
+  prevIcon?: string;
+  nextIcon?: string;
   size?: string;
+  disabled?: boolean;
+  teleported?: boolean;
+  appendSizeTo?: string | HTMLElement;
+  popperClass?: string;
+  popperStyle?: string | Record<string, string | number>;
   hideOnSinglePage?: boolean;
+  openSizeMenu?: () => void;
+  closeSizeMenu?: () => void;
 }
 
 const mount = async (setup?: (el: PaginationEl) => void): Promise<PaginationEl> => {
@@ -85,9 +97,11 @@ describe("elf-pagination", () => {
     const onSize = vi.fn();
     el.addEventListener("size-change", onSize as EventListener);
 
-    const select = el.shadowRoot!.querySelector("select") as HTMLSelectElement;
-    select.value = "20";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".size-trigger")!.click();
+    await tick();
+    const option = Array.from(el.shadowRoot!.querySelectorAll<HTMLButtonElement>('[role="option"]'))
+      .find((button) => button.textContent?.includes("20"))!;
+    option.click();
     await tick();
 
     expect((onSize.mock.calls[0]![0] as CustomEvent).detail).toBe(20);
@@ -123,9 +137,9 @@ describe("elf-pagination", () => {
     });
 
     const active = el.shadowRoot!.querySelector<HTMLButtonElement>(".page.is-active")!;
-    const select = el.shadowRoot!.querySelector<HTMLSelectElement>("select")!;
+    const trigger = el.shadowRoot!.querySelector<HTMLButtonElement>(".size-trigger")!;
     expect(active.textContent?.trim()).toBe("3");
-    expect(select.value).toBe("20");
+    expect(trigger.textContent).toContain("20 条/页");
 
     active.previousElementSibling?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     await tick();
@@ -146,5 +160,95 @@ describe("elf-pagination", () => {
     expect(root.querySelector(".pagination")?.classList.contains("is-large")).toBe(true);
     expect(root.querySelector<HTMLButtonElement>(".arrow-left, .nav")?.getAttribute("aria-label")).toBe("Back");
     expect(root.querySelectorAll<HTMLButtonElement>(".nav")[1].getAttribute("aria-label")).toBe("Forward");
+  });
+
+  it("size dropdown exposes teleported popper metadata and styling", async () => {
+    const el = await mount((pagination) => {
+      pagination.appendSizeTo = "#overlay-root";
+      pagination.popperClass = "custom-size-popper";
+      pagination.popperStyle = { maxHeight: "120px" };
+    });
+
+    el.openSizeMenu?.();
+    await tick();
+    await tick();
+    const trigger = el.shadowRoot!.querySelector<HTMLButtonElement>(".size-trigger")!;
+    const panel = el.shadowRoot!.querySelector<HTMLElement>(".size-panel")!;
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(panel.getAttribute("popover")).toBe("manual");
+    expect(panel.getAttribute("data-append-size-to")).toBe("#overlay-root");
+    expect(panel.classList.contains("custom-size-popper")).toBe(true);
+    expect(panel.style.maxHeight).toBe("120px");
+  });
+
+  it("non-teleported size dropdown remains in-tree", async () => {
+    const el = await mount((pagination) => {
+      pagination.teleported = false;
+    });
+    el.openSizeMenu?.();
+    await tick();
+    const panel = el.shadowRoot!.querySelector<HTMLElement>(".size-panel")!;
+    expect(panel.getAttribute("popover")).toBeNull();
+    expect(panel.classList.contains("is-teleported")).toBe(false);
+  });
+
+  it("size trigger supports keyboard selection and Escape", async () => {
+    const el = await mount((pagination) => {
+      pagination.pageSizes = [10, 20, 50];
+    });
+    const onSize = vi.fn();
+    el.addEventListener("size-change", onSize as EventListener);
+    const trigger = el.shadowRoot!.querySelector<HTMLButtonElement>(".size-trigger")!;
+
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    await tick();
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await tick();
+    expect((onSize.mock.calls[0]![0] as CustomEvent).detail).toBe(20);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    await tick();
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await tick();
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("supports navigation icon props and SVG slots", async () => {
+    const el = await mount((pagination) => {
+      pagination.prevIcon = "←";
+      pagination.nextIcon = "→";
+    });
+    expect(Array.from(el.shadowRoot!.querySelectorAll(".prop-icon"), (icon) => icon.textContent)).toEqual(["←", "→"]);
+
+    const previousSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    previousSvg.setAttribute("slot", "prev-icon");
+    el.appendChild(previousSvg);
+    await tick();
+    const slot = el.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="prev-icon"]');
+    expect(slot?.assignedElements()).toEqual([previousSvg]);
+  });
+
+  it("clicking outside closes the size dropdown", async () => {
+    const el = await mount();
+    el.openSizeMenu?.();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".size-panel")).toBeTruthy();
+
+    document.body.dispatchEvent(new Event("pointerdown", { bubbles: true, composed: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".size-panel")).toBeNull();
+  });
+
+  it("disabled size trigger cannot open", async () => {
+    const el = await mount((pagination) => {
+      pagination.disabled = true;
+    });
+    el.openSizeMenu?.();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".size-panel")).toBeNull();
+    expect(el.shadowRoot!.querySelector<HTMLButtonElement>(".size-trigger")!.disabled).toBe(true);
   });
 });
