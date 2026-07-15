@@ -18,7 +18,7 @@
 - [x] `Basic/Tag`
 - [x] `Basic/Text`
 - [x] `Common/Playground`
-- [ ] `Common/PropsTable`
+- [x] `Common/PropsTable`
 - [x] `Data/Card`
 - [x] `Data/Carousel`
 - [x] `Data/Collapse`
