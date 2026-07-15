@@ -80,6 +80,7 @@ export interface TableColumn {
   sortMethod?: TableSortMethod;
   sortBy?: TableSortBy;
   sortOrders?: Array<TableSortOrder | null>;
+  resizable?: boolean;
   filters?: TableFilterOption[];
   filterPlacement?: "bottom" | "bottom-start" | "bottom-end" | "top" | "top-start" | "top-end";
   filterClassName?: string;

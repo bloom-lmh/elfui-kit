@@ -121,6 +121,7 @@ const emit = defineEmits([
   "action-click",
   "sort-change",
   "filter-change",
+  "header-dragend",
   "scroll"
 ]);
 
@@ -149,6 +150,10 @@ const filterDraftState = useRef<unknown[]>([]);
 const filterOpenKey = useRef("");
 
 const filterOverlayStyle = useRef<Record<string, string>>({});
+
+const columnWidthsState = useRef<Record<string, number>>({});
+
+const resizeState = useRef<TableResizeState | null>(null);
 
 const lastSelectedSig = useRef("");
 
@@ -193,8 +198,13 @@ const cssSizeNumber = (value: string): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const columnSize = (column: TableColumnView): number =>
-  cssSizeNumber(column.width || column.minWidth || "120px") || 120;
+const columnSize = (
+  column: TableColumnView,
+  widths: Record<string, number> = columnWidthsState.peek()
+): number =>
+  widths[column.id]
+  || cssSizeNumber(column.width || column.minWidth || "120px")
+  || 120;
 
 const columnWidth = (column: TableColumnView): string => `${columnSize(column)}px`;
 
@@ -263,7 +273,9 @@ const syncExternalFilters = (columns: TableColumnView[]): void => {
   if (changed) filterValuesState.set(next);
 };
 
-const normalizeColumns = (): TableColumnView[] => {
+const normalizeColumns = (
+  widths: Record<string, number> = columnWidthsState.peek()
+): TableColumnView[] => {
   const source = rawColumns();
   if (source.length === 0) {
     const first = rawRows()[0] || {};
@@ -334,13 +346,13 @@ const normalizeColumns = (): TableColumnView[] => {
   for (const column of columns) {
     if (column.fixed !== "left") continue;
     column.fixedOffset = `${left}px`;
-    left += columnSize(column);
+    left += columnSize(column, widths);
   }
   let right = 0;
   for (const column of [...columns].reverse()) {
     if (column.fixed !== "right") continue;
     column.fixedOffset = `${right}px`;
-    right += columnSize(column);
+    right += columnSize(column, widths);
   }
   const leftFixed = columns.filter((column) => column.fixed === "left");
   const rightFixed = columns.filter((column) => column.fixed === "right");
@@ -576,7 +588,8 @@ const tableClass = (): Record<string, boolean> => ({
   "is-large": props.size === "large",
   "is-sticky-header": Boolean(props.stickyHeader),
   "is-fit": Boolean(props.fit),
-  "is-scrollbar-always": Boolean(props.scrollbarAlwaysOn)
+  "is-scrollbar-always": Boolean(props.scrollbarAlwaysOn),
+  "is-resizing": Boolean(resizeState.value)
 });
 
 const wrapStyle = (): Record<string, string> => {
@@ -751,7 +764,13 @@ const cellStyle = (column: TableColumnView, row: TableRowView): StyleValue => {
 
 const fixedStyle = (column: TableColumnView): Record<string, string> => {
   if (!column.fixed) return {};
-  return { [column.fixed]: column.fixedOffset || "0px" };
+  const columns = getColumns();
+  const index = columns.findIndex((item) => item.id === column.id);
+  const adjacent = column.fixed === "left"
+    ? columns.slice(0, Math.max(0, index)).filter((item) => item.fixed === "left")
+    : columns.slice(index + 1).filter((item) => item.fixed === "right");
+  const offset = adjacent.reduce((sum, item) => sum + columnSize(item), 0);
+  return { [column.fixed]: `${offset}px` };
 };
 
 const headerCellStyle = (column: TableColumnView): StyleValue => ({
@@ -1079,6 +1098,97 @@ const invokeAction = (action: TableActionView, row: TableRowView): void => {
   if (typeof handler === "function") handler(row.raw, row.index, action.raw);
   emit("action-click", action.raw, row.raw, row.index);
 };
+
+const isColumnResizable = (column: TableColumnView): boolean =>
+  Boolean(props.border && column.raw.resizable !== false);
+
+const columnMinWidth = (column: TableColumnView): number =>
+  Math.max(48, cssSizeNumber(column.minWidth) || 48);
+
+const applyColumnWidth = (column: TableColumnView, width: number): number => {
+  const next = Math.max(columnMinWidth(column), Math.round(Number(width) || columnSize(column)));
+  const widths = { ...columnWidthsState.peek(), [column.id]: next };
+  columnWidthsState.set(widths);
+  columnsState.set(normalizeColumns(widths));
+  return next;
+};
+
+const cleanupColumnResize = (): void => {
+  if (typeof document === "undefined") return;
+  document.removeEventListener("pointermove", onResizePointerMove);
+  document.removeEventListener("pointerup", onResizePointerUp);
+  document.removeEventListener("pointercancel", onResizePointerCancel);
+};
+
+const onResizePointerMove = (event: PointerEvent): void => {
+  const state = resizeState.peek();
+  if (!state || event.pointerId !== state.pointerId) return;
+  const column = getColumns().find((item) => item.id === state.columnId);
+  if (!column) return;
+  event.preventDefault();
+  const currentWidth = applyColumnWidth(column, state.oldWidth + event.clientX - state.startX);
+  resizeState.set({ ...state, currentWidth });
+};
+
+const finishColumnResize = (event: PointerEvent): void => {
+  const state = resizeState.peek();
+  if (!state || event.pointerId !== state.pointerId) return;
+  cleanupColumnResize();
+  resizeState.set(null);
+  const column = getColumns().find((item) => item.id === state.columnId);
+  if (column && state.currentWidth !== state.oldWidth) {
+    emit("header-dragend", state.currentWidth, state.oldWidth, column.raw, event);
+  }
+};
+
+const onResizePointerUp = (event: PointerEvent): void => finishColumnResize(event);
+
+const onResizePointerCancel = (event: PointerEvent): void => {
+  const state = resizeState.peek();
+  if (!state || event.pointerId !== state.pointerId) return;
+  const column = getColumns().find((item) => item.id === state.columnId);
+  if (column) applyColumnWidth(column, state.oldWidth);
+  cleanupColumnResize();
+  resizeState.set(null);
+};
+
+const onResizePointerDown = (column: TableColumnView, event: PointerEvent): void => {
+  if (!isColumnResizable(column) || (event.button !== 0 && event.button !== -1)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  cleanupColumnResize();
+  const oldWidth = columnSize(column);
+  resizeState.set({
+    columnId: column.id,
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    oldWidth,
+    currentWidth: oldWidth
+  });
+  document.addEventListener("pointermove", onResizePointerMove, { passive: false });
+  document.addEventListener("pointerup", onResizePointerUp);
+  document.addEventListener("pointercancel", onResizePointerCancel);
+};
+
+const onResizeKeydown = (column: TableColumnView, event: KeyboardEvent): void => {
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  event.preventDefault();
+  event.stopPropagation();
+  const oldWidth = columnSize(column);
+  const step = event.shiftKey ? 24 : 8;
+  const nextWidth = applyColumnWidth(
+    column,
+    oldWidth + (event.key === "ArrowRight" ? step : -step)
+  );
+  if (nextWidth !== oldWidth) emit("header-dragend", nextWidth, oldWidth, column.raw, event);
+};
+
+const resizeLabel = (column: TableColumnView): string => `${column.label || "当前列"}，调整列宽`;
+
+const isColumnResizing = (column: TableColumnView): boolean =>
+  resizeState.value?.columnId === column.id;
+
+const stopResizeClick = (event: MouseEvent): void => event.stopPropagation();
 
 const sortOrdersOf = (column: TableColumnView): SortOrder[] => {
   const raw = Array.isArray(column.raw.sortOrders) ? column.raw.sortOrders : [];
@@ -1437,6 +1547,7 @@ onMount(() => {
 
 onUnmount(() => {
   document.removeEventListener("pointerdown", onDocumentPointerDown);
+  cleanupColumnResize();
   cleanupFilterOverlay();
   if (filterOverlayFrame && typeof window !== "undefined") {
     window.cancelAnimationFrame(filterOverlayFrame);
@@ -1564,6 +1675,20 @@ const Table = defineHtml<TableProps>(html`
                   </div>
                 </div>
               </span>
+              <span
+                v-if=${isColumnResizable(column)}
+                class="column-resizer"
+                :class=${{ "is-active": isColumnResizing(column) }}
+                role="separator"
+                tabindex="0"
+                aria-orientation="vertical"
+                :aria-label=${resizeLabel(column)}
+                :aria-valuemin=${columnMinWidth(column)}
+                :aria-valuenow=${columnSize(column)}
+                @pointerdown=${onResizePointerDown(column, $event)}
+                @keydown=${onResizeKeydown(column, $event)}
+                @click.stop=${stopResizeClick}
+              ></span>
             </th>
           </tr>
         </thead>
@@ -1710,6 +1835,14 @@ interface TableSpanView {
 
 interface TableFilterOptionView extends TableFilterOption {
   selected: boolean;
+}
+
+interface TableResizeState {
+  columnId: string;
+  pointerId: number;
+  startX: number;
+  oldWidth: number;
+  currentWidth: number;
 }
 
 interface TableCellView extends TableSpanView {

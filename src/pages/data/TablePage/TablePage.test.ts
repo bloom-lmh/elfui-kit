@@ -6,6 +6,7 @@ let tableAdvancedTag = "";
 let tableSpanTag = "";
 let tableSortTag = "";
 let tableFilterTag = "";
+let tableResizeTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -16,12 +17,14 @@ beforeAll(async () => {
   const { PageTableEx14 } = await import("./ex14");
   const { PageTableEx15 } = await import("./ex15");
   const { PageTableEx16 } = await import("./ex16");
+  const { PageTableEx17 } = await import("./ex17");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
   tableAdvancedTag = ensureCustomElement(PageTableEx13);
   tableSpanTag = ensureCustomElement(PageTableEx14);
   tableSortTag = ensureCustomElement(PageTableEx15);
   tableFilterTag = ensureCustomElement(PageTableEx16);
+  tableResizeTag = ensureCustomElement(PageTableEx17);
 });
 
 afterEach(() => {
@@ -166,5 +169,24 @@ describe("TablePage", () => {
     table.clearFilter("status");
     await tick();
     expect(table.shadowRoot!.querySelectorAll("tbody tr")).toHaveLength(6);
+  });
+
+  it("列宽案例支持键盘调整，并把结果保持在案例标题区", async () => {
+    const el = document.createElement(tableResizeTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table")!;
+    const handle = table.shadowRoot!.querySelector<HTMLElement>(".column-resizer")!;
+    handle.dispatchEvent(new KeyboardEvent("keydown", {
+      key: "ArrowRight",
+      shiftKey: true,
+      bubbles: true
+    }));
+    await tick();
+
+    expect(collectText(el)).toContain("商品：180px → 204px");
+    expect(el.shadowRoot!.querySelector('[slot="status"]')).toBeTruthy();
   });
 });

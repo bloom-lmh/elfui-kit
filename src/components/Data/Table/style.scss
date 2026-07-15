@@ -68,6 +68,7 @@ td {
 }
 
 th {
+  position: relative;
   background: var(--elf-bg-paper);
   color: var(--elf-text-secondary);
   font-weight: 600;
@@ -98,22 +99,22 @@ th.is-fixed-right {
 
 .is-stripe tbody tr:nth-child(even) td.is-fixed-left,
 .is-stripe tbody tr:nth-child(even) td.is-fixed-right {
-  background: rgba(0, 0, 0, 0.018);
+  background: color-mix(in srgb, var(--elf-bg-paper) 98%, #000);
 }
 
 .is-hover tbody tr:hover td.is-fixed-left,
 .is-hover tbody tr:hover td.is-fixed-right {
-  background: var(--elf-bg-overlay);
+  background: color-mix(in srgb, var(--elf-bg-paper) 94%, var(--elf-text-primary));
 }
 
 tbody tr.is-current td.is-fixed-left,
 tbody tr.is-current td.is-fixed-right {
-  background: rgba(25, 118, 210, 0.08);
+  background: color-mix(in srgb, var(--elf-bg-paper) 92%, var(--elf-primary));
 }
 
 tbody tr.is-selected td.is-fixed-left,
 tbody tr.is-selected td.is-fixed-right {
-  background: rgba(25, 118, 210, 0.05);
+  background: color-mix(in srgb, var(--elf-bg-paper) 95%, var(--elf-primary));
 }
 
 .is-fixed-left.is-fixed-last {
@@ -436,6 +437,46 @@ tbody tr.is-selected td {
   }
 }
 
+.column-resizer {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  bottom: 0;
+  z-index: 4;
+  width: 9px;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+
+  &::after {
+    position: absolute;
+    top: 22%;
+    right: 4px;
+    bottom: 22%;
+    width: 2px;
+    border-radius: 999px;
+    background: transparent;
+    content: "";
+    transition: background-color var(--elf-transition-fast);
+  }
+
+  &:hover::after,
+  &:focus-visible::after,
+  &.is-active::after {
+    background: var(--elf-primary);
+  }
+
+  &:focus-visible {
+    outline: 0;
+  }
+}
+
+.is-resizing,
+.is-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
 .table-checkbox {
   position: relative;
   display: inline-flex;
@@ -642,7 +683,7 @@ tbody tr.is-selected td {
 
   .is-stripe tbody tr:nth-child(even) td.is-fixed-left,
   .is-stripe tbody tr:nth-child(even) td.is-fixed-right {
-    background: rgba(255, 255, 255, 0.03);
+    background: color-mix(in srgb, var(--elf-bg-paper) 97%, #fff);
   }
 
   .loading {

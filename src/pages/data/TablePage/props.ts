@@ -42,6 +42,7 @@ const columnRows = [
   { name: "sortMethod", type: "(left, right) => number", default: "undefined", desc: "自定义本地比较函数，优先级高于 sortBy" },
   { name: "sortBy", type: "string | string[] | function", default: "undefined", desc: "排序取值路径；数组按字段依次比较" },
   { name: "sortOrders", type: "Array<TableSortOrder | null>", default: "[ascending, descending, null]", desc: "点击表头时的排序状态循环" },
+  { name: "resizable", type: "boolean", default: "true", desc: "border 表格中是否允许调整当前列宽" },
   { name: "columnKey", type: "string", default: "prop", desc: "筛选事件与 clearFilter 使用的稳定列标识" },
   { name: "filters / filteredValue", type: "TableFilterOption[] / unknown[]", default: "undefined / []", desc: "筛选选项与初始选中值" },
   { name: "filterMethod", type: "(value, row, column) => boolean", default: "undefined", desc: "自定义行匹配规则；同列多值为任一匹配" },
@@ -68,6 +69,7 @@ const eventsRows = [
   { name: "action-click", type: "(action, row, index) => void", desc: "点击操作列按钮" },
   { name: "sort-change", type: "({ prop, order }) => void", desc: "排序变化" },
   { name: "filter-change", type: "Record<columnKey, unknown[]>", desc: "应用或清除列筛选时触发" },
+  { name: "header-dragend", type: "(newWidth, oldWidth, column, event) => void", desc: "拖动或键盘调整列宽结束时触发" },
   { name: "scroll", type: "({ scrollLeft, scrollTop }) => void", desc: "表格容器滚动" }
 ];
 

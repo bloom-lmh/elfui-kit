@@ -655,4 +655,73 @@ describe("elf-table", () => {
     expect(el.shadowRoot!.querySelectorAll("tbody tr")).toHaveLength(1);
     expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Bob");
   });
+
+  it("border 表格可拖动列宽，并触发 header-dragend 后重算固定列偏移", async () => {
+    const el = await mount((table) => {
+      table.border = true;
+      table.columns = [
+        { prop: "name", label: "姓名", width: 120, fixed: "left" },
+        { prop: "role", label: "角色", width: 110, fixed: "left" },
+        { prop: "score", label: "分数", width: 100, resizable: false }
+      ];
+    });
+    const onDragEnd = vi.fn();
+    el.addEventListener("header-dragend", onDragEnd as EventListener);
+    const handles = el.shadowRoot!.querySelectorAll<HTMLElement>(".column-resizer");
+    expect(handles).toHaveLength(2);
+
+    handles[0]!.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: 100,
+      pointerId: 7
+    }));
+    document.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true,
+      clientX: 144,
+      pointerId: 7
+    }));
+    document.dispatchEvent(new PointerEvent("pointerup", {
+      bubbles: true,
+      clientX: 144,
+      pointerId: 7
+    }));
+    await tick();
+
+    const cols = el.shadowRoot!.querySelectorAll<HTMLTableColElement>("col");
+    const headers = el.shadowRoot!.querySelectorAll<HTMLTableCellElement>("thead th");
+    expect(cols[0]!.style.width).toBe("164px");
+    expect(headers[1]!.style.left).toBe("164px");
+    expect((onDragEnd.mock.calls[0]![0] as CustomEvent).detail.slice(0, 3)).toEqual([
+      164,
+      120,
+      expect.objectContaining({ prop: "name" })
+    ]);
+  });
+
+  it("列宽分隔符支持键盘微调，且无边框表格不启用调整", async () => {
+    const plain = await mount((table) => {
+      table.columns = [{ prop: "name", label: "姓名", width: 120 }];
+    });
+    expect(plain.shadowRoot!.querySelector(".column-resizer")).toBeNull();
+    plain.remove();
+
+    const el = await mount((table) => {
+      table.border = true;
+      table.columns = [{ prop: "name", label: "姓名", width: 120 }];
+    });
+    const onDragEnd = vi.fn();
+    el.addEventListener("header-dragend", onDragEnd as EventListener);
+    const handle = el.shadowRoot!.querySelector<HTMLElement>(".column-resizer")!;
+    handle.dispatchEvent(new KeyboardEvent("keydown", {
+      key: "ArrowRight",
+      bubbles: true,
+      shiftKey: true
+    }));
+    await tick();
+
+    expect(el.shadowRoot!.querySelector<HTMLTableColElement>("col")!.style.width).toBe("144px");
+    expect(handle.getAttribute("aria-valuenow")).toBe("144");
+    expect((onDragEnd.mock.calls[0]![0] as CustomEvent).detail.slice(0, 2)).toEqual([144, 120]);
+  });
 });
