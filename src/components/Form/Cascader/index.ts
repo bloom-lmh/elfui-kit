@@ -7,7 +7,9 @@ import {
     defineProps,
     defineStyle,
     html,
-    onBeforeUnmount,
+    inject,
+    onMount,
+    onUnmount,
     useClickOutside,
     useEffect,
     useEventListener,
@@ -18,6 +20,8 @@ import {
 } from "elfui";
 
 import { useDisabled, useFormItem } from "../../../composables";
+import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import { FORM_ITEM_KEY } from "../context";
 import styles from "./style.scss?inline";
 import type {
     CascaderBeforeFilter,
@@ -28,7 +32,10 @@ import type {
     CascaderModelValue,
     CascaderNodeSnapshot,
     CascaderOption,
+    CascaderPlacement,
     CascaderPathValue,
+    CascaderPopperModifier,
+    CascaderPopperOptions,
     CascaderProps,
     CascaderShowCheckedStrategy,
     CascaderValue,
@@ -45,7 +52,10 @@ export type {
     CascaderNodeSnapshot,
     CascaderOption,
     CascaderPanelProps,
+    CascaderPlacement,
     CascaderPathValue,
+    CascaderPopperModifier,
+    CascaderPopperOptions,
     CascaderProps,
     CascaderSize,
     CascaderShowCheckedStrategy,
@@ -62,6 +72,13 @@ interface CascaderColumn {
     level: number;
     parentPath: RawOption[];
     options: RawOption[];
+}
+
+interface CascaderTagEntry {
+    key: string;
+    label: string;
+    path: RawOption[];
+    value: CascaderPathValue;
 }
 
 interface CascaderConfig extends Required<Omit<CascaderFieldNames, "disabled" | "leaf" | "lazyLoad">> {
@@ -96,6 +113,15 @@ const props = defineProps<CascaderProps>({
     filterMethod: { type: Function, default: undefined },
     beforeFilter: { type: Function, default: undefined },
     debounce: { type: Number, default: 300 },
+    popperClass: { type: String, default: "" },
+    popperStyle: { type: Object, default: () => ({}) },
+    popperOptions: { type: Object, default: () => ({}) },
+    teleported: { type: Boolean, default: true },
+    appendTo: { type: [String, Object], default: "body" },
+    persistent: { type: Boolean, default: true },
+    placement: { type: String, default: "bottom-start" },
+    fitInputWidth: { type: Boolean, default: false },
+    validateEvent: { type: Boolean, default: true },
     virtualScroll: { type: Boolean, default: false },
     itemSize: { type: Number, default: 34 },
     height: { type: Number, default: 204 },
@@ -130,6 +156,7 @@ const emit = defineEmits<{
 }>();
 
 const fi = useFormItem(() => props.size as string);
+const formItem = inject(FORM_ITEM_KEY);
 const isDisabled = useDisabled(() => Boolean(props.disabled));
 const host = useHost();
 const open = useRef(false);
@@ -138,9 +165,28 @@ const activePath = useRef<RawOption[]>([]);
 const query = useRef("");
 const filtering = useRef(false);
 const filteredPaths = useRef<RawOption[][]>([]);
+const overlayStyle = useRef<Record<string, string>>({});
+const resolvedPlacement = useRef<CascaderPlacement>("bottom-start");
 
 let filterTimer: ReturnType<typeof setTimeout> | null = null;
 let filterRequest = 0;
+let cleanupAnchoredOverlay = (): void => {};
+let overlayFrame = 0;
+let mounted = false;
+
+const resolvePlacement = (value: unknown): CascaderPlacement => {
+    const next = String(value || "bottom-start") as CascaderPlacement;
+    return ["top", "top-start", "top-end", "bottom", "bottom-start", "bottom-end"].includes(next)
+        ? next
+        : "bottom-start";
+};
+
+const toStyleObject = (value: unknown): Record<string, string> => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+        Object.entries(value as Record<string, string | number>).map(([key, item]) => [key, String(item)]),
+    );
+};
 
 const config = (): CascaderConfig => {
     const o = (props.props || {}) as CascaderFieldNames;
@@ -337,6 +383,27 @@ const displayLabel = (): string => {
     return selectedValues.value.map((path) => path.map(String).join(separator)).join("、");
 };
 
+const tagEntries = (): CascaderTagEntry[] =>
+    displaySelectedPaths().map((path) => {
+        const value = pathValues(path);
+        return {
+            key: valuePathKey(value),
+            label: displayPathLabel(path),
+            path,
+            value,
+        };
+    });
+
+const visibleTagEntries = (): CascaderTagEntry[] => {
+    const entries = tagEntries();
+    if (!props.collapseTags) return entries;
+    return entries.slice(0, Math.max(1, Number(props.maxCollapseTags) || 1));
+};
+
+const collapsedTagEntries = (): CascaderTagEntry[] => tagEntries().slice(visibleTagEntries().length);
+
+const collapseTooltipText = (): string => collapsedTagEntries().map((entry) => entry.label).join("\n");
+
 const modelValueFromPaths = (paths: CascaderPathValue[]): CascaderModelValue => {
     if (shouldEmitPath()) {
         if (isMultiple()) return paths;
@@ -451,6 +518,7 @@ const scheduleFilter = (): void => {
 const emitChange = (paths: CascaderPathValue[]): void => {
     emit("update:modelValue", modelValueFromPaths(paths));
     emit("change", detailFromPaths(paths));
+    if (props.validateEvent) formItem?.validateTrigger("change");
 };
 
 const closeDropdown = (): void => {
@@ -518,6 +586,22 @@ const setMultiplePath = (path: RawOption[]): void => {
     selectedValues.set(next);
     activePath.set(path);
     emitChange(next);
+};
+
+const removeTag = (event: Event): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    const key = (event.currentTarget as HTMLElement).dataset.pathKey;
+    if (!key) return;
+    const entry = tagEntries().find((item) => item.key === key);
+    if (!entry) return;
+    const covered = collectLeafValuePaths(entry.path);
+    const next = selectedValues.peek().filter(
+        (item) => !samePathValue(item, entry.value) && !covered.some((leaf) => samePathValue(item, leaf)),
+    );
+    selectedValues.set(next);
+    emitChange(next);
+    emit("remove-tag", shouldEmitPath() ? entry.value : entry.value[entry.value.length - 1]!);
 };
 
 const toggleStrictPath = (path: RawOption[]): void => {
@@ -590,6 +674,7 @@ const clear = (event?: Event): void => {
     emit("update:modelValue", []);
     emit("change", { value: [], path: [], selected: [], multiple: isMultiple() });
     emit("clear");
+    if (props.validateEvent) formItem?.validateTrigger("change");
 };
 
 const onFilterInput = (event: Event): void => {
@@ -599,10 +684,59 @@ const onFilterInput = (event: Event): void => {
     scheduleFilter();
 };
 
+const focusableOptions = (): HTMLButtonElement[] =>
+    Array.from(host.shadowRoot?.querySelectorAll<HTMLButtonElement>(".dropdown button:not(:disabled)") || []);
+
+const focusOption = (edge: "first" | "last" = "first"): void => {
+    queueMicrotask(() => {
+        const items = focusableOptions();
+        (edge === "last" ? items[items.length - 1] : items[0])?.focus();
+    });
+};
+
 const onFilterKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== "Escape") return;
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeDropdown();
+        return;
+    }
+    if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (!open.peek()) openDropdown();
+        focusOption();
+    }
+};
+
+const onTriggerKeydown = (event: KeyboardEvent): void => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeDropdown();
+        return;
+    }
+    if (event.key !== "Enter" && event.key !== " " && event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     event.preventDefault();
-    closeDropdown();
+    if (!open.peek()) openDropdown();
+    focusOption(event.key === "ArrowUp" ? "last" : "first");
+};
+
+const onDropdownKeydown = (event: KeyboardEvent): void => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeDropdown();
+        getTriggerEl()?.focus();
+        return;
+    }
+    const items = focusableOptions();
+    if (items.length === 0) return;
+    const current = items.indexOf(event.target as HTMLButtonElement);
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        const step = event.key === "ArrowDown" ? 1 : -1;
+        items[(current + step + items.length) % items.length]?.focus();
+    } else if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        (event.key === "Home" ? items[0] : items[items.length - 1])?.focus();
+    }
 };
 
 const onFilterResultsClick = (event: Event): void => {
@@ -716,7 +850,139 @@ const togglePopperVisible = (visible?: boolean): void => {
 
 const onTriggerFocus = (event: FocusEvent): void => emit("focus", event);
 
-const onTriggerBlur = (event: FocusEvent): void => emit("blur", event);
+const onTriggerBlur = (event: FocusEvent): void => {
+    emit("blur", event);
+    if (props.validateEvent) formItem?.validateTrigger("blur");
+};
+
+const popperOptions = (): CascaderPopperOptions =>
+    props.popperOptions && typeof props.popperOptions === "object"
+        ? props.popperOptions as CascaderPopperOptions
+        : {};
+
+const placement = (): CascaderPlacement => resolvePlacement(popperOptions().placement || props.placement);
+
+const popperModifier = (name: string): CascaderPopperModifier | undefined =>
+    popperOptions().modifiers?.find((item) => item.name === name && item.enabled !== false);
+
+const popperOffset = (): [number, number] => popperModifier("offset")?.options?.offset || [0, 6];
+
+const overflowPadding = (): number =>
+    Math.max(0, Number(popperModifier("preventOverflow")?.options?.padding) || 8);
+
+const flipEnabled = (): boolean => popperModifier("flip")?.enabled !== false;
+
+const shouldRenderDropdown = (): boolean => Boolean(props.persistent) || open.value;
+
+const getTriggerEl = (): HTMLElement | null => host.shadowRoot?.querySelector<HTMLElement>(".trigger") || null;
+const getDropdownEl = (): HTMLElement | null => host.shadowRoot?.querySelector<HTMLElement>(".dropdown") || null;
+
+const dropdownClass = (): unknown[] => [
+    "dropdown",
+    props.popperClass,
+    `placement-${props.teleported ? resolvedPlacement.value : placement()}`,
+    { "is-teleported": props.teleported, "is-open": open.value },
+];
+
+const dropdownStyle = (): Record<string, string> => ({
+    ...toStyleObject(props.popperStyle),
+    ...(props.teleported ? overlayStyle.value : {}),
+});
+
+const updateOverlayPosition = (): void => {
+    if (!props.teleported || typeof window === "undefined") {
+        overlayStyle.set({});
+        resolvedPlacement.set(placement());
+        return;
+    }
+    const trigger = getTriggerEl();
+    const dropdown = getDropdownEl();
+    if (!trigger || !dropdown) return;
+    const anchorRect = trigger.getBoundingClientRect();
+    if (anchorRect.width === 0 && anchorRect.height === 0) {
+        resolvedPlacement.set(placement());
+        return;
+    }
+    const dropdownRect = dropdown.getBoundingClientRect();
+    const visualViewport = window.visualViewport;
+    const width = props.fitInputWidth
+        ? anchorRect.width
+        : Math.max(anchorRect.width, dropdownRect.width || dropdown.offsetWidth || 184);
+    const next = computeAnchoredPosition(
+        anchorRect,
+        { width, height: dropdownRect.height || dropdown.offsetHeight || 0 },
+        {
+            width: visualViewport?.width || window.innerWidth,
+            height: visualViewport?.height || window.innerHeight,
+            offsetLeft: visualViewport?.offsetLeft || 0,
+            offsetTop: visualViewport?.offsetTop || 0,
+        },
+        {
+            placement: placement(),
+            offset: popperOffset(),
+            padding: overflowPadding(),
+            flip: flipEnabled(),
+        },
+    );
+    resolvedPlacement.set(next.placement);
+    overlayStyle.set({
+        position: "fixed",
+        left: `${Math.round(next.left * 100) / 100}px`,
+        top: `${Math.round(next.top * 100) / 100}px`,
+        right: "auto",
+        bottom: "auto",
+        margin: "0",
+        width: props.fitInputWidth ? `${Math.round(width * 100) / 100}px` : "auto",
+        minWidth: `${Math.round(anchorRect.width * 100) / 100}px`,
+    });
+};
+
+const requestOverlayUpdate = (): void => {
+    if (typeof window === "undefined") return;
+    if (overlayFrame) cancelAnimationFrame(overlayFrame);
+    overlayFrame = requestAnimationFrame(() => {
+        overlayFrame = 0;
+        updateOverlayPosition();
+    });
+};
+
+const syncTopLayer = (): void => {
+    const dropdown = getDropdownEl() as (HTMLElement & {
+        showPopover?: () => void;
+        hidePopover?: () => void;
+    }) | null;
+    if (!dropdown) return;
+    try {
+        if (props.teleported && open.peek()) dropdown.showPopover?.();
+        else dropdown.hidePopover?.();
+    } catch {
+        // Rapid conditional updates can disconnect the panel before its popover state settles.
+    }
+    if (open.peek()) requestOverlayUpdate();
+};
+
+const connectAnchoredOverlay = (): void => {
+    cleanupAnchoredOverlay();
+    if (!props.teleported || typeof window === "undefined") return;
+    const trigger = getTriggerEl();
+    const dropdown = getDropdownEl();
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(requestOverlayUpdate) : undefined;
+    if (trigger) observer?.observe(trigger);
+    if (dropdown) observer?.observe(dropdown);
+    window.addEventListener("resize", requestOverlayUpdate, { passive: true });
+    window.addEventListener("scroll", requestOverlayUpdate, { passive: true, capture: true });
+    window.visualViewport?.addEventListener("resize", requestOverlayUpdate, { passive: true });
+    window.visualViewport?.addEventListener("scroll", requestOverlayUpdate, { passive: true });
+    cleanupAnchoredOverlay = () => {
+        observer?.disconnect();
+        window.removeEventListener("resize", requestOverlayUpdate);
+        window.removeEventListener("scroll", requestOverlayUpdate, { capture: true });
+        window.visualViewport?.removeEventListener("resize", requestOverlayUpdate);
+        window.visualViewport?.removeEventListener("scroll", requestOverlayUpdate);
+    };
+    syncTopLayer();
+    requestOverlayUpdate();
+};
 
 useEffect(() => {
     const next = toValuePaths(props.modelValue);
@@ -724,8 +990,30 @@ useEffect(() => {
     if (!open.peek()) activePath.set(findPathByValues(next[0] ?? []));
 });
 
+useEffect(() => {
+    void open.value;
+    void props.teleported;
+    void props.placement;
+    void props.popperOptions;
+    void props.fitInputWidth;
+    void props.persistent;
+    if (mounted) queueMicrotask(() => {
+        syncTopLayer();
+        connectAnchoredOverlay();
+    });
+});
+
 useClickOutside(host, closeDropdown);
-onBeforeUnmount(clearPendingFilter);
+onMount(() => {
+    mounted = true;
+    connectAnchoredOverlay();
+});
+onUnmount(() => {
+    mounted = false;
+    clearPendingFilter();
+    cleanupAnchoredOverlay();
+    if (overlayFrame) cancelAnimationFrame(overlayFrame);
+});
 useEventListener<CustomEvent<HTMLElement>>(document, CASCADER_OPEN_EVENT, (event) => {
     if (event.detail !== host) closeDropdown();
 });
@@ -754,7 +1042,9 @@ const Cascader = defineHtml<CascaderProps>(html`
         @click=${toggleOpen}
         @focus=${onTriggerFocus}
         @blur=${onTriggerBlur}
+        @keydown=${onTriggerKeydown}
     >
+        <span class="prefix" part="prefix"><slot name="prefix"></slot></span>
         <input
             v-if=${props.filterable}
             class="filter-input"
@@ -770,13 +1060,44 @@ const Cascader = defineHtml<CascaderProps>(html`
             @blur=${onTriggerBlur}
         />
         <span v-else-if=${!hasValue()} class="placeholder">${props.placeholder}</span>
+        <slot v-else-if=${isMultiple() && hasValue()} name="tag" :data=${getCheckedNodes()}>
+            <span class="tags value">
+                <span v-for="entry in visibleTagEntries()" :key="entry.key" class="tag">
+                    <span class="tag-label">{{ entry.label }}</span>
+                    <button
+                        type="button"
+                        class="tag-remove"
+                        :data-path-key="entry.key"
+                        :aria-label="'移除 ' + entry.label"
+                        @click=${removeTag}
+                    >×</button>
+                </span>
+                <span
+                    v-if="collapsedTagEntries().length > 0"
+                    class="tag collapsed-tag"
+                    :title=${props.collapseTagsTooltip ? collapseTooltipText() : null}
+                >+{{ collapsedTagEntries().length }}</span>
+            </span>
+        </slot>
         <span v-else class="value">${displayLabel()}</span>
         <span class="suffix" part="suffix">
             <button v-if=${showClear()} type="button" class="clear" aria-label="清空" @click=${clear}>×</button>
             <span v-else class="arrow" aria-hidden="true">▼</span>
         </span>
     </div>
-    <div v-if=${open.value && !isDisabled()} class="dropdown" part="dropdown" role="menu" @click=${stopClick}>
+    <div
+        v-if=${shouldRenderDropdown() && !isDisabled()}
+        :class=${dropdownClass()}
+        :style=${dropdownStyle()}
+        part="dropdown"
+        :popover=${props.teleported ? "manual" : undefined}
+        :data-append-to=${typeof props.appendTo === "string" ? props.appendTo : "element"}
+        role="menu"
+        :aria-hidden=${open.value ? "false" : "true"}
+        @click=${stopClick}
+        @keydown=${onDropdownKeydown}
+    >
+        <slot name="header"></slot>
         <div v-if=${isSearchMode()} class="filter-results" role="listbox" @click=${onFilterResultsClick}>
             <div v-if=${filtering.value} class="empty" aria-live="polite">Searching…</div>
             <template v-else>
@@ -789,14 +1110,16 @@ const Cascader = defineHtml<CascaderProps>(html`
                     :data-path-key="valuePathKey(pathValues(path))"
                     :aria-selected="isPathSelected(pathValues(path)) ? 'true' : 'false'"
                 >
-                    {{ displayPathLabel(path) }}
+                    <slot name="suggestion-item" :node="nodeSnapshot(path)" :data="path[path.length - 1]">
+                        {{ displayPathLabel(path) }}
+                    </slot>
                 </button>
                 <slot v-if="filteredPaths.value.length === 0" name="empty">
                     <div class="empty">No matching data</div>
                 </slot>
             </template>
         </div>
-        <div v-else-if=${rawOptions().length === 0} class="empty">暂无数据</div>
+        <slot v-else-if=${rawOptions().length === 0} name="empty"><div class="empty">暂无数据</div></slot>
         <div v-else class="columns" @click=${onColumnsClick}>
             <div v-for="column in columns()" :key="column.key" class="column">
                 <button
@@ -813,12 +1136,17 @@ const Cascader = defineHtml<CascaderProps>(html`
                     <span v-if=${showPrefix()} class="option-checkbox" :class="checkboxClass(option, column)">
                         <span class="checkbox-mark"></span>
                     </span>
-                    <span class="option-label">{{ optionLabel(option) }}</span>
+                    <span class="option-label">
+                        <slot :node="nodeSnapshot(optionPath(option, column))" :data="option">
+                            {{ optionLabel(option) }}
+                        </slot>
+                    </span>
                     <span v-if="optionChildren(option).length > 0" class="option-arrow">›</span>
                     <span v-else-if="isSelected(option, column) && !props.checkable" class="check">✓</span>
                 </button>
             </div>
         </div>
+        <slot name="footer"></slot>
     </div>
 `);
 

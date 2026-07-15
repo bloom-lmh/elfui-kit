@@ -6,6 +6,7 @@ import { PageCascaderEx3 } from "./ex3";
 import { PageCascaderEx4 } from "./ex4";
 import { PageCascaderEx5 } from "./ex5";
 import { PageCascaderEx6 } from "./ex6";
+import { PageCascaderEx7 } from "./ex7";
 
 const propsRows = [
   {
@@ -19,6 +20,9 @@ const propsRows = [
   { name: "placeholder", type: "string", default: "请选择", desc: "占位文本" },
   { name: "disabled", type: "boolean", default: "false", desc: "禁用状态" },
   { name: "clearable", type: "boolean", default: "false", desc: "是否可清空" },
+  { name: "teleported / appendTo / persistent", type: "boolean / selector | HTMLElement / boolean", default: "true / body / true", desc: "浮层挂载与持久化" },
+  { name: "placement / fitInputWidth", type: "CascaderPlacement / boolean", default: "bottom-start / false", desc: "浮层方向与输入宽度匹配" },
+  { name: "popperClass / popperStyle / popperOptions", type: "string / object / object", default: "'' / {} / {}", desc: "浮层样式和定位修饰器" },
   { name: "multiple", type: "boolean", default: "false", desc: "是否允许选择多个叶子节点" },
   { name: "checkable", type: "boolean", default: "false", desc: "是否显示选项框并支持父子勾选" },
   { name: "checkStrictly", type: "boolean", default: "false", desc: "父子节点选择互不关联" },
@@ -57,7 +61,8 @@ const eventsRows = [
   { name: "clear", type: "() => void", desc: "清空时触发" },
   { name: "visible-change", type: "(visible) => void", desc: "展开状态变化" },
   { name: "expand-change", type: "(path) => void", desc: "展开层级变化" },
-  { name: "focus / blur", type: "(event) => void", desc: "聚焦和失焦" }
+  { name: "focus / blur", type: "(event) => void", desc: "聚焦和失焦" },
+  { name: "remove-tag", type: "(value) => void", desc: "移除多选标签" }
 ];
 
 const methodsRows = [
@@ -92,7 +97,8 @@ useComponents({
   "page-cascader-ex3": PageCascaderEx3,
   "page-cascader-ex4": PageCascaderEx4,
   "page-cascader-ex5": PageCascaderEx5,
-  "page-cascader-ex6": PageCascaderEx6
+  "page-cascader-ex6": PageCascaderEx6,
+  "page-cascader-ex7": PageCascaderEx7
 });
 
 const PageCascader = defineHtml(html`
@@ -111,6 +117,8 @@ const PageCascader = defineHtml(html`
     <page-cascader-ex5 />
 
     <page-cascader-ex6 />
+
+    <page-cascader-ex7 />
 
     <h2>API</h2>
     <elf-props-table title="级联选择器属性" :rows=${propsRows}></elf-props-table>

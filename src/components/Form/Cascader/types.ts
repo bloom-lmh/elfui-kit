@@ -9,6 +9,29 @@ export type CascaderModelValue =
 export type CascaderSize = "small" | "default" | "large" | "sm" | "md" | "lg";
 export type CascaderExpandTrigger = "click" | "hover";
 export type CascaderShowCheckedStrategy = "child" | "parent";
+export type CascaderPlacement =
+  | "top"
+  | "top-start"
+  | "top-end"
+  | "bottom"
+  | "bottom-start"
+  | "bottom-end";
+
+export interface CascaderPopperModifier {
+  name: string;
+  enabled?: boolean;
+  options?: {
+    offset?: [number, number];
+    padding?: number;
+    [key: string]: unknown;
+  };
+}
+
+export interface CascaderPopperOptions {
+  placement?: CascaderPlacement;
+  modifiers?: CascaderPopperModifier[];
+  [key: string]: unknown;
+}
 
 /** Decides whether a selectable cascader node matches a search keyword. */
 export type CascaderFilterMethod = (node: CascaderNodeSnapshot, keyword: string) => boolean;
@@ -79,6 +102,15 @@ export interface CascaderProps {
   filterMethod?: CascaderFilterMethod;
   beforeFilter?: CascaderBeforeFilter;
   debounce: number;
+  popperClass: string;
+  popperStyle: Record<string, string | number>;
+  popperOptions: CascaderPopperOptions;
+  teleported: boolean;
+  appendTo: string | HTMLElement;
+  persistent: boolean;
+  placement: CascaderPlacement;
+  fitInputWidth: boolean;
+  validateEvent: boolean;
   virtualScroll: boolean;
   itemSize: number;
   height: number;

@@ -11,6 +11,7 @@ afterEach(() => {
 });
 
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
+const frame = (): Promise<void> => new Promise((resolve) => requestAnimationFrame(() => resolve()));
 const flushFilter = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 0));
   await tick();
@@ -28,6 +29,13 @@ interface CascaderEl extends HTMLElement {
   debounce?: number;
   filterMethod?: (node: { label: string }, keyword: string) => boolean;
   beforeFilter?: (keyword: string) => boolean | Promise<boolean>;
+  collapseTags?: boolean;
+  collapseTagsTooltip?: boolean;
+  maxCollapseTags?: number;
+  teleported?: boolean;
+  appendTo?: string | HTMLElement;
+  fitInputWidth?: boolean;
+  popperOptions?: Record<string, unknown>;
   props?: Record<string, unknown>;
   clear?: () => void;
 }
@@ -86,6 +94,24 @@ describe("elf-cascader", () => {
     expect(el.hasAttribute("data-open")).toBe(true);
     expect(el.shadowRoot!.querySelectorAll(".column")).toHaveLength(1);
     expect(el.shadowRoot!.textContent).toContain("浙江");
+  });
+
+  it("supports trigger and menu keyboard navigation", async () => {
+    const el = await mount({ teleported: false });
+    const trigger = el.shadowRoot!.querySelector<HTMLElement>(".trigger")!;
+
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    await tick();
+    await tick();
+    const items = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".option");
+    expect(el.hasAttribute("data-open")).toBe(true);
+    expect(el.shadowRoot!.activeElement).toBe(items[0]);
+
+    items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    expect(el.shadowRoot!.activeElement).toBe(items[1]);
+    items[1].dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await tick();
+    expect(el.hasAttribute("data-open")).toBe(false);
   });
 
   it("选择叶子节点触发 update:modelValue 和 change", async () => {
@@ -331,5 +357,102 @@ describe("elf-cascader", () => {
     expect(filterMethod).toHaveBeenCalled();
     expect(el.shadowRoot!.querySelectorAll(".filter-option")).toHaveLength(1);
     expect(el.shadowRoot!.querySelector(".filter-option")?.textContent).toContain("宁波");
+  });
+
+  it("renders removable multiple tags and emits the removed model item", async () => {
+    const el = await mount({
+      multiple: true,
+      clearable: true,
+      modelValue: [["zhejiang", "hangzhou"], ["zhejiang", "ningbo"]]
+    });
+    const onRemove = vi.fn();
+    const onUpdate = vi.fn();
+    el.addEventListener("remove-tag", onRemove as EventListener);
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+
+    const removeButtons = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".tag-remove");
+    expect(removeButtons).toHaveLength(2);
+    removeButtons[0].click();
+    await tick();
+
+    expect((onRemove.mock.calls[0]![0] as CustomEvent).detail).toEqual(["zhejiang", "hangzhou"]);
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual([["zhejiang", "ningbo"]]);
+    expect(el.shadowRoot!.textContent).not.toContain("浙江 / 杭州");
+  });
+
+  it("exposes collapsed tag labels as an opt-in tooltip", async () => {
+    const el = await mount({
+      multiple: true,
+      collapseTags: true,
+      collapseTagsTooltip: true,
+      maxCollapseTags: 1,
+      modelValue: [["zhejiang", "hangzhou"], ["zhejiang", "ningbo"]]
+    });
+
+    const collapsed = el.shadowRoot!.querySelector<HTMLElement>(".collapsed-tag")!;
+    expect(collapsed.textContent).toContain("+1");
+    expect(collapsed.title).toContain("浙江 / 宁波");
+  });
+
+  it("uses a top-layer panel and updates fixed positioning on captured scroll", async () => {
+    const el = await mount({
+      appendTo: "#overlay-root",
+      fitInputWidth: true,
+      popperOptions: {
+        modifiers: [
+          { name: "offset", options: { offset: [10, 14] } },
+          { name: "preventOverflow", options: { padding: 8 } }
+        ]
+      }
+    });
+    const trigger = el.shadowRoot!.querySelector<HTMLElement>(".trigger")!;
+    const dropdown = el.shadowRoot!.querySelector<HTMLElement>(".dropdown")! as HTMLElement & {
+      showPopover: () => void;
+      hidePopover: () => void;
+    };
+    let anchorLeft = 80;
+    trigger.getBoundingClientRect = vi.fn(() => ({
+      left: anchorLeft,
+      top: 60,
+      right: anchorLeft + 260,
+      bottom: 96,
+      width: 260,
+      height: 36,
+      x: anchorLeft,
+      y: 60,
+      toJSON: () => ({})
+    })) as unknown as Element["getBoundingClientRect"];
+    dropdown.getBoundingClientRect = vi.fn(() => ({
+      left: 0,
+      top: 0,
+      right: 368,
+      bottom: 212,
+      width: 368,
+      height: 212,
+      x: 0,
+      y: 0,
+      toJSON: () => ({})
+    })) as unknown as Element["getBoundingClientRect"];
+    dropdown.showPopover = vi.fn();
+    dropdown.hidePopover = vi.fn();
+
+    trigger.click();
+    await tick();
+    await frame();
+    await tick();
+
+    expect(dropdown.showPopover).toHaveBeenCalled();
+    expect(dropdown.getAttribute("popover")).toBe("manual");
+    expect(dropdown.dataset.appendTo).toBe("#overlay-root");
+    expect(dropdown.style.position).toBe("fixed");
+    expect(dropdown.style.left).toBe("90px");
+    expect(dropdown.style.top).toBe("110px");
+    expect(dropdown.style.width).toBe("260px");
+
+    anchorLeft = 140;
+    window.dispatchEvent(new Event("scroll"));
+    await frame();
+    await tick();
+    expect(dropdown.style.left).toBe("150px");
   });
 });
