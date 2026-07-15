@@ -5,6 +5,7 @@ import { PageDropdownEx2 } from "./ex2";
 import { PageDropdownEx3 } from "./ex3";
 import { PageDropdownEx4 } from "./ex4";
 import { PageDropdownEx5 } from "./ex5";
+import { PageDropdownEx6 } from "./ex6";
 
 const propsRows = [
   { name: "items", type: "DropdownItem[]", default: "[]", desc: "菜单项，支持 children 嵌套" },
@@ -23,8 +24,9 @@ const propsRows = [
   { name: "virtualTriggering / virtualRef", type: "boolean / DropdownVirtualRef", default: "false / -", desc: "使用外部元素或虚拟矩形作为触发目标" },
   { name: "maxHeight", type: "string | number", default: "280px", desc: "菜单最大高度" },
   { name: "popperClass / popperStyle", type: "string / object", default: "-", desc: "弹层自定义样式" },
+  { name: "popperOptions", type: "DropdownPopperOptions", default: "{}", desc: "strategy、placement 及 offset / flip / preventOverflow modifiers" },
   { name: "closeOnClickOutside", type: "boolean", default: "true", desc: "点击外部是否关闭" },
-  { name: "teleported / appendTo", type: "boolean / string | HTMLElement", default: "true / body", desc: "兼容入口；等待公共锚定浮层实现" }
+  { name: "teleported / appendTo", type: "boolean / string | HTMLElement", default: "true / body", desc: "使用原生 top layer 脱离裁切，并声明承载目标" }
 ];
 
 const slotsRows = [
@@ -57,7 +59,8 @@ useComponents({
   "page-dropdown-ex2": PageDropdownEx2,
   "page-dropdown-ex3": PageDropdownEx3,
   "page-dropdown-ex4": PageDropdownEx4,
-  "page-dropdown-ex5": PageDropdownEx5
+  "page-dropdown-ex5": PageDropdownEx5,
+  "page-dropdown-ex6": PageDropdownEx6
 });
 
 const PageDropdown = defineHtml(html`
@@ -74,6 +77,8 @@ const PageDropdown = defineHtml(html`
     <page-dropdown-ex4 />
 
     <page-dropdown-ex5 />
+
+    <page-dropdown-ex6 />
 
     <h2>API</h2>
     <elf-props-table title="Dropdown Props" :rows=${propsRows}></elf-props-table>

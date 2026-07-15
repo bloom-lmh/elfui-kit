@@ -22,6 +22,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { computeAnchoredPosition } from "../../Common/anchored-overlay";
 import type {
     DropdownButtonType,
     DropdownCommand,
@@ -30,6 +31,8 @@ import type {
     DropdownFieldNames,
     DropdownItem,
     DropdownPlacement,
+    DropdownPopperModifier,
+    DropdownPopperOptions,
     DropdownProps,
     DropdownSize,
     DropdownSlots,
@@ -54,6 +57,8 @@ export type {
     DropdownMenuProps,
     DropdownMenuSlots,
     DropdownPlacement,
+    DropdownPopperModifier,
+    DropdownPopperOptions,
     DropdownProps,
     DropdownSize,
     DropdownSlots,
@@ -226,11 +231,14 @@ const host = useHost();
 const open = useRef(false);
 const selectedCommand = useRef<DropdownCommand | null>(null);
 const selectedLabel = useRef("");
-const virtualStyle = useRef<Record<string, string>>({});
+const overlayStyle = useRef<Record<string, string>>({});
+const resolvedPlacement = useRef<DropdownPlacement>("bottom-start");
 
 let hoverCloseTimer: ReturnType<typeof setTimeout> | null = null;
 let hoverOpenTimer: ReturnType<typeof setTimeout> | null = null;
 let cleanupVirtualTrigger = (): void => {};
+let cleanupAnchoredOverlay = (): void => {};
+let overlayFrame = 0;
 let mounted = false;
 
 // ─── derived ────────────────────────────────────────────────
@@ -241,7 +249,12 @@ const triggerModes = (): DropdownTriggerMode[] => resolveTriggers(props.trigger)
 
 const hasTrigger = (mode: DropdownTriggerMode): boolean => triggerModes().includes(mode);
 
-const placement = (): DropdownPlacement => resolvePlacement(props.placement);
+const popperOptions = (): DropdownPopperOptions =>
+    props.popperOptions && typeof props.popperOptions === "object"
+        ? props.popperOptions as DropdownPopperOptions
+        : {};
+
+const placement = (): DropdownPlacement => resolvePlacement(popperOptions().placement || props.placement);
 
 const size = (): DropdownSize => resolveSize(props.size);
 
@@ -265,16 +278,17 @@ const buttonStyle = (): Record<string, string> => toStyleObject(buttonPropsMap()
 const menuStyle = (): Record<string, string> => ({
     "--dropdown-max-height": cssSize(props.maxHeight, "280px"),
     ...toStyleObject(props.popperStyle),
-    ...(props.virtualTriggering ? virtualStyle.value : {}),
+    ...((props.virtualTriggering || props.teleported) ? overlayStyle.value : {}),
 });
 
 const menuClass = (): unknown[] => [
     "menu",
     {
         "is-open": open.value,
-        [`is-${placement()}`]: true,
+        [`is-${resolvedPlacement.value || placement()}`]: true,
         [`is-${String(props.effect || "light")}`]: true,
         "is-virtual": Boolean(props.virtualTriggering),
+        "is-teleported": Boolean(props.teleported),
     },
     String(props.popperClass || ""),
 ];
@@ -296,6 +310,27 @@ const virtualRef = (): DropdownVirtualRef | null => {
     const candidate = props.virtualRef as DropdownVirtualRef | null | undefined;
     return candidate && typeof candidate.getBoundingClientRect === "function" ? candidate : null;
 };
+
+const triggerElement = (): HTMLElement | null =>
+    host.shadowRoot?.querySelector<HTMLElement>(".trigger, .split-toggle") ?? null;
+
+const anchorReference = (): DropdownVirtualRef | HTMLElement | null =>
+    props.virtualTriggering ? virtualRef() : triggerElement();
+
+const modifier = (name: string): DropdownPopperModifier | undefined =>
+    (Array.isArray(popperOptions().modifiers) ? popperOptions().modifiers : []).find((item) => item?.name === name);
+
+const offset = (): [number, number] => {
+    const value = modifier("offset")?.options?.offset;
+    return Array.isArray(value) && value.length >= 2
+        ? [Number(value[0]) || 0, Number(value[1]) || 0]
+        : [0, 6];
+};
+
+const overflowPadding = (): number =>
+    Math.max(0, Number(modifier("preventOverflow")?.options?.padding) || 8);
+
+const flipEnabled = (): boolean => modifier("flip")?.enabled !== false;
 
 // ─── open / close ───────────────────────────────────────────
 
@@ -328,42 +363,82 @@ const clearHoverTimers = (): void => {
     clearHoverCloseTimer();
 };
 
-const updateVirtualPosition = (): void => {
-    if (!props.virtualTriggering || typeof window === "undefined") {
-        virtualStyle.set({});
+const updateOverlayPosition = (): void => {
+    if ((!props.virtualTriggering && !props.teleported) || typeof window === "undefined") {
+        overlayStyle.set({});
+        resolvedPlacement.set(placement());
         return;
     }
-    const reference = virtualRef();
-    if (!reference) return;
+    const reference = anchorReference();
+    const panel = getMenuEl();
+    if (!reference || !panel) return;
+
     const referenceRect = reference.getBoundingClientRect();
-    const panelRect = getMenuEl()?.getBoundingClientRect();
-    const panelWidth = panelRect?.width || 192;
-    const panelHeight = panelRect?.height || 0;
-    const gap = 6;
-    const currentPlacement = placement();
-    const isTop = currentPlacement.startsWith("top");
-    const isEnd = currentPlacement.endsWith("end");
-    const isCenter = currentPlacement === "top" || currentPlacement === "bottom";
-    const rawLeft = isEnd
-        ? referenceRect.right - panelWidth
-        : isCenter
-          ? referenceRect.left + (referenceRect.width - panelWidth) / 2
-          : referenceRect.left;
-    const rawTop = isTop
-        ? referenceRect.top - panelHeight - gap
-        : referenceRect.bottom + gap;
-    virtualStyle.set({
+    if (!props.virtualTriggering && referenceRect.width === 0 && referenceRect.height === 0) {
+        resolvedPlacement.set(placement());
+        return;
+    }
+    const panelRect = panel.getBoundingClientRect();
+    const visualViewport = window.visualViewport;
+    const viewport = {
+        width: visualViewport?.width || window.innerWidth,
+        height: visualViewport?.height || window.innerHeight,
+        offsetLeft: visualViewport?.offsetLeft || 0,
+        offsetTop: visualViewport?.offsetTop || 0,
+    };
+    const next = computeAnchoredPosition(
+        referenceRect,
+        {
+            width: panelRect.width || panel.offsetWidth || 192,
+            height: panelRect.height || panel.offsetHeight || 0,
+        },
+        viewport,
+        {
+            placement: placement(),
+            offset: offset(),
+            padding: overflowPadding(),
+            flip: flipEnabled(),
+        },
+    );
+    resolvedPlacement.set(next.placement);
+    overlayStyle.set({
         position: "fixed",
-        left: `${Math.max(8, Math.min(rawLeft, window.innerWidth - panelWidth - 8))}px`,
-        top: `${Math.max(8, rawTop)}px`,
+        left: `${Math.round(next.left * 100) / 100}px`,
+        top: `${Math.round(next.top * 100) / 100}px`,
         right: "auto",
         bottom: "auto",
+        margin: "0",
     });
+};
+
+const requestOverlayUpdate = (): void => {
+    if (typeof window === "undefined") return;
+    if (overlayFrame) cancelAnimationFrame(overlayFrame);
+    overlayFrame = requestAnimationFrame(() => {
+        overlayFrame = 0;
+        updateOverlayPosition();
+    });
+};
+
+const syncTopLayer = (): void => {
+    const panel = getMenuEl() as (HTMLElement & {
+        showPopover?: () => void;
+        hidePopover?: () => void;
+    }) | null;
+    if (!panel) return;
+    try {
+        if (props.teleported && open.peek()) panel.showPopover?.();
+        else panel.hidePopover?.();
+    } catch {
+        // Browsers throw when popover state changes during disconnect; the fixed-position fallback remains usable.
+    }
+    if (open.peek()) requestOverlayUpdate();
 };
 
 const focusFirstEnabledItem = (): void => {
     queueMicrotask(() => {
-        updateVirtualPosition();
+        syncTopLayer();
+        updateOverlayPosition();
         getFocusableItems()[0]?.focus();
     });
 };
@@ -372,6 +447,7 @@ const closeDropdown = (): void => {
     clearHoverTimers();
     if (!open.peek()) return;
     open.set(false);
+    syncTopLayer();
     emit("visible-change", false);
 };
 
@@ -385,6 +461,7 @@ const setOpen = (next: boolean): void => {
     }
 
     open.set(next);
+    syncTopLayer();
     emit("visible-change", next);
 
     if (next) focusFirstEnabledItem();
@@ -561,8 +638,6 @@ const connectVirtualTrigger = (): void => {
         target.addEventListener!("mouseenter", onMouseEnter as EventListener);
         target.addEventListener!("mouseleave", onMouseLeave as EventListener);
     }
-    window.addEventListener("resize", updateVirtualPosition, { passive: true });
-    window.addEventListener("scroll", updateVirtualPosition, { passive: true, capture: true });
     cleanupVirtualTrigger = () => {
         if (canListen) {
             target.removeEventListener!("click", onTriggerClick as EventListener);
@@ -571,10 +646,33 @@ const connectVirtualTrigger = (): void => {
             target.removeEventListener!("mouseenter", onMouseEnter as EventListener);
             target.removeEventListener!("mouseleave", onMouseLeave as EventListener);
         }
-        window.removeEventListener("resize", updateVirtualPosition);
-        window.removeEventListener("scroll", updateVirtualPosition, { capture: true });
     };
-    updateVirtualPosition();
+};
+
+const connectAnchoredOverlay = (): void => {
+    cleanupAnchoredOverlay();
+    if ((!props.virtualTriggering && !props.teleported) || typeof window === "undefined") return;
+
+    const reference = anchorReference();
+    const panel = getMenuEl();
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(requestOverlayUpdate) : undefined;
+    if (reference instanceof Element) observer?.observe(reference);
+    if (panel) observer?.observe(panel);
+
+    window.addEventListener("resize", requestOverlayUpdate, { passive: true });
+    window.addEventListener("scroll", requestOverlayUpdate, { passive: true, capture: true });
+    window.visualViewport?.addEventListener("resize", requestOverlayUpdate, { passive: true });
+    window.visualViewport?.addEventListener("scroll", requestOverlayUpdate, { passive: true });
+
+    cleanupAnchoredOverlay = () => {
+        observer?.disconnect();
+        window.removeEventListener("resize", requestOverlayUpdate);
+        window.removeEventListener("scroll", requestOverlayUpdate, { capture: true });
+        window.visualViewport?.removeEventListener("resize", requestOverlayUpdate);
+        window.visualViewport?.removeEventListener("scroll", requestOverlayUpdate);
+    };
+    syncTopLayer();
+    requestOverlayUpdate();
 };
 
 // ─── host bindings ──────────────────────────────────────────
@@ -611,23 +709,35 @@ useEffect(() => {
     void props.virtualTriggering;
     void props.virtualRef;
     void props.trigger;
-    if (mounted) queueMicrotask(connectVirtualTrigger);
+    if (mounted) queueMicrotask(() => {
+        connectVirtualTrigger();
+        connectAnchoredOverlay();
+    });
 });
 
 useEffect(() => {
     void props.placement;
-    if (mounted && props.virtualTriggering) queueMicrotask(updateVirtualPosition);
+    void props.popperOptions;
+    void props.teleported;
+    void props.appendTo;
+    if (mounted) queueMicrotask(() => {
+        syncTopLayer();
+        connectAnchoredOverlay();
+    });
 });
 
 onMount(() => {
     mounted = true;
     connectVirtualTrigger();
+    connectAnchoredOverlay();
 });
 
 onUnmount(() => {
     mounted = false;
     clearHoverTimers();
     cleanupVirtualTrigger();
+    cleanupAnchoredOverlay();
+    if (overlayFrame) cancelAnimationFrame(overlayFrame);
 });
 
 defineExpose({ show, hide, toggle, handleOpen, handleClose });
@@ -690,7 +800,10 @@ const Dropdown = defineHtml<DropdownProps, DropdownEmits, DropdownSlots>(html`
             :class=${menuClass()}
             :style=${menuStyle()}
             part="menu"
+            :popover=${props.teleported ? "manual" : undefined}
+            :data-append-to=${typeof props.appendTo === "string" ? props.appendTo : "element"}
             :role=${menuRole()}
+            :aria-hidden=${open.value ? "false" : "true"}
             @keydown=${onMenuKeydown}
         >
             <slot name="dropdown">

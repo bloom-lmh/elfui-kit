@@ -62,6 +62,8 @@ export type {
   DropdownMenuProps,
   DropdownMenuSlots,
   DropdownPlacement,
+  DropdownPopperModifier,
+  DropdownPopperOptions,
   DropdownProps,
   DropdownSize,
   DropdownSlots,

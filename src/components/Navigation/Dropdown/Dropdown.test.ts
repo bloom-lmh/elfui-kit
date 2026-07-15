@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { computeAnchoredPosition } from "../../Common/anchored-overlay";
 import type { DropdownElement, DropdownItem } from "./types";
 
 beforeAll(async () => {
@@ -50,6 +51,8 @@ const openByClick = async (el: DropdownElement): Promise<void> => {
 const dispatchKey = (target: EventTarget, key: string): void => {
   target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 };
+
+const frame = (): Promise<void> => new Promise((resolve) => requestAnimationFrame(() => resolve()));
 
 describe("elf-dropdown", () => {
   // ─── 基础交互 ─────────────────────────────────────────────
@@ -555,5 +558,73 @@ describe("elf-dropdown", () => {
     expect(menuEl.style.left).toBe("100px");
     expect(menuEl.style.top).toBe("86px");
     expect(menuEl.style.getPropertyValue("--dropdown-max-height")).toBe("240px");
+  });
+
+  it("computes viewport flip and collision shifting", () => {
+    const result = computeAnchoredPosition(
+      { left: 260, top: 180, right: 320, bottom: 220, width: 60, height: 40 },
+      { width: 180, height: 120 },
+      { width: 320, height: 240 },
+      { placement: "bottom-end", offset: [0, 8], padding: 8, flip: true }
+    );
+
+    expect(result).toEqual({ left: 132, top: 52, placement: "top-end" });
+  });
+
+  it("uses top-layer popover positioning and updates on captured scroll", async () => {
+    const el = await mount({
+      teleported: true,
+      appendTo: "#overlay-root",
+      popperOptions: {
+        modifiers: [
+          { name: "offset", options: { offset: [12, 18] } },
+          { name: "preventOverflow", options: { padding: 10 } }
+        ]
+      }
+    });
+    let anchorLeft = 100;
+    trigger(el).getBoundingClientRect = vi.fn(() => ({
+      left: anchorLeft,
+      top: 100,
+      right: anchorLeft + 60,
+      bottom: 140,
+      width: 60,
+      height: 40,
+      x: anchorLeft,
+      y: 100,
+      toJSON: () => ({})
+    })) as unknown as Element["getBoundingClientRect"];
+    const menuEl = menu(el)! as HTMLElement & { showPopover: () => void; hidePopover: () => void };
+    menuEl.getBoundingClientRect = vi.fn(() => ({
+      left: 0,
+      top: 0,
+      right: 200,
+      bottom: 120,
+      width: 200,
+      height: 120,
+      x: 0,
+      y: 0,
+      toJSON: () => ({})
+    })) as unknown as Element["getBoundingClientRect"];
+    menuEl.showPopover = vi.fn();
+    menuEl.hidePopover = vi.fn();
+
+    await openByClick(el);
+    await frame();
+
+    expect(menuEl.showPopover).toHaveBeenCalled();
+    expect(menuEl.getAttribute("popover")).toBe("manual");
+    expect(menuEl.dataset.appendTo).toBe("#overlay-root");
+    expect(menuEl.style.position).toBe("fixed");
+    expect(menuEl.style.left).toBe("112px");
+    expect(menuEl.style.top).toBe("158px");
+
+    anchorLeft = 180;
+    window.dispatchEvent(new Event("scroll"));
+    await frame();
+    expect(menuEl.style.left).toBe("192px");
+
+    await openByClick(el);
+    expect(menuEl.hidePopover).toHaveBeenCalled();
   });
 });

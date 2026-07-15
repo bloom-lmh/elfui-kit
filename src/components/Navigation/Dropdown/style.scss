@@ -193,6 +193,16 @@
   right: 0;
 }
 
+.menu[popover] {
+  inset: auto;
+  margin: 0;
+  color: inherit;
+}
+
+.menu[popover]::backdrop {
+  background: transparent;
+}
+
 .menu.is-bottom {
   top: calc(100% + 6px);
   left: 50%;
@@ -224,13 +234,19 @@
 
 .menu.is-virtual,
 .menu.is-virtual.is-bottom,
-.menu.is-virtual.is-top {
+.menu.is-virtual.is-top,
+.menu.is-teleported,
+.menu.is-teleported.is-bottom,
+.menu.is-teleported.is-top {
   transform: translateY(-6px) scale(0.98);
 }
 
 .menu.is-virtual.is-open,
 .menu.is-virtual.is-bottom.is-open,
-.menu.is-virtual.is-top.is-open {
+.menu.is-virtual.is-top.is-open,
+.menu.is-teleported.is-open,
+.menu.is-teleported.is-bottom.is-open,
+.menu.is-teleported.is-top.is-open {
   transform: translateY(0) scale(1);
 }
 

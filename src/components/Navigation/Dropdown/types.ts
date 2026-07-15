@@ -14,6 +14,23 @@ export type DropdownButtonType = "default" | "primary" | "success" | "warning" |
 export type DropdownEffect = "light" | "dark" | string;
 export type DropdownCommand = string | number | Record<string, unknown>;
 
+export interface DropdownPopperModifier {
+  name: string;
+  enabled?: boolean;
+  options?: {
+    offset?: [number, number];
+    padding?: number;
+    [key: string]: unknown;
+  };
+}
+
+export interface DropdownPopperOptions {
+  strategy?: "absolute" | "fixed";
+  placement?: DropdownPlacement;
+  modifiers?: DropdownPopperModifier[];
+  [key: string]: unknown;
+}
+
 export interface DropdownVirtualRef {
   getBoundingClientRect: () => DOMRect | DOMRectReadOnly;
   addEventListener?: EventTarget["addEventListener"];
@@ -72,7 +89,7 @@ export interface DropdownProps {
   tabindex: number;
   popperClass: string;
   popperStyle: Record<string, string | number>;
-  popperOptions: Record<string, unknown>;
+  popperOptions: DropdownPopperOptions;
   teleported: boolean;
   appendTo: string | HTMLElement;
   persistent: boolean;
