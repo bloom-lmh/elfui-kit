@@ -1,103 +1,46 @@
 # Steps Element Plus API 对标计划
 
-生成时间：2026-07-05
+更新时间：2026-07-15
 
 ## 对标定位
 
-- ElfUI 组件目录：`Navigation/Steps`
+- ElfUI 组件目录：`Navigation/Steps`、`Navigation/Step`
 - Element Plus 文档：`steps.md`
-- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
+- 实现原则：对齐 Element Plus 对外 API 与交互语义，同时保留 ElfUI 的 Web Components、细粒度响应式和数据驱动 `items` 扩展。
 
-## Element Plus API 摘要
+## 当前 ElfUI API
 
-### steps.md
+### Steps
 
-#### Steps API
+- Props：`active`、`direction`、`space`、`processStatus`、`finishStatus`、`alignCenter`、`simple`
+- ElfUI 扩展 Props：`items`、`size`、`clickable`、`alternativeLabel`
+- Events：`update:active`、`change`
+- Slots：`default`（组合式 `elf-step`）
+- Expose：`activeIndex`、`next`、`prev`、`setActive`
 
-- `space`
-- `direction`
-- `active`
-- `process-status`
-- `finish-status`
-- `align-center`
-- `simple`
-- `change`
-- `default`
+### Step
 
-#### Steps Attributes
-
-- `space`
-- `direction`
-- `active`
-- `process-status`
-- `finish-status`
-- `align-center`
-- `simple`
-
-#### Steps Events
-
-- `change`
-
-#### Steps Slots
-
-- `default`
-
-#### Step API
-
-- `title`
-- `icon`
-- `status`
-
-#### Step Attributes
-
-- `title`
-- `icon`
-- `status`
-
-#### Step Slots
-
-- `icon`
-- `title`
-
-## 当前 ElfUI API 快照
-
-### Props
-
-- `active`
-- `alternativeLabel`
-- `clickable`
-- `direction`
-- `items`
-- `size`
-
-### Events
-
-- `update:active`
-
-### Slots
-
-- 暂无记录
-
-### Exposes
-
-- 暂无记录
+- Props：`title`、`description`、`icon`、`status`、`disabled`、`value`
+- Slots：`icon`、`title`、`description`
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`space`、`process-status`、`finish-status`、`align-center`、`simple`、`title`、`icon`、`status`
-- [ ] P1 补齐事件差距：`change`
-- [ ] P1 补齐插槽/暴露方法：`icon`、`title`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P1 补齐核心属性：`space`、`process-status`、`finish-status`、`align-center`、`simple`、`title`、`description`、`icon`、`status`。
+- [x] P1 补齐 `change` 事件，并保留 ElfUI 的 `update:active` 受控更新事件。
+- [x] P1 补齐组合式 `elf-step`、`icon`、`title`、`description` 插槽和公开控制方法。
+- [x] P1 对齐点击、方向键、禁用态、清空态、受控/非受控同步和无障碍属性；Steps 不提交表单值，无额外表单契约。
+- [x] P2 更新页面示例：Template / Script 双视图、动态绑定使用 `${...}`，覆盖 Element Plus 关键场景和组合式写法。
+- [x] P2 补齐组件单测、页面冒烟、类型导出和真实浏览器视觉回归。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
-## 本轮记录
+- [x] API props/types 与页面 PropsTable 同步。
+- [x] 状态推断、受控同步、清空态、禁用态、点击和键盘交互有单测覆盖。
+- [x] 文档示例可在 Playground 中显示并复制 Template / Script。
+- [x] Steps 定向测试、生产构建和真实浏览器验证通过。
 
-- [x] 2026-07-11 Navigation 第一阶段：补 `space/processStatus/finishStatus/alignCenter/simple` 属性、状态推断和样式，补对应单测、PropsTable 与案例。
-- [x] 2026-07-14 使用内容背景隔离连接线；水平步骤保持可读最小宽度并在窄内容区内部滚动。
+## 实施记录
+
+- [x] 2026-07-11：补齐间距、状态和简洁模式，新增状态推断测试与案例。
+- [x] 2026-07-14：隔离内容与连接线，水平步骤在窄容器内滚动。
+- [x] 2026-07-15：新增组合式 `elf-step`、三类插槽、统一事件、方向键跳过禁用项、受控同步和独立案例；完成定向测试、构建及浏览器验收。

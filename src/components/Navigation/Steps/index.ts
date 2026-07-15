@@ -7,7 +7,9 @@ import {
     defineProps,
     defineStyle,
     html,
+    onMount,
     useComputed,
+    useEventListener,
     useHost,
     useHostAttr,
     useHostFlag,
@@ -17,9 +19,20 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { StepItem, StepsChangeDetail, StepsDirection, StepsProps, StepsSize } from "./types";
+import type { StepItem, StepStatus, StepsChangeDetail, StepsDirection, StepsProps, StepsSize, StepsSlots } from "./types";
 
-export type { StepItem, StepsChangeDetail, StepsDirection, StepsProps, StepsSize, StepStatus } from "./types";
+export type {
+    StepItem,
+    StepProps,
+    StepSlots,
+    StepStatus,
+    StepsChangeDetail,
+    StepsDirection,
+    StepsExpose,
+    StepsProps,
+    StepsSize,
+    StepsSlots,
+} from "./types";
 
 interface StepViewItem extends StepItem {
     key: string;
@@ -31,6 +44,31 @@ interface StepViewItem extends StepItem {
     isLast: boolean;
     isActive: boolean;
     isClickable: boolean;
+}
+
+interface StepElement extends HTMLElement {
+    title?: string;
+    description?: string;
+    icon?: string;
+    status?: StepStatus | "";
+    disabled?: boolean;
+    value?: string | number;
+    stepIndex?: number;
+    resolvedStatus?: StepStatus;
+    active?: boolean;
+    last?: boolean;
+    clickable?: boolean;
+    direction?: StepsDirection;
+    size?: StepsSize;
+    simple?: boolean;
+    alignCenter?: boolean;
+    alternativeLabel?: boolean;
+    focusButton?: () => void;
+}
+
+interface StepNavigateDetail {
+    index: number;
+    key: string;
 }
 
 const props = defineProps<StepsProps>({
@@ -55,9 +93,26 @@ const emit = defineEmits<{
 const host = useHost();
 const compact = useRef(false);
 const currentActive = useRef(0);
+const hasStepChildren = useRef(false);
 let lastControlledActive = Number.NaN;
 
-const rawItems = (): StepItem[] => (Array.isArray(props.items) ? (props.items as StepItem[]) : []);
+const stepChildren = (): StepElement[] =>
+    Array.from(host.children).filter(
+        (child): child is StepElement => child.tagName.toLowerCase() === "elf-step",
+    );
+
+const childItems = (): StepItem[] =>
+    stepChildren().map((child, index) => ({
+        title: child.title || `Step ${index + 1}`,
+        description: child.description || "",
+        icon: child.icon || "",
+        status: child.status || undefined,
+        disabled: Boolean(child.disabled),
+        value: child.value ?? index,
+    }));
+
+const rawItems = (): StepItem[] =>
+    hasStepChildren.value ? childItems() : Array.isArray(props.items) ? (props.items as StepItem[]) : [];
 const count = (): number => rawItems().length;
 const normalizeActive = (value: unknown): number => {
     const max = Math.max(0, count() - 1);
@@ -87,6 +142,27 @@ const inferStatus = (item: StepItem, index: number): StepViewItem["status"] => {
     if (index < active) return finishStatus();
     if (index === active) return processStatus();
     return "wait";
+};
+
+const syncStepChildren = (): void => {
+    const children = stepChildren();
+    hasStepChildren.set(children.length > 0);
+    if (children.length === 0) return;
+
+    const items = childItems();
+    const active = normalizeActive(currentActive.value);
+    children.forEach((child, index) => {
+        child.stepIndex = index;
+        child.resolvedStatus = inferStatus(items[index]!, index);
+        child.active = index === active;
+        child.last = index === children.length - 1;
+        child.clickable = Boolean(props.clickable);
+        child.direction = direction();
+        child.size = size();
+        child.simple = Boolean(props.simple);
+        child.alignCenter = Boolean(props.alignCenter);
+        child.alternativeLabel = Boolean(props.alternativeLabel);
+    });
 };
 
 const stepItems = useComputed<StepViewItem[]>(() => {
@@ -119,6 +195,7 @@ const rootClass = useComputed((): string => {
     if (props.alignCenter) classes.push("is-align-center");
     if (props.simple) classes.push("is-simple");
     if (normalizeSpace()) classes.push("has-space");
+    if (hasStepChildren.value) classes.push("has-step-children");
     return classes.join(" ");
 });
 
@@ -159,6 +236,36 @@ const onStepClick = (item: StepViewItem): void => {
     setActive(item.index);
 };
 
+const focusStep = (index: number): void => {
+    queueMicrotask(() => stepChildren()[index]?.focusButton?.());
+};
+
+const navigateStep = (detail: StepNavigateDetail): void => {
+    const children = stepChildren();
+    if (children.length === 0) return;
+    const enabled = children
+        .map((child, index) => ({ child, index }))
+        .filter(({ child }) => !child.disabled)
+        .map(({ index }) => index);
+    if (enabled.length === 0) return;
+
+    const currentPosition = Math.max(0, enabled.indexOf(detail.index));
+    let nextPosition = currentPosition;
+    if (detail.key === "Home") nextPosition = 0;
+    else if (detail.key === "End") nextPosition = enabled.length - 1;
+    else if (detail.key === "ArrowRight" || detail.key === "ArrowDown") {
+        nextPosition = Math.min(enabled.length - 1, currentPosition + 1);
+    } else if (detail.key === "ArrowLeft" || detail.key === "ArrowUp") {
+        nextPosition = Math.max(0, currentPosition - 1);
+    }
+
+    const nextIndex = enabled[nextPosition]!;
+    setActive(nextIndex);
+    focusStep(nextIndex);
+};
+
+const onStepsSlotChange = (): void => syncStepChildren();
+
 const statusIcon = (item: StepViewItem): string => {
     if (item.icon) return item.icon;
     if (item.status === "finish") return "✓";
@@ -175,6 +282,29 @@ useEffect(() => {
     lastControlledActive = controlled;
     currentActive.set(controlled);
 });
+useEffect(() => {
+    void currentActive.value;
+    void props.clickable;
+    void props.direction;
+    void props.size;
+    void props.simple;
+    void props.alignCenter;
+    void props.alternativeLabel;
+    void props.processStatus;
+    void props.finishStatus;
+    syncStepChildren();
+});
+useEventListener(host, "elf-step-select", (event) => {
+    event.stopPropagation();
+    const child = event.target as StepElement;
+    const index = stepChildren().indexOf(child);
+    if (index >= 0) setActive(index);
+});
+useEventListener(host, "elf-step-navigate", (event) => {
+    event.stopPropagation();
+    navigateStep((event as CustomEvent<StepNavigateDetail>).detail);
+});
+onMount(syncStepChildren);
 useHostAttr("direction", direction);
 useHostAttr("size", size);
 useHostFlag("data-compact", () => compact.value);
@@ -189,36 +319,40 @@ defineExpose({
 });
 defineStyle(styles);
 
-const Steps = defineHtml<StepsProps>(html`
+const Steps = defineHtml<StepsProps, Record<string, never>, StepsSlots>(html`
     <div :class=${rootClass} :style=${rootStyle} role="list" :aria-orientation=${direction()}>
-        <div
-            v-for="item in stepItems"
-            :key="item.key"
-            :class="stepItemClass(item)"
-            :style="progressStyle(item)"
-            role="listitem"
-        >
-            <button
-                class="step-button"
-                type="button"
-                :disabled="item.disabled"
-                :aria-current="item.isActive ? 'step' : null"
-                :aria-disabled="item.disabled ? 'true' : null"
-                @click="onStepClick(item)"
+        <slot v-if=${hasStepChildren} @slotchange=${onStepsSlotChange}></slot>
+        <template v-if=${!hasStepChildren}>
+            <div
+                v-for="item in stepItems"
+                :key="item.key"
+                :class="stepItemClass(item)"
+                :style="progressStyle(item)"
+                role="listitem"
             >
-                <span class="step-head">
-                    <span class="step-icon" aria-hidden="true">{{ statusIcon(item) }}</span>
+                <button
+                    class="step-button"
+                    type="button"
+                    :disabled="item.disabled"
+                    :tabindex="item.isActive ? 0 : -1"
+                    :aria-current="item.isActive ? 'step' : null"
+                    :aria-disabled="item.disabled ? 'true' : null"
+                    @click="onStepClick(item)"
+                >
+                    <span class="step-head">
+                        <span class="step-icon" aria-hidden="true">{{ statusIcon(item) }}</span>
+                    </span>
+                    <span class="step-main">
+                        <span class="step-title">{{ item.title }}</span>
+                        <span class="step-description" v-if="item.description">{{ item.description }}</span>
+                    </span>
+                </button>
+                <span class="step-tail" v-if="!item.isLast" aria-hidden="true">
+                    <span class="step-tail-track"></span>
+                    <span class="step-tail-progress"></span>
                 </span>
-                <span class="step-main">
-                    <span class="step-title">{{ item.title }}</span>
-                    <span class="step-description" v-if="item.description">{{ item.description }}</span>
-                </span>
-            </button>
-            <span class="step-tail" v-if="!item.isLast" aria-hidden="true">
-                <span class="step-tail-track"></span>
-                <span class="step-tail-progress"></span>
-            </span>
-        </div>
+            </div>
+        </template>
     </div>
 `);
 

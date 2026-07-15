@@ -84,7 +84,7 @@
 - [ ] `Navigation/Dropdown`
 - [ ] `Navigation/Menu`
 - [x] `Navigation/PageHeader`
-- [ ] `Navigation/Steps`
+- [x] `Navigation/Steps`
 - [ ] `Navigation/Tabs`
 - [ ] `Picker/Calendar`
 - [ ] `Picker/ColorPicker`

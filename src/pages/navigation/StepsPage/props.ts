@@ -23,6 +23,25 @@ const itemRows = [
   { name: "value", type: "string | number", default: "-", desc: "稳定 key" }
 ];
 
+const stepRows = [
+  { name: "title", type: "string", default: "-", desc: "步骤标题，可由 title 插槽覆盖" },
+  { name: "description", type: "string", default: "-", desc: "步骤描述，可由 description 插槽覆盖" },
+  { name: "icon", type: "string", default: "-", desc: "自定义图标文本，可由 icon 插槽覆盖" },
+  { name: "status", type: "StepStatus", default: "自动推断", desc: "显式覆盖当前步骤状态" },
+  { name: "disabled", type: "boolean", default: "false", desc: "禁止点击和键盘跳转到该步骤" },
+  { name: "value", type: "string | number", default: "索引", desc: "步骤业务值" }
+];
+
+const slotsRows = [
+  { name: "default", type: "elf-step[]", desc: "组合式步骤内容" }
+];
+
+const stepSlotsRows = [
+  { name: "icon", type: "unknown", desc: "自定义步骤图标" },
+  { name: "title", type: "unknown", desc: "自定义步骤标题" },
+  { name: "description", type: "unknown", desc: "自定义步骤描述" }
+];
+
 const eventsRows = [
   { name: "update:active", type: "(active: number) => void", desc: "请求更新当前步骤" },
   {
@@ -42,6 +61,9 @@ const PageStepsProps = defineHtml(html`
   <h2>API</h2>
   <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>
   <elf-props-table title="StepItem" :rows=${itemRows}></elf-props-table>
+  <elf-props-table title="Step Props" :rows=${stepRows}></elf-props-table>
+  <elf-props-table title="Steps Slots" :rows=${slotsRows}></elf-props-table>
+  <elf-props-table title="Step Slots" :rows=${stepSlotsRows}></elf-props-table>
   <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
   <elf-props-table title="Methods" :rows=${methodsRows}></elf-props-table>
 `);

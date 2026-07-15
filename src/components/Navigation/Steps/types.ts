@@ -13,6 +13,21 @@ export interface StepItem {
   value?: string | number;
 }
 
+export interface StepProps {
+  title?: string;
+  description?: string;
+  icon?: string;
+  status?: StepStatus | "";
+  disabled?: boolean;
+  value?: string | number;
+}
+
+export interface StepSlots {
+  icon?: unknown;
+  title?: unknown;
+  description?: unknown;
+}
+
 export interface StepsProps {
   active: number;
   direction: StepsDirection;
@@ -30,4 +45,15 @@ export interface StepsProps {
 export interface StepsChangeDetail {
   active: number;
   item: StepItem;
+}
+
+export interface StepsSlots {
+  default?: unknown;
+}
+
+export interface StepsExpose {
+  readonly activeIndex: number;
+  next: () => void;
+  prev: () => void;
+  setActive: (index: number) => void;
 }

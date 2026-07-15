@@ -11,10 +11,11 @@ import { DropdownItem } from "./DropdownItem/index";
 import { DropdownMenu } from "./DropdownMenu/index";
 import { Menu } from "./Menu/index";
 import { PageHeader } from "./PageHeader/index";
+import { Step } from "./Step/index";
 import { Steps } from "./Steps/index";
 import { Tabs } from "./Tabs/index";
 
-registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, DropdownMenu, DropdownItem, Menu, Steps, Tabs, PageHeader);
+registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, DropdownMenu, DropdownItem, Menu, Steps, Step, Tabs, PageHeader);
 
 export type {
   AnchorChangeDetail,
@@ -65,10 +66,14 @@ export type {
   DropdownVirtualRef
 } from "./Dropdown/types";
 export type {
+  StepProps,
+  StepSlots,
   StepItem,
   StepsChangeDetail,
   StepsDirection,
   StepsProps,
   StepsSize,
-  StepStatus
+  StepStatus,
+  StepsExpose,
+  StepsSlots
 } from "./Steps/types";

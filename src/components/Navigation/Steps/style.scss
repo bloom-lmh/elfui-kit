@@ -153,6 +153,10 @@
   scrollbar-width: thin;
 }
 .steps.is-horizontal:not(.is-compact) .step-item { min-width: 200px; }
+.steps.is-horizontal.has-step-children:not(.is-compact) ::slotted(elf-step) {
+  flex: 1 1 0;
+  min-width: 200px;
+}
 .steps.is-horizontal::-webkit-scrollbar { height: 6px; }
 .steps.is-horizontal::-webkit-scrollbar-thumb {
   border-radius: 999px;
@@ -175,8 +179,13 @@
   flex: 0 0 var(--step-space);
   max-width: var(--step-space);
 }
+.steps.has-space.is-horizontal.has-step-children ::slotted(elf-step) {
+  flex: 0 0 var(--step-space);
+  max-width: var(--step-space);
+}
 
 .steps.is-vertical { flex-direction: column; }
+.steps.is-vertical.has-step-children ::slotted(elf-step) { width: 100%; }
 .steps.is-vertical .step-item { min-height: 86px; }
 .steps.is-vertical .step-button { width: 100%; }
 .steps.is-vertical .step-tail {
@@ -219,6 +228,7 @@
   border-radius: 16px;
   background: var(--elf-bg-paper);
 }
+.steps.is-simple.has-step-children ::slotted(elf-step) { flex: 1 1 0; }
 .steps.is-simple .step-button {
   display: flex;
   align-items: center;
@@ -236,4 +246,8 @@
 }
 .steps.is-compact.is-horizontal .step-item,
 .steps.is-compact.is-horizontal .step-button { width: 100%; }
+.steps.is-compact.is-horizontal.has-step-children ::slotted(elf-step) {
+  width: 100%;
+  min-width: 0;
+}
 .steps.is-compact.is-horizontal .step-tail { display: none; }
