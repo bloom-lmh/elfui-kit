@@ -140,4 +140,36 @@ describe("elf-breadcrumb", () => {
     expect(window.location.hash).toBe("#/docs");
     expect(el.shadowRoot!.querySelector(".is-current")?.textContent).toContain("Docs");
   });
+
+  it("supports compositional breadcrumb items and parent-managed separators", async () => {
+    const el = document.createElement("elf-breadcrumb") as BreadcrumbEl;
+    el.router = true;
+    el.separatorIcon = ">";
+    el.innerHTML = `
+      <elf-breadcrumb-item to="/">首页</elf-breadcrumb-item>
+      <elf-breadcrumb-item to="/docs">文档</elf-breadcrumb-item>
+      <elf-breadcrumb-item>API</elf-breadcrumb-item>
+    `;
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const children = Array.from(el.querySelectorAll("elf-breadcrumb-item")) as Array<HTMLElement & {
+      current?: boolean;
+      last?: boolean;
+      separatorIcon?: string;
+    }>;
+    expect(children[2]!.current).toBe(true);
+    expect(children[2]!.last).toBe(true);
+    expect(children[0]!.separatorIcon).toBe(">");
+
+    const onClick = vi.fn();
+    el.addEventListener("click", onClick as EventListener);
+    (children[0]!.shadowRoot!.querySelector("button") as HTMLButtonElement).click();
+    await tick();
+    await tick();
+    expect((onClick.mock.calls[0]![0] as CustomEvent).detail[1]).toBe("/");
+    expect(children[0]!.current).toBe(true);
+    expect(window.location.hash).toBe("#/");
+  });
 });

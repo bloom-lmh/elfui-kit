@@ -10,80 +10,80 @@
 
 ## 现有组件目录
 
-- [ ] `Basic/Avatar`
-- [ ] `Basic/Badge`
-- [ ] `Basic/Button`
+- [x] `Basic/Avatar`
+- [x] `Basic/Badge`
+- [x] `Basic/Button`
 - [ ] `Basic/Icon`
-- [ ] `Basic/Link`
-- [ ] `Basic/Tag`
+- [x] `Basic/Link`
+- [x] `Basic/Tag`
 - [ ] `Basic/Text`
 - [ ] `Common/Playground`
 - [ ] `Common/PropsTable`
-- [ ] `Data/Card`
-- [ ] `Data/Carousel`
-- [ ] `Data/Collapse`
-- [ ] `Data/Descriptions`
-- [ ] `Data/Divider`
-- [ ] `Data/Empty`
-- [ ] `Data/Image`
-- [ ] `Data/InfiniteScroll`
+- [x] `Data/Card`
+- [x] `Data/Carousel`
+- [x] `Data/Collapse`
+- [x] `Data/Descriptions`
+- [x] `Data/Divider`
+- [x] `Data/Empty`
+- [x] `Data/Image`
+- [x] `Data/InfiniteScroll`
 - [ ] `Data/Pagination`
-- [ ] `Data/Progress`
-- [ ] `Data/Result`
-- [ ] `Data/Skeleton`
-- [ ] `Data/Statistic`
+- [x] `Data/Progress`
+- [x] `Data/Result`
+- [x] `Data/Skeleton`
+- [x] `Data/Statistic`
 - [ ] `Data/Table`
-- [ ] `Data/Timeline`
+- [x] `Data/Timeline`
 - [ ] `Data/Transfer`
 - [ ] `Data/Tree`
 - [ ] `Data/Watermark`
-- [ ] `Feedback/Alert`
+- [x] `Feedback/Alert`
 - [ ] `Feedback/Dialog`
 - [ ] `Feedback/Drawer`
-- [ ] `Feedback/Loading`
+- [x] `Feedback/Loading`
 - [ ] `Feedback/Message`
-- [ ] `Feedback/Notification`
+- [x] `Feedback/Notification`
 - [ ] `Feedback/PopConfirm`
 - [ ] `Feedback/Tooltip`
 - [ ] `Feedback/Tour`
 - [ ] `Form/Autocomplete`
 - [ ] `Form/Cascader`
-- [ ] `Form/Checkbox`
-- [ ] `Form/CheckboxGroup`
+- [x] `Form/Checkbox`
+- [x] `Form/CheckboxGroup`
 - [ ] `Form/Form`
 - [ ] `Form/FormItem`
-- [ ] `Form/Input`
-- [ ] `Form/InputNumber`
-- [ ] `Form/InputOtp`
-- [ ] `Form/InputTag`
-- [ ] `Form/Mention`
-- [ ] `Form/Radio`
-- [ ] `Form/RadioGroup`
-- [ ] `Form/Rate`
+- [x] `Form/Input`
+- [x] `Form/InputNumber`
+- [x] `Form/InputOtp`
+- [x] `Form/InputTag`
+- [x] `Form/Mention`
+- [x] `Form/Radio`
+- [x] `Form/RadioGroup`
+- [x] `Form/Rate`
 - [ ] `Form/Segmented`
 - [ ] `Form/Select`
-- [ ] `Form/Slider`
-- [ ] `Form/Switch`
-- [ ] `Form/Textarea`
+- [x] `Form/Slider`
+- [x] `Form/Switch`
+- [x] `Form/Textarea`
 - [ ] `Form/Upload`
-- [ ] `Layout/Aside`
-- [ ] `Layout/Container`
-- [ ] `Layout/Flex`
-- [ ] `Layout/Footer`
-- [ ] `Layout/Grid`
-- [ ] `Layout/GridItem`
-- [ ] `Layout/Header`
-- [ ] `Layout/Layout`
-- [ ] `Layout/Main`
+- [x] `Layout/Aside`
+- [x] `Layout/Container`
+- [x] `Layout/Flex`
+- [x] `Layout/Footer`
+- [x] `Layout/Grid`
+- [x] `Layout/GridItem`
+- [x] `Layout/Header`
+- [x] `Layout/Layout`
+- [x] `Layout/Main`
 - [x] `Layout/Scrollbar`
-- [ ] `Layout/Splitter`
-- [ ] `Layout/Sticky`
-- [ ] `Navigation/Anchor`
-- [ ] `Navigation/BackTop`
-- [ ] `Navigation/Breadcrumb`
+- [x] `Layout/Splitter`
+- [x] `Layout/Sticky`
+- [x] `Navigation/Anchor`
+- [x] `Navigation/BackTop`
+- [x] `Navigation/Breadcrumb`
 - [ ] `Navigation/Dropdown`
 - [ ] `Navigation/Menu`
-- [ ] `Navigation/PageHeader`
+- [x] `Navigation/PageHeader`
 - [ ] `Navigation/Steps`
 - [ ] `Navigation/Tabs`
 - [ ] `Picker/Calendar`

@@ -11,11 +11,18 @@ const propsRows = [
 ];
 
 const eventsRows = [{ name: "click", type: "(item, to) => void", desc: "点击非当前项时触发" }];
+const itemRows = [
+  { name: "to", type: "string | BreadcrumbRouteLocation", default: "''", desc: "目标路由" },
+  { name: "replace", type: "boolean", default: "false", desc: "替换当前历史记录" }
+];
+const slotsRows = [{ name: "default", desc: "组合式 elf-breadcrumb-item 内容" }];
 
 const PageBreadcrumbProps = defineHtml(html`
   <h2>API</h2>
   <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>
   <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
+  <elf-props-table title="BreadcrumbItem Props" :rows=${itemRows}></elf-props-table>
+  <elf-props-table title="Slots" :rows=${slotsRows}></elf-props-table>
 `);
 
 export { PageBreadcrumbProps };

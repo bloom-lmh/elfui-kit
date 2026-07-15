@@ -2,15 +2,17 @@
 import { registerComponents } from "elfui";
 
 import { Anchor } from "./Anchor/index";
+import { AnchorLink } from "./AnchorLink/index";
 import { BackTop } from "./BackTop/index";
 import { Breadcrumb } from "./Breadcrumb/index";
+import { BreadcrumbItem } from "./BreadcrumbItem/index";
 import { Dropdown } from "./Dropdown/index";
 import { Menu } from "./Menu/index";
 import { PageHeader } from "./PageHeader/index";
 import { Steps } from "./Steps/index";
 import { Tabs } from "./Tabs/index";
 
-registerComponents(Anchor, BackTop, Breadcrumb, Dropdown, Menu, Steps, Tabs, PageHeader);
+registerComponents(Anchor, AnchorLink, BackTop, Breadcrumb, BreadcrumbItem, Dropdown, Menu, Steps, Tabs, PageHeader);
 
 export type {
   AnchorChangeDetail,
@@ -18,14 +20,25 @@ export type {
   AnchorElement,
   AnchorFieldNames,
   AnchorItem,
-  AnchorProps
+  AnchorLinkProps,
+  AnchorLinkSlots,
+  AnchorProps,
+  AnchorSlots
 } from "./Anchor/types";
 export type {
-  BackTopClickDetail,
   BackTopElement,
   BackTopProps,
   BackTopShape
 } from "./BackTop/types";
+export type {
+  BreadcrumbFieldNames,
+  BreadcrumbItem,
+  BreadcrumbItemProps,
+  BreadcrumbItemSlots,
+  BreadcrumbProps,
+  BreadcrumbRouteLocation,
+  BreadcrumbSlots
+} from "./Breadcrumb/types";
 export type {
   DropdownButtonProps,
   DropdownButtonType,

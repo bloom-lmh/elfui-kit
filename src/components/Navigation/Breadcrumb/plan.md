@@ -1,86 +1,36 @@
 # Breadcrumb Element Plus API 对标计划
 
-生成时间：2026-07-05
+更新时间：2026-07-15
 
 ## 对标定位
 
-- ElfUI 组件目录：`Navigation/Breadcrumb`
-- Element Plus 文档：`breadcrumb.md`
-- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
+- ElfUI 组件：`Navigation/Breadcrumb` 与 `Navigation/BreadcrumbItem`。
+- 2026-07-15 复核 Element Plus Breadcrumb：父级 `separator`、`separator-icon`、默认插槽；子项 `to`、`replace`、默认插槽。
+- 保留 `items`、`router`、`currentPath`、`maxItems` 和字段映射作为 ElfUI 数据驱动扩展。
 
-## Element Plus API 摘要
+## 完成情况
 
-### breadcrumb.md
+- [x] 父级 `separator`、`separatorIcon` 和默认插槽完整实现。
+- [x] 新增 `elf-breadcrumb-item`，补齐 `to`、`replace` 与默认插槽。
+- [x] `to` 支持 string 和 `{ path, hash, name }` 路由对象。
+- [x] 父级统一管理组合式子项的 current、last、separator 与 separatorIcon 状态。
+- [x] 数据模式和组合模式共用导航入口，click 与 `update:currentPath` 只触发一次。
+- [x] router 模式支持 push hash 与 replaceState；受控 currentPath、非受控内部路径和 hashchange 同步。
+- [x] 数据模式继续支持字段别名、disabled 和 maxItems 折叠。
+- [x] 原生 button 提供键盘与焦点语义，当前项使用 `aria-current="page"`，容器使用 nav / ol 结构。
+- [x] 父子 Props、Slots、事件类型、分类注册和 PropsTable 同步。
+- [x] 三个案例全部提供 Template / Script，动态绑定使用 `${...}`。
 
-#### Breadcrumb API
+## 架构说明
 
-- `separator`
-- `separator-icon`
-- `default`
+- Props、状态、派生数据、子项同步、导航方法、监听器、生命周期和模板保持连续分区。
+- 子项通过私有 composed 事件向父级请求导航，公共 click 只由父级发出，避免重复事件。
+- 数据驱动模式与组合式模式互斥渲染，保持旧 API 兼容并提供 Element Plus 风格的组合能力。
 
-#### Breadcrumb Attributes
+## 验收记录
 
-- `separator`
-- `separator-icon`
-
-#### Breadcrumb Slots
-
-- `default`
-
-#### BreadcrumbItem API
-
-- `to`
-- `replace`
-- `default`
-
-#### BreadcrumbItem Attributes
-
-- `to`
-- `replace`
-
-#### BreadcrumbItem Slots
-
-- `default`
-
-## 当前 ElfUI API 快照
-
-### Props
-
-- `currentPath`
-- `items`
-- `maxItems`
-- `props`
-- `router`
-- `separator`
-
-### Events
-
-- `click`
-- `update:currentPath`
-
-### Slots
-
-- 暂无记录
-
-### Exposes
-
-- 暂无记录
-
-## 差距与任务
-
-- [x] P1 补齐核心属性差距：`separator-icon`、`to`、`replace`
-- [ ] P1 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：当前粗扫未发现明显缺口，进入实现时复核默认插槽、命名插槽和 expose 方法。
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
-
-## 验收清单
-
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
-## 本轮记录
-
-- [x] 2026-07-11 Navigation 第一阶段：复核上一轮 `separatorIcon/to/replace` 对齐结果，补 PropsTable `separatorIcon` 和 `${...}` 绑定写法，纳入 Navigation 定向测试和 ui-kit build 验证。
+- [x] `Breadcrumb.test.ts` 9 项测试通过，覆盖分隔符、路由、受控/非受控、字段映射、折叠、图标、replace 和组合式子项。
+- [x] `pnpm build` 通过。
+- [x] Playwright 实测 3 个组合子项，点击后 current 切换到“首页”、last 保持正确、状态文本同步。
+- [x] 页面 Template / Script 可见，浏览器控制台 0 error。
+- [x] 视觉截图：`output/playwright/breadcrumb-upgrade.png`。

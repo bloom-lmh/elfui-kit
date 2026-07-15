@@ -6,6 +6,8 @@ import {
   html,
   onMount,
   onUnmount,
+  useEffect,
+  useEventListener,
   useHost,
   useHostAttr,
   useHostCssVar,
@@ -21,7 +23,8 @@ import type {
   AnchorClickDetail,
   AnchorFieldNames,
   AnchorItem,
-  AnchorProps
+  AnchorProps,
+  AnchorSlots
 } from "./types";
 
 export type {
@@ -29,7 +32,10 @@ export type {
   AnchorClickDetail,
   AnchorFieldNames,
   AnchorItem,
-  AnchorProps
+  AnchorLinkProps,
+  AnchorLinkSlots,
+  AnchorProps,
+  AnchorSlots
 } from "./types";
 
 type RawItem = Record<string, unknown>;
@@ -45,14 +51,22 @@ interface AnchorViewItem {
 
 type ScrollContainer = Window | HTMLElement;
 
-const props = defineProps({
+interface AnchorLinkElement extends HTMLElement {
+  href?: string;
+  title?: string;
+  active?: boolean;
+  level?: number;
+  direction?: "vertical" | "horizontal";
+}
+
+const props = defineProps<AnchorProps>({
   items: { type: Array, default: () => [] },
   modelValue: { type: String, default: "" },
   defaultActive: { type: String, default: "" },
   container: { type: null, default: "" },
   offset: { type: Number, default: 0 },
-  bound: { type: Number, default: Number.NaN },
-  bounds: { type: Number, default: 5 },
+  bound: { type: Number, default: undefined },
+  bounds: { type: Number, default: 15 },
   duration: { type: Number, default: 300 },
   marker: { type: Boolean, default: true },
   type: { type: String, default: "default" },
@@ -68,15 +82,20 @@ const props = defineProps({
       children: "children"
     })
   }
-}) as unknown as Readonly<AnchorProps>;
+});
 
-const emit = defineEmits(["update:modelValue", "change", "click"]);
+const emit = defineEmits<{
+  "update:modelValue": [href: string];
+  change: [detail: AnchorChangeDetail];
+  click: [detail: AnchorClickDetail];
+}>();
 
 const host = useHost();
 
 const activeHref = useRef("");
 
 const mounted = useRef(false);
+const hasLinkChildren = useRef(false);
 
 let scrollTarget: ScrollContainer | null = null;
 
@@ -122,9 +141,33 @@ const flatten = (source = items()): AnchorViewItem[] => {
   return out;
 };
 
-const flatItems = (): AnchorViewItem[] => flatten();
+const linkChildren = (): AnchorLinkElement[] =>
+  Array.from(host.querySelectorAll("elf-anchor-link")) as AnchorLinkElement[];
 
-const firstEnabledHref = (): string => flatten().find((item) => !item.disabled)?.href || "";
+const linkLevel = (child: AnchorLinkElement): number => {
+  let level = 0;
+  let parent = child.parentElement;
+  while (parent && parent !== host) {
+    if (parent.tagName.toLowerCase() === "elf-anchor-link") level += 1;
+    parent = parent.parentElement;
+  }
+  return level;
+};
+
+const compositionalItems = (): AnchorViewItem[] =>
+  linkChildren().map((child) => ({
+    raw: { title: child.title || child.textContent?.trim() || child.href || "", href: child.href || "" },
+    title: child.title || child.textContent?.trim() || child.href || "",
+    href: child.href || "",
+    disabled: !child.href,
+    level: linkLevel(child),
+    children: []
+  }));
+
+const flatItems = (): AnchorViewItem[] => hasLinkChildren.value ? compositionalItems() : flatten();
+const renderedDataItems = (): AnchorViewItem[] => hasLinkChildren.value ? [] : flatten();
+
+const firstEnabledHref = (): string => flatItems().find((item) => !item.disabled)?.href || "";
 
 watchEffect(() => {
   const controlled = String(props.modelValue || "");
@@ -146,7 +189,7 @@ const numberProp = (value: unknown, fallback = 0): number => {
 
 const boundValue = (): number => {
   const bound = numberProp(props.bound, Number.NaN);
-  return Number.isFinite(bound) ? bound : numberProp(props.bounds, 5);
+  return Number.isFinite(bound) ? bound : numberProp(props.bounds, 15);
 };
 
 const direction = (): "vertical" | "horizontal" =>
@@ -217,7 +260,11 @@ const updateActive = (): void => {
   const target = scrollTarget || getContainer();
   const scrollTop = getScrollTop(target) + numberProp(props.offset) + boundValue();
   let next = "";
-  for (const item of flatten()) {
+  if (props.selectScrollTop && getScrollTop(target) <= 0) {
+    setActive(firstEnabledHref());
+    return;
+  }
+  for (const item of flatItems()) {
     if (item.disabled) continue;
     const element = findTarget(item.href);
     if (!element) continue;
@@ -225,6 +272,20 @@ const updateActive = (): void => {
   }
   if (!next) next = firstEnabledHref();
   setActive(next);
+};
+
+const connect = (): void => {
+  if (typeof window === "undefined") return;
+  cleanup();
+  const target = getContainer();
+  scrollTarget = target;
+  target.addEventListener("scroll", updateActive, { passive: true });
+  window.addEventListener("resize", updateActive);
+  cleanup = () => {
+    target.removeEventListener("scroll", updateActive);
+    window.removeEventListener("resize", updateActive);
+  };
+  updateActive();
 };
 
 const scrollContainerTo = (container: ScrollContainer, top: number): void => {
@@ -261,6 +322,54 @@ const onItemClick = (item: AnchorViewItem, event: Event): void => {
   scrollTo(item.href);
 };
 
+const onLinksSlotChange = (): void => syncLinkChildren();
+
+const syncLinkChildren = (): void => {
+  const children = linkChildren();
+  hasLinkChildren.set(children.length > 0);
+  const current = currentHref();
+  children.forEach((child) => {
+    child.active = child.href === current;
+    child.level = linkLevel(child);
+    child.direction = direction();
+  });
+};
+
+useEventListener(host, "elf-anchor-link-click", (event) => {
+  event.stopPropagation();
+  const customEvent = event as CustomEvent<{ href: string; event: MouseEvent }>;
+  const child = customEvent.target as AnchorLinkElement;
+  const item: AnchorViewItem = {
+    raw: { title: child.title || child.textContent?.trim() || customEvent.detail.href, href: customEvent.detail.href },
+    title: child.title || child.textContent?.trim() || customEvent.detail.href,
+    href: customEvent.detail.href,
+    disabled: false,
+    level: child.level || 0,
+    children: []
+  };
+  onItemClick(item, customEvent.detail.event);
+});
+
+watchEffect(() => {
+  void activeHref.value;
+  void props.modelValue;
+  void props.direction;
+  syncLinkChildren();
+});
+
+useEffect(() => {
+  void props.container;
+  if (mounted.peek()) queueMicrotask(connect);
+});
+
+useEffect(() => {
+  void props.offset;
+  void props.bound;
+  void props.bounds;
+  void props.selectScrollTop;
+  if (mounted.peek()) updateActive();
+});
+
 const renderLevelStyle = (item: AnchorViewItem): Record<string, string> => ({
   "--anchor-level": String(item.level)
 });
@@ -268,15 +377,8 @@ const renderLevelStyle = (item: AnchorViewItem): Record<string, string> => ({
 onMount(() => {
   if (typeof window === "undefined") return;
   mounted.set(true);
-  const target = getContainer();
-  scrollTarget = target;
-  target.addEventListener("scroll", updateActive, { passive: true });
-  window.addEventListener("resize", updateActive);
-  cleanup = () => {
-    target.removeEventListener("scroll", updateActive);
-    window.removeEventListener("resize", updateActive);
-  };
-  updateActive();
+  syncLinkChildren();
+  connect();
 });
 
 onUnmount(() => {
@@ -298,11 +400,12 @@ defineExpose({ scrollTo, scrollToAnchor: scrollTo });
 
 defineStyle(styles);
 
-const Anchor = defineHtml(html`
+const Anchor = defineHtml<AnchorProps, Record<string, never>, AnchorSlots>(html`
   <nav :class=${["anchor", rootClass()]} aria-label="Anchor navigation">
     <div v-if=${props.marker} class="track" aria-hidden="true"></div>
     <ul class="list">
-      <template v-for="item in flatItems()" :key="item.href || item.title">
+      <slot @slotchange=${onLinksSlotChange}></slot>
+      <template v-for="item in renderedDataItems()" :key="item.href || item.title">
         <li
           :class="[
             'item',

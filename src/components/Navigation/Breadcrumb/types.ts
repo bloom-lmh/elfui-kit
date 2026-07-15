@@ -28,3 +28,24 @@ export interface BreadcrumbProps {
   maxItems: number;
   props: BreadcrumbFieldNames;
 }
+
+export interface BreadcrumbSlots {
+  default?: unknown;
+}
+
+export interface BreadcrumbItemProps {
+  to: string | BreadcrumbRouteLocation;
+  replace: boolean;
+  /** Parent-managed compositional state. */
+  current: boolean;
+  /** Parent-managed compositional state. */
+  last: boolean;
+  /** Parent-managed separator. */
+  separator: string;
+  /** Parent-managed separator icon. */
+  separatorIcon: string;
+}
+
+export interface BreadcrumbItemSlots {
+  default?: unknown;
+}

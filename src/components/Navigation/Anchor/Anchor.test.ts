@@ -30,6 +30,12 @@ interface AnchorEl extends HTMLElement {
   scrollToAnchor?: (href: string) => void;
 }
 
+interface AnchorLinkEl extends HTMLElement {
+  href?: string;
+  active?: boolean;
+  level?: number;
+}
+
 const sections = ["intro", "usage", "api"];
 
 const installSections = (): void => {
@@ -176,5 +182,52 @@ describe("elf-anchor", () => {
 
     el.scrollTo!("#usage");
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 160, behavior: "auto" });
+  });
+
+  it("supports compositional anchor links and nested sub-links", async () => {
+    const el = await mount({ items: [] });
+    el.innerHTML = `
+      <elf-anchor-link href="#intro" title="Intro"></elf-anchor-link>
+      <elf-anchor-link href="#usage" title="Usage">
+        <elf-anchor-link slot="sub-link" href="#api" title="API"></elf-anchor-link>
+      </elf-anchor-link>
+    `;
+    await tick();
+    await tick();
+
+    const links = Array.from(el.querySelectorAll("elf-anchor-link")) as AnchorLinkEl[];
+    expect(links).toHaveLength(3);
+    expect(links.map((link) => link.level)).toEqual([0, 0, 1]);
+    expect(links[1]!.shadowRoot!.querySelector(".link")!.textContent).toContain("Usage");
+    expect(el.shadowRoot!.querySelector("slot")).toBeTruthy();
+
+    const onClick = vi.fn();
+    el.addEventListener("click", onClick as unknown as EventListener);
+    (links[1]!.shadowRoot!.querySelector(".link") as HTMLElement).click();
+    await tick();
+    await tick();
+
+    expect(links[1]!.active).toBe(true);
+    expect((onClick.mock.calls[0]![0] as CustomEvent).detail.href).toBe("#usage");
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 160, behavior: "auto" });
+  });
+
+  it("reconnects when the scroll container changes", async () => {
+    const first = document.createElement("div");
+    const second = document.createElement("div");
+    document.body.append(first, second);
+    const firstAdd = vi.spyOn(first, "addEventListener");
+    const firstRemove = vi.spyOn(first, "removeEventListener");
+    const secondAdd = vi.spyOn(second, "addEventListener");
+
+    const el = await mount({ container: first });
+    expect(firstAdd).toHaveBeenCalledWith("scroll", expect.any(Function), { passive: true });
+
+    el.container = second;
+    await tick();
+    await tick();
+
+    expect(firstRemove).toHaveBeenCalledWith("scroll", expect.any(Function));
+    expect(secondAdd).toHaveBeenCalledWith("scroll", expect.any(Function), { passive: true });
   });
 });

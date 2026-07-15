@@ -1,114 +1,34 @@
 # Anchor Element Plus API 对标计划
 
 生成时间：2026-07-05
+完成时间：2026-07-15
 
 ## 对标定位
 
-- ElfUI 组件目录：`Navigation/Anchor`
-- Element Plus 文档：`anchor.md`
-- 实现原则：对齐 Element Plus 对外 API 与交互语义；内部仍保持 ElfUI Web Components、细粒度响应式和 `${...}` 示例写法，不照搬 Vue 实现。
-
-## Element Plus API 摘要
-
-### anchor.md
-
-#### Anchor API
-
-- `Property`
-- `container`
-- `offset`
-- `bound`
-- `duration`
-- `marker`
-- `type`
-- `direction`
-- `select-scroll-top ^`
-- `change`
-- `click`
-- `scrollTo`
-- `default`
-- `title`
-- `href`
-- `sub-link`
-
-#### Anchor Attributes
-
-- `Property`
-- `container`
-- `offset`
-- `bound`
-- `duration`
-- `marker`
-- `type`
-- `direction`
-- `select-scroll-top ^`
-
-#### Anchor Events
-
-- `change`
-- `click`
-
-#### Anchor Exposes
-
-- `scrollTo`
-
-#### Anchor Slots
-
-- `default`
-
-#### AnchorLink Attributes
-
-- `Property`
-- `title`
-- `href`
-
-#### AnchorLink Slots
-
-- `default`
-- `sub-link`
-
-## 当前 ElfUI API 快照
-
-### Props
-
-- `bounds`
-- `container`
-- `defaultActive`
-- `items`
-- `modelValue`
-- `offset`
-- `props`
-- `smooth`
-
-### Events
-
-- `change`
-- `click`
-- `update:modelValue`
-
-### Slots
-
-- 暂无记录
-
-### Exposes
-
-- 暂无记录
+- ElfUI 组件：`Navigation/Anchor`、`Navigation/AnchorLink`
+- 对标 Element Plus：Anchor / AnchorLink
+- 保留 ElfUI 数据源模式，并补充 Element Plus 风格的组合式子组件模式。
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`Property`、`bound`、`duration`、`marker`、`type`、`direction`、`select-scroll-top ^`、`title`、`href`
-- [ ] P1 补齐事件差距：当前粗扫未发现明显缺口，进入实现时复核事件 payload 与触发时机。
-- [ ] P1 补齐插槽/暴露方法：`sub-link`、`scrollTo`
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+- [x] P1 补齐 `bound`、`duration`、`marker`、`type`、`direction`、`selectScrollTop` 属性。
+- [x] P1 复核 `change`、`click` 与 `update:modelValue` 的触发时机和载荷。
+- [x] P1 提供 `scrollTo` 暴露方法，并保留 `scrollToAnchor` 兼容别名。
+- [x] P1 新增 `elf-anchor-link`，支持 `title`、`href`、默认插槽与 `sub-link` 插槽。
+- [x] P1 支持窗口、选择器、元素和函数容器，并在容器变化时重绑监听器。
+- [x] P1 同步受控/非受控状态、嵌套层级、方向与无障碍当前项。
+- [x] P2 补充数据模式、受控嵌套、水平模式和组合式 AnchorLink 案例。
+- [x] P2 补齐组件单测、类型导出和注册入口。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
-## 本轮记录
+- [x] API 类型、实现和页面 PropsTable 同步。
+- [x] 数据模式、组合模式、点击滚动、滚动监听、禁用项、自定义字段和动态容器均有测试覆盖。
+- [x] Playground 展示 Template / Script，所有动态绑定使用 `${...}`。
+- [x] 构建、目标测试和真实浏览器交互通过。
 
-- [x] 2026-07-11 Navigation 第一阶段：补 `bound/duration/marker/type/direction/selectScrollTop` 兼容属性、`scrollTo` 暴露别名、horizontal/underline/marker=false 样式与案例，补定向测试和 PropsTable。
+## 实现说明
+
+- `items` 是 ElfUI 的增强数据模式；默认插槽中的 `elf-anchor-link` 是对标组合模式，两种模式不会重复渲染。
+- `bounds` 与 `scrollToAnchor` 作为旧版兼容别名保留，新代码建议使用 `bound` 与 `scrollTo`。
+- `duration` 为滚动行为提示；浏览器原生平滑滚动不提供精确毫秒级时长控制。

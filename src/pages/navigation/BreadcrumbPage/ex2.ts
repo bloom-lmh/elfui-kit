@@ -25,17 +25,20 @@ const code = `<elf-breadcrumb
   @click="onClick"
 />`;
 
+const script = `const fields = { label: "name", to: "path", disabled: "locked" };
+const onClick = () => requestAnimationFrame(() => console.log(window.location.hash));`;
+
 const PageBreadcrumbEx2 = defineHtml(html`
   <h2>路由与自定义字段</h2>
-  <elf-playground title="router / props / maxItems" :code="code">
+  <elf-playground title="router / props / maxItems" :code=${code} :script=${script}>
     <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:760px">
       <elf-breadcrumb
-        :items="docs"
-        :props.prop="fields"
+        :items=${docs}
+        :props=${fields}
         separator="|"
         router
-        :maxItems.prop="3"
-        @click="onClick"
+        :max-items=${3}
+        @click=${onClick}
       ></elf-breadcrumb>
       <div style="color:var(--elf-text-secondary);font-size:14px">
         当前 hash：<strong style="color:var(--elf-primary)">{{ routeText }}</strong>

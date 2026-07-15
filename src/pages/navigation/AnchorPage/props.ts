@@ -11,8 +11,8 @@ const propsRows = [
     desc: "scroll container"
   },
   { name: "offset", type: "number", default: "0", desc: "top offset before activation" },
-  { name: "bound", type: "number", default: "5", desc: "Element Plus activation threshold alias" },
-  { name: "bounds", type: "number", default: "5", desc: "activation threshold" },
+  { name: "bound", type: "number", default: "15", desc: "activation threshold" },
+  { name: "bounds", type: "number", default: "15", desc: "legacy activation threshold alias" },
   { name: "duration", type: "number", default: "300", desc: "smooth scroll duration hint" },
   { name: "marker", type: "boolean", default: "true", desc: "show active marker" },
   { name: "type", type: "default | underline", default: "default", desc: "anchor style type" },
@@ -37,11 +37,28 @@ const methodsRows = [
   { name: "scrollToAnchor", type: "(href: string) => void", desc: "scroll to target" }
 ];
 
+const slotsRows = [
+  { name: "default", type: "AnchorLink[]", desc: "compositional anchor links" }
+];
+
+const linkPropsRows = [
+  { name: "title", type: "string", default: "''", desc: "link label" },
+  { name: "href", type: "string", default: "''", desc: "target selector" }
+];
+
+const linkSlotsRows = [
+  { name: "default", type: "unknown", desc: "custom link content" },
+  { name: "sub-link", type: "AnchorLink[]", desc: "nested anchor links" }
+];
+
 const PageAnchorProps = defineHtml(html`
   <h2>API</h2>
   <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>
   <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
   <elf-props-table title="Methods" :rows=${methodsRows}></elf-props-table>
+  <elf-props-table title="Slots" :rows=${slotsRows}></elf-props-table>
+  <elf-props-table title="AnchorLink Props" :rows=${linkPropsRows}></elf-props-table>
+  <elf-props-table title="AnchorLink Slots" :rows=${linkSlotsRows}></elf-props-table>
 `);
 
 export { PageAnchorProps };
