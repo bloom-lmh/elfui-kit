@@ -14,4 +14,4 @@
 
 ## Remaining gap
 
-- [ ] Support a correctly-positioned `teleported` panel. This requires an anchored-positioning primitive so scroll, zoom, and viewport changes remain accurate.
+- [x] Support a correctly-positioned `teleported` panel with `append-to`, popper customization, collision handling, captured-scroll updates, visual viewport support, and optional input-width fitting.

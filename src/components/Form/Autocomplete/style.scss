@@ -66,6 +66,24 @@ input:focus {
   box-shadow: var(--elf-shadow-3);
 }
 
+.panel[popover] {
+  inset: auto;
+  width: max-content;
+  min-width: 240px;
+  max-width: calc(100vw - 16px);
+  max-height: min(320px, calc(100vh - 16px));
+  margin: 0;
+  padding: 0;
+}
+
+.panel[popover]::backdrop {
+  background: transparent;
+}
+
+.panel.is-teleported {
+  position: fixed;
+}
+
 .placement-top,
 .placement-top-start,
 .placement-top-end {

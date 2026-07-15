@@ -46,7 +46,7 @@
 - [ ] `Feedback/PopConfirm`
 - [ ] `Feedback/Tooltip`
 - [ ] `Feedback/Tour`
-- [ ] `Form/Autocomplete`
+- [x] `Form/Autocomplete`
 - [ ] `Form/Cascader`
 - [x] `Form/Checkbox`
 - [x] `Form/CheckboxGroup`

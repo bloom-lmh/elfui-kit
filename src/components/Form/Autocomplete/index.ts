@@ -1,13 +1,36 @@
-import { defineEmits, defineHtml, defineProps, defineStyle, html, useRef, useTemplateRef } from "elfui";
+import {
+    defineEmits,
+    defineExpose,
+    defineHtml,
+    defineProps,
+    defineStyle,
+    html,
+    onMount,
+    onUnmount,
+    useEffect,
+    useHost,
+    useRef,
+} from "elfui";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
+import { computeAnchoredPosition } from "../../Common/anchored-overlay";
 import styles from "./style.scss?inline";
-import type { AutocompleteOption, AutocompleteProps } from "./types";
+import type {
+    AutocompleteOption,
+    AutocompletePlacement,
+    AutocompletePopperModifier,
+    AutocompletePopperOptions,
+    AutocompleteProps,
+} from "./types";
 
 export type {
+    AutocompleteElement,
+    AutocompleteExpose,
     AutocompleteFetchSuggestions,
     AutocompleteOption,
     AutocompletePlacement,
+    AutocompletePopperModifier,
+    AutocompletePopperOptions,
     AutocompleteProps,
 } from "./types";
 
@@ -33,6 +56,12 @@ const props = defineProps<AutocompleteProps>({
     loading: { type: Boolean, default: false },
     loadingText: { type: String, default: "Loading..." },
     placement: { type: String, default: "bottom-start" },
+    popperClass: { type: String, default: "" },
+    popperStyle: { type: Object, default: () => ({}) },
+    popperOptions: { type: Object, default: () => ({}) },
+    teleported: { type: Boolean, default: true },
+    appendTo: { type: [String, Object], default: "body" },
+    fitInputWidth: { type: Boolean, default: false },
     id: { type: String, default: "" },
     name: { type: String, default: "" },
     ariaLabel: { type: String, default: "" },
@@ -54,14 +83,34 @@ const ctl = useFormControl<string>(props, emit, {
 });
 const fi = useFormItem(() => "");
 const isDisabled = useDisabled(() => Boolean(props.disabled));
-const inputRef = useTemplateRef<HTMLInputElement>("inputEl");
+const host = useHost();
 const open = useRef(false);
 const suggestions = useRef<AutocompleteOption[] | null>(null);
 const activeIndex = useRef(-1);
 const pending = useRef(false);
+const overlayStyle = useRef<Record<string, string>>({});
+const resolvedPlacement = useRef<AutocompletePlacement>("bottom-start");
 let requestId = 0;
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+let blurTimer: ReturnType<typeof setTimeout> | undefined;
+let cleanupAnchoredOverlay = (): void => {};
+let overlayFrame = 0;
+let mounted = false;
 const listboxId = `elf-autocomplete-${Math.random().toString(36).slice(2)}`;
+
+const resolvePlacement = (value: unknown): AutocompletePlacement => {
+    const next = String(value || "bottom-start") as AutocompletePlacement;
+    return ["top", "top-start", "top-end", "bottom", "bottom-start", "bottom-end"].includes(next)
+        ? next
+        : "bottom-start";
+};
+
+const toStyleObject = (value: unknown): Record<string, string> => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+        Object.entries(value as Record<string, string | number>).map(([key, item]) => [key, String(item)]),
+    );
+};
 
 const normalize = (items: AutocompleteOption[]): ViewOption[] =>
     items.map((item, index) => ({
@@ -86,6 +135,41 @@ const sourceOptions = (): AutocompleteOption[] => {
 };
 
 const options = (): ViewOption[] => normalize(sourceOptions());
+
+const popperOptions = (): AutocompletePopperOptions =>
+    props.popperOptions && typeof props.popperOptions === "object"
+        ? props.popperOptions as AutocompletePopperOptions
+        : {};
+
+const placement = (): AutocompletePlacement => resolvePlacement(popperOptions().placement || props.placement);
+
+const modifier = (name: string): AutocompletePopperModifier | undefined =>
+    popperOptions().modifiers?.find((item) => item.name === name && item.enabled !== false);
+
+const offset = (): [number, number] => modifier("offset")?.options?.offset || [0, 6];
+
+const overflowPadding = (): number => Math.max(0, Number(modifier("preventOverflow")?.options?.padding) || 8);
+
+const flipEnabled = (): boolean => modifier("flip")?.enabled !== false;
+
+const isLoading = (): boolean => Boolean(props.loading || pending.value);
+
+const shouldShowPanel = (): boolean => open.value && (isLoading() || options().length > 0);
+
+const panelClass = (): unknown[] => [
+    "panel",
+    props.popperClass,
+    `placement-${resolvedPlacement.value}`,
+    { status: isLoading(), "is-teleported": props.teleported },
+];
+
+const panelStyle = (): Record<string, string> => ({
+    ...toStyleObject(props.popperStyle),
+    ...(props.teleported ? overlayStyle.value : {}),
+});
+
+const getPanelEl = (): HTMLElement | null => host.shadowRoot?.querySelector<HTMLElement>(".panel") || null;
+const getInputEl = (): HTMLInputElement | null => host.shadowRoot?.querySelector<HTMLInputElement>("input") || null;
 
 const resetActive = (): void => {
     const firstEnabled = options().findIndex((option) => !option.disabled);
@@ -152,6 +236,7 @@ const onInput = (event: Event): void => {
 
 const onFocus = (event: Event): void => {
     ctl.dispatchFocus(event);
+    if (blurTimer) clearTimeout(blurTimer);
     if (props.triggerOnFocus && !isDisabled()) {
         scheduleSuggestions(String(ctl.model.value || ""));
         open.set(true);
@@ -161,7 +246,11 @@ const onFocus = (event: Event): void => {
 
 const onBlur = (event: FocusEvent): void => {
     ctl.dispatchBlur(event);
-    setTimeout(() => open.set(false), 120);
+    if (blurTimer) clearTimeout(blurTimer);
+    blurTimer = setTimeout(() => {
+        blurTimer = undefined;
+        open.set(false);
+    }, 120);
 };
 
 const selectAt = (index: number): void => {
@@ -230,6 +319,140 @@ const onOptionMouseenter = (event: Event): void => {
     if (Number.isInteger(index) && !options()[index]?.disabled) activeIndex.set(index);
 };
 
+const updateOverlayPosition = (): void => {
+    if (!props.teleported || typeof window === "undefined") {
+        overlayStyle.set({});
+        resolvedPlacement.set(placement());
+        return;
+    }
+    const input = getInputEl();
+    const panel = getPanelEl();
+    if (!input || !panel) return;
+
+    const anchorRect = input.getBoundingClientRect();
+    if (anchorRect.width === 0 && anchorRect.height === 0) {
+        resolvedPlacement.set(placement());
+        return;
+    }
+    const panelRect = panel.getBoundingClientRect();
+    const visualViewport = window.visualViewport;
+    const width = props.fitInputWidth
+        ? anchorRect.width
+        : Math.max(anchorRect.width, panelRect.width || panel.offsetWidth || 240);
+    const next = computeAnchoredPosition(
+        anchorRect,
+        { width, height: panelRect.height || panel.offsetHeight || 0 },
+        {
+            width: visualViewport?.width || window.innerWidth,
+            height: visualViewport?.height || window.innerHeight,
+            offsetLeft: visualViewport?.offsetLeft || 0,
+            offsetTop: visualViewport?.offsetTop || 0,
+        },
+        {
+            placement: placement(),
+            offset: offset(),
+            padding: overflowPadding(),
+            flip: flipEnabled(),
+        },
+    );
+    resolvedPlacement.set(next.placement);
+    overlayStyle.set({
+        position: "fixed",
+        left: `${Math.round(next.left * 100) / 100}px`,
+        top: `${Math.round(next.top * 100) / 100}px`,
+        right: "auto",
+        bottom: "auto",
+        margin: "0",
+        width: props.fitInputWidth ? `${Math.round(width * 100) / 100}px` : "auto",
+        minWidth: `${Math.round(anchorRect.width * 100) / 100}px`,
+    });
+};
+
+const requestOverlayUpdate = (): void => {
+    if (typeof window === "undefined") return;
+    if (overlayFrame) cancelAnimationFrame(overlayFrame);
+    overlayFrame = requestAnimationFrame(() => {
+        overlayFrame = 0;
+        updateOverlayPosition();
+    });
+};
+
+const syncTopLayer = (): void => {
+    const panel = getPanelEl() as (HTMLElement & {
+        showPopover?: () => void;
+        hidePopover?: () => void;
+    }) | null;
+    if (!panel) return;
+    try {
+        if (props.teleported && shouldShowPanel()) panel.showPopover?.();
+        else panel.hidePopover?.();
+    } catch {
+        // Disconnecting or rapidly replacing a conditional panel may change its popover state first.
+    }
+    if (shouldShowPanel()) requestOverlayUpdate();
+};
+
+const connectAnchoredOverlay = (): void => {
+    cleanupAnchoredOverlay();
+    if (!props.teleported || typeof window === "undefined") return;
+
+    const input = getInputEl();
+    const panel = getPanelEl();
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(requestOverlayUpdate) : undefined;
+    if (input) observer?.observe(input);
+    if (panel) observer?.observe(panel);
+
+    window.addEventListener("resize", requestOverlayUpdate, { passive: true });
+    window.addEventListener("scroll", requestOverlayUpdate, { passive: true, capture: true });
+    window.visualViewport?.addEventListener("resize", requestOverlayUpdate, { passive: true });
+    window.visualViewport?.addEventListener("scroll", requestOverlayUpdate, { passive: true });
+
+    cleanupAnchoredOverlay = () => {
+        observer?.disconnect();
+        window.removeEventListener("resize", requestOverlayUpdate);
+        window.removeEventListener("scroll", requestOverlayUpdate, { capture: true });
+        window.visualViewport?.removeEventListener("resize", requestOverlayUpdate);
+        window.visualViewport?.removeEventListener("scroll", requestOverlayUpdate);
+    };
+    syncTopLayer();
+    requestOverlayUpdate();
+};
+
+const close = (): void => {
+    open.set(false);
+    activeIndex.set(-1);
+};
+
+useEffect(() => {
+    void open.value;
+    void pending.value;
+    void props.loading;
+    void props.teleported;
+    void props.placement;
+    void props.popperOptions;
+    void props.fitInputWidth;
+    if (mounted) queueMicrotask(() => {
+        syncTopLayer();
+        connectAnchoredOverlay();
+    });
+});
+
+onMount(() => {
+    mounted = true;
+    connectAnchoredOverlay();
+});
+
+onUnmount(() => {
+    mounted = false;
+    requestId += 1;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    if (blurTimer) clearTimeout(blurTimer);
+    cleanupAnchoredOverlay();
+    if (overlayFrame) cancelAnimationFrame(overlayFrame);
+});
+
+defineExpose({ close });
+
 defineStyle(styles);
 
 const Autocomplete = defineHtml<AutocompleteProps>(html`
@@ -237,8 +460,8 @@ const Autocomplete = defineHtml<AutocompleteProps>(html`
         class="autocomplete"
         part="autocomplete"
         :class=${[
-            `placement-${props.placement as AutocompletePlacement}`,
-            { loading: Boolean(props.loading || pending.value) },
+            `placement-${placement()}`,
+            { loading: isLoading() },
         ]}
         :data-state=${fi.state || null}
     >
@@ -265,30 +488,35 @@ const Autocomplete = defineHtml<AutocompleteProps>(html`
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
         </button>
         <div
-            v-if=${open.value && Boolean(props.loading || pending.value)}
-            class="panel status"
+            v-if=${shouldShowPanel()}
+            ref="panelEl"
+            :id=${isLoading() ? null : listboxId}
+            :class=${panelClass()}
+            :style=${panelStyle()}
             part="panel"
-            role="status"
+            :popover=${props.teleported ? "manual" : undefined}
+            :data-append-to=${typeof props.appendTo === "string" ? props.appendTo : "element"}
+            :role=${isLoading() ? "status" : "listbox"}
         >
-            <slot name="loading">${props.loadingText}</slot>
-        </div>
-        <div v-else-if=${open.value && options().length} :id=${listboxId} class="panel" part="panel" role="listbox">
-            <button
-                v-for="item in options()"
-                :key="item.key"
-                :id="\`${listboxId}-option-\${item.index}\`"
-                class="option"
-                type="button"
-                :data-index="item.index"
-                :disabled="item.disabled"
-                role="option"
-                :aria-selected="activeIndex.value === item.index ? 'true' : 'false'"
-                :class="{ active: activeIndex.value === item.index }"
-                @mousedown=${onOptionClick}
-                @mouseenter=${onOptionMouseenter}
-            >
-                <slot :item="item">{{ item.label }}</slot>
-            </button>
+            <slot v-if=${isLoading()} name="loading">${props.loadingText}</slot>
+            <template v-else>
+                <button
+                    v-for="item in options()"
+                    :key="item.key"
+                    :id="\`${listboxId}-option-\${item.index}\`"
+                    class="option"
+                    type="button"
+                    :data-index="item.index"
+                    :disabled="item.disabled"
+                    role="option"
+                    :aria-selected="activeIndex.value === item.index ? 'true' : 'false'"
+                    :class="{ active: activeIndex.value === item.index }"
+                    @mousedown=${onOptionClick}
+                    @mouseenter=${onOptionMouseenter}
+                >
+                    <slot :item="item">{{ item.label }}</slot>
+                </button>
+            </template>
         </div>
     </div>
 `);

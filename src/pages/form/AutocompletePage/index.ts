@@ -3,11 +3,13 @@ import { PageAutocompleteProps } from "./props";
 import { PageAutocompleteEx1 } from "./ex1";
 import { PageAutocompleteEx2 } from "./ex2";
 import { PageAutocompleteEx3 } from "./ex3";
+import { PageAutocompleteEx4 } from "./ex4";
 
 useComponents({
   "page-autocomplete-ex1": PageAutocompleteEx1,
   "page-autocomplete-ex2": PageAutocompleteEx2,
   "page-autocomplete-ex3": PageAutocompleteEx3,
+  "page-autocomplete-ex4": PageAutocompleteEx4,
   "page-autocomplete-props": PageAutocompleteProps
 });
 
@@ -20,6 +22,7 @@ const PageAutocomplete = defineHtml(html`
 
     <page-autocomplete-ex2 />
     <page-autocomplete-ex3 />
+    <page-autocomplete-ex4 />
     <page-autocomplete-props></page-autocomplete-props>
   </elf-container>
 `);

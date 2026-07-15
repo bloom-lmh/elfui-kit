@@ -12,6 +12,7 @@ afterEach(() => {
 });
 
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
+const frame = (): Promise<void> => new Promise((resolve) => requestAnimationFrame(() => resolve()));
 
 interface AutocompleteEl extends HTMLElement {
   modelValue?: string;
@@ -19,6 +20,10 @@ interface AutocompleteEl extends HTMLElement {
   fetchSuggestions?: (query: string) => Promise<unknown[]>;
   debounce?: number;
   highlightFirstItem?: boolean;
+  teleported?: boolean;
+  appendTo?: string | HTMLElement;
+  fitInputWidth?: boolean;
+  popperOptions?: Record<string, unknown>;
 }
 
 describe("elf-autocomplete", () => {
@@ -131,5 +136,96 @@ describe("elf-autocomplete", () => {
     expect(fetchSuggestions).toHaveBeenCalledTimes(2);
     expect(el.shadowRoot!.textContent).toContain("new");
     expect(el.shadowRoot!.textContent).not.toContain("old");
+  });
+
+  it("keeps a non-teleported panel positioned inside the component", async () => {
+    const el = document.createElement("elf-autocomplete") as AutocompleteEl;
+    el.teleported = false;
+    el.options = [{ value: "Vue" }];
+    document.body.appendChild(el);
+    await tick();
+
+    const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+    input.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
+    await tick();
+
+    const panel = el.shadowRoot!.querySelector(".panel") as HTMLElement;
+    expect(panel.getAttribute("popover")).toBeNull();
+    expect(panel.classList.contains("is-teleported")).toBe(false);
+  });
+
+  it("uses a top-layer panel and repositions it on captured scroll", async () => {
+    const originalShow = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "showPopover");
+    const originalHide = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "hidePopover");
+    const showPopover = vi.fn();
+    const hidePopover = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "showPopover", { configurable: true, value: showPopover });
+    Object.defineProperty(HTMLElement.prototype, "hidePopover", { configurable: true, value: hidePopover });
+
+    try {
+      const el = document.createElement("elf-autocomplete") as AutocompleteEl;
+      el.options = [{ value: "Vue" }, { value: "React" }];
+      el.appendTo = "#overlay-root";
+      el.fitInputWidth = true;
+      el.popperOptions = {
+        modifiers: [
+          { name: "offset", options: { offset: [12, 18] } },
+          { name: "preventOverflow", options: { padding: 10 } }
+        ]
+      };
+      document.body.appendChild(el);
+      await tick();
+
+      const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+      let anchorLeft = 100;
+      input.getBoundingClientRect = vi.fn(() => ({
+        left: anchorLeft,
+        top: 100,
+        right: anchorLeft + 240,
+        bottom: 134,
+        width: 240,
+        height: 34,
+        x: anchorLeft,
+        y: 100,
+        toJSON: () => ({})
+      })) as unknown as Element["getBoundingClientRect"];
+      input.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
+      await tick();
+
+      const panel = el.shadowRoot!.querySelector(".panel") as HTMLElement;
+      panel.getBoundingClientRect = vi.fn(() => ({
+        left: 0,
+        top: 0,
+        right: 240,
+        bottom: 96,
+        width: 240,
+        height: 96,
+        x: 0,
+        y: 0,
+        toJSON: () => ({})
+      })) as unknown as Element["getBoundingClientRect"];
+      window.dispatchEvent(new Event("scroll"));
+      await frame();
+      await tick();
+
+      expect(showPopover).toHaveBeenCalled();
+      expect(panel.getAttribute("popover")).toBe("manual");
+      expect(panel.dataset.appendTo).toBe("#overlay-root");
+      expect(panel.style.position).toBe("fixed");
+      expect(panel.style.left).toBe("112px");
+      expect(panel.style.top).toBe("152px");
+      expect(panel.style.width).toBe("240px");
+
+      anchorLeft = 180;
+      window.dispatchEvent(new Event("scroll"));
+      await frame();
+      await tick();
+      expect(panel.style.left).toBe("192px");
+    } finally {
+      if (originalShow) Object.defineProperty(HTMLElement.prototype, "showPopover", originalShow);
+      else delete (HTMLElement.prototype as HTMLElement & { showPopover?: () => void }).showPopover;
+      if (originalHide) Object.defineProperty(HTMLElement.prototype, "hidePopover", originalHide);
+      else delete (HTMLElement.prototype as HTMLElement & { hidePopover?: () => void }).hidePopover;
+    }
   });
 });
