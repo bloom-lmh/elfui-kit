@@ -6,6 +6,8 @@ import {
   defineProps,
   defineStyle,
   html,
+  onMount,
+  onUnmount,
   useHost,
   useRef,
   useTemplateRef,
@@ -14,9 +16,12 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { computeAnchoredPosition } from "../../Common/anchored-overlay";
 import type {
   TableCellContext,
   TableColumn,
+  TableDefaultSort,
+  TableFilterOption,
   TableHeaderCellContext,
   TableProps,
   TableRow,
@@ -32,6 +37,8 @@ export type {
   TableColumnType,
   TableDefaultSort,
   TableExpose,
+  TableFilterMethod,
+  TableFilterOption,
   TableLayout,
   TableProps,
   TableRow,
@@ -113,6 +120,7 @@ const emit = defineEmits([
   "expand-change",
   "action-click",
   "sort-change",
+  "filter-change",
   "scroll"
 ]);
 
@@ -134,6 +142,14 @@ const sortPropState = useRef("");
 
 const sortOrderState = useRef<SortOrder>("");
 
+const filterValuesState = useRef<Record<string, unknown[]>>({});
+
+const filterDraftState = useRef<unknown[]>([]);
+
+const filterOpenKey = useRef("");
+
+const filterOverlayStyle = useRef<Record<string, string>>({});
+
 const lastSelectedSig = useRef("");
 
 const lastExpandedSig = useRef("");
@@ -141,6 +157,9 @@ const lastExpandedSig = useRef("");
 let initialized = false;
 let initialExpansionApplied = false;
 let externalSortObserved = false;
+let filterOverlayFrame = 0;
+let cleanupFilterOverlay = (): void => {};
+const externalFilterSignatures = new Map<string, string>();
 
 const normalizeKeys = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
@@ -148,6 +167,21 @@ const normalizeKeys = (value: unknown): string[] => {
 };
 
 const signature = (keys: string[]): string => keys.join(SIGNATURE_SEP);
+
+const filterValueKey = (value: unknown): string => {
+  if (value == null) return String(value);
+  if (typeof value === "string") return `string:${value}`;
+  if (typeof value === "number") return `number:${value}`;
+  if (typeof value === "boolean") return `boolean:${value}`;
+  try {
+    return `${typeof value}:${JSON.stringify(value)}`;
+  } catch {
+    return `${typeof value}:${String(value)}`;
+  }
+};
+
+const filterSignature = (values: unknown[]): string =>
+  values.map(filterValueKey).join(SIGNATURE_SEP);
 
 const cssSize = (value: unknown): string => {
   if (value == null || value === "") return "";
@@ -186,6 +220,48 @@ const rawColumns = (): Record<string, unknown>[] =>
   Array.isArray(props.columns) ? (props.columns as Record<string, unknown>[]) : [];
 
 const rawRows = (): TableRow[] => (Array.isArray(props.data) ? (props.data as TableRow[]) : []);
+
+const filterKeyOf = (column: TableColumnView): string =>
+  String(column.raw.columnKey || column.prop);
+
+const filterOptionsOf = (column: TableColumnView): TableFilterOption[] => {
+  const filters = Array.isArray(column.raw.filters) ? column.raw.filters : [];
+  return filters
+    .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
+    .map((item) => ({ text: String(item.text ?? item.value ?? ""), value: item.value }));
+};
+
+const hasFilters = (column: TableColumnView): boolean => filterOptionsOf(column).length > 0;
+
+const filterValuesOf = (column: TableColumnView): unknown[] =>
+  filterValuesState.value[filterKeyOf(column)] || [];
+
+const syncExternalFilters = (columns: TableColumnView[]): void => {
+  const next = { ...filterValuesState.peek() };
+  const activeKeys = new Set<string>();
+  let changed = false;
+
+  for (const column of columns) {
+    if (!hasFilters(column)) continue;
+    const key = filterKeyOf(column);
+    activeKeys.add(key);
+    if (!Array.isArray(column.raw.filteredValue)) continue;
+    const values = [...column.raw.filteredValue];
+    const nextSignature = filterSignature(values);
+    if (externalFilterSignatures.get(key) === nextSignature) continue;
+    externalFilterSignatures.set(key, nextSignature);
+    next[key] = column.raw.filterMultiple === false ? values.slice(0, 1) : values;
+    changed = true;
+  }
+
+  for (const key of Object.keys(next)) {
+    if (activeKeys.has(key)) continue;
+    delete next[key];
+    externalFilterSignatures.delete(key);
+    changed = true;
+  }
+  if (changed) filterValuesState.set(next);
+};
 
 const normalizeColumns = (): TableColumnView[] => {
   const source = rawColumns();
@@ -326,8 +402,28 @@ const compareRows = (
   );
 };
 
-const sortedData = (columns: TableColumnView[]): TableRow[] => {
-  const data = [...rawRows()];
+const filteredData = (columns: TableColumnView[]): TableRow[] => {
+  const active = columns.filter((column) => hasFilters(column) && filterValuesOf(column).length > 0);
+  if (active.length === 0) return [...rawRows()];
+
+  return rawRows().filter((row) => active.every((column) => {
+    const values = filterValuesOf(column);
+    const method = column.raw.filterMethod;
+    return values.some((value) => {
+      if (typeof method === "function") {
+        try {
+          return Boolean(method(value, row, column.raw));
+        } catch {
+          return false;
+        }
+      }
+      return filterValueKey(valueAtPath(row, column.prop)) === filterValueKey(value);
+    });
+  }));
+};
+
+const sortedData = (columns: TableColumnView[], source: TableRow[]): TableRow[] => {
+  const data = [...source];
   const prop = sortPropState.value;
   const order = sortOrderState.value;
   if (!prop || !order) return data;
@@ -343,7 +439,8 @@ const sortedData = (columns: TableColumnView[]): TableRow[] => {
 
 const rebuildRows = (): void => {
   const columns = normalizeColumns();
-  const rows = sortedData(columns).map((row, index) => ({
+  syncExternalFilters(columns);
+  const rows = sortedData(columns, filteredData(columns)).map((row, index) => ({
     key: rowKeyOf(row, index),
     index,
     raw: row
@@ -352,7 +449,7 @@ const rebuildRows = (): void => {
   columnsState.set(columns);
   rowsState.set(rows);
 
-  const rowKeys = new Set(rows.map((row) => row.key));
+  const rowKeys = new Set(rawRows().map((row, index) => rowKeyOf(row, index)));
   const nextSelected = selectedState.peek().filter((key) => rowKeys.has(key));
   if (signature(nextSelected) !== lastSelectedSig.peek()) {
     selectedState.set(nextSelected);
@@ -367,7 +464,7 @@ const rebuildRows = (): void => {
 };
 
 const setSelectedKeys = (keys: string[], shouldEmit = true): void => {
-  const rowKeys = new Set(rowsState.peek().map((row) => row.key));
+  const rowKeys = new Set(rawRows().map((row, index) => rowKeyOf(row, index)));
   const next = Array.from(new Set(keys.map(String).filter((key) => rowKeys.has(key))));
   selectedState.set(next);
   lastSelectedSig.set(signature(next));
@@ -518,7 +615,7 @@ const baseCellClass = (
   "is-index": column.type === "index",
   "is-expand": column.type === "expand",
   "is-actions": column.type === "actions",
-  "is-sortable": column.sortable,
+  "is-sortable": Boolean(column.sortable),
   "is-fixed-left": column.fixed === "left",
   "is-fixed-right": column.fixed === "right",
   "is-fixed-last": column.fixedLast
@@ -824,12 +921,16 @@ const toggleRowSelection = (target: unknown, selected?: boolean, ignoreSelectabl
 
 const toggleAllSelection = (): void => {
   const shouldClear = isAllSelected() || (isIndeterminate() && !props.selectOnIndeterminate);
+  const visibleKeys = new Set(rowsState.peek().map((row) => row.key));
+  const retainedKeys = selectedState.peek().filter((key) => !visibleKeys.has(key));
   const disabledKeys = selectedState.peek().filter((key) => {
     const row = rowsState.peek().find((item) => item.key === key);
     return row ? !isSelectable(row) : false;
   });
   setSelectedKeys(
-    shouldClear ? disabledKeys : [...disabledKeys, ...selectableRows().map((row) => row.key)],
+    shouldClear
+      ? [...retainedKeys, ...disabledKeys]
+      : [...retainedKeys, ...disabledKeys, ...selectableRows().map((row) => row.key)],
     true
   );
 };
@@ -869,10 +970,7 @@ const toggleRowExpansion = (target: unknown, expanded?: boolean): void => {
 
 function getSelectionRows(): Record<string, unknown>[] {
   const selected = new Set(selectedState.peek());
-  return rowsState
-    .peek()
-    .filter((row) => selected.has(row.key))
-    .map((row) => row.raw);
+  return rawRows().filter((row, index) => selected.has(rowKeyOf(row, index)));
 }
 
 const setCurrentRow = (target: unknown): void => {
@@ -1034,9 +1132,239 @@ const sortLabel = (column: TableColumnView): string => {
   return `${column.label}，${state}`;
 };
 
+const activeFilterColumn = (): TableColumnView | undefined =>
+  getColumns().find((column) => filterKeyOf(column) === filterOpenKey.value);
+
+const filterPlacementOf = (column: TableColumnView): FilterPlacement => {
+  const placement = String(column.raw.filterPlacement || "bottom-start");
+  return FILTER_PLACEMENTS.includes(placement as FilterPlacement)
+    ? placement as FilterPlacement
+    : "bottom-start";
+};
+
+const filterPanelClass = (column: TableColumnView): ClassValue => [
+  "filter-panel",
+  String(column.raw.filterClassName || ""),
+  { "is-multiple": column.raw.filterMultiple !== false }
+];
+
+const isFilterActive = (column: TableColumnView): boolean => filterValuesOf(column).length > 0;
+
+const filterButtonClass = (column: TableColumnView): Record<string, boolean> => ({
+  "is-active": isFilterActive(column),
+  "is-open": filterOpenKey.value === filterKeyOf(column)
+});
+
+const filterLabel = (column: TableColumnView): string => {
+  const count = filterValuesOf(column).length;
+  return count > 0 ? `${column.label}，已选择 ${count} 个筛选条件` : `${column.label}，筛选`;
+};
+
+const filterPanelLabel = (column: TableColumnView): string => `${column.label}筛选选项`;
+
+const filterValueEquals = (left: unknown, right: unknown): boolean =>
+  filterValueKey(left) === filterValueKey(right);
+
+const isDraftFilterSelected = (value: unknown): boolean =>
+  filterDraftState.value.some((item) => filterValueEquals(item, value));
+
+const filterOptionViews = (column: TableColumnView): TableFilterOptionView[] =>
+  filterOptionsOf(column).map((option) => ({
+    ...option,
+    selected: isDraftFilterSelected(option.value)
+  }));
+
+const filterChangePayload = (): Record<string, unknown[]> =>
+  Object.fromEntries(
+    getColumns()
+      .filter(hasFilters)
+      .map((column) => [filterKeyOf(column), [...filterValuesOf(column)]])
+  );
+
+const setAppliedFilters = (column: TableColumnView, values: unknown[], shouldEmit = true): void => {
+  const key = filterKeyOf(column);
+  const allowed = filterOptionsOf(column);
+  const normalized = values
+    .filter((value, index, source) =>
+      source.findIndex((item) => filterValueEquals(item, value)) === index
+      && allowed.some((option) => filterValueEquals(option.value, value))
+    );
+  const nextValues = column.raw.filterMultiple === false ? normalized.slice(0, 1) : normalized;
+  const current = filterValuesState.peek()[key] || [];
+  if (filterSignature(current) === filterSignature(nextValues)) return;
+  filterValuesState.set({ ...filterValuesState.peek(), [key]: nextValues });
+  rebuildRows();
+  if (shouldEmit) emit("filter-change", filterChangePayload());
+};
+
+const clearFilter = (columnKeys?: string | string[]): void => {
+  const requested = columnKeys == null
+    ? null
+    : new Set((Array.isArray(columnKeys) ? columnKeys : [columnKeys]).map(String));
+  const columns = getColumns().filter((column) =>
+    hasFilters(column) && (!requested || requested.has(filterKeyOf(column)))
+  );
+  if (columns.length === 0 || !columns.some((column) => filterValuesOf(column).length > 0)) return;
+  const next = { ...filterValuesState.peek() };
+  for (const column of columns) next[filterKeyOf(column)] = [];
+  filterValuesState.set(next);
+  if (activeFilterColumn() && columns.includes(activeFilterColumn()!)) filterDraftState.set([]);
+  rebuildRows();
+  emit("filter-change", filterChangePayload());
+};
+
+const getFilterTrigger = (key = filterOpenKey.peek()): HTMLButtonElement | null =>
+  Array.from(host.shadowRoot?.querySelectorAll<HTMLButtonElement>("[data-filter-trigger]") || [])
+    .find((item) => item.dataset.filterKey === key) || null;
+
+const getFilterPanel = (): HTMLElement | null =>
+  host.shadowRoot?.querySelector<HTMLElement>(".filter-panel") || null;
+
+const updateFilterOverlayPosition = (): void => {
+  if (typeof window === "undefined") return;
+  const column = activeFilterColumn();
+  const trigger = getFilterTrigger();
+  const panel = getFilterPanel();
+  if (!column || !trigger || !panel) return;
+  const anchorRect = trigger.getBoundingClientRect();
+  const panelRect = panel.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const position = computeAnchoredPosition(
+    anchorRect,
+    { width: Math.max(panelRect.width, 184), height: panelRect.height },
+    {
+      width: viewport?.width || window.innerWidth,
+      height: viewport?.height || window.innerHeight,
+      offsetLeft: viewport?.offsetLeft || 0,
+      offsetTop: viewport?.offsetTop || 0
+    },
+    { placement: filterPlacementOf(column), offset: [0, 7], padding: 8, flip: true }
+  );
+  filterOverlayStyle.set({
+    position: "fixed",
+    left: `${position.left}px`,
+    top: `${position.top}px`
+  });
+};
+
+const requestFilterOverlayUpdate = (): void => {
+  if (typeof window === "undefined") return;
+  if (filterOverlayFrame) window.cancelAnimationFrame(filterOverlayFrame);
+  filterOverlayFrame = window.requestAnimationFrame(() => {
+    filterOverlayFrame = 0;
+    updateFilterOverlayPosition();
+  });
+};
+
+const connectFilterOverlay = (): void => {
+  cleanupFilterOverlay();
+  if (!filterOpenKey.peek() || typeof window === "undefined") return;
+  const observer = typeof ResizeObserver !== "undefined"
+    ? new ResizeObserver(requestFilterOverlayUpdate)
+    : undefined;
+  const trigger = getFilterTrigger();
+  const panel = getFilterPanel();
+  if (trigger) observer?.observe(trigger);
+  if (panel) observer?.observe(panel);
+  window.addEventListener("resize", requestFilterOverlayUpdate, { passive: true });
+  window.addEventListener("scroll", requestFilterOverlayUpdate, { passive: true, capture: true });
+  window.visualViewport?.addEventListener("resize", requestFilterOverlayUpdate, { passive: true });
+  window.visualViewport?.addEventListener("scroll", requestFilterOverlayUpdate, { passive: true });
+  cleanupFilterOverlay = () => {
+    observer?.disconnect();
+    window.removeEventListener("resize", requestFilterOverlayUpdate);
+    window.removeEventListener("scroll", requestFilterOverlayUpdate, { capture: true });
+    window.visualViewport?.removeEventListener("resize", requestFilterOverlayUpdate);
+    window.visualViewport?.removeEventListener("scroll", requestFilterOverlayUpdate);
+  };
+};
+
+const syncFilterTopLayer = (): void => {
+  const panel = getFilterPanel() as (HTMLElement & { showPopover?: () => void }) | null;
+  try {
+    panel?.showPopover?.();
+  } catch {
+    // The panel may be replaced while the reactive template updates.
+  }
+  requestFilterOverlayUpdate();
+};
+
+const openFilterPanel = (column: TableColumnView): void => {
+  const key = filterKeyOf(column);
+  filterOpenKey.set(key);
+  filterDraftState.set([...(filterValuesState.peek()[key] || [])]);
+  queueMicrotask(() => {
+    syncFilterTopLayer();
+    connectFilterOverlay();
+    getFilterPanel()?.querySelector<HTMLButtonElement>(".filter-option")?.focus();
+  });
+};
+
+const closeFilterPanel = (returnFocus = false): void => {
+  const key = filterOpenKey.peek();
+  const panel = getFilterPanel() as (HTMLElement & { hidePopover?: () => void }) | null;
+  try {
+    panel?.hidePopover?.();
+  } catch {
+    // A disconnected popover is already closed by the browser.
+  }
+  filterOpenKey.set("");
+  filterDraftState.set([]);
+  cleanupFilterOverlay();
+  if (returnFocus) getFilterTrigger(key)?.focus();
+};
+
+const toggleFilterPanel = (column: TableColumnView): void => {
+  if (filterOpenKey.peek() === filterKeyOf(column)) closeFilterPanel();
+  else openFilterPanel(column);
+};
+
+const toggleFilterDraft = (column: TableColumnView, value: unknown): void => {
+  if (column.raw.filterMultiple === false) {
+    setAppliedFilters(column, [value]);
+    closeFilterPanel(true);
+    return;
+  }
+  const next = [...filterDraftState.peek()];
+  const index = next.findIndex((item) => filterValueEquals(item, value));
+  if (index >= 0) next.splice(index, 1);
+  else next.push(value);
+  filterDraftState.set(next);
+};
+
+const applyFilterDraft = (column: TableColumnView): void => {
+  setAppliedFilters(column, filterDraftState.peek());
+  closeFilterPanel(true);
+};
+
+const resetFilter = (column: TableColumnView): void => {
+  setAppliedFilters(column, []);
+  closeFilterPanel(true);
+};
+
+const onFilterTriggerKeydown = (column: TableColumnView, event: KeyboardEvent): void => {
+  if (event.key === "Enter" || event.key === " " || event.key === "ArrowDown") {
+    event.preventDefault();
+    openFilterPanel(column);
+  } else if (event.key === "Escape" && filterOpenKey.peek() === filterKeyOf(column)) {
+    event.preventDefault();
+    closeFilterPanel(true);
+  }
+};
+
+const onFilterPanelKeydown = (event: KeyboardEvent): void => {
+  if (event.key !== "Escape") return;
+  event.preventDefault();
+  closeFilterPanel(true);
+};
+
+const onDocumentPointerDown = (event: PointerEvent): void => {
+  if (filterOpenKey.peek() && !event.composedPath().includes(host)) closeFilterPanel();
+};
+
 const summaryCells = (): string[] => {
   const columns = getColumns();
-  const data = rawRows();
+  const data = rowsState.value.map((row) => row.raw);
   if (typeof props.summaryMethod === "function") {
     try {
       const values = props.summaryMethod({
@@ -1103,6 +1431,18 @@ const doLayout = (): void => {
   void getWrap()?.offsetWidth;
 };
 
+onMount(() => {
+  document.addEventListener("pointerdown", onDocumentPointerDown);
+});
+
+onUnmount(() => {
+  document.removeEventListener("pointerdown", onDocumentPointerDown);
+  cleanupFilterOverlay();
+  if (filterOverlayFrame && typeof window !== "undefined") {
+    window.cancelAnimationFrame(filterOverlayFrame);
+  }
+});
+
 // HTMLElement already defines scrollTo. The macro intentionally warns when an
 // expose shadows a platform method, so route the host method explicitly instead.
 Object.defineProperty(host, "scrollTo", {
@@ -1119,6 +1459,7 @@ defineExpose({
   setCurrentRow,
   sort,
   clearSort,
+  clearFilter,
   doLayout,
   setScrollTop,
   setScrollLeft
@@ -1157,18 +1498,72 @@ const Table = defineHtml<TableProps>(html`
               >
                 <span class="checkbox-mark"></span>
               </button>
-              <button
-                v-else-if="column.sortable"
-                type="button"
-                class="sort-button"
-                :class="sortClass(column)"
-                :aria-label=${sortLabel(column)}
-                @click=${toggleSort(column)}
-              >
-                <span>{{ column.label }}</span>
-                <span class="sort-icon"></span>
-              </button>
-              <span v-else>{{ column.label }}</span>
+              <span v-else class="header-content">
+                <button
+                  v-if="column.sortable"
+                  type="button"
+                  class="sort-button"
+                  :class="sortClass(column)"
+                  :aria-label=${sortLabel(column)}
+                  @click=${toggleSort(column)}
+                >
+                  <span>{{ column.label }}</span>
+                  <span class="sort-icon"></span>
+                </button>
+                <span v-else>{{ column.label }}</span>
+                <button
+                  v-if=${hasFilters(column)}
+                  type="button"
+                  class="filter-trigger"
+                  :class=${filterButtonClass(column)}
+                  data-filter-trigger
+                  :data-filter-key=${filterKeyOf(column)}
+                  aria-haspopup="listbox"
+                  :aria-expanded=${String(filterOpenKey.value === filterKeyOf(column))}
+                  :aria-label=${filterLabel(column)}
+                  @click.stop=${toggleFilterPanel(column)}
+                  @keydown=${onFilterTriggerKeydown(column, $event)}
+                >
+                  <span class="filter-icon" aria-hidden="true"></span>
+                </button>
+                <div
+                  v-if=${filterOpenKey.value === filterKeyOf(column)}
+                  popover="manual"
+                  :class=${filterPanelClass(column)}
+                  :style=${filterOverlayStyle.value}
+                  role="listbox"
+                  :aria-multiselectable=${String(column.raw.filterMultiple !== false)}
+                  :aria-label=${filterPanelLabel(column)}
+                  @keydown=${onFilterPanelKeydown}
+                >
+                  <div class="filter-options">
+                    <button
+                      v-for="option in filterOptionViews(column)"
+                      :key=${filterValueKey(option.value)}
+                      type="button"
+                      class="filter-option"
+                      :class=${{ "is-selected": option.selected }}
+                      role="option"
+                      :aria-selected=${String(option.selected)}
+                      @click=${toggleFilterDraft(column, option.value)}
+                    >
+                      <span class="filter-check" aria-hidden="true"></span>
+                      <span>{{ option.text }}</span>
+                    </button>
+                  </div>
+                  <div class="filter-actions">
+                    <button type="button" @click=${resetFilter(column)}>重置</button>
+                    <button
+                      v-if=${column.raw.filterMultiple !== false}
+                      type="button"
+                      class="is-primary"
+                      @click=${applyFilterDraft(column)}
+                    >
+                      确定
+                    </button>
+                  </div>
+                </div>
+              </span>
             </th>
           </tr>
         </thead>
@@ -1265,8 +1660,18 @@ const Table = defineHtml<TableProps>(html`
 `);
 
 type SortOrder = "" | "ascending" | "descending";
+type FilterPlacement = "bottom" | "bottom-start" | "bottom-end" | "top" | "top-start" | "top-end";
 type ClassValue = string | Record<string, boolean> | Array<string | Record<string, boolean>>;
 type StyleValue = string | Record<string, string | number>;
+
+const FILTER_PLACEMENTS: FilterPlacement[] = [
+  "bottom",
+  "bottom-start",
+  "bottom-end",
+  "top",
+  "top-start",
+  "top-end"
+];
 
 interface TableColumnView {
   id: string;
@@ -1301,6 +1706,10 @@ interface TableSpanView {
   rowspan: number;
   colspan: number;
   hidden: boolean;
+}
+
+interface TableFilterOptionView extends TableFilterOption {
+  selected: boolean;
 }
 
 interface TableCellView extends TableSpanView {

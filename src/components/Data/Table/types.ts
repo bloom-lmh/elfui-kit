@@ -11,6 +11,17 @@ export type TableSortBy =
   | ((row: TableRow, index: number, rows: TableRow[]) => unknown);
 export type TableSortMethod = (left: TableRow, right: TableRow) => number;
 
+export interface TableFilterOption {
+  text: string;
+  value: unknown;
+}
+
+export type TableFilterMethod = (
+  value: unknown,
+  row: TableRow,
+  column: TableColumn
+) => boolean;
+
 export interface TableRowContext {
   row: TableRow;
   rowIndex: number;
@@ -55,6 +66,7 @@ export interface TableAction {
 }
 
 export interface TableColumn {
+  columnKey?: string;
   prop?: string;
   label?: string;
   type?: TableColumnType;
@@ -68,6 +80,12 @@ export interface TableColumn {
   sortMethod?: TableSortMethod;
   sortBy?: TableSortBy;
   sortOrders?: Array<TableSortOrder | null>;
+  filters?: TableFilterOption[];
+  filterPlacement?: "bottom" | "bottom-start" | "bottom-end" | "top" | "top-start" | "top-end";
+  filterClassName?: string;
+  filterMultiple?: boolean;
+  filterMethod?: TableFilterMethod;
+  filteredValue?: unknown[];
   formatter?: (row: TableRow, column: TableColumn, index: number) => unknown;
   className?: string;
   headerClassName?: string;
@@ -160,6 +178,7 @@ export interface TableExpose {
   toggleRowExpansion(rowOrKey: TableRow | string | number, expanded?: boolean): void;
   setCurrentRow(rowOrKey: TableRow | string | number): void;
   clearSort(): void;
+  clearFilter(columnKeys?: string | string[]): void;
   sort(prop: string, order?: TableSortOrder): void;
   doLayout(): void;
   scrollTo(options: ScrollToOptions): void;

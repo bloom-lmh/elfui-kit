@@ -703,6 +703,7 @@ declare global {
       setCurrentRow: (...args: unknown[]) => void;
       sort: (...args: unknown[]) => void;
       clearSort: (...args: unknown[]) => void;
+      clearFilter: (...args: unknown[]) => void;
     };
     "elf-tabs": HTMLElement & {
       items: unknown[];

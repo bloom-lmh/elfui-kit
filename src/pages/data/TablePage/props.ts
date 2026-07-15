@@ -42,6 +42,11 @@ const columnRows = [
   { name: "sortMethod", type: "(left, right) => number", default: "undefined", desc: "自定义本地比较函数，优先级高于 sortBy" },
   { name: "sortBy", type: "string | string[] | function", default: "undefined", desc: "排序取值路径；数组按字段依次比较" },
   { name: "sortOrders", type: "Array<TableSortOrder | null>", default: "[ascending, descending, null]", desc: "点击表头时的排序状态循环" },
+  { name: "columnKey", type: "string", default: "prop", desc: "筛选事件与 clearFilter 使用的稳定列标识" },
+  { name: "filters / filteredValue", type: "TableFilterOption[] / unknown[]", default: "undefined / []", desc: "筛选选项与初始选中值" },
+  { name: "filterMethod", type: "(value, row, column) => boolean", default: "undefined", desc: "自定义行匹配规则；同列多值为任一匹配" },
+  { name: "filterMultiple", type: "boolean", default: "true", desc: "是否允许选择多个筛选值" },
+  { name: "filterPlacement / filterClassName", type: "string", default: "bottom-start / ''", desc: "筛选浮层位置与自定义类名" },
   { name: "formatter", type: "(row, column, index) => unknown", default: "undefined", desc: "格式化单元格内容" },
   { name: "className / headerClassName", type: "string", default: "''", desc: "列单元格与表头 class" },
   { name: "cellClassName / cellStyle", type: "string | function / object | function", default: "undefined", desc: "当前列单元格样式" },
@@ -62,6 +67,7 @@ const eventsRows = [
   { name: "update:expandedRowKeys / expand-change", type: "(keys | row, keys?) => void", desc: "展开状态变化" },
   { name: "action-click", type: "(action, row, index) => void", desc: "点击操作列按钮" },
   { name: "sort-change", type: "({ prop, order }) => void", desc: "排序变化" },
+  { name: "filter-change", type: "Record<columnKey, unknown[]>", desc: "应用或清除列筛选时触发" },
   { name: "scroll", type: "({ scrollLeft, scrollTop }) => void", desc: "表格容器滚动" }
 ];
 
@@ -77,6 +83,7 @@ const methodsRows = [
   { name: "toggleRowExpansion(rowOrKey, expanded?)", type: "(Row | Key, boolean?) => void", desc: "切换行展开" },
   { name: "setCurrentRow(rowOrKey)", type: "(Row | Key) => void", desc: "设置当前行" },
   { name: "sort(prop, order) / clearSort()", type: "function", desc: "设置或清除排序" },
+  { name: "clearFilter(columnKeys?)", type: "(string | string[]) => void", desc: "清除指定列或全部列筛选" },
   { name: "scrollTo(x, y) / scrollTo(options)", type: "function", desc: "滚动到目标坐标" },
   { name: "setScrollTop(value) / setScrollLeft(value)", type: "(number) => void", desc: "设置单轴滚动位置" },
   { name: "doLayout()", type: "() => void", desc: "容器尺寸变化后同步布局" }

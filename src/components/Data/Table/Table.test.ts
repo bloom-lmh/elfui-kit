@@ -51,6 +51,7 @@ interface TableEl extends HTMLElement {
   scrollTo(x: number, y?: number): void;
   toggleAllSelection(): void;
   getSelectionRows(): Record<string, unknown>[];
+  clearFilter(columnKeys?: string | string[]): void;
 }
 
 const rows = [
@@ -534,5 +535,124 @@ describe("elf-table", () => {
       expect.objectContaining({ prop: "score", order: "" })
     );
     expect(button.closest("th")?.getAttribute("aria-sort")).toBe("none");
+  });
+
+  it("filtered-value 初始化筛选，并按同列任一条件匹配", async () => {
+    const filterMethod = vi.fn(
+      (value: unknown, row: Record<string, unknown>) => row.role === value
+    );
+    const el = await mount((table) => {
+      table.columns = [
+        { prop: "name", label: "姓名" },
+        {
+          prop: "role",
+          columnKey: "role-key",
+          label: "角色",
+          filters: [
+            { text: "管理员", value: "Admin" },
+            { text: "访客", value: "Viewer" }
+          ],
+          filteredValue: ["Admin", "Viewer"],
+          filterMethod
+        }
+      ];
+    });
+
+    const bodyRows = el.shadowRoot!.querySelectorAll<HTMLTableRowElement>("tbody tr");
+    expect(bodyRows).toHaveLength(2);
+    expect(bodyRows[0]!.textContent).toContain("Alice");
+    expect(bodyRows[1]!.textContent).toContain("Carol");
+    expect(filterMethod).toHaveBeenCalledWith(
+      "Admin",
+      rows[0],
+      expect.objectContaining({ columnKey: "role-key" })
+    );
+    expect(el.shadowRoot!.querySelector(".filter-trigger")?.classList).toContain("is-active");
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".filter-trigger")!.click();
+    await tick();
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll(".filter-option.is-selected")).toHaveLength(2);
+  });
+
+  it("多选筛选面板支持草稿确认、filter-change 与指定列 clearFilter", async () => {
+    const el = await mount((table) => {
+      table.columns = [
+        { type: "selection", width: 48 },
+        { prop: "name", label: "姓名" },
+        {
+          prop: "role",
+          columnKey: "role-key",
+          label: "角色",
+          filters: [
+            { text: "管理员", value: "Admin" },
+            { text: "编辑", value: "Editor" }
+          ],
+          filterMethod: (value: unknown, row: Record<string, unknown>) => row.role === value
+        }
+      ];
+    });
+    const onFilter = vi.fn();
+    el.addEventListener("filter-change", onFilter as EventListener);
+
+    const checkboxes = el.shadowRoot!.querySelectorAll<HTMLButtonElement>("tbody .table-checkbox");
+    checkboxes[1]!.click();
+    await tick();
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".filter-trigger")!.click();
+    await tick();
+    await tick();
+    const panel = el.shadowRoot!.querySelector<HTMLElement>(".filter-panel")!;
+    expect(panel.getAttribute("popover")).toBe("manual");
+    panel.querySelectorAll<HTMLButtonElement>(".filter-option")[0]!.click();
+    panel.querySelector<HTMLButtonElement>(".filter-actions .is-primary")!.click();
+    await tick();
+
+    expect(el.shadowRoot!.querySelectorAll("tbody tr")).toHaveLength(1);
+    expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Alice");
+    expect((onFilter.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+      "role-key": ["Admin"]
+    });
+    expect(el.getSelectionRows()).toEqual([rows[1]]);
+
+    el.clearFilter("role-key");
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll("tbody tr")).toHaveLength(3);
+    expect((onFilter.mock.calls[1]![0] as CustomEvent).detail).toEqual({
+      "role-key": []
+    });
+  });
+
+  it("单选筛选立即生效，Escape 关闭面板并把焦点还给触发器", async () => {
+    const el = await mount((table) => {
+      table.columns = [
+        { prop: "name", label: "姓名" },
+        {
+          prop: "role",
+          label: "角色",
+          filterMultiple: false,
+          filters: [
+            { text: "管理员", value: "Admin" },
+            { text: "编辑", value: "Editor" }
+          ]
+        }
+      ];
+    });
+    const trigger = el.shadowRoot!.querySelector<HTMLButtonElement>(".filter-trigger")!;
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    await tick();
+    await tick();
+    const panel = el.shadowRoot!.querySelector<HTMLElement>(".filter-panel")!;
+    panel.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".filter-panel")).toBeNull();
+    expect(el.shadowRoot!.activeElement).toBe(trigger);
+
+    trigger.click();
+    await tick();
+    await tick();
+    el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".filter-option")[1]!.click();
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll("tbody tr")).toHaveLength(1);
+    expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Bob");
   });
 });

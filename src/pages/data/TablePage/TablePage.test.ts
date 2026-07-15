@@ -5,6 +5,7 @@ let tableActionTag = "";
 let tableAdvancedTag = "";
 let tableSpanTag = "";
 let tableSortTag = "";
+let tableFilterTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -14,11 +15,13 @@ beforeAll(async () => {
   const { PageTableEx13 } = await import("./ex13");
   const { PageTableEx14 } = await import("./ex14");
   const { PageTableEx15 } = await import("./ex15");
+  const { PageTableEx16 } = await import("./ex16");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
   tableAdvancedTag = ensureCustomElement(PageTableEx13);
   tableSpanTag = ensureCustomElement(PageTableEx14);
   tableSortTag = ensureCustomElement(PageTableEx15);
+  tableFilterTag = ensureCustomElement(PageTableEx16);
 });
 
 afterEach(() => {
@@ -145,5 +148,23 @@ describe("TablePage", () => {
     await tick();
     expect(table.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("修复生产告警");
     expect(collectText(el)).toContain("更新时间 · 降序");
+  });
+
+  it("筛选案例展示默认条件，并可通过公开方法清除指定列", async () => {
+    const el = document.createElement(tableFilterTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table") as unknown as HTMLElement & {
+      clearFilter(columnKeys?: string | string[]): void;
+    };
+    expect(table.shadowRoot!.querySelectorAll("tbody tr")).toHaveLength(4);
+    expect(collectText(el)).toContain("默认展示：进行中、待验收");
+    expect(table.shadowRoot!.querySelector(".filter-trigger.is-active")).toBeTruthy();
+
+    table.clearFilter("status");
+    await tick();
+    expect(table.shadowRoot!.querySelectorAll("tbody tr")).toHaveLength(6);
   });
 });

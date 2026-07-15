@@ -211,6 +211,13 @@ tbody tr.is-selected td {
   }
 }
 
+.header-content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--elf-space-1);
+  max-width: 100%;
+}
+
 .sort-button {
   display: inline-flex;
   align-items: center;
@@ -261,6 +268,172 @@ tbody tr.is-selected td {
 
 .sort-button.is-desc .sort-icon::after {
   border-top-color: var(--elf-primary);
+}
+
+.filter-trigger {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: var(--elf-text-disabled);
+  cursor: pointer;
+  transition:
+    background-color var(--elf-transition-fast),
+    color var(--elf-transition-fast);
+
+  &:hover,
+  &:focus-visible,
+  &.is-open {
+    background: var(--elf-bg-overlay);
+    color: var(--elf-primary);
+  }
+
+  &.is-active {
+    color: var(--elf-primary);
+  }
+}
+
+.filter-icon {
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 0, 62% 45%, 62% 88%, 38% 100%, 38% 45%);
+}
+
+.filter-panel {
+  z-index: 1000;
+  box-sizing: border-box;
+  min-width: 184px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: min(360px, calc(100vh - 16px));
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--elf-border);
+  border-radius: var(--elf-radius-md);
+  margin: 0;
+  background: var(--elf-bg-paper);
+  box-shadow: var(--elf-shadow-lg);
+  color: var(--elf-text-primary);
+  font: inherit;
+
+  &::backdrop {
+    background: transparent;
+  }
+}
+
+.filter-options {
+  display: grid;
+  max-height: 268px;
+  padding: var(--elf-space-2);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--elf-text-secondary) 32%, transparent) transparent;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: var(--elf-space-2);
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    outline: 0;
+    background: var(--elf-bg-overlay);
+  }
+
+  &.is-selected {
+    color: var(--elf-primary);
+    font-weight: 600;
+  }
+}
+
+.filter-check {
+  position: relative;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--elf-text-disabled);
+  border-radius: 4px;
+}
+
+.filter-option.is-selected .filter-check {
+  border-color: var(--elf-primary);
+  background: var(--elf-primary);
+
+  &::after {
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    width: 4px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    content: "";
+    transform: rotate(45deg);
+  }
+}
+
+.filter-panel:not(.is-multiple) .filter-check {
+  border-radius: 50%;
+}
+
+.filter-panel:not(.is-multiple) .filter-option.is-selected .filter-check::after {
+  top: 4px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  transform: none;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--elf-space-1);
+  padding: var(--elf-space-2);
+  border-top: 1px solid var(--elf-divider);
+
+  button {
+    min-width: 52px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: var(--elf-radius-sm);
+    background: transparent;
+    color: var(--elf-text-secondary);
+    font: inherit;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      outline: 0;
+      background: var(--elf-bg-overlay);
+      color: var(--elf-text-primary);
+    }
+
+    &.is-primary {
+      background: var(--elf-primary);
+      color: #fff;
+    }
+  }
 }
 
 .table-checkbox {
