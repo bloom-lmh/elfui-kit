@@ -1,6 +1,6 @@
 // elf-playground 测试
 
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -8,6 +8,7 @@ beforeAll(async () => {
 
 afterEach(() => {
   document.body.innerHTML = "";
+  vi.restoreAllMocks();
 });
 
 const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
@@ -90,5 +91,71 @@ describe("elf-playground", () => {
 
     expect(code()).toContain("const opts = [");
     expect(code()).not.toMatch(/^\s{6}/);
+  });
+
+  it("无 script 时禁用 Script 标签", async () => {
+    const el = document.createElement("elf-playground") as HTMLElement & { code?: string };
+    el.code = "<elf-button>OK</elf-button>";
+    document.body.appendChild(el);
+    await tick();
+
+    const tabs = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".tabs button");
+    expect(tabs).toHaveLength(2);
+    expect(tabs[0]!.getAttribute("aria-selected")).toBe("true");
+    expect(tabs[1]!.disabled).toBe(true);
+  });
+
+  it("无源码时隐藏源码区域", async () => {
+    const el = document.createElement("elf-playground");
+    document.body.appendChild(el);
+    await tick();
+    expect(el.shadowRoot!.querySelector(".source")).toBeNull();
+  });
+
+  it("复制当前标签源码并触发 copy 事件", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText }
+    });
+    const el = document.createElement("elf-playground") as HTMLElement & {
+      code?: string;
+      script?: string;
+      copy?: () => Promise<boolean>;
+      showScript?: () => void;
+    };
+    el.code = "<elf-button>OK</elf-button>";
+    el.script = "const ready = true;";
+    const onCopy = vi.fn();
+    el.addEventListener("copy", onCopy);
+    document.body.appendChild(el);
+    await tick();
+
+    el.showScript?.();
+    await tick();
+    expect(await el.copy?.()).toBe(true);
+    expect(writeText).toHaveBeenCalledWith("const ready = true;");
+    expect((onCopy.mock.calls[0]![0] as CustomEvent<string>).detail).toBe("const ready = true;");
+    expect(el.shadowRoot!.querySelector(".copy")?.textContent).toContain("已复制");
+  });
+
+  it("复制失败时触发 copyError 且不显示成功状态", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(new Error("denied")) }
+    });
+    const el = document.createElement("elf-playground") as HTMLElement & {
+      code?: string;
+      copy?: () => Promise<boolean>;
+    };
+    el.code = "<elf-button>OK</elf-button>";
+    const onError = vi.fn();
+    el.addEventListener("copyError", onError);
+    document.body.appendChild(el);
+    await tick();
+
+    expect(await el.copy?.()).toBe(false);
+    expect((onError.mock.calls[0]![0] as CustomEvent<Error>).detail.message).toBe("denied");
+    expect(el.shadowRoot!.querySelector(".copy")?.textContent).toContain("复制");
   });
 });

@@ -11,6 +11,8 @@
 // code prop：源码字符串，通过 :code="变量" 传入，<pre><code> 纯文本展示
 
 import {
+  defineEmits,
+  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
@@ -22,20 +24,29 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { PlaygroundProps } from "./types";
+import type { PlaygroundEmits, PlaygroundProps, PlaygroundSlots } from "./types";
 
-export type { PlaygroundProps } from "./types";
+export type {
+  PlaygroundElement,
+  PlaygroundEmits,
+  PlaygroundExpose,
+  PlaygroundProps,
+  PlaygroundSlots
+} from "./types";
 
-const props = defineProps({
+const props = defineProps<PlaygroundProps>({
   title: { type: String, default: "" },
   code: { type: String, default: "" },
   script: { type: String, default: "" }
-}) as unknown as Readonly<PlaygroundProps>;
+});
+
+const emit = defineEmits<PlaygroundEmits>();
 
 const copied = useRef(false);
 const activeTab = useRef<"template" | "script">("template");
 const host = useHost();
 let statusObserver: MutationObserver | undefined;
+let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
 const normalizeCode = (value: string): string => {
     const text = String(value || "").replace(/\r\n/g, "\n");
@@ -158,11 +169,44 @@ const syncStatusSlots = (): void => {
   });
 };
 
-const onCopy = (): void => {
+const writeClipboard = async (text: string): Promise<void> => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const input = document.createElement("textarea");
+  input.value = text;
+  input.setAttribute("readonly", "");
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  document.body.appendChild(input);
+  input.select();
+  const succeeded = document.execCommand?.("copy") ?? false;
+  input.remove();
+  if (!succeeded) throw new Error("Clipboard API is unavailable");
+};
+
+const copy = async (): Promise<boolean> => {
   const text = activeCode();
-  navigator.clipboard?.writeText(text);
-  copied.set(true);
-  setTimeout(() => copied.set(false), 1500);
+  if (!text) return false;
+
+  try {
+    await writeClipboard(text);
+    copied.set(true);
+    emit("copy", text);
+    if (copiedTimer) clearTimeout(copiedTimer);
+    copiedTimer = setTimeout(() => copied.set(false), 1500);
+    return true;
+  } catch (error) {
+    copied.set(false);
+    emit("copyError", error);
+    return false;
+  }
+};
+
+const onCopy = (): void => {
+  void copy();
 };
 
 onMount(() => {
@@ -174,11 +218,14 @@ onMount(() => {
 onUnmount(() => {
   statusObserver?.disconnect();
   statusObserver = undefined;
+  if (copiedTimer) clearTimeout(copiedTimer);
+  copiedTimer = undefined;
 });
 
+defineExpose({ showTemplate: setTemplateTab, showScript: setScriptTab, copy });
 defineStyle(styles);
 
-const Playground = defineHtml(html`
+const Playground = defineHtml<PlaygroundProps, PlaygroundEmits, PlaygroundSlots>(html`
   <div class="wrap">
     <div class="header" v-if=${props.title}>
       <span class="title">${props.title}</span>
@@ -187,12 +234,20 @@ const Playground = defineHtml(html`
     <div class="demo"><slot></slot></div>
     <div class="source" v-if=${hasSource()}>
       <div class="source-toolbar">
-        <div class="tabs" v-if=${showTabs()}>
-          <button type="button" :class=${{ active: isTemplateTab() }} @click=${setTemplateTab}>
+        <div class="tabs" role="tablist" aria-label="示例源码" v-if=${showTabs()}>
+          <button
+            type="button"
+            role="tab"
+            :aria-selected=${String(isTemplateTab())}
+            :class=${{ active: isTemplateTab() }}
+            @click=${setTemplateTab}
+          >
             Template
           </button>
           <button
             type="button"
+            role="tab"
+            :aria-selected=${String(isScriptTab())}
             :class=${{ active: isScriptTab(), disabled: !hasScript() }}
             :disabled=${!hasScript()}
             @click=${setScriptTab}
@@ -202,10 +257,10 @@ const Playground = defineHtml(html`
         </div>
         <div class="source-actions">
           <span class="language">${activeLanguage()}</span>
-          <button class="copy" type="button" @click=${onCopy}>${copyText()}</button>
+          <button class="copy" type="button" aria-live="polite" @click=${onCopy}>${copyText()}</button>
         </div>
       </div>
-      <pre><code v-html=${highlightedCode()}></code></pre>
+      <pre role="tabpanel" :aria-label=${activeLanguage()}><code v-html=${highlightedCode()}></code></pre>
     </div>
   </div>
 `);

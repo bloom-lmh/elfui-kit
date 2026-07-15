@@ -17,7 +17,7 @@
 - [x] `Basic/Link`
 - [x] `Basic/Tag`
 - [x] `Basic/Text`
-- [ ] `Common/Playground`
+- [x] `Common/Playground`
 - [ ] `Common/PropsTable`
 - [x] `Data/Card`
 - [x] `Data/Carousel`

@@ -7,6 +7,10 @@
     border-radius: var(--elf-radius-md);
     margin-block: var(--elf-space-4);
     background: var(--elf-bg-paper);
+    --elf-playground-demo-padding: var(--elf-space-8) var(--elf-space-6);
+    --elf-playground-demo-justify: center;
+    --elf-playground-code-max-height: none;
+    --elf-playground-status-max-width: 70%;
 }
 
 .header {
@@ -31,7 +35,7 @@
 ::slotted([slot="status"]) {
     flex: 0 1 auto;
     min-width: 0;
-    max-width: 70%;
+    max-width: var(--elf-playground-status-max-width);
     margin: 0;
     overflow: hidden;
     color: var(--elf-text-secondary);
@@ -44,12 +48,12 @@
 }
 
 .demo {
-    padding: var(--elf-space-8) var(--elf-space-6);
+    padding: var(--elf-playground-demo-padding);
     display: flex;
     gap: var(--elf-space-4);
     flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
+    justify-content: var(--elf-playground-demo-justify);
 }
 
 .source {
@@ -120,6 +124,7 @@ pre {
     white-space: pre;
     color: var(--elf-text-primary);
     tab-size: 2;
+    max-height: var(--elf-playground-code-max-height);
 }
 
 code {
