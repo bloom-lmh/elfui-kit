@@ -3,6 +3,7 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 let tablePaginationTag = "";
 let tableActionTag = "";
 let tableAdvancedTag = "";
+let tableSpanTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -10,9 +11,11 @@ beforeAll(async () => {
   const { PageTableEx2 } = await import("./ex2");
   const { PageTableEx9 } = await import("./ex9");
   const { PageTableEx13 } = await import("./ex13");
+  const { PageTableEx14 } = await import("./ex14");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
   tableAdvancedTag = ensureCustomElement(PageTableEx13);
+  tableSpanTag = ensureCustomElement(PageTableEx14);
 });
 
 afterEach(() => {
@@ -105,5 +108,19 @@ describe("TablePage", () => {
 
     expect(collectText(el)).toContain("Design Token 语义层升级 · 项目");
     expect(el.shadowRoot!.querySelector('[slot="status"]')).toBeTruthy();
+  });
+
+  it("合并单元格案例按日期和班次纵向分组", async () => {
+    const el = document.createElement(tableSpanTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table")!;
+    const rows = table.shadowRoot!.querySelectorAll<HTMLTableRowElement>("tbody tr");
+    expect(rows[0]!.querySelectorAll("td")).toHaveLength(4);
+    expect(rows[0]!.querySelector<HTMLTableCellElement>("td")!.rowSpan).toBe(2);
+    expect(rows[1]!.querySelectorAll("td")).toHaveLength(2);
+    expect(collectText(table)).toContain("7 月 16 日");
   });
 });

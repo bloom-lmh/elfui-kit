@@ -21,6 +21,7 @@ import type {
   TableProps,
   TableRow,
   TableScrollDetail,
+  TableSpanResult,
   TableStyle
 } from "./types";
 
@@ -38,6 +39,8 @@ export type {
   TableSize,
   TableSummaryContext,
   TableSummaryMethod,
+  TableSpanMethod,
+  TableSpanResult,
   TableSortOrder
 } from "./types";
 
@@ -83,7 +86,8 @@ const props = defineProps<TableProps>({
   showOverflowTooltip: { type: Boolean, default: false },
   showSummary: { type: Boolean, default: false },
   sumText: { type: String, default: "合计" },
-  summaryMethod: { type: Function }
+  summaryMethod: { type: Function },
+  spanMethod: { type: Function }
 });
 
 const emit = defineEmits([
@@ -631,6 +635,40 @@ const headerRowStyle = (): StyleValue => {
   return value && typeof value === "object" ? (value as TableStyle) : {};
 };
 
+const normalizeSpan = (value: TableSpanResult | undefined): TableSpanView => {
+  const [rowspan, colspan] = Array.isArray(value)
+    ? value
+    : [value?.rowspan ?? 1, value?.colspan ?? 1];
+  const rowValue = Number(rowspan);
+  const columnValue = Number(colspan);
+  const normalizedRowspan = Number.isFinite(rowValue) ? Math.max(0, Math.trunc(rowValue)) : 1;
+  const normalizedColspan = Number.isFinite(columnValue)
+    ? Math.max(0, Math.trunc(columnValue))
+    : 1;
+  return {
+    rowspan: normalizedRowspan,
+    colspan: normalizedColspan,
+    hidden: normalizedRowspan === 0 || normalizedColspan === 0
+  };
+};
+
+const bodyCells = (row: TableRowView): TableCellView[] =>
+  getColumns().map((column, columnIndex) => {
+    let span: TableSpanResult | undefined;
+    if (typeof props.spanMethod === "function") {
+      try {
+        span = props.spanMethod(cellContext(column, row));
+      } catch {
+        span = undefined;
+      }
+    }
+    return {
+      column,
+      columnIndex,
+      ...normalizeSpan(span)
+    };
+  });
+
 const getCell = (row: TableRowView, column: TableColumnView): string => {
   if (column.type === "index") {
     const index = column.raw.index;
@@ -1049,21 +1087,23 @@ const Table = defineHtml<TableProps>(html`
               @dblclick=${onRowDblClick(row, $event)}
               @contextmenu=${onRowContextMenu(row, $event)}
             >
-              <td
-                v-for="column in getColumns()"
-                :key="column.id"
-                :data-column-index=${columnIndexOf(column)}
-                :class="cellClass(column, row)"
-                :style="mergedCellStyle(column, row)"
-                :title=${cellTitle(row, column)}
-                @mouseenter=${onCellMouseEnter(row, column, $event)}
-                @mouseleave=${onCellMouseLeave(row, column, $event)}
-                @click=${onCellClick(row, column, $event)}
-                @dblclick=${onCellDblClick(row, column, $event)}
-                @contextmenu=${onCellContextMenu(row, column, $event)}
+              <template v-for="cell in bodyCells(row)" :key="cell.column.id">
+                <td
+                v-if=${!cell.hidden}
+                :rowspan=${cell.rowspan}
+                :colspan=${cell.colspan}
+                :data-column-index=${cell.columnIndex}
+                :class=${cellClass(cell.column, row)}
+                :style=${mergedCellStyle(cell.column, row)}
+                :title=${cellTitle(row, cell.column)}
+                @mouseenter=${onCellMouseEnter(row, cell.column, $event)}
+                @mouseleave=${onCellMouseLeave(row, cell.column, $event)}
+                @click=${onCellClick(row, cell.column, $event)}
+                @dblclick=${onCellDblClick(row, cell.column, $event)}
+                @contextmenu=${onCellContextMenu(row, cell.column, $event)}
               >
                 <button
-                  v-if="column.type === 'selection'"
+                  v-if="cell.column.type === 'selection'"
                   type="button"
                   class="table-checkbox"
                   :class="{ 'is-checked': isSelected(row) }"
@@ -1075,7 +1115,7 @@ const Table = defineHtml<TableProps>(html`
                   <span class="checkbox-mark"></span>
                 </button>
                 <button
-                  v-else-if="column.type === 'expand'"
+                  v-else-if="cell.column.type === 'expand'"
                   type="button"
                   class="expand-toggle"
                   :class="{ 'is-expanded': isExpanded(row) }"
@@ -1084,9 +1124,9 @@ const Table = defineHtml<TableProps>(html`
                 >
                   <span class="expand-icon"></span>
                 </button>
-                <span v-else-if="column.type === 'actions'" class="action-group">
+                <span v-else-if="cell.column.type === 'actions'" class="action-group">
                   <button
-                    v-for="action in getActions(row, column)"
+                    v-for="action in getActions(row, cell.column)"
                     :key="action.label"
                     type="button"
                     class="action-button"
@@ -1097,8 +1137,9 @@ const Table = defineHtml<TableProps>(html`
                     {{ action.label }}
                   </button>
                 </span>
-                <span v-else class="cell-text">{{ getCell(row, column) }}</span>
-              </td>
+                <span v-else class="cell-text">{{ getCell(row, cell.column) }}</span>
+                </td>
+              </template>
             </tr>
             <tr v-if="isExpanded(row)" class="expand-row">
               <td :colspan=${getColumns().length}>
@@ -1160,6 +1201,17 @@ interface TableActionView {
   type: "primary" | "danger" | "default";
   disabled: boolean;
   raw: Record<string, unknown>;
+}
+
+interface TableSpanView {
+  rowspan: number;
+  colspan: number;
+  hidden: boolean;
+}
+
+interface TableCellView extends TableSpanView {
+  column: TableColumnView;
+  columnIndex: number;
 }
 
 export { Table };

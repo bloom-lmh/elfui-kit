@@ -27,7 +27,8 @@ const propsRows = [
   { name: "default-sort", type: "{ prop, order }", default: "undefined", desc: "非受控默认排序" },
   { name: "show-overflow-tooltip", type: "boolean", default: "false", desc: "截断内容使用原生 title 提示" },
   { name: "show-summary / sum-text", type: "boolean / string", default: "false / 合计", desc: "显示汇总行及首列文案" },
-  { name: "summary-method", type: "({ columns, data }) => unknown[]", default: "undefined", desc: "自定义汇总单元格" }
+  { name: "summary-method", type: "({ columns, data }) => unknown[]", default: "undefined", desc: "自定义汇总单元格" },
+  { name: "span-method", type: "(cellContext) => [rowspan, colspan] | object", default: "undefined", desc: "合并数据单元格；返回 0 隐藏当前位置" }
 ];
 
 const columnRows = [

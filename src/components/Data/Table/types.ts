@@ -89,6 +89,12 @@ export interface TableSummaryContext {
 
 export type TableSummaryMethod = (context: TableSummaryContext) => unknown[];
 
+export type TableSpanResult =
+  | [rowspan: number, colspan: number]
+  | { rowspan: number; colspan: number };
+
+export type TableSpanMethod = (context: TableCellContext) => TableSpanResult | undefined;
+
 export interface TableScrollDetail {
   scrollLeft: number;
   scrollTop: number;
@@ -135,6 +141,7 @@ export interface TableProps {
   showSummary: boolean;
   sumText: string;
   summaryMethod?: TableSummaryMethod;
+  spanMethod?: TableSpanMethod;
 }
 
 export interface TableExpose {

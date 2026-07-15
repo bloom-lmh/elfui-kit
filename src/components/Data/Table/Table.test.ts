@@ -35,6 +35,12 @@ interface TableEl extends HTMLElement {
     columnIndex: number;
   }) => Record<string, string>;
   showSummary?: boolean;
+  spanMethod?: (context: {
+    row: Record<string, unknown>;
+    column: Record<string, unknown>;
+    rowIndex: number;
+    columnIndex: number;
+  }) => [number, number] | { rowspan: number; colspan: number } | undefined;
   showOverflowTooltip?: boolean;
   selectOnIndeterminate?: boolean;
   expandFormatter?: (row: Record<string, unknown>, index: number) => unknown;
@@ -395,5 +401,32 @@ describe("elf-table", () => {
     });
     expect(el.shadowRoot!.querySelector("slot[name='empty']")).toBeTruthy();
     expect(el.shadowRoot!.querySelector("slot[name='append']")).toBeTruthy();
+  });
+
+  it("span-method 支持数组和对象结果，并隐藏被合并单元格", async () => {
+    const spanMethod = vi.fn(({ rowIndex, columnIndex }) => {
+      if (columnIndex !== 1) return undefined;
+      if (rowIndex === 0) return { rowspan: 2, colspan: 1 };
+      if (rowIndex === 1) return [0, 0] as [number, number];
+      return undefined;
+    });
+    const el = await mount((table) => {
+      table.columns = [
+        { prop: "name", label: "姓名" },
+        { prop: "role", label: "角色" },
+        { prop: "score", label: "分数" }
+      ];
+      table.spanMethod = spanMethod;
+    });
+
+    const bodyRows = el.shadowRoot!.querySelectorAll<HTMLTableRowElement>("tbody tr");
+    const mergedCell = bodyRows[0]!.querySelectorAll<HTMLTableCellElement>("td")[1]!;
+    expect(mergedCell.rowSpan).toBe(2);
+    expect(mergedCell.textContent).toContain("Admin");
+    expect(bodyRows[1]!.querySelectorAll("td")).toHaveLength(2);
+    expect(bodyRows[1]!.textContent).not.toContain("Editor");
+    expect(spanMethod).toHaveBeenCalledWith(
+      expect.objectContaining({ row: rows[0], columnIndex: 1, rowIndex: 0 })
+    );
   });
 });
