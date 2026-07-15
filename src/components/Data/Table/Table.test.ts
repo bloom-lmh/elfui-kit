@@ -21,7 +21,9 @@ interface TableEl extends HTMLElement {
   defaultSelectedKeys?: string[];
   defaultExpandedRowKeys?: string[];
   defaultExpandAll?: boolean;
-  defaultSort?: { prop: string; order: "ascending" | "descending" };
+  defaultSort?: { prop: string; order?: "ascending" | "descending" };
+  sortProp?: string;
+  sortOrder?: "" | "ascending" | "descending";
   rowClassName?: string | ((context: { row: Record<string, unknown>; rowIndex: number }) => string);
   rowStyle?: (context: { row: Record<string, unknown>; rowIndex: number }) => Record<string, string>;
   cellClassName?: (context: {
@@ -107,6 +109,7 @@ describe("elf-table", () => {
 
     expect(onSort).toHaveBeenCalled();
     expect((onSort.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+      column: expect.objectContaining({ prop: "score" }),
       prop: "score",
       order: "ascending"
     });
@@ -428,5 +431,108 @@ describe("elf-table", () => {
     expect(spanMethod).toHaveBeenCalledWith(
       expect.objectContaining({ row: rows[0], columnIndex: 1, rowIndex: 0 })
     );
+  });
+
+  it("default-sort 未指定 order 时默认升序，且不会被空受控属性重置", async () => {
+    const el = await mount((table) => {
+      table.columns = [
+        { prop: "name", label: "姓名" },
+        { prop: "score", label: "分数", sortable: true }
+      ];
+      table.defaultSort = { prop: "score" };
+    });
+
+    expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Bob");
+    expect(el.shadowRoot!.querySelector("th[aria-sort='ascending']")?.textContent).toContain("分数");
+  });
+
+  it("受控 sort-prop/sort-order 可以更新并清除排序", async () => {
+    const el = await mount();
+    el.sortProp = "score";
+    el.sortOrder = "ascending";
+    await tick();
+    await tick();
+    expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Bob");
+
+    el.sortProp = "";
+    el.sortOrder = "";
+    await tick();
+    await tick();
+    expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Alice");
+  });
+
+  it("sort-method 优先于 sort-by 执行本地自定义比较", async () => {
+    const sortMethod = vi.fn(
+      (left: Record<string, unknown>, right: Record<string, unknown>) =>
+        Number(left.score) % 10 - (Number(right.score) % 10)
+    );
+    const sortBy = vi.fn(() => 0);
+    const el = await mount((table) => {
+      table.columns = [
+        { prop: "name", label: "姓名" },
+        { prop: "score", label: "分数", sortable: true, sortMethod, sortBy }
+      ];
+    });
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".sort-button")!.click();
+    await tick();
+
+    expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Carol");
+    expect(sortMethod).toHaveBeenCalled();
+    expect(sortBy).not.toHaveBeenCalled();
+  });
+
+  it("sort-by 数组按多个字段依次比较", async () => {
+    const el = await mount((table) => {
+      table.data = [
+        { id: "1", team: "B", name: "Alice" },
+        { id: "2", team: "A", name: "Carol" },
+        { id: "3", team: "A", name: "Bob" }
+      ];
+      table.columns = [
+        { prop: "name", label: "成员", sortable: true, sortBy: ["team", "name"] },
+        { prop: "team", label: "团队" }
+      ];
+    });
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".sort-button")!.click();
+    await tick();
+
+    const bodyRows = el.shadowRoot!.querySelectorAll<HTMLTableRowElement>("tbody tr");
+    expect(bodyRows[0]!.textContent).toContain("Bob");
+    expect(bodyRows[1]!.textContent).toContain("Carol");
+    expect(bodyRows[2]!.textContent).toContain("Alice");
+  });
+
+  it("sortable=custom 只更新排序状态并按 sort-orders 循环，不改动数据顺序", async () => {
+    const el = await mount((table) => {
+      table.columns = [
+        {
+          prop: "score",
+          label: "分数",
+          sortable: "custom",
+          sortOrders: ["descending", null]
+        },
+        { prop: "name", label: "姓名" }
+      ];
+    });
+    const onSort = vi.fn();
+    el.addEventListener("sort-change", onSort as EventListener);
+    const button = el.shadowRoot!.querySelector<HTMLButtonElement>(".sort-button")!;
+
+    button.click();
+    await tick();
+    expect(el.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("Alice");
+    expect((onSort.mock.calls[0]![0] as CustomEvent).detail).toEqual(
+      expect.objectContaining({ prop: "score", order: "descending" })
+    );
+    expect(button.closest("th")?.getAttribute("aria-sort")).toBe("descending");
+
+    button.click();
+    await tick();
+    expect((onSort.mock.calls[1]![0] as CustomEvent).detail).toEqual(
+      expect.objectContaining({ prop: "score", order: "" })
+    );
+    expect(button.closest("th")?.getAttribute("aria-sort")).toBe("none");
   });
 });

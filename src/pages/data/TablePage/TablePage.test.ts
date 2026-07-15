@@ -4,6 +4,7 @@ let tablePaginationTag = "";
 let tableActionTag = "";
 let tableAdvancedTag = "";
 let tableSpanTag = "";
+let tableSortTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -12,10 +13,12 @@ beforeAll(async () => {
   const { PageTableEx9 } = await import("./ex9");
   const { PageTableEx13 } = await import("./ex13");
   const { PageTableEx14 } = await import("./ex14");
+  const { PageTableEx15 } = await import("./ex15");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
   tableAdvancedTag = ensureCustomElement(PageTableEx13);
   tableSpanTag = ensureCustomElement(PageTableEx14);
+  tableSortTag = ensureCustomElement(PageTableEx15);
 });
 
 afterEach(() => {
@@ -122,5 +125,25 @@ describe("TablePage", () => {
     expect(rows[0]!.querySelector<HTMLTableCellElement>("td")!.rowSpan).toBe(2);
     expect(rows[1]!.querySelectorAll("td")).toHaveLength(2);
     expect(collectText(table)).toContain("7 月 16 日");
+  });
+
+  it("排序案例同时覆盖本地比较和远程数据回写", async () => {
+    const el = document.createElement(tableSortTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table")!;
+    const buttons = table.shadowRoot!.querySelectorAll<HTMLButtonElement>(".sort-button");
+    buttons[0]!.click();
+    await tick();
+    expect(table.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("修复生产告警");
+    expect(collectText(el)).toContain("优先级 · 降序");
+
+    buttons[2]!.click();
+    await tick();
+    await tick();
+    expect(table.shadowRoot!.querySelector("tbody tr")?.textContent).toContain("修复生产告警");
+    expect(collectText(el)).toContain("更新时间 · 降序");
   });
 });

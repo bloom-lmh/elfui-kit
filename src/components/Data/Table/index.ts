@@ -21,6 +21,7 @@ import type {
   TableProps,
   TableRow,
   TableScrollDetail,
+  TableSortBy,
   TableSpanResult,
   TableStyle
 } from "./types";
@@ -37,6 +38,8 @@ export type {
   TableRowKey,
   TableScrollDetail,
   TableSize,
+  TableSortBy,
+  TableSortMethod,
   TableSummaryContext,
   TableSummaryMethod,
   TableSpanMethod,
@@ -137,6 +140,7 @@ const lastExpandedSig = useRef("");
 
 let initialized = false;
 let initialExpansionApplied = false;
+let externalSortObserved = false;
 
 const normalizeKeys = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
@@ -243,7 +247,7 @@ const normalizeColumns = (): TableColumnView[] => {
           : column.align === "center" || column.align === "right"
             ? column.align
             : "left",
-      sortable: Boolean(column.sortable),
+      sortable: column.sortable === "custom" ? "custom" : Boolean(column.sortable),
       fixed: column.fixed === "left" || column.fixed === "right" ? column.fixed : "",
       fixedOffset: "",
       fixedLast: false,
@@ -277,18 +281,69 @@ const compareValue = (a: unknown, b: unknown): number => {
   return String(a).localeCompare(String(b), "zh-Hans-CN", { numeric: true });
 };
 
-const sortedData = (): Record<string, unknown>[] => {
+const resolveSortValue = (
+  sortBy: TableSortBy | undefined,
+  row: TableRow,
+  index: number,
+  rows: TableRow[],
+  fallbackProp: string
+): unknown => {
+  if (typeof sortBy === "function") {
+    try {
+      return sortBy(row, index, rows);
+    } catch {
+      return undefined;
+    }
+  }
+  return valueAtPath(row, typeof sortBy === "string" ? sortBy : fallbackProp);
+};
+
+const compareRows = (
+  left: { row: TableRow; index: number },
+  right: { row: TableRow; index: number },
+  column: TableColumnView,
+  rows: TableRow[]
+): number => {
+  const method = column.raw.sortMethod;
+  if (typeof method === "function") {
+    try {
+      return Number(method(left.row, right.row)) || 0;
+    } catch {
+      return 0;
+    }
+  }
+  const sortBy = column.raw.sortBy as TableSortBy | undefined;
+  if (Array.isArray(sortBy)) {
+    for (const path of sortBy) {
+      const result = compareValue(valueAtPath(left.row, path), valueAtPath(right.row, path));
+      if (result !== 0) return result;
+    }
+    return 0;
+  }
+  return compareValue(
+    resolveSortValue(sortBy, left.row, left.index, rows, column.prop),
+    resolveSortValue(sortBy, right.row, right.index, rows, column.prop)
+  );
+};
+
+const sortedData = (columns: TableColumnView[]): TableRow[] => {
   const data = [...rawRows()];
   const prop = sortPropState.value;
   const order = sortOrderState.value;
   if (!prop || !order) return data;
+  const column = columns.find((item) => item.prop === prop);
+  if (column?.sortable === "custom") return data;
   const direction = order === "ascending" ? 1 : -1;
-  return data.sort((a, b) => compareValue(a[prop], b[prop]) * direction);
+  if (!column) return data.sort((a, b) => compareValue(valueAtPath(a, prop), valueAtPath(b, prop)) * direction);
+  return data
+    .map((row, index) => ({ row, index }))
+    .sort((left, right) => compareRows(left, right, column, data) * direction)
+    .map(({ row }) => row);
 };
 
 const rebuildRows = (): void => {
   const columns = normalizeColumns();
-  const rows = sortedData().map((row, index) => ({
+  const rows = sortedData(columns).map((row, index) => ({
     key: rowKeyOf(row, index),
     index,
     raw: row
@@ -348,9 +403,15 @@ watchEffect(() => {
     );
     currentKey.set(String(props.currentRowKey || ""));
     const defaultSort = (props.defaultSort || {}) as TableDefaultSort;
-    sortPropState.set(String(props.sortProp || defaultSort.prop || ""));
+    const initialSortProp = String(props.sortProp || defaultSort.prop || "");
+    const initialSortOrder = String(
+      props.sortOrder || defaultSort.order || (initialSortProp ? "ascending" : "")
+    ) as SortOrder;
+    sortPropState.set(initialSortProp);
     sortOrderState.set(
-      (String(props.sortOrder || defaultSort.order || "") as SortOrder) || ""
+      initialSortOrder === "ascending" || initialSortOrder === "descending"
+        ? initialSortOrder
+        : ""
     );
   }
   rebuildRows();
@@ -391,9 +452,17 @@ watchEffect(() => {
 watchEffect(() => {
   const nextProp = String(props.sortProp || "");
   const nextOrder = String(props.sortOrder || "") as SortOrder;
-  if (nextProp !== sortPropState.peek() || nextOrder !== sortOrderState.peek()) {
+  if (!externalSortObserved && !nextProp && !nextOrder) return;
+  externalSortObserved = true;
+  const normalizedOrder =
+    nextOrder === "ascending" || nextOrder === "descending"
+      ? nextOrder
+      : nextProp
+        ? "ascending"
+        : "";
+  if (nextProp !== sortPropState.peek() || normalizedOrder !== sortOrderState.peek()) {
     sortPropState.set(nextProp);
-    sortOrderState.set(nextOrder === "ascending" || nextOrder === "descending" ? nextOrder : "");
+    sortOrderState.set(normalizedOrder);
     rebuildRows();
   }
 });
@@ -913,26 +982,37 @@ const invokeAction = (action: TableActionView, row: TableRowView): void => {
   emit("action-click", action.raw, row.raw, row.index);
 };
 
+const sortOrdersOf = (column: TableColumnView): SortOrder[] => {
+  const raw = Array.isArray(column.raw.sortOrders) ? column.raw.sortOrders : [];
+  const normalized = raw
+    .map((order): SortOrder =>
+      order === "ascending" || order === "descending" ? order : ""
+    )
+    .filter((order, index, orders) => orders.indexOf(order) === index) as SortOrder[];
+  return normalized.length > 0 ? normalized : ["ascending", "descending", ""];
+};
+
 const sort = (prop: string, order: SortOrder = "ascending"): void => {
+  const normalizedOrder =
+    order === "ascending" || order === "descending" ? order : "";
   sortPropState.set(prop);
-  sortOrderState.set(order);
+  sortOrderState.set(normalizedOrder);
   rebuildRows();
-  emit("sort-change", { prop, order });
+  emit("sort-change", {
+    column: getColumns().find((column) => column.prop === prop)?.raw,
+    prop,
+    order: normalizedOrder
+  });
 };
 
 const clearSort = (): void => sort("", "");
 
 const toggleSort = (column: TableColumnView): void => {
   if (!column.sortable) return;
-  let next: SortOrder = "ascending";
-  if (sortPropState.peek() === column.prop) {
-    next =
-      sortOrderState.peek() === "ascending"
-        ? "descending"
-        : sortOrderState.peek() === "descending"
-          ? ""
-          : "ascending";
-  }
+  const orders = sortOrdersOf(column);
+  const currentIndex =
+    sortPropState.peek() === column.prop ? orders.indexOf(sortOrderState.peek()) : -1;
+  const next = orders[(currentIndex + 1) % orders.length] || "";
   sort(column.prop, next);
 };
 
@@ -941,6 +1021,18 @@ const sortClass = (column: TableColumnView): Record<string, boolean> => ({
   "is-asc": sortPropState.value === column.prop && sortOrderState.value === "ascending",
   "is-desc": sortPropState.value === column.prop && sortOrderState.value === "descending"
 });
+
+const ariaSort = (column: TableColumnView): "ascending" | "descending" | "none" | undefined => {
+  if (!column.sortable) return undefined;
+  if (sortPropState.value !== column.prop) return "none";
+  return sortOrderState.value || "none";
+};
+
+const sortLabel = (column: TableColumnView): string => {
+  const order = ariaSort(column);
+  const state = order === "ascending" ? "升序" : order === "descending" ? "降序" : "未排序";
+  return `${column.label}，${state}`;
+};
 
 const summaryCells = (): string[] => {
   const columns = getColumns();
@@ -1047,6 +1139,7 @@ const Table = defineHtml<TableProps>(html`
               v-for="column in getColumns()"
               :key="column.id"
               :data-column-index=${columnIndexOf(column)}
+              :aria-sort=${ariaSort(column)}
               :class="headerCellClass(column)"
               :style="headerCellStyle(column)"
               @click=${onHeaderClick(column, $event)}
@@ -1069,6 +1162,7 @@ const Table = defineHtml<TableProps>(html`
                 type="button"
                 class="sort-button"
                 :class="sortClass(column)"
+                :aria-label=${sortLabel(column)}
                 @click=${toggleSort(column)}
               >
                 <span>{{ column.label }}</span>
@@ -1183,7 +1277,7 @@ interface TableColumnView {
   minWidth: string;
   align: "left" | "center" | "right";
   headerAlign: "left" | "center" | "right";
-  sortable: boolean;
+  sortable: boolean | "custom";
   fixed: "" | "left" | "right";
   fixedOffset: string;
   fixedLast: boolean;

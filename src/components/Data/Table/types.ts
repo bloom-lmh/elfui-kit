@@ -5,6 +5,11 @@ export type TableSize = "small" | "default" | "large";
 export type TableLayout = "fixed" | "auto";
 export type TableRow = Record<string, unknown>;
 export type TableStyle = Record<string, string | number>;
+export type TableSortBy =
+  | string
+  | string[]
+  | ((row: TableRow, index: number, rows: TableRow[]) => unknown);
+export type TableSortMethod = (left: TableRow, right: TableRow) => number;
 
 export interface TableRowContext {
   row: TableRow;
@@ -59,7 +64,10 @@ export interface TableColumn {
   align?: TableAlign;
   headerAlign?: TableAlign;
   fixed?: "left" | "right";
-  sortable?: boolean;
+  sortable?: boolean | "custom";
+  sortMethod?: TableSortMethod;
+  sortBy?: TableSortBy;
+  sortOrders?: Array<TableSortOrder | null>;
   formatter?: (row: TableRow, column: TableColumn, index: number) => unknown;
   className?: string;
   headerClassName?: string;
