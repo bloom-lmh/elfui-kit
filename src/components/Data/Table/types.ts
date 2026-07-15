@@ -2,67 +2,154 @@ export type TableColumnType = "default" | "selection" | "index" | "expand" | "ac
 export type TableAlign = "left" | "center" | "right";
 export type TableSortOrder = "" | "ascending" | "descending";
 export type TableSize = "small" | "default" | "large";
+export type TableLayout = "fixed" | "auto";
+export type TableRow = Record<string, unknown>;
+export type TableStyle = Record<string, string | number>;
 
-export type TableCellClass =
+export interface TableRowContext {
+  row: TableRow;
+  rowIndex: number;
+}
+
+export interface TableCellContext extends TableRowContext {
+  column: TableColumn;
+  columnIndex: number;
+}
+
+export interface TableHeaderRowContext {
+  rowIndex: number;
+}
+
+export interface TableHeaderCellContext extends TableHeaderRowContext {
+  column: TableColumn;
+  columnIndex: number;
+}
+
+export type TableRowClassName = string | ((context: TableRowContext) => string);
+export type TableRowStyle = TableStyle | ((context: TableRowContext) => TableStyle);
+export type TableCellClassName = string | ((context: TableCellContext) => string);
+export type TableCellStyle = TableStyle | ((context: TableCellContext) => TableStyle);
+export type TableHeaderRowClassName =
   | string
-  | ((row: Record<string, unknown>, column: TableColumn, index: number) => string);
-
-export type TableCellStyle =
-  | Record<string, string | number>
-  | ((
-      row: Record<string, unknown>,
-      column: TableColumn,
-      index: number
-    ) => Record<string, string | number>);
+  | ((context: TableHeaderRowContext) => string);
+export type TableHeaderRowStyle =
+  | TableStyle
+  | ((context: TableHeaderRowContext) => TableStyle);
+export type TableHeaderCellClassName =
+  | string
+  | ((context: TableHeaderCellContext) => string);
+export type TableHeaderCellStyle =
+  | TableStyle
+  | ((context: TableHeaderCellContext) => TableStyle);
 
 export interface TableAction {
   label: string;
   type?: "primary" | "danger" | "default";
-  disabled?: boolean | ((row: Record<string, unknown>, index: number) => boolean);
-  onClick?: (row: Record<string, unknown>, index: number, action: TableAction) => void;
+  disabled?: boolean | ((row: TableRow, index: number) => boolean);
+  onClick?: (row: TableRow, index: number, action: TableAction) => void;
 }
 
 export interface TableColumn {
   prop?: string;
   label?: string;
   type?: TableColumnType;
+  index?: number | ((index: number) => number | string);
   width?: string | number;
   minWidth?: string | number;
   align?: TableAlign;
+  headerAlign?: TableAlign;
   fixed?: "left" | "right";
   sortable?: boolean;
-  formatter?: (row: Record<string, unknown>, column: TableColumn, index: number) => unknown;
+  formatter?: (row: TableRow, column: TableColumn, index: number) => unknown;
   className?: string;
   headerClassName?: string;
-  cellClassName?: TableCellClass;
-  cellStyle?: TableCellStyle;
+  cellClassName?: string | ((row: TableRow, column: TableColumn, index: number) => string);
+  cellStyle?:
+    | TableStyle
+    | ((row: TableRow, column: TableColumn, index: number) => TableStyle);
+  selectable?: (row: TableRow, index: number) => boolean;
+  showOverflowTooltip?: boolean;
+  tooltipFormatter?: (row: TableRow, column: TableColumn, index: number) => unknown;
   actions?: TableAction[];
   [key: string]: unknown;
 }
 
-export type TableExpandFormatter = (row: Record<string, unknown>, index: number) => unknown;
+export type TableExpandFormatter = (row: TableRow, index: number) => unknown;
+export type TableRowKey = string | ((row: TableRow) => string | number);
+
+export interface TableDefaultSort {
+  prop: string;
+  order?: TableSortOrder;
+}
+
+export interface TableSummaryContext {
+  columns: TableColumn[];
+  data: TableRow[];
+}
+
+export type TableSummaryMethod = (context: TableSummaryContext) => unknown[];
+
+export interface TableScrollDetail {
+  scrollLeft: number;
+  scrollTop: number;
+}
 
 export interface TableProps {
-  data: Record<string, unknown>[];
+  data: TableRow[];
   columns: TableColumn[];
-  rowKey: string;
+  rowKey: TableRowKey;
   stripe: boolean;
   border: boolean;
   hover: boolean;
   size: TableSize;
-  height: string;
-  maxHeight: string;
+  height: string | number;
+  maxHeight: string | number;
+  fit: boolean;
+  tableLayout: TableLayout;
+  scrollbarAlwaysOn: boolean;
   emptyText: string;
   loading: boolean;
   showHeader: boolean;
   stickyHeader: boolean;
   highlightCurrentRow: boolean;
-  currentRowKey: string;
-  selectedKeys: string[];
+  currentRowKey: string | number;
+  rowClassName?: TableRowClassName;
+  rowStyle?: TableRowStyle;
+  cellClassName?: TableCellClassName;
+  cellStyle?: TableCellStyle;
+  headerRowClassName?: TableHeaderRowClassName;
+  headerRowStyle?: TableHeaderRowStyle;
+  headerCellClassName?: TableHeaderCellClassName;
+  headerCellStyle?: TableHeaderCellStyle;
+  selectedKeys?: string[];
   defaultSelectedKeys: string[];
-  expandedRowKeys: string[];
+  selectOnIndeterminate: boolean;
+  expandedRowKeys?: string[];
   defaultExpandedRowKeys: string[];
+  defaultExpandAll: boolean;
   expandFormatter?: TableExpandFormatter;
   sortProp: string;
   sortOrder: TableSortOrder;
+  defaultSort?: TableDefaultSort;
+  showOverflowTooltip: boolean;
+  showSummary: boolean;
+  sumText: string;
+  summaryMethod?: TableSummaryMethod;
+}
+
+export interface TableExpose {
+  clearSelection(): void;
+  getSelectionRows(): TableRow[];
+  toggleRowSelection(rowOrKey: TableRow | string | number, selected?: boolean): void;
+  toggleAllSelection(): void;
+  toggleRowExpansion(rowOrKey: TableRow | string | number, expanded?: boolean): void;
+  setCurrentRow(rowOrKey: TableRow | string | number): void;
+  clearSort(): void;
+  sort(prop: string, order?: TableSortOrder): void;
+  doLayout(): void;
+  scrollTo(options: ScrollToOptions): void;
+  scrollTo(x: number, y?: number): void;
+  setScrollTop(value: number): void;
+  setScrollLeft(value: number): void;
+  readonly columns: TableColumn[];
 }

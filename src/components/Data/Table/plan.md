@@ -316,31 +316,61 @@
 - `columns`
 - `currentRowKey`
 - `data`
+- `defaultExpandAll`
+- `defaultSort`
 - `defaultExpandedRowKeys`
 - `defaultSelectedKeys`
 - `emptyText`
 - `expandFormatter`
 - `expandedRowKeys`
 - `height`
+- `fit`
+- `headerCellClassName`
+- `headerCellStyle`
+- `headerRowClassName`
+- `headerRowStyle`
 - `highlightCurrentRow`
 - `hover`
 - `loading`
 - `maxHeight`
+- `rowClassName`
 - `rowKey`
+- `rowStyle`
+- `cellClassName`
+- `cellStyle`
+- `scrollbarAlwaysOn`
+- `selectOnIndeterminate`
 - `selectedKeys`
 - `showHeader`
+- `showOverflowTooltip`
+- `showSummary`
 - `size`
 - `sortOrder`
 - `sortProp`
 - `stickyHeader`
 - `stripe`
+- `sumText`
+- `summaryMethod`
+- `tableLayout`
 
 ### Events
 
 - `action-click`
+- `cell-click`
+- `cell-contextmenu`
+- `cell-dblclick`
+- `cell-mouse-enter`
+- `cell-mouse-leave`
 - `current-change`
 - `expand-change`
+- `header-click`
+- `header-contextmenu`
 - `row-click`
+- `row-contextmenu`
+- `row-dblclick`
+- `scroll`
+- `select`
+- `select-all`
 - `selection-change`
 - `sort-change`
 - `update:expandedRowKeys`
@@ -348,27 +378,63 @@
 
 ### Slots
 
-- 暂无记录
+- `append`
+- `empty`
 
 ### Exposes
 
-- 暂无记录
+- `clearSelection`
+- `getSelectionRows`
+- `toggleRowSelection`
+- `toggleAllSelection`
+- `toggleRowExpansion`
+- `setCurrentRow`
+- `clearSort`
+- `sort`
+- `doLayout`
+- `scrollTo`
+- `setScrollTop`
+- `setScrollLeft`
 
 ## 差距与任务
 
-- [ ] P1 补齐核心属性差距：`fit`、`row-class-name`、`row-style`、`cell-class-name`、`cell-style`、`header-row-class-name`、`header-row-style`、`header-cell-class-name`、`header-cell-style`、`default-expand-all`、`expand-row-keys`、`default-sort`、`tooltip-effect`、`tooltip-options ^`、`append-filter-panel-to ^`、`show-summary`、`sum-text`、`summary-method`、`span-method`、`select-on-indeterminate`、`indent`、`lazy`、`load`、`tree-props`、`table-layout`、`scrollbar-always-on`、`show-overflow-tooltip`、`flexible ^` 等 81 项
-- [ ] P1 补齐事件差距：`select`、`select-all`、`cell-mouse-enter`、`cell-mouse-leave`、`cell-click`、`cell-dblclick`、`cell-contextmenu`、`row-contextmenu`、`row-dblclick`、`header-click`、`header-contextmenu`、`filter-change`、`header-dragend`、`scroll ^`、`column-sort`、`expanded-rows-change`、`end-reached`、`scroll`、`rows-rendered`、`row-expand`
-- [ ] P1 补齐插槽/暴露方法：`append`、`empty`、`header`、`filter-icon ^`、`expand ^`、`cell`、`header-cell`、`row`、`footer`、`overlay`、`clearSelection`、`getSelectionRows`、`getHalfSelectionRows ^`、`toggleRowSelection`、`toggleAllSelection`、`toggleRowExpansion`、`setCurrentRow`、`clearSort`、`clearFilter`、`doLayout`、`sort`、`scrollTo`、`setScrollTop`、`setScrollLeft` 等 29 项
-- [ ] P1 对齐交互行为、键盘访问、禁用态、清空态、受控/非受控同步、表单联动和无障碍属性。
-- [ ] P2 更新页面示例：Template / Script 双视图、所有动态绑定使用 `${...}`，补齐 Element Plus 关键场景示例。
-- [ ] P2 补齐组件单测、页面冒烟和类型导出；必要时补视觉回归截图。
+Table 与 TableV2 的渲染模型不同：前者使用原生表格语义，后者依赖虚拟化窗口。两者不在同一组件中混合实现；本计划先闭环经典 Table，TableV2 另立组件计划。
+
+### 阶段 A：经典 Table 高频契约（2026-07-15 完成）
+
+- [x] 样式与布局：`fit`、`table-layout`、`scrollbar-always-on`、行/单元格/表头 class 与 style 回调。
+- [x] 初始状态：`default-sort`、`default-expand-all`、受控/非受控选择与展开同步。
+- [x] 选择行为：`selectable`、`select-on-indeterminate`、`select`、`select-all` 与禁用态。
+- [x] 鼠标事件：cell/row/header 的 click、dblclick、contextmenu，以及 cell mouseenter/mouseleave。
+- [x] 数据展示：`show-overflow-tooltip`、列级 tooltip 覆盖、`show-summary`、`sum-text`、`summary-method`。
+- [x] 插槽与方法：`empty`、`append`、`toggleAllSelection`、`doLayout`、`scrollTo`、`setScrollTop`、`setScrollLeft`。
+- [x] 类型、PropsTable、独立案例、组件单测与页面冒烟同步。
+
+### 阶段 B：经典 Table 进阶数据能力
+
+- [ ] `span-method` 合并单元格，并覆盖 0 rowspan/colspan 边界。
+- [ ] 树形数据：`tree-props`、`indent`、`lazy`、`load`、展开状态与键盘交互。
+- [ ] 列排序扩展：`sort-method`、`sort-by`、`sort-orders`、`sortable="custom"`。
+- [ ] 列过滤：filters、filter-method、filtered-value、filter-change、clearFilter 与过滤面板定位。
+- [ ] 可调整列宽：`resizable`、header-dragend 与固定列布局重算。
+- [ ] 自定义列内容：header/cell/expand/filter-icon 插槽或等价渲染器契约。
+- [ ] tooltip-options、tooltip-formatter 与可访问的浮层提示，不只依赖原生 title。
+- [ ] 完成阶段 B 的组件测试、页面案例与浏览器视觉回归。
+
+### 阶段 C：独立 TableV2
+
+- [ ] 新建虚拟化 TableV2 组件与计划，覆盖固定行高、动态行高、固定数据、横纵滚动与窗口缓存。
+- [ ] 补齐 TableV2 的 cell/header/row/footer/empty/overlay 插槽与滚动公开方法。
+- [ ] 补齐 column-sort、expanded-rows-change、end-reached、rows-rendered、row-expand 事件。
+- [ ] 使用大数据案例验证渲染窗口、滚动定位、键盘访问与性能边界。
 
 ## 验收清单
 
-- [ ] API props/types 与页面 PropsTable 同步。
-- [ ] 关键交互和边界状态有单测覆盖。
-- [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+- [x] 阶段 A 的 API props/types 与页面 PropsTable 同步。
+- [x] 阶段 A 的关键交互和边界状态有单测覆盖。
+- [x] 阶段 A 文档示例可在 Playground 显示 Template / Script，复制内容使用公开 API。
+- [x] 阶段 A 目标测试与构建通过。
+- [ ] 阶段 B、C 全部完成后再将根组件计划标记为完成。
 
 ## 2026-07-14 体验修复
 

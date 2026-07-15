@@ -2,14 +2,17 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 let tablePaginationTag = "";
 let tableActionTag = "";
+let tableAdvancedTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
   const { ensureCustomElement } = await import("elfui");
   const { PageTableEx2 } = await import("./ex2");
   const { PageTableEx9 } = await import("./ex9");
+  const { PageTableEx13 } = await import("./ex13");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
+  tableAdvancedTag = ensureCustomElement(PageTableEx13);
 });
 
 afterEach(() => {
@@ -45,7 +48,9 @@ describe("TablePage", () => {
     expect(collectText(el)).toContain("展示 1-5 / 37 条");
 
     const pagination = el.shadowRoot!.querySelector("elf-pagination")!;
-    const next = pagination.shadowRoot!.querySelector<HTMLButtonElement>('button[title="下一页"]')!;
+    const next = pagination.shadowRoot!.querySelector<HTMLButtonElement>(
+      'button[aria-label="下一页"]'
+    )!;
     next.click();
     await tick();
     await tick();
@@ -83,5 +88,22 @@ describe("TablePage", () => {
 
     expect(collectText(table)).not.toContain("支付网关");
     expect(collectText(el)).toContain("已删除：支付网关");
+  });
+
+  it("高级案例展示汇总并把单元格事件状态保持在标题区", async () => {
+    const el = document.createElement(tableAdvancedTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table")!;
+    expect(collectText(table)).toContain("116 h");
+
+    const projectCell = table.shadowRoot!.querySelectorAll<HTMLTableCellElement>("tbody td")[1]!;
+    projectCell.click();
+    await tick();
+
+    expect(collectText(el)).toContain("Design Token 语义层升级 · 项目");
+    expect(el.shadowRoot!.querySelector('[slot="status"]')).toBeTruthy();
   });
 });
