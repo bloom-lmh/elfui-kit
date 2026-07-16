@@ -17,6 +17,7 @@ import {
 
 import styles from "./style.scss?inline";
 import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import { buildTableTree, normalizeTableTreeProps } from "./tree";
 import type {
   TableCellContext,
   TableColumn,
@@ -28,7 +29,8 @@ import type {
   TableScrollDetail,
   TableSortBy,
   TableSpanResult,
-  TableStyle
+  TableStyle,
+  TableTreeNodeContext
 } from "./types";
 
 export type {
@@ -40,6 +42,7 @@ export type {
   TableFilterMethod,
   TableFilterOption,
   TableLayout,
+  TableLoad,
   TableProps,
   TableRow,
   TableRowKey,
@@ -49,6 +52,8 @@ export type {
   TableSortMethod,
   TableSummaryContext,
   TableSummaryMethod,
+  TableTreeNodeContext,
+  TableTreeProps,
   TableSpanMethod,
   TableSpanResult,
   TableSortOrder
@@ -89,6 +94,13 @@ const props = defineProps<TableProps>({
   expandedRowKeys: { type: Array },
   defaultExpandedRowKeys: { type: Array, default: () => [] },
   defaultExpandAll: { type: Boolean, default: false },
+  treeProps: {
+    type: Object,
+    default: () => ({ children: "children", hasChildren: "hasChildren", checkStrictly: false })
+  },
+  indent: { type: Number, default: 16 },
+  lazy: { type: Boolean, default: false },
+  load: { type: Function },
   expandFormatter: { type: Function },
   sortProp: { type: String, default: "" },
   sortOrder: { type: String, default: "" },
@@ -133,9 +145,19 @@ const columnsState = useRef<TableColumnView[]>([]);
 
 const rowsState = useRef<TableRowView[]>([]);
 
+const allRowsState = useRef<TableRowView[]>([]);
+
+const isTreeState = useRef(false);
+
 const selectedState = useRef<string[]>([]);
 
 const expandedState = useRef<string[]>([]);
+
+const lazyChildrenState = useRef<Record<string, TableRow[]>>({});
+
+const treeLoadingState = useRef<string[]>([]);
+
+const treeLoadedState = useRef<string[]>([]);
 
 const currentKey = useRef("");
 
@@ -214,16 +236,16 @@ const valueAtPath = (row: TableRow, path: string): unknown =>
     return (value as TableRow)[key];
   }, row);
 
-const rowKeyOf = (row: TableRow, index: number): string => {
+const rowKeyOf = (row: TableRow, fallback: number | string): string => {
   const key = props.rowKey;
   if (typeof key === "function") {
     try {
       return String(key(row));
     } catch {
-      return String(index);
+      return String(fallback);
     }
   }
-  return String(valueAtPath(row, String(key || "id")) ?? index);
+  return String(valueAtPath(row, String(key || "id")) ?? fallback);
 };
 
 const rawColumns = (): Record<string, unknown>[] =>
@@ -414,11 +436,13 @@ const compareRows = (
   );
 };
 
-const filteredData = (columns: TableColumnView[]): TableRow[] => {
-  const active = columns.filter((column) => hasFilters(column) && filterValuesOf(column).length > 0);
-  if (active.length === 0) return [...rawRows()];
+const activeFilterColumns = (columns: TableColumnView[]): TableColumnView[] =>
+  columns.filter((column) => hasFilters(column) && filterValuesOf(column).length > 0);
 
-  return rawRows().filter((row) => active.every((column) => {
+const matchesFilters = (row: TableRow, columns: TableColumnView[]): boolean => {
+  const active = activeFilterColumns(columns);
+  if (active.length === 0) return true;
+  return active.every((column) => {
     const values = filterValuesOf(column);
     const method = column.raw.filterMethod;
     return values.some((value) => {
@@ -431,7 +455,7 @@ const filteredData = (columns: TableColumnView[]): TableRow[] => {
       }
       return filterValueKey(valueAtPath(row, column.prop)) === filterValueKey(value);
     });
-  }));
+  });
 };
 
 const sortedData = (columns: TableColumnView[], source: TableRow[]): TableRow[] => {
@@ -449,20 +473,84 @@ const sortedData = (columns: TableColumnView[], source: TableRow[]): TableRow[] 
     .map(({ row }) => row);
 };
 
+const treeConfig = () => normalizeTableTreeProps(props.treeProps);
+
+const treeChildrenOf = (row: TableRow, key: string): TableRow[] => {
+  const loaded = lazyChildrenState.value[key];
+  if (Array.isArray(loaded)) return loaded;
+  const children = valueAtPath(row, treeConfig().children);
+  return Array.isArray(children) ? (children as TableRow[]) : [];
+};
+
+const isTreeExpandable = (row: TableRow, key: string, children: TableRow[]): boolean => {
+  if (children.length > 0) return true;
+  if (!props.lazy || treeLoadedState.value.includes(key)) return false;
+  return Boolean(valueAtPath(row, treeConfig().hasChildren));
+};
+
+const selectionColumn = (): TableColumnView | undefined =>
+  columnsState.peek().find((column) => column.type === "selection");
+
+const isSelectable = (row: TableRowView): boolean => {
+  const selectable = selectionColumn()?.raw.selectable;
+  if (typeof selectable !== "function") return true;
+  try {
+    return Boolean(selectable(row.raw, row.index));
+  } catch {
+    return true;
+  }
+};
+
+const normalizeTreeSelection = (keys: string[]): string[] => {
+  const rows = allRowsState.peek();
+  const existing = new Set(rows.map((row) => row.key));
+  const selected = new Set(keys.map(String).filter((key) => existing.has(key)));
+  if (!isTreeState.peek() || treeConfig().checkStrictly) return Array.from(selected);
+
+  for (const row of rows) {
+    if (!selected.has(row.key) || !row.hasChildren) continue;
+    for (const descendant of rows) {
+      if (descendant.key !== row.key && descendant.path.includes(row.key) && isSelectable(descendant)) {
+        selected.add(descendant.key);
+      }
+    }
+  }
+  for (const row of [...rows].sort((left, right) => right.level - left.level)) {
+    if (!row.hasChildren || !isSelectable(row)) continue;
+    const children = rows.filter((child) => child.parentKey === row.key && isSelectable(child));
+    if (children.length === 0) continue;
+    if (children.every((child) => selected.has(child.key))) {
+      selected.add(row.key);
+    } else {
+      selected.delete(row.key);
+    }
+  }
+  return Array.from(selected);
+};
+
 const rebuildRows = (): void => {
   const columns = normalizeColumns();
   syncExternalFilters(columns);
-  const rows = sortedData(columns, filteredData(columns)).map((row, index) => ({
-    key: rowKeyOf(row, index),
-    index,
-    raw: row
-  }));
+  const hasActiveFilters = activeFilterColumns(columns).length > 0;
+  const tree = buildTableTree({
+    roots: rawRows(),
+    expandedKeys: new Set(expandedState.value),
+    childrenOf: treeChildrenOf,
+    keyOf: rowKeyOf,
+    isExpandable: isTreeExpandable,
+    sortRows: (rows) => sortedData(columns, rows),
+    ...(hasActiveFilters ? { matchesRow: (row: TableRow) => matchesFilters(row, columns) } : {})
+  });
+  const rows = tree.visible as TableRowView[];
+  const allRows = tree.all as TableRowView[];
 
   columnsState.set(columns);
   rowsState.set(rows);
+  allRowsState.set(allRows);
+  isTreeState.set(tree.isTree);
 
-  const rowKeys = new Set(rawRows().map((row, index) => rowKeyOf(row, index)));
-  const nextSelected = selectedState.peek().filter((key) => rowKeys.has(key));
+  const rowKeys = new Set(allRows.map((row) => row.key));
+  const nextSelected = normalizeTreeSelection(selectedState.peek());
   if (signature(nextSelected) !== lastSelectedSig.peek()) {
     selectedState.set(nextSelected);
     lastSelectedSig.set(signature(nextSelected));
@@ -476,8 +564,7 @@ const rebuildRows = (): void => {
 };
 
 const setSelectedKeys = (keys: string[], shouldEmit = true): void => {
-  const rowKeys = new Set(rawRows().map((row, index) => rowKeyOf(row, index)));
-  const next = Array.from(new Set(keys.map(String).filter((key) => rowKeys.has(key))));
+  const next = normalizeTreeSelection(keys);
   selectedState.set(next);
   lastSelectedSig.set(signature(next));
   if (shouldEmit) {
@@ -486,14 +573,19 @@ const setSelectedKeys = (keys: string[], shouldEmit = true): void => {
   }
 };
 
-const setExpandedKeys = (keys: string[], shouldEmit = true, row?: TableRowView): void => {
-  const rowKeys = new Set(rowsState.peek().map((item) => item.key));
+const setExpandedKeys = (
+  keys: string[],
+  shouldEmit = true,
+  row?: TableRowView,
+  treeExpanded?: boolean
+): void => {
+  const rowKeys = new Set(allRowsState.peek().map((item) => item.key));
   const next = Array.from(new Set(keys.map(String).filter((key) => rowKeys.has(key))));
   expandedState.set(next);
   lastExpandedSig.set(signature(next));
   if (shouldEmit) {
     emit("update:expandedRowKeys", next);
-    emit("expand-change", row?.raw, next);
+    emit("expand-change", row?.raw, treeExpanded ?? next);
   }
 };
 
@@ -532,7 +624,9 @@ watchEffect(() => {
       normalizeKeys(props.defaultExpandedRowKeys).length === 0
     ) {
       setExpandedKeys(
-        rowsState.peek().map((row) => row.key),
+        allRowsState.peek()
+          .filter((row) => !isTreeState.peek() || row.hasChildren)
+          .map((row) => row.key),
         false
       );
     }
@@ -897,20 +991,23 @@ const isSelected = (row: TableRowView): boolean => selectedState.value.includes(
 
 const isExpanded = (row: TableRowView): boolean => expandedState.value.includes(row.key);
 
-const selectionColumn = (): TableColumnView | undefined =>
-  columnsState.value.find((column) => column.type === "selection");
-
-const isSelectable = (row: TableRowView): boolean => {
-  const selectable = selectionColumn()?.raw.selectable;
-  if (typeof selectable !== "function") return true;
-  try {
-    return Boolean(selectable(row.raw, row.index));
-  } catch {
-    return true;
-  }
-};
-
 const selectableRows = (): TableRowView[] => rowsState.value.filter(isSelectable);
+
+const descendantRowsOf = (row: TableRowView, includeSelf = false): TableRowView[] =>
+  allRowsState
+    .peek()
+    .filter(
+      (item) =>
+        (includeSelf && item.key === row.key) ||
+        (item.key !== row.key && item.path.includes(row.key))
+    );
+
+const isRowIndeterminate = (row: TableRowView): boolean => {
+  if (!row.hasChildren || treeConfig().checkStrictly) return false;
+  const descendants = descendantRowsOf(row).filter(isSelectable);
+  const selected = descendants.filter((item) => selectedState.value.includes(item.key)).length;
+  return selected > 0 && selected < descendants.length;
+};
 
 const isAllSelected = (): boolean => {
   const rows = selectableRows();
@@ -924,7 +1021,7 @@ const isIndeterminate = (): boolean => {
 };
 
 const toggleRowSelection = (target: unknown, selected?: boolean, ignoreSelectable = false): void => {
-  const rows = rowsState.peek();
+  const rows = allRowsState.peek();
   const row =
     typeof target === "string" || typeof target === "number"
       ? rows.find((item) => item.key === String(target))
@@ -933,8 +1030,13 @@ const toggleRowSelection = (target: unknown, selected?: boolean, ignoreSelectabl
   if (!ignoreSelectable && !isSelectable(row)) return;
   const set = new Set(selectedState.peek());
   const shouldSelect = selected == null ? !set.has(row.key) : selected;
-  if (shouldSelect) set.add(row.key);
-  else set.delete(row.key);
+  const affected = isTreeState.peek() && !treeConfig().checkStrictly
+    ? descendantRowsOf(row, true).filter((item) => ignoreSelectable || isSelectable(item))
+    : [row];
+  for (const item of affected) {
+    if (shouldSelect) set.add(item.key);
+    else set.delete(item.key);
+  }
   setSelectedKeys(Array.from(set), true);
 };
 
@@ -967,7 +1069,7 @@ const onToggleAllSelection = (): void => {
 const clearSelection = (): void => setSelectedKeys([], true);
 
 const resolveRow = (target: unknown): TableRowView | undefined => {
-  const rows = rowsState.peek();
+  const rows = allRowsState.peek();
   if (typeof target === "string" || typeof target === "number") {
     return rows.find((item) => item.key === String(target));
   }
@@ -977,7 +1079,62 @@ const resolveRow = (target: unknown): TableRowView | undefined => {
   return rows.find((item) => item.raw === target);
 };
 
-const toggleRowExpansion = (target: unknown, expanded?: boolean): void => {
+const setTreeLoading = (key: string, loading: boolean): void => {
+  const set = new Set(treeLoadingState.peek());
+  if (loading) set.add(key);
+  else set.delete(key);
+  treeLoadingState.set(Array.from(set));
+};
+
+const updateKeyChildren = (key: string | number, children: TableRow[]): void => {
+  const normalizedKey = String(key);
+  lazyChildrenState.set({
+    ...lazyChildrenState.peek(),
+    [normalizedKey]: Array.isArray(children) ? children : []
+  });
+  treeLoadedState.set(Array.from(new Set([...treeLoadedState.peek(), normalizedKey])));
+  setTreeLoading(normalizedKey, false);
+  rebuildRows();
+};
+
+const loadTreeChildren = (row: TableRowView, shouldExpand: boolean): void => {
+  if (typeof props.load !== "function" || treeLoadingState.peek().includes(row.key)) return;
+  setTreeLoading(row.key, true);
+  rebuildRows();
+  let resolved = false;
+  const resolve = (children: TableRow[]): void => {
+    if (resolved) return;
+    resolved = true;
+    updateKeyChildren(row.key, children);
+    if (shouldExpand && children.length > 0) {
+      setExpandedKeys([...expandedState.peek(), row.key], true, row, true);
+    }
+  };
+  const context: TableTreeNodeContext = {
+    key: row.key,
+    level: row.level,
+    expanded: isExpanded(row),
+    loading: true
+  };
+  try {
+    const result = props.load(row.raw, context, resolve);
+    if (Array.isArray(result)) resolve(result);
+    else if (result && typeof result.then === "function") {
+      void result
+        .then((children) => {
+          if (Array.isArray(children)) resolve(children);
+          else if (!resolved) resolve([]);
+        })
+        .catch(() => {
+          if (!resolved) setTreeLoading(row.key, false);
+        });
+    }
+  } catch {
+    setTreeLoading(row.key, false);
+  }
+};
+
+const toggleDetailRowExpansion = (target: unknown, expanded?: boolean): void => {
   const row = resolveRow(target);
   if (!row) return;
   const set = new Set(expandedState.peek());
@@ -987,13 +1144,38 @@ const toggleRowExpansion = (target: unknown, expanded?: boolean): void => {
   setExpandedKeys(Array.from(set), true, row);
 };
 
+const toggleTreeRow = (target: unknown, expanded?: boolean): void => {
+  const row = resolveRow(target);
+  if (!row?.hasChildren) return;
+  const shouldExpand = expanded == null ? !expandedState.peek().includes(row.key) : expanded;
+  if (
+    shouldExpand &&
+    props.lazy &&
+    !treeLoadedState.peek().includes(row.key) &&
+    treeChildrenOf(row.raw, row.key).length === 0
+  ) {
+    loadTreeChildren(row, true);
+    return;
+  }
+  const set = new Set(expandedState.peek());
+  if (shouldExpand) set.add(row.key);
+  else set.delete(row.key);
+  setExpandedKeys(Array.from(set), true, row, shouldExpand);
+};
+
+const toggleRowExpansion = (target: unknown, expanded?: boolean): void => {
+  const row = resolveRow(target);
+  if (row?.hasChildren) toggleTreeRow(row, expanded);
+  else toggleDetailRowExpansion(row, expanded);
+};
+
 function getSelectionRows(): Record<string, unknown>[] {
   const selected = new Set(selectedState.peek());
-  return rawRows().filter((row, index) => selected.has(rowKeyOf(row, index)));
+  return allRowsState.peek().filter((row) => selected.has(row.key)).map((row) => row.raw);
 }
 
 const setCurrentRow = (target: unknown): void => {
-  const rows = rowsState.peek();
+  const rows = allRowsState.peek();
   const row =
     typeof target === "string" || typeof target === "number"
       ? rows.find((item) => item.key === String(target))
@@ -1061,6 +1243,53 @@ const getExpandContent = (row: TableRowView): string => {
   }
   const entries = Object.entries(row.raw).map(([key, value]) => `${key}: ${String(value ?? "")}`);
   return entries.join("    ");
+};
+
+const hasExpandColumn = (): boolean => getColumns().some((column) => column.type === "expand");
+
+const treeColumnIndex = (): number =>
+  getColumns().findIndex((column) => column.type === "default");
+
+const isTreeCell = (row: TableRowView, columnIndex: number): boolean =>
+  Boolean(isTreeState.value && columnIndex === treeColumnIndex() && row.level >= 0);
+
+const treeCellStyle = (row: TableRowView): Record<string, string> => ({
+  paddingInlineStart: `${Math.max(0, row.level * Math.max(0, Number(props.indent) || 0))}px`
+});
+
+const isTreeLoading = (row: TableRowView): boolean => treeLoadingState.value.includes(row.key);
+
+const treeToggleLabel = (row: TableRowView): string => {
+  if (isTreeLoading(row)) return "正在加载子节点";
+  return isExpanded(row) ? "收起子节点" : "展开子节点";
+};
+
+const focusTreeToggle = (key: string): void => {
+  queueMicrotask(() => {
+    const buttons = host.shadowRoot?.querySelectorAll<HTMLButtonElement>(".tree-toggle[data-tree-key]");
+    Array.from(buttons || []).find((button) => button.dataset.treeKey === key)?.focus();
+  });
+};
+
+const onTreeToggleKeydown = (row: TableRowView, event: KeyboardEvent): void => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    toggleTreeRow(row);
+    return;
+  }
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    if (!isExpanded(row)) toggleTreeRow(row, true);
+    else {
+      const child = rowsState.peek().find((item) => item.parentKey === row.key);
+      if (child?.hasChildren) focusTreeToggle(child.key);
+    }
+    return;
+  }
+  if (event.key !== "ArrowLeft") return;
+  event.preventDefault();
+  if (isExpanded(row)) toggleTreeRow(row, false);
+  else if (row.parentKey) focusTreeToggle(row.parentKey);
 };
 
 const actionType = (value: unknown): TableActionView["type"] =>
@@ -1566,6 +1795,7 @@ defineExpose({
   toggleRowSelection,
   toggleAllSelection,
   toggleRowExpansion,
+  updateKeyChildren,
   getSelectionRows,
   setCurrentRow,
   sort,
@@ -1581,7 +1811,7 @@ defineStyle(styles);
 const Table = defineHtml<TableProps>(html`
   <div class="table-root" :class=${tableClass()}>
     <div ref="wrap" class="table-wrap" :style=${wrapStyle()} @scroll=${onScroll}>
-      <table :style=${tableStyle()}>
+      <table :style=${tableStyle()} :role=${isTreeState.value ? "treegrid" : null}>
         <colgroup>
           <col v-for="column in getColumns()" :key="column.id" :style="colStyle(column)" />
         </colgroup>
@@ -1697,32 +1927,34 @@ const Table = defineHtml<TableProps>(html`
             <tr
               :class="rowClass(row)"
               :style="rowStyle(row)"
+              :aria-level=${isTreeState.value ? String(row.level + 1) : null}
+              :aria-expanded=${row.hasChildren ? String(isExpanded(row)) : null}
               @click=${onRowClick(row, $event)}
               @dblclick=${onRowDblClick(row, $event)}
               @contextmenu=${onRowContextMenu(row, $event)}
             >
               <template v-for="cell in bodyCells(row)" :key="cell.column.id">
                 <td
-                v-if=${!cell.hidden}
-                :rowspan=${cell.rowspan}
-                :colspan=${cell.colspan}
-                :data-column-index=${cell.columnIndex}
-                :class=${cellClass(cell.column, row)}
-                :style=${mergedCellStyle(cell.column, row)}
-                :title=${cellTitle(row, cell.column)}
-                @mouseenter=${onCellMouseEnter(row, cell.column, $event)}
-                @mouseleave=${onCellMouseLeave(row, cell.column, $event)}
-                @click=${onCellClick(row, cell.column, $event)}
-                @dblclick=${onCellDblClick(row, cell.column, $event)}
-                @contextmenu=${onCellContextMenu(row, cell.column, $event)}
-              >
+                  v-if=${!cell.hidden}
+                  :rowspan=${cell.rowspan}
+                  :colspan=${cell.colspan}
+                  :data-column-index=${cell.columnIndex}
+                  :class=${cellClass(cell.column, row)}
+                  :style=${mergedCellStyle(cell.column, row)}
+                  :title=${cellTitle(row, cell.column)}
+                  @mouseenter=${onCellMouseEnter(row, cell.column, $event)}
+                  @mouseleave=${onCellMouseLeave(row, cell.column, $event)}
+                  @click=${onCellClick(row, cell.column, $event)}
+                  @dblclick=${onCellDblClick(row, cell.column, $event)}
+                  @contextmenu=${onCellContextMenu(row, cell.column, $event)}
+                >
                 <button
                   v-if="cell.column.type === 'selection'"
                   type="button"
                   class="table-checkbox"
-                  :class="{ 'is-checked': isSelected(row) }"
+                  :class="{ 'is-checked': isSelected(row), 'is-indeterminate': isRowIndeterminate(row) }"
                   :disabled=${!isSelectable(row)}
-                  :aria-checked=${String(isSelected(row))}
+                  :aria-checked=${isRowIndeterminate(row) ? "mixed" : String(isSelected(row))}
                   @click.stop=${onToggleRowSelection(row)}
                   aria-label="选择行"
                 >
@@ -1733,7 +1965,7 @@ const Table = defineHtml<TableProps>(html`
                   type="button"
                   class="expand-toggle"
                   :class="{ 'is-expanded': isExpanded(row) }"
-                  @click.stop=${toggleRowExpansion(row)}
+                  @click.stop=${row.hasChildren ? toggleTreeRow(row) : toggleDetailRowExpansion(row)}
                   aria-label="展开行"
                 >
                   <span class="expand-icon"></span>
@@ -1751,11 +1983,33 @@ const Table = defineHtml<TableProps>(html`
                     {{ action.label }}
                   </button>
                 </span>
+                <span
+                  v-else-if=${isTreeCell(row, cell.columnIndex)}
+                  class="tree-cell"
+                  :style=${treeCellStyle(row)}
+                >
+                  <button
+                    v-if=${row.hasChildren}
+                    type="button"
+                    class="tree-toggle"
+                    :class="{ 'is-expanded': isExpanded(row), 'is-loading': isTreeLoading(row) }"
+                    :data-tree-key=${row.key}
+                    :disabled=${isTreeLoading(row)}
+                    :aria-expanded=${String(isExpanded(row))}
+                    :aria-label=${treeToggleLabel(row)}
+                    @click.stop=${toggleTreeRow(row)}
+                    @keydown=${onTreeToggleKeydown(row, $event)}
+                  >
+                    <span class="tree-toggle-icon" aria-hidden="true"></span>
+                  </button>
+                  <span v-else class="tree-toggle-spacer" aria-hidden="true"></span>
+                  <span class="cell-text">{{ getCell(row, cell.column) }}</span>
+                </span>
                 <span v-else class="cell-text">{{ getCell(row, cell.column) }}</span>
                 </td>
               </template>
             </tr>
-            <tr v-if="isExpanded(row)" class="expand-row">
+            <tr v-if=${hasExpandColumn() && !row.hasChildren && isExpanded(row)} class="expand-row">
               <td :colspan=${getColumns().length}>
                 <div class="expand-content">{{ getExpandContent(row) }}</div>
               </td>
@@ -1818,6 +2072,10 @@ interface TableRowView {
   key: string;
   index: number;
   raw: Record<string, unknown>;
+  level: number;
+  parentKey: string;
+  path: string[];
+  hasChildren: boolean;
 }
 
 interface TableActionView {

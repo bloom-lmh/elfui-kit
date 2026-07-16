@@ -104,6 +104,25 @@ export interface TableColumn {
 export type TableExpandFormatter = (row: TableRow, index: number) => unknown;
 export type TableRowKey = string | ((row: TableRow) => string | number);
 
+export interface TableTreeProps {
+  children?: string;
+  hasChildren?: string;
+  checkStrictly?: boolean;
+}
+
+export interface TableTreeNodeContext {
+  key: string;
+  level: number;
+  expanded: boolean;
+  loading: boolean;
+}
+
+export type TableLoad = (
+  row: TableRow,
+  treeNode: TableTreeNodeContext,
+  resolve: (children: TableRow[]) => void
+) => void | TableRow[] | Promise<void | TableRow[]>;
+
 export interface TableDefaultSort {
   prop: string;
   order?: TableSortOrder;
@@ -160,6 +179,10 @@ export interface TableProps {
   expandedRowKeys?: string[];
   defaultExpandedRowKeys: string[];
   defaultExpandAll: boolean;
+  treeProps: TableTreeProps;
+  indent: number;
+  lazy: boolean;
+  load?: TableLoad;
   expandFormatter?: TableExpandFormatter;
   sortProp: string;
   sortOrder: TableSortOrder;
@@ -177,6 +200,7 @@ export interface TableExpose {
   toggleRowSelection(rowOrKey: TableRow | string | number, selected?: boolean): void;
   toggleAllSelection(): void;
   toggleRowExpansion(rowOrKey: TableRow | string | number, expanded?: boolean): void;
+  updateKeyChildren(key: string | number, children: TableRow[]): void;
   setCurrentRow(rowOrKey: TableRow | string | number): void;
   clearSort(): void;
   clearFilter(columnKeys?: string | string[]): void;

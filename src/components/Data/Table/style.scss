@@ -212,6 +212,78 @@ tbody tr.is-selected td {
   }
 }
 
+.tree-cell {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.tree-toggle,
+.tree-toggle-spacer {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  margin-inline-end: 2px;
+}
+
+.tree-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--elf-radius-sm);
+  background: transparent;
+  color: var(--elf-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--elf-transition-fast),
+    color var(--elf-transition-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--elf-bg-overlay);
+    color: var(--elf-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--elf-primary) 58%, transparent);
+    outline-offset: -2px;
+  }
+
+  &:disabled {
+    cursor: wait;
+  }
+}
+
+.tree-toggle-icon {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--elf-transition-fast);
+}
+
+.tree-toggle.is-expanded .tree-toggle-icon {
+  transform: rotate(45deg);
+}
+
+.tree-toggle.is-loading .tree-toggle-icon {
+  width: 12px;
+  height: 12px;
+  border: 2px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: table-tree-spin 0.72s linear infinite;
+}
+
+@keyframes table-tree-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .header-content {
   display: inline-flex;
   align-items: center;

@@ -7,6 +7,7 @@ let tableSpanTag = "";
 let tableSortTag = "";
 let tableFilterTag = "";
 let tableResizeTag = "";
+let tableTreeTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -18,6 +19,7 @@ beforeAll(async () => {
   const { PageTableEx15 } = await import("./ex15");
   const { PageTableEx16 } = await import("./ex16");
   const { PageTableEx17 } = await import("./ex17");
+  const { PageTableEx18 } = await import("./ex18");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
   tableAdvancedTag = ensureCustomElement(PageTableEx13);
@@ -25,6 +27,7 @@ beforeAll(async () => {
   tableSortTag = ensureCustomElement(PageTableEx15);
   tableFilterTag = ensureCustomElement(PageTableEx16);
   tableResizeTag = ensureCustomElement(PageTableEx17);
+  tableTreeTag = ensureCustomElement(PageTableEx18);
 });
 
 afterEach(() => {
@@ -187,6 +190,22 @@ describe("TablePage", () => {
     await tick();
 
     expect(collectText(el)).toContain("商品：180px → 204px");
+    expect(el.shadowRoot!.querySelector('[slot="status"]')).toBeTruthy();
+  });
+
+  it("树形案例覆盖静态层级、懒加载入口和标题区状态", async () => {
+    const el = document.createElement(tableTreeTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table")!;
+    expect(table.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(2);
+    table.shadowRoot!.querySelector<HTMLButtonElement>('.tree-toggle[data-tree-key="product"]')!.click();
+    await tick();
+
+    expect(table.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(4);
+    expect(collectText(el)).toContain("产品研发中心 · 已展开");
     expect(el.shadowRoot!.querySelector('[slot="status"]')).toBeTruthy();
   });
 });

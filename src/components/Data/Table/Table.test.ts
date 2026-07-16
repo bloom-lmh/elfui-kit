@@ -21,6 +21,14 @@ interface TableEl extends HTMLElement {
   defaultSelectedKeys?: string[];
   defaultExpandedRowKeys?: string[];
   defaultExpandAll?: boolean;
+  treeProps?: { children?: string; hasChildren?: string; checkStrictly?: boolean };
+  indent?: number;
+  lazy?: boolean;
+  load?: (
+    row: Record<string, unknown>,
+    treeNode: { key: string; level: number; expanded: boolean; loading: boolean },
+    resolve: (children: Record<string, unknown>[]) => void
+  ) => void | Record<string, unknown>[] | Promise<void | Record<string, unknown>[]>;
   defaultSort?: { prop: string; order?: "ascending" | "descending" };
   sortProp?: string;
   sortOrder?: "" | "ascending" | "descending";
@@ -52,6 +60,8 @@ interface TableEl extends HTMLElement {
   toggleAllSelection(): void;
   getSelectionRows(): Record<string, unknown>[];
   clearFilter(columnKeys?: string | string[]): void;
+  toggleRowExpansion(rowOrKey: Record<string, unknown> | string | number, expanded?: boolean): void;
+  updateKeyChildren(key: string | number, children: Record<string, unknown>[]): void;
 }
 
 const rows = [
@@ -723,5 +733,133 @@ describe("elf-table", () => {
     expect(el.shadowRoot!.querySelector<HTMLTableColElement>("col")!.style.width).toBe("144px");
     expect(handle.getAttribute("aria-valuenow")).toBe("144");
     expect((onDragEnd.mock.calls[0]![0] as CustomEvent).detail.slice(0, 2)).toEqual([144, 120]);
+  });
+
+  it("树形数据按层级折叠，并提供缩进与 treegrid 语义", async () => {
+    const treeRows = [{
+      id: "platform",
+      name: "平台组",
+      children: [
+        { id: "frontend", name: "前端组" },
+        { id: "backend", name: "后端组" }
+      ]
+    }];
+    const el = await mount((table) => {
+      table.data = treeRows;
+      table.columns = [{ prop: "name", label: "团队" }];
+      table.indent = 24;
+    });
+    const onExpand = vi.fn();
+    el.addEventListener("expand-change", onExpand as EventListener);
+
+    expect(el.shadowRoot!.querySelector("table")?.getAttribute("role")).toBe("treegrid");
+    expect(el.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(1);
+    const toggle = el.shadowRoot!.querySelector<HTMLButtonElement>(".tree-toggle")!;
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+    toggle.click();
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(3);
+    expect(el.shadowRoot!.querySelectorAll<HTMLSpanElement>(".tree-cell")[1]!.style.paddingInlineStart)
+      .toBe("24px");
+    expect((onExpand.mock.calls[0]![0] as CustomEvent).detail).toEqual([treeRows[0], true]);
+  });
+
+  it("tree-props 支持自定义 children/hasChildren 字段和默认展开", async () => {
+    const el = await mount((table) => {
+      table.data = [{ id: "root", name: "根节点", nodes: [{ id: "leaf", name: "叶节点" }] }];
+      table.columns = [{ prop: "name", label: "名称" }];
+      table.treeProps = { children: "nodes", hasChildren: "expandable" };
+      table.defaultExpandedRowKeys = ["root"];
+    });
+
+    expect(el.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(2);
+    expect(el.shadowRoot!.querySelector("tbody > tr:nth-child(2)")?.getAttribute("aria-level"))
+      .toBe("2");
+  });
+
+  it("lazy/load 解析子节点后展开，并公开准确的加载上下文", async () => {
+    let resolveChildren: ((children: Record<string, unknown>[]) => void) | undefined;
+    const load = vi.fn((_row, _treeNode, resolve) => {
+      resolveChildren = resolve;
+    });
+    const el = await mount((table) => {
+      table.data = [{ id: "async", name: "异步部门", hasChildren: true }];
+      table.columns = [{ prop: "name", label: "名称" }];
+      table.lazy = true;
+      table.load = load;
+    });
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".tree-toggle")!.click();
+    await tick();
+    expect(load).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "async" }),
+      { key: "async", level: 0, expanded: false, loading: true },
+      expect.any(Function)
+    );
+    expect(el.shadowRoot!.querySelector(".tree-toggle.is-loading")).toBeTruthy();
+
+    resolveChildren?.([{ id: "child", name: "异步子部门" }]);
+    await tick();
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(2);
+    expect(el.shadowRoot!.textContent).toContain("异步子部门");
+  });
+
+  it("updateKeyChildren 可替换已加载子节点", async () => {
+    const el = await mount((table) => {
+      table.data = [{ id: "root", name: "根节点", hasChildren: true }];
+      table.columns = [{ prop: "name", label: "名称" }];
+      table.lazy = true;
+      table.load = () => undefined;
+    });
+
+    el.updateKeyChildren("root", [{ id: "manual", name: "手动注入节点" }]);
+    el.toggleRowExpansion("root", true);
+    await tick();
+    expect(el.shadowRoot!.textContent).toContain("手动注入节点");
+  });
+
+  it("树节点支持 Enter、Space 和方向键展开收起", async () => {
+    const el = await mount((table) => {
+      table.data = [{ id: "root", name: "根节点", children: [{ id: "child", name: "子节点" }] }];
+      table.columns = [{ prop: "name", label: "名称" }];
+    });
+    const toggle = el.shadowRoot!.querySelector<HTMLButtonElement>(".tree-toggle")!;
+
+    toggle.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(2);
+
+    toggle.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(1);
+
+    toggle.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(2);
+  });
+
+  it("树形选择默认级联，checkStrictly 可切换为独立选择", async () => {
+    const treeData = [{ id: "root", name: "根节点", children: [{ id: "leaf", name: "叶节点" }] }];
+    const el = await mount((table) => {
+      table.data = treeData;
+      table.columns = [{ type: "selection" }, { prop: "name", label: "名称" }];
+      table.defaultExpandedRowKeys = ["root"];
+    });
+    el.shadowRoot!.querySelector<HTMLButtonElement>("tbody .table-checkbox")!.click();
+    await tick();
+    expect(el.getSelectionRows().map((row) => row.id)).toEqual(["root", "leaf"]);
+
+    el.remove();
+    const strict = await mount((table) => {
+      table.data = treeData;
+      table.columns = [{ type: "selection" }, { prop: "name", label: "名称" }];
+      table.treeProps = { checkStrictly: true };
+      table.defaultExpandedRowKeys = ["root"];
+    });
+    strict.shadowRoot!.querySelector<HTMLButtonElement>("tbody .table-checkbox")!.click();
+    await tick();
+    expect(strict.getSelectionRows().map((row) => row.id)).toEqual(["root"]);
   });
 });
