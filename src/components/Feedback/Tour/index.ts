@@ -26,6 +26,8 @@ import type { TourChangeDetail, TourPlacement, TourProps, TourStep } from "./typ
 
 export type { TourChangeDetail, TourPlacement, TourProps, TourStep } from "./types";
 
+let tourLayerId = 0;
+
 // Tour 内容通过 Teleport 挂到 body，必须同时提供全局样式；仅注入 Shadow DOM
 // 会让遮罩和步骤面板失去布局，这也是页面上“引导无效果”的根因。
 globalStyle(styles);
@@ -60,6 +62,7 @@ const emit = defineEmits<{
 const host = useHost();
 const overlayRef = useTemplateRef<HTMLElement>("overlay");
 const panelRef = useTemplateRef<HTMLElement>("panel");
+const layerId = useRef(`elf-tour-layer-${++tourLayerId}`);
 const currentStep = useRef(0);
 const rendered = useRef(false);
 const closing = useRef(false);
@@ -68,6 +71,7 @@ const hostVisible = useRef(true);
 
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
 let frameId = 0;
+let focusFrameId = 0;
 let previousActive: HTMLElement | null = null;
 let lastPropCurrent = 0;
 
@@ -125,11 +129,33 @@ const scheduleUpdate = (): void => {
   });
 };
 
+const cancelScheduledFocus = (): void => {
+  if (focusFrameId) cancelAnimationFrame(focusFrameId);
+  focusFrameId = 0;
+};
+
+const resolveOverlay = (): HTMLElement | null =>
+  overlayRef.peek() || document.getElementById(layerId.peek());
+
 const focusOverlay = (): void => {
+  cancelScheduledFocus();
   queueMicrotask(() => {
-    const overlay = overlayRef.peek();
+    if (!rendered.peek() || closing.peek()) return;
+    const overlay = resolveOverlay();
     const close = overlay?.querySelector<HTMLElement>(".tour-close");
-    (close || overlay)?.focus();
+    const focusTarget = close || overlay;
+    if (focusTarget) {
+      focusTarget.focus();
+      return;
+    }
+
+    focusFrameId = requestAnimationFrame(() => {
+      focusFrameId = 0;
+      if (!rendered.peek() || closing.peek()) return;
+      const nextOverlay = resolveOverlay();
+      const nextClose = nextOverlay?.querySelector<HTMLElement>(".tour-close");
+      (nextClose || nextOverlay)?.focus();
+    });
   });
 };
 
@@ -154,6 +180,7 @@ const open = (): void => {
 
 const close = (): void => {
   if (!rendered.peek() || closing.peek()) return;
+  cancelScheduledFocus();
   closing.set(true);
   clearCloseTimer();
   closeTimer = setTimeout(() => {
@@ -198,7 +225,7 @@ const onLayerClick = (event: MouseEvent): void => {
 };
 
 const onKeydown = (event: KeyboardEvent): void => {
-  if (!props.keyboard || !rendered.value) return;
+  if (!props.keyboard || !rendered.value || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
   if (event.key === "ArrowRight" || event.key === "ArrowDown") {
     event.preventDefault();
     next();
@@ -324,6 +351,7 @@ useEffect(() => {
 useEscapeKey(() => {
   if (props.keyboard && rendered.value) close();
 });
+useEventListener(window, "keydown", onKeydown);
 useScrollLock(() => Boolean(props.lockScroll) && rendered.value && !closing.value);
 useEventListener(window, "scroll", scheduleUpdate, { passive: true });
 useEventListener(window, "resize", scheduleUpdate);
@@ -338,6 +366,7 @@ useHostFlag("data-visible", () => hostVisible.value);
 onBeforeUnmount(() => {
   clearCloseTimer();
   if (frameId) cancelAnimationFrame(frameId);
+  cancelScheduledFocus();
   restoreFocus();
 });
 
@@ -348,6 +377,7 @@ const Tour = defineHtml<TourProps>(html`
   <Teleport to="body">
     <div
       v-if=${rendered}
+      :id=${layerId}
       ref="overlay"
       class="tour-layer"
       :class=${layerClass()}
@@ -356,7 +386,6 @@ const Tour = defineHtml<TourProps>(html`
       aria-modal="true"
       tabindex="-1"
       @click=${onLayerClick}
-      @keydown=${onKeydown}
     >
       <div v-if=${!hasTarget()} class="tour-backdrop"></div>
       <div v-if=${hasTarget()} class="tour-highlight" :style=${highlightStyle()}></div>

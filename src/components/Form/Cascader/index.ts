@@ -765,11 +765,48 @@ const onFilterInput = (event: Event): void => {
 const focusableOptions = (): HTMLButtonElement[] =>
     Array.from(host.shadowRoot?.querySelectorAll<HTMLButtonElement>(".dropdown button:not(:disabled)") || []);
 
+const focusElement = (element: HTMLButtonElement | undefined): void => {
+    if (!element) return;
+    element.focus();
+    element.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+};
+
 const focusOption = (edge: "first" | "last" = "first"): void => {
     queueMicrotask(() => {
         const items = focusableOptions();
-        (edge === "last" ? items[items.length - 1] : items[0])?.focus();
+        focusElement(edge === "last" ? items[items.length - 1] : items[0]);
     });
+};
+
+const optionFromKeyEvent = (event: KeyboardEvent): HTMLButtonElement | null =>
+    (event.target as HTMLElement | null)?.closest?.(".option") as HTMLButtonElement | null;
+
+const columnOptions = (option: HTMLButtonElement): HTMLButtonElement[] =>
+    Array.from(option.closest(".column")?.querySelectorAll<HTMLButtonElement>(".option:not(:disabled)") || []);
+
+const focusPathOption = (path: RawOption[]): void => {
+    const key = valuePathKey(pathValues(path));
+    queueMicrotask(() => {
+        const option = Array.from(host.shadowRoot?.querySelectorAll<HTMLButtonElement>(".option") || [])
+            .find((item) => item.dataset.pathKey === key);
+        focusElement(option);
+    });
+};
+
+const focusFirstChild = (path: RawOption[]): void => {
+    queueMicrotask(() => {
+        const column = host.shadowRoot?.querySelectorAll<HTMLElement>(".column")[path.length];
+        focusElement(column?.querySelector<HTMLButtonElement>(".option:not(:disabled)") || undefined);
+    });
+};
+
+const expandWithKeyboard = (path: RawOption[]): void => {
+    const option = path[path.length - 1];
+    if (!option || optionDisabled(option) || optionLeaf(option)) return;
+    activePath.set(path);
+    emitExpand(path);
+    if (optionChildren(option).length === 0) loadLazyChildren(path);
+    focusFirstChild(path);
 };
 
 const onFilterKeydown = (event: KeyboardEvent): void => {
@@ -804,16 +841,32 @@ const onDropdownKeydown = (event: KeyboardEvent): void => {
         getTriggerEl()?.focus();
         return;
     }
-    const items = focusableOptions();
-    if (items.length === 0) return;
-    const current = items.indexOf(event.target as HTMLButtonElement);
+    const option = optionFromKeyEvent(event);
+    if (!option) return;
+    const pathKey = option.dataset.pathKey;
+    if (!pathKey) return;
+    const path = findPathByKey(pathKey);
+    if (path.length === 0) return;
+    const items = columnOptions(option);
+    const current = items.indexOf(option);
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
         const step = event.key === "ArrowDown" ? 1 : -1;
-        items[(current + step + items.length) % items.length]?.focus();
+        focusElement(items[(current + step + items.length) % items.length]);
     } else if (event.key === "Home" || event.key === "End") {
         event.preventDefault();
-        (event.key === "Home" ? items[0] : items[items.length - 1])?.focus();
+        focusElement(event.key === "Home" ? items[0] : items[items.length - 1]);
+    } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        expandWithKeyboard(path);
+    } else if (event.key === "ArrowLeft" && path.length > 1) {
+        event.preventDefault();
+        const parentPath = path.slice(0, -1);
+        activePath.set(parentPath);
+        focusPathOption(parentPath);
+    } else if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onOptionPathClick(path, event);
     }
 };
 

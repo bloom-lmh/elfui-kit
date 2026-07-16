@@ -13,7 +13,12 @@
 
 :host([data-label-position="top"]) .row {
   flex-direction: column;
+  align-items: stretch;
   gap: var(--elf-space-1);
+}
+
+:host([data-label-position="top"]) .content {
+  width: 100%;
 }
 
 label {
@@ -51,7 +56,20 @@ label {
 .control {
   display: flex;
   align-items: center;
+  width: 100%;
   min-height: 32px;
+}
+
+::slotted(elf-input),
+::slotted(elf-input-number),
+::slotted(elf-textarea),
+::slotted(elf-select),
+::slotted(elf-cascader),
+::slotted(elf-autocomplete),
+::slotted(elf-date-picker),
+::slotted(elf-time-picker),
+::slotted(elf-color-picker) {
+  width: 100%;
 }
 
 .feedback {

@@ -7,9 +7,15 @@ const formRows = [
   { name: "disabled", type: "boolean", default: "false" },
   { name: "label-position", type: "top|left|right", default: "right" },
   { name: "label-width", type: "string", default: "100px" },
+  { name: "label-suffix", type: "string", default: "''" },
   { name: "inline", type: "boolean", default: "false" },
   { name: "hide-required-asterisk", type: "boolean" },
-  { name: "scroll-to-error", type: "boolean" }
+  { name: "require-asterisk-position", type: "left|right", default: "left" },
+  { name: "show-message / inline-message / status-icon", type: "boolean", default: "true / false / false" },
+  { name: "validate-on-rule-change", type: "boolean", default: "true" },
+  { name: "scroll-to-error", type: "boolean", default: "false" },
+  { name: "scroll-into-view-options", type: "ScrollIntoViewOptions | false", default: "smooth / center" },
+  { name: "prevent-submit", type: "boolean", default: "true" }
 ];
 
 const formItemRows = [

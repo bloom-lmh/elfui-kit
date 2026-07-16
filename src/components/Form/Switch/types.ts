@@ -1,12 +1,14 @@
 export type SwitchSize = "sm" | "md" | "lg";
 export type SwitchColor = "primary" | "success" | "warning" | "danger" | "info" | string;
 export type SwitchLabelPosition = "start" | "end";
+export type SwitchVariant = "default" | "inset" | "material" | "square";
 export type SwitchValue = string | number | boolean;
 
 export interface SwitchProps {
   modelValue: SwitchValue;
   disabled: boolean;
   size: SwitchSize;
+  variant: SwitchVariant;
   width: string | number;
   inlinePrompt: boolean;
   activeText: string;

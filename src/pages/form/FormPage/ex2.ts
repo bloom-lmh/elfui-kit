@@ -1,4 +1,6 @@
-import { defineHtml, html, useReactive, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useReactive, useRef } from "elfui";
+
+import demoStyles from "./demo.scss?inline";
 
 
 const query = useReactive({
@@ -27,14 +29,17 @@ const code = `<elf-form :model.prop="query" inline label-position="left">
   <elf-form-item label="状态"><elf-select v-model="query.status" :options.prop="statusOptions" /></elf-form-item>
 </elf-form>`;
 
+defineStyle(demoStyles);
+
 const PageFormEx2 = defineHtml(html`
   <h2>行内筛选</h2>
   <elf-playground title="inline / select / switch" :code="code">
+    <p slot="status" class="demo-state">{{ result }}</p>
     <elf-card
+      class="form-demo-card is-wide"
       variant="outlined"
       title="服务筛选"
       subtitle="紧凑条件适合放在 Card 的内容区"
-      style="width:100%"
     >
       <elf-form :model.prop="query" inline label-position="left" label-width="72px">
         <elf-form-item label="关键词">
@@ -48,7 +53,6 @@ const PageFormEx2 = defineHtml(html`
         </elf-form-item>
         <elf-button type="primary" @click="search()">筛选</elf-button>
       </elf-form>
-      <p slot="status" class="demo-state">{{ result }}</p>
     </elf-card>
   </elf-playground>
 `);

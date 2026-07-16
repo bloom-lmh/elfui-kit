@@ -1,7 +1,14 @@
 import { registerComponents } from "elfui";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { Icon } from "./index";
+import {
+    configureIcons,
+    createClassIconSet,
+    createSvgIconSet,
+    Icon,
+    resetIcons,
+    resolveIcon,
+} from "./index";
 
 beforeAll(() => {
     registerComponents(Icon);
@@ -9,12 +16,14 @@ beforeAll(() => {
 
 afterEach(() => {
     document.body.innerHTML = "";
+    resetIcons();
 });
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 10));
 
 interface IconEl extends HTMLElement {
     name?: string;
+    set?: string;
     size?: number | string;
     color?: string;
     ariaLabel?: string;
@@ -134,5 +143,58 @@ describe("elf-icon", () => {
         document.body.appendChild(el);
         await tick();
         expect(el.shadowRoot!.querySelector(".icon")?.classList.contains("is-loading")).toBe(true);
+    });
+
+    it("defaultSet 可解析第三方 SVG path 集合", async () => {
+        configureIcons({
+            defaultSet: "mdi",
+            sets: {
+                mdi: createSvgIconSet({ close: "M6 6l12 12M18 6L6 18" }),
+            },
+        });
+        const el = document.createElement("elf-icon") as IconEl;
+        el.name = "close";
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.shadowRoot!.querySelector("svg")?.getAttribute("viewBox")).toBe("0 0 24 24");
+        expect(el.shadowRoot!.querySelector("path")?.getAttribute("d")).toBe(
+            "M6 6l12 12M18 6L6 18",
+        );
+    });
+
+    it("set prop 可显式选择 CSS class 图标集合", async () => {
+        configureIcons({
+            sets: { fa: createClassIconSet({ baseClass: "fa-solid", prefix: "fa-" }) },
+        });
+        const el = document.createElement("elf-icon") as IconEl;
+        el.name = "user";
+        el.set = "fa";
+        document.body.appendChild(el);
+        await tick();
+
+        const icon = el.shadowRoot!.querySelector("i")!;
+        expect(icon.classList.contains("fa-solid")).toBe(true);
+        expect(icon.classList.contains("fa-user")).toBe(true);
+    });
+
+    it("语义别名可跨集合解析", () => {
+        configureIcons({
+            defaultSet: "elf",
+            aliases: { dismiss: "mdi:close" },
+            sets: { mdi: createSvgIconSet({ close: { path: ["p1", "p2"], viewBox: "0 0 20 20" } }) },
+        });
+
+        expect(resolveIcon("$dismiss")).toEqual({
+            kind: "svg",
+            content: "",
+            paths: ["p1", "p2"],
+            classes: [],
+            viewBox: "0 0 20 20",
+        });
+    });
+
+    it("未知集合安全回退为文本图标", () => {
+        expect(resolveIcon("missing:star")).toMatchObject({ kind: "text", content: "star" });
     });
 });

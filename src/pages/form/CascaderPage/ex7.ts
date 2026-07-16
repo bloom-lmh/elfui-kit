@@ -50,6 +50,7 @@ const code = `<elf-cascader
 const PageCascaderEx7 = defineHtml(html`
   <h2>多选标签与视口浮层</h2>
   <elf-playground title="remove-tag / teleported / collision positioning" :code=${code}>
+    <span slot="status" class="demo-state">↑↓ 同列移动 · → 进入子级 · ← 返回父级 · Enter 选择</span>
     <div
       style="width:min(100%,560px);height:126px;overflow:hidden;transform:translateZ(0);border:1px dashed var(--elf-border);border-radius:12px;padding:18px;box-sizing:border-box;display:flex;align-items:flex-end"
     >

@@ -7,6 +7,8 @@ import {
   defineProps,
   defineStyle,
   html,
+  onMount,
+  onUnmount,
   useHost,
   useHostAttr,
   useHostFlag,
@@ -28,6 +30,7 @@ export type {
   InputProps,
   InputSize,
   InputType,
+  InputVariant,
   InputWordLimitPosition
 } from "./types";
 
@@ -44,6 +47,7 @@ const props = defineProps<InputProps>({
   modelModifiers: { type: Object, default: () => ({}) },
   type: { type: String, default: "text" },
   size: { type: String, default: "" },
+  variant: { type: String, default: "filled" },
   placeholder: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
@@ -104,7 +108,13 @@ const slotVersion = useRef(0);
 
 useHostAttr("data-state", () => fi.state);
 useHostAttr("size", () => fi.formSize);
+useHostAttr("variant", () => (props.variant === "outlined" ? "outlined" : "filled"));
 useHostFlag("disabled", isDisabled);
+useHostFlag("data-dirty", () => {
+  const value = ctl.model.value;
+  return value !== undefined && value !== null && String(value).length > 0;
+});
+useHostFlag("data-has-label", () => Boolean(props.label));
 
 const touchSlots = (): void => {
   slotVersion.set(slotVersion.value + 1);
@@ -186,6 +196,8 @@ const onMouseenter = (e: MouseEvent): void => emit("mouseenter", e);
 
 const onMouseleave = (e: MouseEvent): void => emit("mouseleave", e);
 
+const onLabelClick = (): void => focus();
+
 const onCompositionStart = (e: CompositionEvent): void => {
   isComposing.set(true);
   emit("compositionstart", e);
@@ -222,6 +234,18 @@ const resizeTextarea = (): void => undefined;
 const textarea = (): null => null;
 
 const textareaStyle = (): Record<string, never> => ({});
+
+onMount(() => {
+  Object.defineProperties(host, {
+    focus: { configurable: true, value: focus },
+    blur: { configurable: true, value: blur }
+  });
+});
+
+onUnmount(() => {
+  delete (host as Partial<HTMLElement>).focus;
+  delete (host as Partial<HTMLElement>).blur;
+});
 
 const inputType = (): string => {
   if (props.type !== "password") return props.type as string;
@@ -274,9 +298,7 @@ const ariaText = (): string | null => props.ariaLabel || props.label || props.pl
 const passwordToggleText = (): string => (pwdVisible.value ? "Hide" : "Show");
 
 defineExpose({
-  blur,
   clear,
-  focus,
   input,
   ref,
   resizeTextarea,
@@ -307,6 +329,9 @@ const Input = defineHtml(html`
     </span>
 
     <div class="wrapper" part="wrapper">
+      <span v-if=${props.label} class="label" part="label" @click=${onLabelClick}>
+        ${props.label}
+      </span>
       <span v-if=${hasPrefix()} class="prefix" part="prefix">
         <slot name="prefix" @slotchange=${touchSlots}>${props.prefixIcon}</slot>
       </span>

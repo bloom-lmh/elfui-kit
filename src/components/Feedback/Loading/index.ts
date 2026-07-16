@@ -37,14 +37,16 @@ const props = defineProps<LoadingProps>({
 
 const emit = defineEmits<LoadingEmits>();
 
-const close = (): void => {
-  emit("update:loading", false);
-  emit("close");
-};
-
 const normalizedVariant = (): LoadingVariant => {
   const variant = String(props.variant || "spinner") as LoadingVariant;
   return ["dots", "pulse", "bars"].includes(variant) ? variant : "spinner";
+};
+const isInteractiveFullscreen = (): boolean => props.fullscreen && props.closable;
+const overlayRole = (): "dialog" | "status" => (isInteractiveFullscreen() ? "dialog" : "status");
+
+const close = (): void => {
+  emit("update:loading", false);
+  emit("close");
 };
 
 useHostAttr("fullscreen", () => (props.fullscreen ? "" : null));
@@ -60,7 +62,8 @@ const Loading = defineHtml<LoadingProps, LoadingEmits, LoadingSlots>(html`
       v-if=${props.loading}
       class="overlay"
       part="overlay"
-      role="status"
+      :role=${overlayRole()}
+      :aria-modal=${isInteractiveFullscreen() ? "true" : null}
       :aria-label=${props.text || "正在加载"}
     >
       <div class="box">

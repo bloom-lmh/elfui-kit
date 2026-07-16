@@ -19,6 +19,7 @@ type InputHost = HTMLElement & {
   modelModifiers?: Record<string, boolean>;
   type?: string;
   size?: string;
+  variant?: string;
   placeholder?: string;
   disabled?: boolean;
   readonly?: boolean;
@@ -100,6 +101,27 @@ describe("elf-input", () => {
 
     const input = el.shadowRoot!.querySelector("input")!;
     expect(input.placeholder).toBe("请输入");
+  });
+
+  it("filled 为默认外观并渲染浮动标签状态", async () => {
+    const el = mount((node) => {
+      node.label = "项目名称";
+      node.modelValue = "ElfUI";
+    });
+    await flush();
+
+    expect(el.getAttribute("variant")).toBe("filled");
+    expect(el.hasAttribute("data-has-label")).toBe(true);
+    expect(el.hasAttribute("data-dirty")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".label")?.textContent).toContain("项目名称");
+  });
+
+  it("outlined 外观反射到宿主", async () => {
+    const el = mount((node) => {
+      node.variant = "outlined";
+    });
+    await flush();
+    expect(el.getAttribute("variant")).toBe("outlined");
   });
 
   it("disabled host attribute 反射", async () => {

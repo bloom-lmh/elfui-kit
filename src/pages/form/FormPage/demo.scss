@@ -1,0 +1,91 @@
+:host {
+  display: block;
+}
+
+.form-demo-card {
+  display: block;
+  width: min(100%, 760px);
+  margin-inline: auto;
+}
+
+.form-demo-card.is-compact {
+  width: min(100%, 480px);
+}
+
+.form-demo-card.is-wide {
+  width: min(100%, 920px);
+}
+
+.form-demo-card elf-input,
+.form-demo-card elf-input-number,
+.form-demo-card elf-textarea,
+.form-demo-card elf-select,
+.form-demo-card elf-cascader,
+.form-demo-card elf-autocomplete,
+.form-demo-card elf-date-picker,
+.form-demo-card elf-time-picker,
+.form-demo-card elf-color-picker {
+  width: 100%;
+}
+
+.form-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+}
+
+.form-demo-grid > elf-form-item,
+.dynamic-row > elf-form-item {
+  min-width: 0;
+  width: 100%;
+}
+
+.form-demo-span-2 {
+  grid-column: 1 / -1;
+}
+
+.form-demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.login-heading {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.login-heading strong {
+  font-size: 22px;
+}
+
+.login-heading span,
+.form-demo-hint {
+  color: var(--elf-text-secondary);
+  font-size: var(--elf-font-size-sm);
+}
+
+.dynamic-list {
+  display: grid;
+  gap: 2px;
+}
+
+.dynamic-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .form-demo-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-demo-span-2 {
+    grid-column: auto;
+  }
+}

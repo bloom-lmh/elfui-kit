@@ -6,6 +6,7 @@ const password = useRef("");
 const code1 = `<div style="width:280px">
   <elf-input
     :modelValue.prop=\${text.value}
+    label="项目名称"
     placeholder="请输入"
     @update:modelValue=\${onTextUpdate}
   />
@@ -57,11 +58,21 @@ const PageInputEx1 = defineHtml(html`
     <div style="width:280px">
       <elf-input
         :modelValue.prop=${text.value}
+        label="项目名称"
         placeholder="请输入"
         @update:modelValue=${onTextUpdate}
       ></elf-input>
     </div>
     <span slot="status" class="demo-state">当前：{{ text || '未输入' }}</span>
+  </elf-playground>
+
+  <h2>外观变体</h2>
+  <elf-playground title="filled / outlined" :code=${`<elf-input label="Filled" model-value="ElfUI" />
+<elf-input variant="outlined" label="Outlined" model-value="ElfUI" />`}>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px;width:min(100%,560px)">
+      <elf-input label="Filled" model-value="ElfUI"></elf-input>
+      <elf-input variant="outlined" label="Outlined" model-value="ElfUI"></elf-input>
+    </div>
   </elf-playground>
 
   <h2>不同类型</h2>

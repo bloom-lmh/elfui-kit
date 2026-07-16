@@ -12,7 +12,7 @@ useComponents({
 const PageInputTag = defineHtml(html`
   <elf-container>
     <h1>InputTag 标签输入</h1>
-    <p>把输入内容转换成标签。输入框宽度保持稳定；标签较多时可水平滚动，折叠后悬停数量按钮可查看并删除隐藏标签。</p>
+    <p>把输入内容转换成标签。标签复用 Tag 的颜色、轮廓和关闭语义，内容较多时自动换行并保持每项可操作。</p>
 
     <page-input-tag-ex1 />
 

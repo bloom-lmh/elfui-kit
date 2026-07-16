@@ -21,9 +21,27 @@
     font-size: var(--_icon-size);
     line-height: 1;
 
-    ::slotted(svg) {
+    ::slotted(svg),
+    .svg-icon,
+    .class-icon,
+    .text-icon {
         width: 100%;
         height: 100%;
+    }
+
+    .svg-icon {
+      display: block;
+      fill: currentColor;
+    }
+
+    .class-icon,
+    .text-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+      font-size: inherit;
+      line-height: 1;
     }
 }
 

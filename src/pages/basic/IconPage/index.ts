@@ -5,9 +5,11 @@ import { PageIconEx2 } from "./ex2";
 import { PageIconEx3 } from "./ex3";
 import { PageIconEx4 } from "./ex4";
 import { PageIconEx5 } from "./ex5";
+import { PageIconEx6 } from "./ex6";
 
 const propsRows = [
   { name: "name", type: "string", default: "''" },
+  { name: "set", type: "string", default: "''", desc: "显式选择已配置的图标集合" },
   { name: "size", type: "number | string", default: "1em" },
   { name: "color", type: "string", default: "''" },
   { name: "aria-label", type: "string", default: "''" },
@@ -21,7 +23,8 @@ useComponents({
   "page-icon-ex2": PageIconEx2,
   "page-icon-ex3": PageIconEx3,
   "page-icon-ex4": PageIconEx4,
-  "page-icon-ex5": PageIconEx5
+  "page-icon-ex5": PageIconEx5,
+  "page-icon-ex6": PageIconEx6
 });
 
 const PageIcon = defineHtml(html`
@@ -38,6 +41,8 @@ const PageIcon = defineHtml(html`
         <page-icon-ex4 />
 
         <page-icon-ex5 />
+
+        <page-icon-ex6 />
 
         <h2>API</h2>
         <elf-props-table title="Props" :rows=${propsRows} />

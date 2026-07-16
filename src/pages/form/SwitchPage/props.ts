@@ -3,11 +3,13 @@ import { defineHtml, html } from "elfui";
 const rows = [
   { name: "model-value / active-value / inactive-value", type: "string | number | boolean", default: "false / true / false" },
   { name: "size / width / inline-prompt", type: "sm | md | lg / string | number / boolean", default: "md / auto / false" },
+  { name: "variant", type: "default | inset | material | square", default: "default" },
   { name: "active-text / inactive-text / active-icon / inactive-icon", type: "string", default: "''" },
   { name: "active-action-icon / inactive-action-icon", type: "string", default: "''" },
   { name: "disabled / loading / validate-event", type: "boolean", default: "false / false / true" },
   { name: "id / tabindex / aria-label", type: "string / number / string", default: "'' / 0 / ''" },
   { name: "active-color / inactive-color / border-color", type: "string", default: "''" },
+  { name: "inset / flat", type: "boolean", default: "false", desc: "兼容外观属性；新代码优先使用 variant" },
   { name: "before-change", type: "(nextValue) => boolean | Promise<boolean>", default: "undefined" }
 ];
 

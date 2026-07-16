@@ -57,15 +57,23 @@ describe("elf-loading", () => {
     expect(el.shadowRoot!.querySelector(".overlay")).toBeNull();
   });
 
-  it("支持 dots、pulse 和 bars 三种附加加载动效", async () => {
+  it("renders distinct structures for every built-in loading variant", async () => {
     const el = document.createElement("elf-loading") as LoadingEl;
     el.loading = true;
     document.body.appendChild(el);
 
-    for (const variant of ["dots", "pulse", "bars"]) {
+    const expectations = {
+      spinner: [".spinner", 1],
+      dots: [".dot", 3],
+      pulse: [".pulse", 1],
+      bars: [".bar", 3]
+    } as const;
+
+    for (const [variant, [selector, count]] of Object.entries(expectations)) {
       el.variant = variant;
       await tick();
       expect(el.shadowRoot!.querySelector(`.indicator.is-${variant}`)).toBeTruthy();
+      expect(el.shadowRoot!.querySelectorAll(selector)).toHaveLength(count);
     }
   });
 
@@ -164,6 +172,30 @@ describe("elf-loading", () => {
     expect(bodyEl.style.width).toBe("320px");
     expect(bodyEl.style.height).toBe("180px");
     bodyMounted.close();
+  });
+
+  it("lets users exit a fullscreen service and restores focus and scroll state", async () => {
+    const trigger = document.createElement("button");
+    document.body.appendChild(trigger);
+    trigger.focus();
+    let closed = 0;
+
+    createService({ text: "正在同步", variant: "bars", lock: true, onClose: () => closed++ });
+    await tick();
+    await tick();
+
+    const el = document.body.querySelector<LoadingEl>("elf-loading[data-loading-service]")!;
+    const closeButton = el.shadowRoot!.querySelector<HTMLButtonElement>(".close")!;
+    expect(el.closable).toBe(true);
+    expect(el.shadowRoot!.activeElement).toBe(closeButton);
+    expect(document.body.style.overflow).toBe("hidden");
+
+    closeButton.click();
+
+    expect(el.isConnected).toBe(false);
+    expect(document.body.style.overflow).toBe("");
+    expect(document.activeElement).toBe(trigger);
+    expect(closed).toBe(1);
   });
 
   it("keeps body locked until every locking service is closed", () => {

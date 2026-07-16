@@ -4,12 +4,14 @@ import { PageStatisticEx1 } from "./ex1";
 import { PageStatisticEx2 } from "./ex2";
 import { PageStatisticEx3 } from "./ex3";
 import { PageStatisticEx4 } from "./ex4";
+import { PageStatisticEx5 } from "./ex5";
 
 useComponents({
   "page-statistic-ex1": PageStatisticEx1,
   "page-statistic-ex2": PageStatisticEx2,
   "page-statistic-ex3": PageStatisticEx3,
   "page-statistic-ex4": PageStatisticEx4,
+  "page-statistic-ex5": PageStatisticEx5,
   "page-statistic-props": PageStatisticProps
 });
 
@@ -20,6 +22,7 @@ const PageStatistic = defineHtml(html`
     <page-statistic-ex1 />
     <page-statistic-ex2 />
     <page-statistic-ex3 />
+    <page-statistic-ex5 />
     <page-statistic-ex4 />
     <page-statistic-props></page-statistic-props>
   </elf-container>

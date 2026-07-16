@@ -19,6 +19,7 @@ type SwitchHost = HTMLElement & {
   loading?: boolean;
   inset?: boolean;
   flat?: boolean;
+  variant?: string;
   color?: string;
   activeColor?: string;
   inactiveColor?: string;
@@ -185,11 +186,25 @@ describe("elf-switch", () => {
     const track = el.shadowRoot!.querySelector(".track") as HTMLElement;
 
     expect(el.shadowRoot!.querySelector(".action-icon")?.textContent).toContain("○");
+    expect(el.shadowRoot!.querySelector(".action-icon")?.parentElement?.classList.contains("thumb")).toBe(true);
     el.focus?.();
     expect(el.shadowRoot!.activeElement).toBe(track);
 
     track.click();
     await flush();
     expect(el.shadowRoot!.querySelector(".action-icon")?.textContent).toContain("✓");
+  });
+
+  it.each(["default", "inset", "material", "square"])(
+    "reflects the %s visual variant",
+    async (variant) => {
+      const el = await mount({ variant });
+      expect(el.getAttribute("data-variant")).toBe(variant);
+    }
+  );
+
+  it("keeps inset prop as a backwards-compatible variant alias", async () => {
+    const el = await mount({ variant: "square", inset: true });
+    expect(el.getAttribute("data-variant")).toBe("inset");
   });
 });

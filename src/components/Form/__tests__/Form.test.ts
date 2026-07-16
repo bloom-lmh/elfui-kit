@@ -70,7 +70,7 @@ describe("Form 联动", () => {
   it("form / form-item / input 渲染并连接", async () => {
     const { form, item, input, inputEl } = await buildSimpleForm();
     expect(form.shadowRoot!.querySelector("form")).toBeTruthy();
-    expect(item.shadowRoot!.querySelector("label")?.textContent).toBe("姓名");
+    expect(item.shadowRoot!.querySelector("label")?.textContent?.trim()).toBe("姓名");
     expect(input.shadowRoot!.querySelector("input")).toBe(inputEl);
   });
 
@@ -132,6 +132,25 @@ describe("Form 联动", () => {
     await tick();
     expect(item.shadowRoot!.querySelector(".error")).toBeNull();
     expect(data.name).toBe("");
+  });
+
+  it("keeps inline layout on the native form and supports native submit opt-out", async () => {
+    const form = document.createElement("elf-form") as FormHost & {
+      inline?: boolean;
+      preventSubmit?: boolean;
+    };
+    form.inline = true;
+    form.preventSubmit = false;
+    document.body.appendChild(form);
+    await tick();
+    await tick();
+
+    expect(form.hasAttribute("inline")).toBe(true);
+    const nativeForm = form.shadowRoot!.querySelector("form")!;
+    const submit = new SubmitEvent("submit", { bubbles: true, cancelable: true });
+    nativeForm.dispatchEvent(submit);
+
+    expect(submit.defaultPrevented).toBe(false);
   });
 });
 

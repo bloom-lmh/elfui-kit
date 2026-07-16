@@ -4,6 +4,7 @@ import {
     defineProps,
     defineStyle,
     html,
+    registerComponents,
     useHostAttr,
     useHostFlag,
     useRef,
@@ -11,6 +12,7 @@ import {
 } from "elfui";
 
 import { useFormControl } from "../../../composables";
+import { Tag } from "../../Basic/Tag";
 import styles from "./style.scss?inline";
 import type { InputTagProps, InputTagSize } from "./types";
 
@@ -20,6 +22,8 @@ interface TagItem {
     label: string;
     index: number;
 }
+
+registerComponents(Tag);
 
 const props = defineProps<InputTagProps>({
     modelValue: { type: Array, default: () => [] },
@@ -139,6 +143,10 @@ const normalizedSize = (): InputTagSize => {
     return size === "sm" || size === "lg" ? size : "";
 };
 
+const tagSize = (): "sm" | "md" | "lg" => normalizedSize() || "md";
+
+const tagColor = (): string => String(props.tagType || "primary");
+
 useHostAttr("size", normalizedSize);
 useHostFlag("disabled", () => Boolean(props.disabled));
 
@@ -148,31 +156,25 @@ const InputTag = defineHtml<InputTagProps>(html`
     <div class="input-tag" part="wrapper" @click=${onRemoveClick}>
         <slot name="prefix"></slot>
         <span class="tag-strip" part="tag-strip">
-            <span
+            <elf-tag
                 v-for="tag in tags()"
                 :key="tag.index"
-                class="tag"
-                :class=${[() => props.tagType, () => `is-${props.tagEffect}`]}
+                class="input-token"
                 :data-index="tag.index"
                 :draggable=${props.draggable}
+                :type=${tagColor()}
+                :effect=${props.tagEffect}
+                :size=${tagSize()}
+                :closable=${!props.disabled && !props.readonly}
+                round
                 part="tag"
+                @close=${onRemoveClick}
                 @dragstart=${onDragStart}
                 @dragover=${(event: DragEvent) => props.draggable && event.preventDefault()}
                 @drop=${onDrop}
             >
                 <span class="tag-label">{{ tag.label }}</span>
-                <button
-                    v-if=${!props.disabled && !props.readonly}
-                    class="remove"
-                    type="button"
-                    :data-index="tag.index"
-                    :aria-label="'删除标签 ' + tag.label"
-                >
-                    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                        <path d="M4 4l8 8M12 4l-8 8"></path>
-                    </svg>
-                </button>
-            </span>
+            </elf-tag>
         </span>
         <input
             part="input"

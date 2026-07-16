@@ -21,6 +21,7 @@ const serviceRows = [
   { name: "target", type: "HTMLElement | string", default: "document.body", desc: "局部遮罩目标" },
   { name: "body", type: "boolean", default: "false", desc: "将局部遮罩挂载到 body 并同步目标几何信息" },
   { name: "fullscreen", type: "boolean", default: "未提供 target 时为 true", desc: "创建全屏遮罩" },
+  { name: "closable", type: "boolean", default: "全屏时为 true", desc: "显示退出按钮；关闭后恢复触发元素焦点" },
   { name: "lock", type: "boolean", default: "false", desc: "锁定 body 滚动，支持多实例计数" },
   { name: "text / background / variant", type: "LoadingOptions", desc: "配置文案、背景和内置动效" },
   { name: "svg / svgViewBox", type: "string", desc: "配置自定义 SVG path" },
@@ -34,10 +35,10 @@ const directiveRows = [
 
 const PageLoadingProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" .prop=${propsRows} />
-  <elf-props-table title="Events" .prop=${eventsRows} />
-  <elf-props-table title="Service" .prop=${serviceRows} />
-  <elf-props-table title="Directive" .prop=${directiveRows} />
+  <elf-props-table title="Props" :rows=${propsRows}></elf-props-table>
+  <elf-props-table title="Events" :rows=${eventsRows}></elf-props-table>
+  <elf-props-table title="Service" :rows=${serviceRows}></elf-props-table>
+  <elf-props-table title="Directive" :rows=${directiveRows}></elf-props-table>
 `);
 
 export { PageLoadingProps };

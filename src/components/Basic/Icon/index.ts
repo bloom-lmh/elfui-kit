@@ -3,10 +3,24 @@ import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui
 import styles from "./style.scss?inline";
 import type { IconProps, IconSlots } from "./types";
 
-export type { IconProps, IconSlots } from "./types";
+import { resolveIcon } from "./registry";
+
+export { configureIcons, createClassIconSet, createSvgIconSet, resetIcons, resolveIcon } from "./registry";
+export type {
+  ClassIconValue,
+  IconOptions,
+  IconProps,
+  IconSet,
+  IconSetKind,
+  IconSlots,
+  IconValue,
+  ResolvedIcon,
+  SvgIconValue
+} from "./types";
 
 const props = defineProps<IconProps>({
     name: { type: String, default: "" },
+    set: { type: String, default: "" },
     size: { type: [Number, String], default: "1em" },
     color: { type: String, default: "" },
     ariaLabel: { type: String, default: "" },
@@ -22,6 +36,15 @@ const size = (): string => {
     return s || "1em";
 };
 
+const resolved = () => resolveIcon(props.name, props.set);
+
+const isSvg = (): boolean => resolved().kind === "svg" && resolved().paths.length > 0;
+
+const isClass = (): boolean => resolved().kind === "class" && resolved().classes.length > 0;
+
+const pathEntries = (): Array<{ path: string; key: string }> =>
+  resolved().paths.map((path, index) => ({ path, key: `${index}-${path}` }));
+
 useHostCssVar("--_icon-size", size);
 useHostCssVar("--_icon-color", () => props.color || "currentColor");
 
@@ -35,7 +58,23 @@ const Icon = defineHtml<IconProps, Record<string, never>, IconSlots>(html`
         :aria-label=${props.ariaLabel || null}
         :role=${props.ariaLabel ? "img" : null}
     >
-        <slot>${props.name}</slot>
+        <slot>
+          <svg
+            v-if=${isSvg()}
+            class="svg-icon"
+            :viewBox=${resolved().viewBox}
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path v-for="entry in pathEntries()" :key="entry.key" :d="entry.path"></path>
+          </svg>
+          <i
+            v-else-if=${isClass()}
+            :class=${["class-icon", ...resolved().classes]}
+            aria-hidden="true"
+          ></i>
+          <span v-else class="text-icon">${resolved().content}</span>
+        </slot>
     </span>
 `);
 

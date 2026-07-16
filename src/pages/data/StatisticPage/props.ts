@@ -2,6 +2,10 @@ import { defineHtml, html } from "elfui";
 
 const statisticRows = [
   { name: "value", type: "number", default: "0", desc: "统计值" },
+  { name: "animated", type: "boolean", default: "false", desc: "数值变化时启用增长动画，并自动尊重 reduced-motion" },
+  { name: "start-value", type: "number", default: "0", desc: "首次增长动画的起始值" },
+  { name: "duration", type: "number", default: "1000", desc: "动画时长，单位毫秒" },
+  { name: "easing", type: "linear | ease-out | ease-in-out", default: "ease-out", desc: "增长动画缓动" },
   { name: "title / prefix / suffix", type: "string", default: "''", desc: "标题和数值前后缀" },
   { name: "precision", type: "number", default: "-", desc: "小数位数" },
   { name: "group-separator / decimal-separator", type: "string", default: "',' / '.'", desc: "数值分隔符" },

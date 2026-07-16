@@ -7,6 +7,7 @@ interface LoadingElement extends HTMLElement {
   loading: boolean;
   text: string;
   fullscreen: boolean;
+  closable: boolean;
   background: string;
   variant: string;
   svg: string;
@@ -102,13 +103,16 @@ registerComponents(Loading);
 export const ElfLoading = (options: LoadingOptions = {}): LoadingInstance => {
   const target = resolveTarget(options.target);
   const fullscreen = options.fullscreen ?? options.target == null;
+  const closable = fullscreen && (options.closable ?? true);
   const appendToBody = fullscreen || Boolean(options.body);
   const appendTarget = appendToBody ? document.body : target;
   const el = document.createElement("elf-loading") as LoadingElement;
+  const previousActive = closable ? (document.activeElement as HTMLElement | null) : null;
 
   el.loading = true;
   el.text = options.text ?? "";
   el.fullscreen = fullscreen;
+  el.closable = closable;
   el.background = options.background ?? "rgba(255,255,255,0.72)";
   el.variant = options.variant ?? "spinner";
   el.svg = options.svg ?? "";
@@ -147,8 +151,14 @@ export const ElfLoading = (options: LoadingOptions = {}): LoadingInstance => {
     if (options.lock) releaseBodyLock();
     el.loading = false;
     el.remove();
+    if (previousActive?.isConnected) previousActive.focus();
     options.onClose?.();
   };
+
+  el.addEventListener("close", close, { once: true });
+  if (closable) {
+    queueMicrotask(() => el.shadowRoot?.querySelector<HTMLButtonElement>(".close")?.focus());
+  }
 
   return {
     close,

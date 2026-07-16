@@ -1,9 +1,10 @@
 import {
   defineEmits,
-  defineExpose,
   defineProps,
   defineStyle,
   html,
+  onMount,
+  onUnmount,
   useHost,
   useHostAttr,
   useHostCssVar,
@@ -17,12 +18,20 @@ import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
 import type { SwitchProps, SwitchValue } from "./types";
 
-export type { SwitchColor, SwitchLabelPosition, SwitchProps, SwitchSize, SwitchValue } from "./types";
+export type {
+  SwitchColor,
+  SwitchLabelPosition,
+  SwitchProps,
+  SwitchSize,
+  SwitchValue,
+  SwitchVariant
+} from "./types";
 
 const props = defineProps<SwitchProps>({
   modelValue: { type: null, default: false },
   disabled: { type: Boolean, default: false },
   size: { type: String, default: "md" },
+  variant: { type: String, default: "default" },
   width: { type: null, default: undefined },
   inlinePrompt: { type: Boolean, default: false },
   activeText: { type: String, default: "" },
@@ -90,6 +99,14 @@ const hasActiveAction = (): boolean =>
 const hasInactiveAction = (): boolean =>
   Boolean(props.inactiveActionIcon || props.inactiveIcon || hasNamedSlot("inactive-action"));
 
+const normalizedVariant = (): "default" | "inset" | "material" | "square" => {
+  if (props.inset) return "inset";
+  const variant = String(props.variant || "default");
+  return variant === "inset" || variant === "material" || variant === "square"
+    ? variant
+    : "default";
+};
+
 useHostFlag("data-checked", checked);
 useHostFlag("data-loading", () => Boolean(props.loading));
 useHostFlag("data-inset", () => Boolean(props.inset));
@@ -97,6 +114,7 @@ useHostFlag("data-flat", () => Boolean(props.flat));
 useHostFlag("data-inline-prompt", () => Boolean(props.inlinePrompt));
 useHostFlag("disabled", isDisabled);
 useHostAttr("data-size", () => fi.formSize);
+useHostAttr("data-variant", normalizedVariant);
 useHostAttr("data-label-position", () => String(props.labelPosition || "end"));
 useHostCssVar("--_switch-active", () => props.activeColor ? String(props.activeColor) : tokenColor(String(props.color)));
 useHostCssVar("--_switch-inactive", () => props.inactiveColor || "var(--elf-border-strong)");
@@ -124,7 +142,14 @@ const focus = (): void =>
   (trackRef.value ?? host.shadowRoot?.querySelector<HTMLElement>(".track"))?.focus();
 const ariaLabel = (): string => String(props.ariaLabel || props.label || props.activeText || "Switch");
 
-defineExpose({ focus });
+onMount(() => {
+  Object.defineProperty(host, "focus", { configurable: true, value: focus });
+});
+
+onUnmount(() => {
+  delete (host as Partial<HTMLElement>).focus;
+});
+
 defineStyle(styles);
 
 const Switch = defineHtml<SwitchProps>(html`
@@ -143,15 +168,17 @@ const Switch = defineHtml<SwitchProps>(html`
       @click=${onClick}
       @keydown=${onKeyDown}
     >
-      <span class="thumb"><span v-if=${props.loading} class="spinner" aria-hidden="true"></span></span>
+      <span class="thumb">
+        <span v-if=${props.loading} class="spinner" aria-hidden="true"></span>
+        <span v-else-if=${!checked() && hasInactiveAction()} class="action-icon">
+          <slot name="inactive-action" @slotchange=${touchSlots}>${props.inactiveActionIcon || props.inactiveIcon}</slot>
+        </span>
+        <span v-else-if=${checked() && hasActiveAction()} class="action-icon">
+          <slot name="active-action" @slotchange=${touchSlots}>${props.activeActionIcon || props.activeIcon}</slot>
+        </span>
+      </span>
       <span v-if=${props.inlinePrompt && !checked()} class="inline-content"><slot name="inactive">${props.inactiveIcon || props.inactiveText}</slot></span>
       <span v-if=${props.inlinePrompt && checked()} class="inline-content"><slot name="active">${props.activeIcon || props.activeText}</slot></span>
-      <span v-if=${!props.inlinePrompt && !checked() && hasInactiveAction()} class="action-icon">
-        <slot name="inactive-action" @slotchange=${touchSlots}>${props.inactiveActionIcon || props.inactiveIcon}</slot>
-      </span>
-      <span v-if=${!props.inlinePrompt && checked() && hasActiveAction()} class="action-icon">
-        <slot name="active-action" @slotchange=${touchSlots}>${props.activeActionIcon || props.activeIcon}</slot>
-      </span>
     </span>
     <span class="main-label" part="label" @click=${onClick}><slot>${props.label}</slot></span>
   </span>

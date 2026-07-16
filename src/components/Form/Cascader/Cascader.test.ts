@@ -118,6 +118,47 @@ describe("elf-cascader", () => {
     expect(el.hasAttribute("data-open")).toBe(false);
   });
 
+  it("keeps vertical focus in one column and supports horizontal keyboard navigation", async () => {
+    const el = await mount({
+      multiple: true,
+      modelValue: [["zhejiang", "hangzhou"]],
+      teleported: false
+    });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    const trigger = el.shadowRoot!.querySelector<HTMLElement>(".trigger")!;
+
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    await tick();
+    await tick();
+
+    const rootOption = el.shadowRoot!.querySelector<HTMLButtonElement>(".column .option")!;
+    rootOption.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    await tick();
+    await tick();
+
+    const columns = el.shadowRoot!.querySelectorAll<HTMLElement>(".column");
+    const childOptions = columns[1]!.querySelectorAll<HTMLButtonElement>(".option");
+    expect(columns).toHaveLength(2);
+    expect(el.shadowRoot!.activeElement).toBe(childOptions[0]);
+
+    childOptions[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    expect(el.shadowRoot!.activeElement).toBe(childOptions[1]);
+    expect(childOptions[0].classList.contains("is-selected")).toBe(true);
+    expect(childOptions[1].classList.contains("is-selected")).toBe(false);
+
+    childOptions[1].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await tick();
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual([
+      ["zhejiang", "hangzhou"],
+      ["zhejiang", "ningbo"]
+    ]);
+
+    childOptions[1].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.activeElement).toBe(rootOption);
+  });
+
   it("选择叶子节点触发 update:modelValue 和 change", async () => {
     const el = await mount();
     const onUpdate = vi.fn();

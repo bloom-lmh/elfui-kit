@@ -1,16 +1,28 @@
 import { defineHtml, html } from "elfui";
 
+import type { LoadingVariant } from "../../../components/Feedback/Loading/types";
+
 const code = `<elf-loading loading variant="spinner" text="同步数据中">...</elf-loading>
 <elf-loading loading variant="dots" text="正在连接">...</elf-loading>
 <elf-loading loading variant="pulse" text="等待响应">...</elf-loading>
 <elf-loading loading variant="bars" text="分析数据">...</elf-loading>`;
 
-const variants = [
+interface VariantExample {
+  value: LoadingVariant;
+  label: string;
+  text: string;
+}
+
+const variants: VariantExample[] = [
   { value: "spinner", label: "旋转", text: "同步数据中" },
   { value: "dots", label: "圆点", text: "正在连接" },
   { value: "pulse", label: "脉冲", text: "等待响应" },
   { value: "bars", label: "音柱", text: "分析数据" }
 ];
+
+const variantKey = (item: VariantExample): LoadingVariant => item.value;
+const variantLabel = (item: VariantExample): string => item.label;
+const variantText = (item: VariantExample): string => item.text;
 
 const PageLoadingEx4 = defineHtml(html`
   <elf-playground title="四种加载动效" :code=${code}>
@@ -19,11 +31,11 @@ const PageLoadingEx4 = defineHtml(html`
     >
       <article
         v-for="item in variants"
-        :key="item.value"
+        :key="variantKey(item)"
         style="display:grid;gap:8px;min-height:150px"
       >
-        <strong style="font-size:13px;color:var(--elf-text-secondary)">{{ item.label }}</strong>
-        <elf-loading loading :variant="item.value" :text="item.text">
+        <strong style="font-size:13px;color:var(--elf-text-secondary)">{{ variantLabel(item) }}</strong>
+        <elf-loading loading :variant="variantKey(item)" :text="variantText(item)">
           <div
             style="height:118px;border:1px solid var(--elf-divider);border-radius:14px;background:var(--elf-bg-paper)"
           ></div>

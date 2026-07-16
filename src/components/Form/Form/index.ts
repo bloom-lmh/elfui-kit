@@ -45,7 +45,8 @@ const props = defineProps({
   statusIcon: { type: Boolean, default: false },
   validateOnRuleChange: { type: Boolean, default: true },
   scrollToError: { type: Boolean, default: false },
-  scrollIntoViewOptions: { type: [Object, Boolean], default: () => ({ behavior: "smooth", block: "center" }) }
+  scrollIntoViewOptions: { type: [Object, Boolean], default: () => ({ behavior: "smooth", block: "center" }) },
+  preventSubmit: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(["validate", "submit"]);
@@ -98,6 +99,11 @@ const resetFields = (): void => {
 
 const clearValidate = (propPath?: string | string[]): void => {
   for (const it of findItems(propPath)) it.clearValidate();
+};
+
+const onSubmit = (event: Event): void => {
+  if (props.preventSubmit) event.preventDefault();
+  emit("submit", event);
 };
 
 const formCtx: FormContext = {
@@ -165,11 +171,6 @@ provide(FORM_KEY, formCtx);
 useHostFlag("inline", () => Boolean(props.inline));
 
 defineExpose({ validate, validateField, resetFields, clearValidate });
-
-const onSubmit = (e: Event): void => {
-  e.preventDefault();
-  emit("submit", e);
-};
 
 defineStyle(styles);
 

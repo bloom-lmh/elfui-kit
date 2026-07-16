@@ -49,8 +49,9 @@ const createTarget = (id: string, left: number): HTMLElement => {
 };
 
 const mount = async (patch: Partial<TourEl> = {}): Promise<TourEl> => {
-  createTarget("tour-target-one", 40);
+  const firstTarget = createTarget("tour-target-one", 40);
   createTarget("tour-target-two", 220);
+  firstTarget.focus();
   const el = document.createElement("elf-tour") as TourEl;
   Object.assign(el, { steps, visible: true, current: 0, ...patch });
   document.body.appendChild(el);
@@ -147,6 +148,21 @@ describe("elf-tour", () => {
     expect(onFinish).toHaveBeenCalledTimes(1);
     await wait(190);
     expect(document.body.querySelector(".tour-layer")).toBeNull();
+  });
+
+  it("首步打开即建立焦点和全局键盘控制，并在关闭后恢复焦点", async () => {
+    const el = await mount();
+    const closeButton = document.body.querySelector<HTMLElement>(".tour-close")!;
+
+    expect(document.activeElement).toBe(closeButton);
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+    await tick();
+    expect(document.body.querySelector(".tour-title")?.textContent).toContain("第二步");
+
+    el.close!();
+    await wait(190);
+    expect(document.activeElement?.id).toBe("tour-target-one");
   });
 
   it("visible 变更会关闭并触发 close", async () => {

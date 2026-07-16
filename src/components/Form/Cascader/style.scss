@@ -292,10 +292,14 @@
   text-align: left;
 
   &:hover,
-  &:focus-visible,
-  &.is-active {
+  &:focus-visible {
     background: var(--elf-bg-overlay);
     outline: none;
+  }
+
+  &.is-active {
+    color: var(--elf-primary);
+    font-weight: 600;
   }
 
   &.is-selected {

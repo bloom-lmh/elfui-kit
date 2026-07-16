@@ -1,6 +1,10 @@
 # Text Element Plus API 对标计划
 
 ## 本轮记录
+
+- [x] 2026-07-16 修复嵌套 Text 的基线约束，并将容量单位案例从错误的 `sub` 语义改为同基线小号文本。
+
+## 本轮记录
 - [x] 第四阶段：补 Element Plus 标准 size、字符串 line-clamp、b/i/sub/sup 标签；以 h1-h6/p 语义 tag 完成标题段落组合，并保留 sm/md/lg 兼容别名。
 - [x] 第二阶段：实现 `tag` 的常用标签渲染，并补 PropsTable 示例。
 - [x] 第三阶段：tag 动态渲染已完整（v-if 链 8 种标签）；页面补 Script 视图；单测扩展到 15 条覆盖 type/size/truncated/lineClamp/mark/deleted/inserted/strong/italic/tag/part。

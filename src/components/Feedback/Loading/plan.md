@@ -17,3 +17,4 @@
 - [x] 新增独立展示页面，覆盖 Template / Script、局部受控、background 和 fullscreen 示例。
 - [x] 2026-07-14 增加 `spinner / dots / pulse / bars` 四种动效与卡片刷新案例，统一圆角遮罩和暗色主题。
 - [x] 2026-07-15 完成指令与 service 生命周期、局部/body/fullscreen 定位、并发滚动锁、自定义 SVG path、公开类型和 API 表；9 项专项测试及真实浏览器交互/截图通过，控制台无错误。
+- [x] 2026-07-16 修复四动效案例的模板局部值绑定，确保 spinner / dots / pulse / bars 结构可辨识；全屏 service 默认提供退出按钮，补齐 dialog 语义、焦点进入/恢复、滚动锁与实例清理测试，并修复 API 表数据绑定。

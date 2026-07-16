@@ -118,6 +118,7 @@
 
 ## 差距与任务
 
+- [x] 2026-07-16 增加 default / inset / material / square 变体；action icon 移入 thumb 避免遮挡；补 loading/reduced-motion 与宿主 focus 代理回归。
 - [x] P0 补齐宽度、内嵌提示、普通/动作图标、自定义值、校验、原生标识和颜色属性。
 - [x] P0 补齐 `change` 事件并保持 payload 为切换后的真实值。
 - [x] P1 补齐 active/inactive 与 action 插槽，并提供可用的 `focus()` 代理。
@@ -128,9 +129,9 @@
 ## 验收清单
 
 - [x] API props/types 与页面 PropsTable 同步。
-- [x] 关键交互和边界状态有单测覆盖（13 tests）。
+- [x] 关键交互和边界状态有单测覆盖（18 tests）。
 - [x] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
-- [x] `pnpm build` 通过；Switch 定向测试 13/13 通过。
+- [x] `pnpm build` 通过；Switch 定向测试 18/18 通过。
 
 ## 2026-07-13 delivered
 

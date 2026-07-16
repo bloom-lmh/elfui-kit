@@ -1,6 +1,7 @@
 # Icon Element Plus API 对标计划
 
 ## 本轮记录
+- [x] 第五阶段：增加可配置 `defaultSet`、多集合、语义别名和 SVG path / CSS class 适配器；第三方图标库由应用按需安装，核心包保持零绑定。
 - [x] 第四阶段：确定图标集合采用独立包 / 默认插槽按需引入策略，核心组件不全量内置 SVG；补 `loading` / `is-loading` 旋转、减少动态效果兼容、案例与测试。
 - [x] 第二阶段：补 `aria-label` 可访问性属性和页面 PropsTable。
 - [x] 第三阶段：页面补 Script 视图；单测扩展到 10 条覆盖 name/size/color/CSS 变量/aria-label/role/slot/part。

@@ -5,6 +5,8 @@ const tags = useRef(["设计", "开发"]);
 const code1 = `<elf-input-tag
   :modelValue.prop=\${tags}
   clearable
+  tag-type="primary"
+  tag-effect="light"
   placeholder="输入后按 Enter"
   @update:modelValue=\${onTagsUpdate}
   @add-tag=\${onAddTag}
@@ -34,17 +36,21 @@ const onAddTag = (): void => undefined;
 
 const onRemoveTag = (): void => undefined;
 
+const tagSummary = (): string => tags.value.join(" / ");
+
 const PageInputTagEx1 = defineHtml(html`
 <elf-playground title="受控数组与清空" :code=${code1} :script=${script1}>
       <elf-input-tag
         :modelValue.prop=${tags}
         clearable
+        tag-type="primary"
+        tag-effect="light"
         placeholder="输入后按 Enter"
         @update:modelValue=${onTagsUpdate}
         @add-tag=${onAddTag}
         @remove-tag=${onRemoveTag}
       ></elf-input-tag>
-      <span slot="status" class="demo-state">当前：${tags.value.join(" / ")}</span>
+      <span slot="status" class="demo-state">当前：${tagSummary()}</span>
     </elf-playground>
 `);
 

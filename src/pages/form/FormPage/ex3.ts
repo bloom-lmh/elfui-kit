@@ -1,6 +1,7 @@
-import { defineHtml, html, useReactive, useRef, useTemplateRef } from "elfui";
+import { defineHtml, defineStyle, html, useReactive, useRef, useTemplateRef } from "elfui";
 
 import type { FormRules } from "../../../components/Form";
+import demoStyles from "./demo.scss?inline";
 
 interface FormHost extends HTMLElement {
   validate(): Promise<boolean>;
@@ -49,14 +50,17 @@ const code = `const ok = await formRef.validate()
 formRef.resetFields()
 formRef.clearValidate()`;
 
+defineStyle(demoStyles);
+
 const PageFormEx3 = defineHtml(html`
   <h2>提交校验</h2>
   <elf-playground title="validate / resetFields / clearValidate" :code="code">
+    <p slot="status" class="demo-state">{{ message }}</p>
     <elf-card
+      class="form-demo-card"
       variant="outlined"
       title="新建项目"
       subtitle="校验结果与操作按钮保持在同一张 Card 中"
-      style="width:100%;max-width:680px"
     >
       <elf-form
         ref="formEl"
@@ -79,12 +83,11 @@ const PageFormEx3 = defineHtml(html`
           <elf-textarea v-model="model.desc" rows="3" placeholder="至少 6 个字符"></elf-textarea>
         </elf-form-item>
       </elf-form>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="form-demo-actions">
         <elf-button type="primary" @click="submit()">提交</elf-button>
         <elf-button @click="reset()">重置</elf-button>
         <elf-button @click="clear()">清除校验</elf-button>
       </div>
-      <p slot="status" class="demo-state">{{ message }}</p>
     </elf-card>
   </elf-playground>
 `);

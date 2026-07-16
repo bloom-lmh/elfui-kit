@@ -119,9 +119,22 @@ describe("elf-slider", () => {
       ]
     });
 
-    expect(el.shadowRoot!.querySelectorAll(".stop")).toHaveLength(4);
+    expect(el.shadowRoot!.querySelectorAll(".step-stop")).toHaveLength(4);
+    expect(el.shadowRoot!.querySelectorAll(".mark-stop")).toHaveLength(2);
     expect(el.shadowRoot!.textContent).toContain("低");
     expect(el.shadowRoot!.textContent).toContain("高");
+  });
+
+  it("places non-uniform mark nodes by their actual value", async () => {
+    const el = await mount({
+      min: 0,
+      max: 100,
+      marks: { 0: "0 ℃", 30: "30 ℃", 100: "100 ℃" }
+    });
+    const nodes = el.shadowRoot!.querySelectorAll<HTMLElement>(".mark-stop");
+
+    expect(Array.from(nodes, (node) => node.style.left)).toEqual(["0%", "30%", "100%"]);
+    expect(el.shadowRoot!.textContent).toContain("30 ℃");
   });
 
   it("支持分段展示", async () => {

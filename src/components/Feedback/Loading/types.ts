@@ -18,6 +18,7 @@ export interface LoadingOptions {
   target?: LoadingTarget;
   body?: boolean;
   fullscreen?: boolean;
+  closable?: boolean;
   lock?: boolean;
   text?: string;
   background?: string;

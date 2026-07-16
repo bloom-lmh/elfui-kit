@@ -32,7 +32,7 @@ describe("elf-input-tag", () => {
   it("renders tags", async () => {
     const el = await mount();
 
-    expect(el.shadowRoot!.querySelector(".tag")?.textContent).toContain("Vue");
+    expect(el.shadowRoot!.querySelector("elf-tag")?.textContent).toContain("Vue");
   });
 
   it("adds tag on enter", async () => {
@@ -54,7 +54,7 @@ describe("elf-input-tag", () => {
     await tick();
     const onUpdate = vi.fn();
     el.addEventListener("update:modelValue", onUpdate as EventListener);
-    const tags = el.shadowRoot!.querySelectorAll(".tag");
+    const tags = el.shadowRoot!.querySelectorAll("elf-tag");
     tags[0]!.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
     tags[1]!.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true }));
 
@@ -68,10 +68,10 @@ describe("elf-input-tag", () => {
       maxCollapseTags: 1
     });
 
-    expect(el.shadowRoot!.querySelectorAll(".tag")).toHaveLength(3);
+    expect(el.shadowRoot!.querySelectorAll("elf-tag")).toHaveLength(3);
     expect(el.shadowRoot!.querySelector(".overflow-count")).toBeNull();
     expect(el.shadowRoot!.querySelector(".tag-strip")?.textContent).toContain("Solid");
-    expect(el.shadowRoot!.querySelector(".remove svg")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector("elf-tag")?.shadowRoot?.querySelector(".close svg")).toBeTruthy();
   });
 
   it("allows deleting every visible tag after wrapping", async () => {
@@ -83,12 +83,27 @@ describe("elf-input-tag", () => {
     const onUpdate = vi.fn();
     el.addEventListener("update:modelValue", onUpdate as EventListener);
 
-    const tags = el.shadowRoot!.querySelectorAll(".tag");
+    const tags = el.shadowRoot!.querySelectorAll("elf-tag");
     expect(tags).toHaveLength(3);
     expect(tags[1]?.textContent).toContain("React");
-    (tags[1]!.querySelector(".remove") as HTMLButtonElement).click();
+    (tags[1]!.shadowRoot!.querySelector(".close") as HTMLButtonElement).click();
     await tick();
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Vue", "Solid"]);
+  });
+
+  it("reuses elf-tag semantics for type, effect, size, and close", async () => {
+    const el = await mount({ modelValue: ["Elf"] });
+    Object.assign(el, { tagType: "success", tagEffect: "plain", size: "lg" });
+    await tick();
+
+    const tag = el.shadowRoot!.querySelector("elf-tag") as HTMLElement & {
+      closable?: boolean;
+      size?: string;
+    };
+    expect(tag.getAttribute("type")).toBe("success");
+    expect(tag.getAttribute("effect")).toBe("plain");
+    expect(tag.size).toBe("lg");
+    expect(tag.closable).toBe(true);
   });
 });

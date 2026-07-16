@@ -338,6 +338,9 @@ const rootStyle = useComputed(() => {
 const pointStyle = (value: number): Record<string, string> =>
   props.vertical ? { bottom: `${percent(value)}%` } : { left: `${percent(value)}%` };
 
+const itemPointStyle = (item: Pick<MarkView | StopView, "value">): Record<string, string> =>
+  pointStyle(item.value);
+
 const marks = (): MarkView[] => {
   const source = props.marks as unknown;
   if (Array.isArray(source)) {
@@ -465,8 +468,14 @@ const Slider = defineHtml(html`
         <span
           v-for="stop in stops()"
           :key="stop.key"
-          class="stop"
-          :style="pointStyle(stop.value)"
+          class="stop step-stop"
+          :style="itemPointStyle(stop)"
+        ></span>
+        <span
+          v-for="mark in marks()"
+          :key="'mark-' + mark.key"
+          class="stop mark-stop"
+          :style="itemPointStyle(mark)"
         ></span>
       </div>
 
@@ -560,7 +569,7 @@ const Slider = defineHtml(html`
           v-for="mark in marks()"
           :key="mark.key"
           class="mark"
-          :style="pointStyle(mark.value)"
+          :style="itemPointStyle(mark)"
         >
           {{ mark.label }}
         </span>

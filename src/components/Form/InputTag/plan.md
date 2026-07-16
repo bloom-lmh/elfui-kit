@@ -1,5 +1,9 @@
 # InputTag Element Plus API 对标计划
 
+## 本轮记录
+
+- [x] 2026-07-16 标签渲染复用 `elf-tag`，统一 type/effect/size/round/close 视觉与事件语义，并保留拖拽排序和受控数组行为。
+
 生成时间：2026-07-05
 
 ## 对标定位

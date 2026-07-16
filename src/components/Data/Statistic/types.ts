@@ -1,5 +1,11 @@
+export type StatisticEasing = "linear" | "ease-out" | "ease-in-out";
+
 export interface StatisticProps {
   value: number;
+  animated: boolean;
+  startValue: number;
+  duration: number;
+  easing: StatisticEasing;
   title: string;
   prefix: string;
   suffix: string;

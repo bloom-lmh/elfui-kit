@@ -1,8 +1,9 @@
 import { defineHtml, html } from "elfui";
 
-const variantCode = `<elf-switch inset color="success" label="Inset" />
-<elf-switch flat color="warning" label="Flat" />
-<elf-switch color="#7c3aed" label="Custom color" />`;
+const variantCode = `<elf-switch variant="default" label="Default" />
+<elf-switch variant="inset" color="success" label="Inset" />
+<elf-switch variant="material" color="warning" label="Material" />
+<elf-switch variant="square" color="#7c3aed" label="Square" />`;
 
 const labelCode = `<elf-switch label-position="start">默认 slot 标签</elf-switch>`;
 
@@ -15,12 +16,12 @@ const actionCode = `<elf-switch
 
 const PageSwitchEx3 = defineHtml(html`
   <h2>外观</h2>
-  <elf-playground title="内嵌、扁平与颜色变体" :code=${variantCode}>
-    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
-      <elf-switch inset color="success" label="Inset"></elf-switch>
-      <elf-switch flat color="warning" label="Flat"></elf-switch>
-      <elf-switch color="#7c3aed" label="自定义颜色"></elf-switch>
-      <elf-switch active-color="#00897b" inactive-color="#cfd8dc" label="双色"></elf-switch>
+  <elf-playground title="Default / Inset / Material / Square" :code=${variantCode}>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:22px 40px;width:min(100%,560px)">
+      <div style="display:flex;gap:12px;align-items:center"><elf-switch variant="default"></elf-switch><span>Default</span></div>
+      <div style="display:flex;gap:12px;align-items:center"><elf-switch variant="inset" color="success" :modelValue.prop=${true}></elf-switch><span>Inset</span></div>
+      <div style="display:flex;gap:12px;align-items:center"><elf-switch variant="material" color="warning"></elf-switch><span>Material</span></div>
+      <div style="display:flex;gap:12px;align-items:center"><elf-switch variant="square" color="#7c3aed" :modelValue.prop=${true}></elf-switch><span>Square</span></div>
     </div>
   </elf-playground>
 
@@ -34,12 +35,10 @@ const PageSwitchEx3 = defineHtml(html`
 
   <h2>动作图标</h2>
   <elf-playground title="滑块状态图标" :code=${actionCode}>
-    <elf-switch
-      active-action-icon="✓"
-      inactive-action-icon="○"
-      active-text="已同步"
-      inactive-text="未同步"
-    ></elf-switch>
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+      <elf-switch active-action-icon="✓" inactive-action-icon="○" active-text="已同步" inactive-text="未同步"></elf-switch>
+      <elf-switch variant="square" active-action-icon="✓" inactive-action-icon="○" :modelValue.prop=${true}></elf-switch>
+    </div>
   </elf-playground>
 `);
 

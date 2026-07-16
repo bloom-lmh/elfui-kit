@@ -83,9 +83,11 @@ const onPhoneUpdate = (event) => {
   phone.set(String(event.detail || ""));
 };`;
 
-const code4 = `<elf-input ref="commandInput" placeholder="使用按钮控制焦点" />
-<elf-button @click=\${focusInput}>聚焦</elf-button>
-<elf-button @click=\${blurInput}>失焦</elf-button>`;
+const code4 = `<elf-input ref="commandInput" placeholder="使用标题按钮控制焦点" />
+<div slot="status">
+  <elf-button size="small" @click=\${focusInput}>聚焦</elf-button>
+  <elf-button size="small" @click=\${blurInput}>失焦</elf-button>
+</div>`;
 
 const script4 = `const commandInput = useTemplateRef("commandInput");
 
@@ -166,10 +168,12 @@ const PageInputEx3 = defineHtml(html`
 
   <h2>命令式焦点</h2>
   <elf-playground title="focus / blur" :code=${code4} :script=${script4}>
-    <div style="display:flex;align-items:center;gap:8px;width:420px">
-      <elf-input ref="commandInput" placeholder="使用按钮控制焦点"></elf-input>
-      <elf-button @click=${focusInput}>聚焦</elf-button>
-      <elf-button @click=${blurInput}>失焦</elf-button>
+    <div style="width:min(100%, 360px)">
+      <elf-input ref="commandInput" placeholder="使用标题按钮控制焦点"></elf-input>
+    </div>
+    <div slot="status" style="display:flex;align-items:center;gap:8px">
+      <elf-button size="small" @click=${focusInput}>聚焦</elf-button>
+      <elf-button size="small" @click=${blurInput}>失焦</elf-button>
     </div>
   </elf-playground>
 `);

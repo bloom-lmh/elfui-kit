@@ -93,10 +93,10 @@ const PageTourEx2 = defineHtml(html`
         第三步
       </button>
     </div>
-    <div style="display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap">
-      <elf-button color="primary" @click=${startTour}>开始键盘引导</elf-button>
+    <span slot="status" style="display:flex;gap:10px;align-items:center">
       <span style="font-size:13px;color:var(--elf-text-secondary)">状态：{{ status }}</span>
-    </div>
+      <elf-button size="small" color="primary" @click=${startTour}>开始键盘引导</elf-button>
+    </span>
     <elf-tour
       :steps=${tourSteps}
       :visible=${visible}

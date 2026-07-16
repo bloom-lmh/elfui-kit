@@ -1,4 +1,6 @@
-import { defineHtml, html, useReactive, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useReactive, useRef } from "elfui";
+
+import demoStyles from "./demo.scss?inline";
 
 
 const disabled = useRef(false);
@@ -23,20 +25,20 @@ const code = `<elf-form :model.prop="settings" label-position="right" label-widt
   <elf-form-item label="环境"><elf-select v-model="settings.env" /></elf-form-item>
 </elf-form>`;
 
+defineStyle(demoStyles);
+
 const PageFormEx4 = defineHtml(html`
   <h2>布局与禁用态</h2>
   <elf-playground title="label-position / label-width / disabled" :code="code">
+    <elf-button slot="status" size="small" @click=${toggle}
+      >${disabled.value ? "启用表单" : "禁用表单"}</elf-button
+    >
     <elf-card
+      class="form-demo-card"
       variant="outlined"
       title="环境配置"
       subtitle="通过 extra 插槽放置与内容相关的轻量操作"
-      style="width:100%;max-width:680px"
     >
-      <template #extra>
-        <elf-button size="small" @click="toggle()"
-          >{{ disabled ? '启用表单' : '禁用表单' }}</elf-button
-        >
-      </template>
       <elf-form
         :model.prop="settings"
         label-position="right"

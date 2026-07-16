@@ -5,6 +5,7 @@ const propsRows = [
   { name: "model-modifiers", type: "{ trim?: boolean; number?: boolean; lazy?: boolean }" },
   { name: "type", type: "text | password | email | tel | url | search | number", default: "text" },
   { name: "size", type: "small | default | large | sm | md | lg", default: "md" },
+  { name: "variant", type: "filled | outlined", default: "filled" },
   { name: "placeholder", type: "string" },
   { name: "disabled", type: "boolean" },
   { name: "readonly", type: "boolean" },
@@ -28,7 +29,7 @@ const propsRows = [
   { name: "tabindex", type: "string | number" },
   { name: "validate-event", type: "boolean", default: "true" },
   { name: "input-style", type: "string | object" },
-  { name: "label", type: "string", desc: "无 aria-label 时作为可访问名称兜底" },
+  { name: "label", type: "string", desc: "浮动标签，同时作为无 aria-label 时的可访问名称兜底" },
   { name: "inputmode", type: "string" },
   { name: "id / name", type: "string" }
 ];

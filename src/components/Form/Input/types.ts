@@ -18,6 +18,8 @@ export type InputSize = "sm" | "md" | "lg" | "small" | "default" | "large";
 
 export type InputWordLimitPosition = "inside" | "outside";
 
+export type InputVariant = "filled" | "outlined";
+
 export type InputNativeValue = string | number;
 
 export interface InputModelModifiers {
@@ -37,6 +39,7 @@ export interface InputProps {
   modelModifiers: InputModelModifiers;
   type: InputType;
   size: InputSize;
+  variant: InputVariant;
   placeholder: string;
   disabled: boolean;
   readonly: boolean;

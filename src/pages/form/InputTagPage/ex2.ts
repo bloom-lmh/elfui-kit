@@ -8,6 +8,8 @@ const code2 = `<elf-input-tag
   :modelValue.prop=\${limitedTags}
   :max=\${3}
   size="lg"
+  tag-type="success"
+  tag-effect="plain"
   placeholder="最多 3 个"
   @update:modelValue=\${onLimitedUpdate}
 />
@@ -33,6 +35,8 @@ const PageInputTagEx2 = defineHtml(html`
           collapse-tags
           :max-collapse-tags=${1}
           size="lg"
+          tag-type="success"
+          tag-effect="plain"
           placeholder="最多 3 个"
           @update:modelValue=${onLimitedUpdate}
         ></elf-input-tag>

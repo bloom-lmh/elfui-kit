@@ -157,6 +157,7 @@
 
 ## 差距与任务
 
+- [x] 2026-07-16 增加 Vuetify 信息层级的 `filled` / `outlined` 外观、浮动标签、底部激活线和主题化 field tokens；修复文档命令式焦点调用宿主原生方法冲突。
 - [x] 2026-07-06 第一批深度对齐：补 `model-modifiers`、`formatter/parser`、`show-word-limit/word-limit-position/count-graphemes`、`clear-icon`、原生输入属性透传、hover/keydown/composition 事件、`prefix/suffix/prepend/append/password-icon` slots、`focus/blur/select/clear/input/ref/isComposing/passwordVisible` 暴露，并迁移组件模板为 `${...}`。
 - [x] P0 补齐单行输入属性；`rows`、`autosize`、`resize` 明确由独立 `elf-textarea` 承担，避免在两个组件中维护同一套多行输入状态。
 - [x] P0 补齐事件：`keydown`、`mouseleave`、`mouseenter`、`compositionstart`、`compositionupdate`、`compositionend`。
