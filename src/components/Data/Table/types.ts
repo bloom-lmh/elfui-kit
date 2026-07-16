@@ -41,6 +41,20 @@ export interface TableHeaderCellContext extends TableHeaderRowContext {
   columnIndex: number;
 }
 
+export type TableRenderValue =
+  | string
+  | number
+  | boolean
+  | Node
+  | readonly Node[]
+  | null
+  | undefined;
+
+export interface TableFilterIconContext {
+  column: TableColumn;
+  filtered: boolean;
+}
+
 export type TableRowClassName = string | ((context: TableRowContext) => string);
 export type TableRowStyle = TableStyle | ((context: TableRowContext) => TableStyle);
 export type TableCellClassName = string | ((context: TableCellContext) => string);
@@ -87,6 +101,10 @@ export interface TableColumn {
   filterMultiple?: boolean;
   filterMethod?: TableFilterMethod;
   filteredValue?: unknown[];
+  renderHeader?: (context: TableHeaderCellContext) => TableRenderValue;
+  renderCell?: (context: TableCellContext) => TableRenderValue;
+  renderExpand?: (context: TableRowContext) => TableRenderValue;
+  renderFilterIcon?: (context: TableFilterIconContext) => TableRenderValue;
   formatter?: (row: TableRow, column: TableColumn, index: number) => unknown;
   className?: string;
   headerClassName?: string;

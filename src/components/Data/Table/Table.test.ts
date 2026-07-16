@@ -862,4 +862,89 @@ describe("elf-table", () => {
     await tick();
     expect(strict.getSelectionRows().map((row) => row.id)).toEqual(["root"]);
   });
+
+  it("renderHeader/renderCell 可安全挂载真实 DOM 节点并接收完整上下文", async () => {
+    const onAction = vi.fn();
+    const formatter = vi.fn(() => "不应显示");
+    const renderHeader = vi.fn(() => {
+      const strong = document.createElement("strong");
+      strong.className = "custom-heading";
+      strong.textContent = "成员档案";
+      return strong;
+    });
+    const renderCell = vi.fn(({ row }: { row: Record<string, unknown> }) => {
+      const button = document.createElement("button");
+      button.className = "profile-action";
+      button.textContent = `查看 ${row.name}`;
+      button.addEventListener("click", onAction);
+      return button;
+    });
+    const el = await mount((table) => {
+      table.columns = [{
+        prop: "name",
+        label: "姓名",
+        formatter,
+        renderHeader,
+        renderCell
+      }];
+    });
+    await tick();
+
+    expect(el.shadowRoot!.querySelector(".custom-heading")?.textContent).toBe("成员档案");
+    const button = el.shadowRoot!.querySelector<HTMLButtonElement>(".profile-action")!;
+    expect(button.textContent).toBe("查看 Alice");
+    button.click();
+    expect(onAction).toHaveBeenCalledOnce();
+    expect(renderHeader).toHaveBeenCalledWith(expect.objectContaining({ columnIndex: 0 }));
+    expect(renderCell).toHaveBeenCalledWith(expect.objectContaining({ row: rows[0], rowIndex: 0 }));
+    expect(formatter).not.toHaveBeenCalled();
+  });
+
+  it("renderExpand 可渲染交互内容，并优先于 expandFormatter", async () => {
+    const expandFormatter = vi.fn(() => "旧详情");
+    const renderExpand = vi.fn(({ row }: { row: Record<string, unknown> }) => {
+      const section = document.createElement("section");
+      section.className = "custom-expand";
+      section.textContent = `${row.name} 的权限详情`;
+      return section;
+    });
+    const el = await mount((table) => {
+      table.columns = [
+        { type: "expand", width: 48, renderExpand },
+        { prop: "name", label: "姓名" }
+      ];
+      table.expandFormatter = expandFormatter;
+    });
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".expand-toggle")!.click();
+    await tick();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".custom-expand")?.textContent)
+      .toBe("Alice 的权限详情");
+    expect(renderExpand).toHaveBeenCalledWith(expect.objectContaining({ row: rows[0], rowIndex: 0 }));
+    expect(expandFormatter).not.toHaveBeenCalled();
+  });
+
+  it("renderFilterIcon 可根据筛选状态替换默认图标", async () => {
+    const renderFilterIcon = vi.fn(({ filtered }: { filtered: boolean }) => {
+      const icon = document.createElement("span");
+      icon.className = "custom-filter-icon";
+      icon.textContent = filtered ? "●" : "○";
+      return icon;
+    });
+    const el = await mount((table) => {
+      table.columns = [{
+        prop: "role",
+        label: "角色",
+        filters: [{ text: "管理员", value: "Admin" }],
+        filteredValue: ["Admin"],
+        renderFilterIcon
+      }];
+    });
+    await tick();
+
+    expect(el.shadowRoot!.querySelector(".filter-trigger.has-custom-icon")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".custom-filter-icon")?.textContent).toBe("●");
+    expect(renderFilterIcon).toHaveBeenCalledWith(expect.objectContaining({ filtered: true }));
+  });
 });

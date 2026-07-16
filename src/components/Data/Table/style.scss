@@ -379,6 +379,20 @@ tbody tr.is-selected td {
   clip-path: polygon(0 0, 100% 0, 62% 45%, 62% 88%, 38% 100%, 38% 45%);
 }
 
+.filter-trigger.has-custom-icon .filter-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  background: transparent;
+  clip-path: none;
+}
+
+.rendered-content > * {
+  vertical-align: middle;
+}
+
 .filter-panel {
   z-index: 1000;
   box-sizing: border-box;

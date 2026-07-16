@@ -8,6 +8,7 @@ let tableSortTag = "";
 let tableFilterTag = "";
 let tableResizeTag = "";
 let tableTreeTag = "";
+let tableRendererTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -20,6 +21,7 @@ beforeAll(async () => {
   const { PageTableEx16 } = await import("./ex16");
   const { PageTableEx17 } = await import("./ex17");
   const { PageTableEx18 } = await import("./ex18");
+  const { PageTableEx19 } = await import("./ex19");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
   tableAdvancedTag = ensureCustomElement(PageTableEx13);
@@ -28,6 +30,7 @@ beforeAll(async () => {
   tableFilterTag = ensureCustomElement(PageTableEx16);
   tableResizeTag = ensureCustomElement(PageTableEx17);
   tableTreeTag = ensureCustomElement(PageTableEx18);
+  tableRendererTag = ensureCustomElement(PageTableEx19);
 });
 
 afterEach(() => {
@@ -207,5 +210,27 @@ describe("TablePage", () => {
     expect(table.shadowRoot!.querySelectorAll("tbody > tr")).toHaveLength(4);
     expect(collectText(el)).toContain("产品研发中心 · 已展开");
     expect(el.shadowRoot!.querySelector('[slot="status"]')).toBeTruthy();
+  });
+
+  it("自定义渲染案例覆盖表头、单元格、展开区和筛选图标", async () => {
+    const el = document.createElement(tableRendererTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table")!;
+    expect(table.shadowRoot!.querySelector(".member-heading")?.textContent).toContain("成员档案");
+    expect(table.shadowRoot!.querySelector(".member-profile")?.textContent).toContain("林舒");
+    expect(table.shadowRoot!.querySelector(".custom-filter-icon")?.textContent).toBe("●");
+
+    table.shadowRoot!.querySelector<HTMLButtonElement>(".expand-toggle")!.click();
+    await tick();
+    await tick();
+    expect(table.shadowRoot!.querySelector(".member-detail")?.textContent).toContain("设计系统负责人");
+
+    table.shadowRoot!.querySelector<HTMLButtonElement>(".profile-button")!.click();
+    await tick();
+    expect(collectText(el)).toContain("正在查看：林舒");
   });
 });

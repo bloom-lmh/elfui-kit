@@ -14,6 +14,7 @@ import {
   watchEffect,
   defineHtml
 } from "elfui";
+import { directive, type DirectiveBinding } from "@elfui/runtime";
 
 import styles from "./style.scss?inline";
 import { computeAnchoredPosition } from "../../Common/anchored-overlay";
@@ -30,21 +31,27 @@ import type {
   TableSortBy,
   TableSpanResult,
   TableStyle,
-  TableTreeNodeContext
+  TableTreeNodeContext,
+  TableRenderValue
 } from "./types";
 
 export type {
   TableAlign,
+  TableCellContext,
   TableColumn,
   TableColumnType,
   TableDefaultSort,
   TableExpose,
   TableFilterMethod,
+  TableFilterIconContext,
   TableFilterOption,
+  TableHeaderCellContext,
   TableLayout,
   TableLoad,
   TableProps,
+  TableRenderValue,
   TableRow,
+  TableRowContext,
   TableRowKey,
   TableScrollDetail,
   TableSize,
@@ -60,6 +67,23 @@ export type {
 } from "./types";
 
 const SIGNATURE_SEP = "::elf-table::";
+
+const mountTableContent = (element: HTMLElement, value: TableRenderValue): void => {
+  element.replaceChildren();
+  const values = Array.isArray(value) ? value : [value];
+  for (const item of values) {
+    if (item == null) continue;
+    if (typeof item === "object" && "nodeType" in item) element.appendChild(item);
+    else element.appendChild(element.ownerDocument.createTextNode(String(item)));
+  }
+};
+
+directive(
+  "elf-table-content",
+  (element: HTMLElement, binding: DirectiveBinding<TableRenderValue>) => {
+    mountTableContent(element, binding.value);
+  }
+);
 
 const props = defineProps<TableProps>({
   data: { type: Array, default: () => [] },
@@ -974,6 +998,42 @@ const getCell = (row: TableRowView, column: TableColumnView): string => {
   return String(row.raw[column.prop] ?? "");
 };
 
+const renderCellValue = (row: TableRowView, column: TableColumnView): TableRenderValue => {
+  const renderer = column.raw.renderCell;
+  if (typeof renderer !== "function") return getCell(row, column);
+  try {
+    return renderer(cellContext(column, row)) as TableRenderValue;
+  } catch {
+    return getCell(row, column);
+  }
+};
+
+const renderHeaderValue = (column: TableColumnView): TableRenderValue => {
+  const renderer = column.raw.renderHeader;
+  if (typeof renderer !== "function") return column.label;
+  try {
+    return renderer(headerContext(column)) as TableRenderValue;
+  } catch {
+    return column.label;
+  }
+};
+
+const hasCustomFilterIcon = (column: TableColumnView): boolean =>
+  typeof column.raw.renderFilterIcon === "function";
+
+const renderFilterIconValue = (column: TableColumnView): TableRenderValue => {
+  const renderer = column.raw.renderFilterIcon;
+  if (typeof renderer !== "function") return "";
+  try {
+    return renderer({
+      column: column.raw as TableColumn,
+      filtered: filterValuesOf(column).length > 0
+    }) as TableRenderValue;
+  } catch {
+    return "";
+  }
+};
+
 const cellTitle = (row: TableRowView, column: TableColumnView): string => {
   if (!(column.raw.showOverflowTooltip ?? props.showOverflowTooltip)) return "";
   const formatter = column.raw.tooltipFormatter;
@@ -1233,7 +1293,16 @@ const onHeaderClick = (column: TableColumnView, event: MouseEvent): void =>
 const onHeaderContextMenu = (column: TableColumnView, event: MouseEvent): void =>
   emit("header-contextmenu", column.raw, event);
 
-const getExpandContent = (row: TableRowView): string => {
+const getExpandContent = (row: TableRowView): TableRenderValue => {
+  const expandColumn = getColumns().find((column) => column.type === "expand");
+  const renderer = expandColumn?.raw.renderExpand;
+  if (typeof renderer === "function") {
+    try {
+      return renderer({ row: row.raw, rowIndex: row.index }) as TableRenderValue;
+    } catch {
+      // Fall through to the formatter/default representation.
+    }
+  }
   if (typeof props.expandFormatter === "function") {
     try {
       return String(props.expandFormatter(row.raw, row.index) ?? "");
@@ -1491,7 +1560,8 @@ const isFilterActive = (column: TableColumnView): boolean => filterValuesOf(colu
 
 const filterButtonClass = (column: TableColumnView): Record<string, boolean> => ({
   "is-active": isFilterActive(column),
-  "is-open": filterOpenKey.value === filterKeyOf(column)
+  "is-open": filterOpenKey.value === filterKeyOf(column),
+  "has-custom-icon": hasCustomFilterIcon(column)
 });
 
 const filterLabel = (column: TableColumnView): string => {
@@ -1848,10 +1918,14 @@ const Table = defineHtml<TableProps>(html`
                   :aria-label=${sortLabel(column)}
                   @click=${toggleSort(column)}
                 >
-                  <span>{{ column.label }}</span>
+                  <span class="rendered-content" v-elf-table-content=${renderHeaderValue(column)}></span>
                   <span class="sort-icon"></span>
                 </button>
-                <span v-else>{{ column.label }}</span>
+                <span
+                  v-else
+                  class="rendered-content"
+                  v-elf-table-content=${renderHeaderValue(column)}
+                ></span>
                 <button
                   v-if=${hasFilters(column)}
                   type="button"
@@ -1865,7 +1939,11 @@ const Table = defineHtml<TableProps>(html`
                   @click.stop=${toggleFilterPanel(column)}
                   @keydown=${onFilterTriggerKeydown(column, $event)}
                 >
-                  <span class="filter-icon" aria-hidden="true"></span>
+                  <span
+                    class="filter-icon"
+                    aria-hidden="true"
+                    v-elf-table-content=${renderFilterIconValue(column)}
+                  ></span>
                 </button>
                 <div
                   v-if=${filterOpenKey.value === filterKeyOf(column)}
@@ -2003,15 +2081,25 @@ const Table = defineHtml<TableProps>(html`
                     <span class="tree-toggle-icon" aria-hidden="true"></span>
                   </button>
                   <span v-else class="tree-toggle-spacer" aria-hidden="true"></span>
-                  <span class="cell-text">{{ getCell(row, cell.column) }}</span>
+                  <span
+                    class="cell-text rendered-content"
+                    v-elf-table-content=${renderCellValue(row, cell.column)}
+                  ></span>
                 </span>
-                <span v-else class="cell-text">{{ getCell(row, cell.column) }}</span>
+                <span
+                  v-else
+                  class="cell-text rendered-content"
+                  v-elf-table-content=${renderCellValue(row, cell.column)}
+                ></span>
                 </td>
               </template>
             </tr>
             <tr v-if=${hasExpandColumn() && !row.hasChildren && isExpanded(row)} class="expand-row">
               <td :colspan=${getColumns().length}>
-                <div class="expand-content">{{ getExpandContent(row) }}</div>
+                <div
+                  class="expand-content rendered-content"
+                  v-elf-table-content=${getExpandContent(row)}
+                ></div>
               </td>
             </tr>
           </template>
