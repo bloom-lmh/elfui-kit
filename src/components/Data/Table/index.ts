@@ -32,7 +32,9 @@ import type {
   TableSpanResult,
   TableStyle,
   TableTreeNodeContext,
-  TableRenderValue
+  TableRenderValue,
+  TableTooltipOptions,
+  TableTooltipPlacement
 } from "./types";
 
 export type {
@@ -61,12 +63,23 @@ export type {
   TableSummaryMethod,
   TableTreeNodeContext,
   TableTreeProps,
+  TableTooltipOptions,
+  TableTooltipPlacement,
   TableSpanMethod,
   TableSpanResult,
   TableSortOrder
 } from "./types";
 
 const SIGNATURE_SEP = "::elf-table::";
+const TOOLTIP_PLACEMENTS: TableTooltipPlacement[] = [
+  "top",
+  "top-start",
+  "top-end",
+  "bottom",
+  "bottom-start",
+  "bottom-end"
+];
+let tableTooltipSeed = 0;
 
 const mountTableContent = (element: HTMLElement, value: TableRenderValue): void => {
   element.replaceChildren();
@@ -130,6 +143,10 @@ const props = defineProps<TableProps>({
   sortOrder: { type: String, default: "" },
   defaultSort: { type: Object },
   showOverflowTooltip: { type: Boolean, default: false },
+  tooltipOptions: {
+    type: Object,
+    default: () => ({ placement: "top", offset: 8, showAfter: 300, hideAfter: 80, maxWidth: 320 })
+  },
   showSummary: { type: Boolean, default: false },
   sumText: { type: String, default: "合计" },
   summaryMethod: { type: Function },
@@ -164,6 +181,7 @@ const emit = defineEmits([
 // Template references
 const host = useHost();
 const wrapRef = useTemplateRef<HTMLElement>("wrap");
+const tooltipId = `elf-table-tooltip-${++tableTooltipSeed}`;
 
 const columnsState = useRef<TableColumnView[]>([]);
 
@@ -197,6 +215,16 @@ const filterOpenKey = useRef("");
 
 const filterOverlayStyle = useRef<Record<string, string>>({});
 
+const tooltipOpenState = useRef(false);
+
+const tooltipTextState = useRef("");
+
+const tooltipStyleState = useRef<Record<string, string>>({});
+
+const tooltipPlacementState = useRef<TableTooltipPlacement>("top");
+
+const tooltipCellKeyState = useRef("");
+
 const columnWidthsState = useRef<Record<string, number>>({});
 
 const resizeState = useRef<TableResizeState | null>(null);
@@ -209,6 +237,9 @@ let initialized = false;
 let initialExpansionApplied = false;
 let externalSortObserved = false;
 let filterOverlayFrame = 0;
+let tooltipAnchor: HTMLElement | null = null;
+let tooltipShowTimer = 0;
+let tooltipHideTimer = 0;
 let cleanupFilterOverlay = (): void => {};
 const externalFilterSignatures = new Map<string, string>();
 
@@ -1034,8 +1065,12 @@ const renderFilterIconValue = (column: TableColumnView): TableRenderValue => {
   }
 };
 
-const cellTitle = (row: TableRowView, column: TableColumnView): string => {
-  if (!(column.raw.showOverflowTooltip ?? props.showOverflowTooltip)) return "";
+const hasCellTooltip = (column: TableColumnView): boolean =>
+  column.type === "default"
+  && Boolean(column.raw.showOverflowTooltip ?? props.showOverflowTooltip);
+
+const cellTooltipText = (row: TableRowView, column: TableColumnView): string => {
+  if (!hasCellTooltip(column)) return "";
   const formatter = column.raw.tooltipFormatter;
   if (typeof formatter === "function") {
     try {
@@ -1046,6 +1081,119 @@ const cellTitle = (row: TableRowView, column: TableColumnView): string => {
   }
   return getCell(row, column);
 };
+
+const tooltipOptions = (): Required<TableTooltipOptions> => {
+  const raw = props.tooltipOptions || {};
+  const numberOr = (value: unknown, fallback: number): number => {
+    if (value == null || value === "") return fallback;
+    const normalized = Number(value);
+    return Number.isFinite(normalized) ? Math.max(0, normalized) : fallback;
+  };
+  const placement = TOOLTIP_PLACEMENTS.includes(raw.placement as TableTooltipPlacement)
+    ? raw.placement as TableTooltipPlacement
+    : "top";
+  return {
+    placement,
+    offset: numberOr(raw.offset, 8),
+    showAfter: numberOr(raw.showAfter, 300),
+    hideAfter: numberOr(raw.hideAfter, 80),
+    maxWidth: raw.maxWidth || 320
+  };
+};
+
+const tooltipCellKey = (row: TableRowView, column: TableColumnView): string =>
+  `${row.key}${SIGNATURE_SEP}${column.id}`;
+
+const clearTooltipTimers = (): void => {
+  if (tooltipShowTimer) window.clearTimeout(tooltipShowTimer);
+  if (tooltipHideTimer) window.clearTimeout(tooltipHideTimer);
+  tooltipShowTimer = 0;
+  tooltipHideTimer = 0;
+};
+
+const closeTooltip = (): void => {
+  clearTooltipTimers();
+  tooltipAnchor = null;
+  tooltipOpenState.set(false);
+  tooltipCellKeyState.set("");
+};
+
+const updateTooltipPosition = (): void => {
+  if (!tooltipOpenState.peek() || !tooltipAnchor) return;
+  const overlay = host.shadowRoot?.querySelector<HTMLElement>(".table-tooltip");
+  if (!overlay) return;
+  const anchorRect = tooltipAnchor.getBoundingClientRect();
+  const overlayRect = overlay.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const options = tooltipOptions();
+  const position = computeAnchoredPosition(
+    anchorRect,
+    overlayRect,
+    {
+      width: viewport?.width || window.innerWidth,
+      height: viewport?.height || window.innerHeight,
+      offsetLeft: viewport?.offsetLeft || 0,
+      offsetTop: viewport?.offsetTop || 0
+    },
+    {
+      placement: options.placement,
+      offset: [0, options.offset],
+      padding: 8,
+      flip: true
+    }
+  );
+  tooltipPlacementState.set(position.placement);
+  tooltipStyleState.set({
+    left: `${position.left}px`,
+    top: `${position.top}px`,
+    maxWidth: cssSize(options.maxWidth)
+  });
+};
+
+const isCellOverflowing = (cell: HTMLElement): boolean => {
+  const content = cell.querySelector<HTMLElement>(".cell-text") || cell;
+  return content.scrollWidth > content.clientWidth + 1
+    || content.scrollHeight > content.clientHeight + 1;
+};
+
+const openCellTooltip = (
+  row: TableRowView,
+  column: TableColumnView,
+  cell: HTMLElement
+): void => {
+  clearTooltipTimers();
+  if (tooltipAnchor && tooltipAnchor !== cell) {
+    tooltipAnchor = null;
+    tooltipOpenState.set(false);
+    tooltipCellKeyState.set("");
+  }
+  if (!isCellOverflowing(cell)) return;
+  const text = cellTooltipText(row, column);
+  if (!text) return;
+  const open = (): void => {
+    tooltipAnchor = cell;
+    tooltipTextState.set(text);
+    tooltipCellKeyState.set(tooltipCellKey(row, column));
+    tooltipOpenState.set(true);
+    queueMicrotask(updateTooltipPosition);
+  };
+  const delay = tooltipOptions().showAfter;
+  if (delay > 0) tooltipShowTimer = window.setTimeout(open, delay);
+  else open();
+};
+
+const scheduleTooltipClose = (): void => {
+  if (tooltipShowTimer) window.clearTimeout(tooltipShowTimer);
+  tooltipShowTimer = 0;
+  const delay = tooltipOptions().hideAfter;
+  if (delay > 0) tooltipHideTimer = window.setTimeout(closeTooltip, delay);
+  else closeTooltip();
+};
+
+const tooltipDescriptionId = (row: TableRowView, column: TableColumnView): string | null =>
+  tooltipOpenState.value && tooltipCellKeyState.value === tooltipCellKey(row, column)
+    ? tooltipId
+    : null;
 
 const isSelected = (row: TableRowView): boolean => selectedState.value.includes(row.key);
 
@@ -1267,13 +1415,41 @@ const onCellMouseEnter = (
   row: TableRowView,
   column: TableColumnView,
   event: MouseEvent
-): void => emit("cell-mouse-enter", row.raw, column.raw, event.currentTarget, event);
+): void => {
+  const cell = event.currentTarget as HTMLElement;
+  emit("cell-mouse-enter", row.raw, column.raw, cell, event);
+  if (hasCellTooltip(column)) openCellTooltip(row, column, cell);
+};
 
 const onCellMouseLeave = (
   row: TableRowView,
   column: TableColumnView,
   event: MouseEvent
-): void => emit("cell-mouse-leave", row.raw, column.raw, event.currentTarget, event);
+): void => {
+  emit("cell-mouse-leave", row.raw, column.raw, event.currentTarget, event);
+  if (hasCellTooltip(column)) scheduleTooltipClose();
+};
+
+const onCellFocusIn = (
+  row: TableRowView,
+  column: TableColumnView,
+  event: FocusEvent
+): void => {
+  if (hasCellTooltip(column)) openCellTooltip(row, column, event.currentTarget as HTMLElement);
+};
+
+const onCellFocusOut = (column: TableColumnView, event: FocusEvent): void => {
+  if (!hasCellTooltip(column)) return;
+  const cell = event.currentTarget as HTMLElement;
+  if (event.relatedTarget instanceof Node && cell.contains(event.relatedTarget)) return;
+  scheduleTooltipClose();
+};
+
+const onCellKeydown = (event: KeyboardEvent): void => {
+  if (event.key !== "Escape" || !tooltipOpenState.peek()) return;
+  event.preventDefault();
+  closeTooltip();
+};
 
 const onCellClick = (row: TableRowView, column: TableColumnView, event: MouseEvent): void =>
   emit("cell-click", row.raw, column.raw, event.currentTarget, event);
@@ -1801,6 +1977,7 @@ const getWrap = (): HTMLElement | null =>
   wrapRef.value ?? host.shadowRoot?.querySelector<HTMLElement>(".table-wrap") ?? null;
 
 const onScroll = (event: Event): void => {
+  closeTooltip();
   const target = event.currentTarget as HTMLElement;
   const detail: TableScrollDetail = {
     scrollLeft: target.scrollLeft,
@@ -1848,6 +2025,7 @@ onUnmount(() => {
   document.removeEventListener("pointerdown", onDocumentPointerDown);
   cleanupColumnResize();
   cleanupFilterOverlay();
+  closeTooltip();
   if (filterOverlayFrame && typeof window !== "undefined") {
     window.cancelAnimationFrame(filterOverlayFrame);
   }
@@ -2019,9 +2197,13 @@ const Table = defineHtml<TableProps>(html`
                   :data-column-index=${cell.columnIndex}
                   :class=${cellClass(cell.column, row)}
                   :style=${mergedCellStyle(cell.column, row)}
-                  :title=${cellTitle(row, cell.column)}
+                  :tabindex=${hasCellTooltip(cell.column) ? 0 : null}
+                  :aria-describedby=${tooltipDescriptionId(row, cell.column)}
                   @mouseenter=${onCellMouseEnter(row, cell.column, $event)}
                   @mouseleave=${onCellMouseLeave(row, cell.column, $event)}
+                  @focusin=${onCellFocusIn(row, cell.column, $event)}
+                  @focusout=${onCellFocusOut(cell.column, $event)}
+                  @keydown=${onCellKeydown}
                   @click=${onCellClick(row, cell.column, $event)}
                   @dblclick=${onCellDblClick(row, cell.column, $event)}
                   @contextmenu=${onCellContextMenu(row, cell.column, $event)}
@@ -2122,6 +2304,14 @@ const Table = defineHtml<TableProps>(html`
       </div>
       <div class="append"><slot name="append"></slot></div>
     </div>
+    <div
+      v-if=${tooltipOpenState.value}
+      :id=${tooltipId}
+      class="table-tooltip"
+      :data-placement=${tooltipPlacementState.value}
+      :style=${tooltipStyleState.value}
+      role="tooltip"
+    >{{ tooltipTextState }}</div>
     <div v-if=${props.loading} class="loading">加载中...</div>
   </div>
 `);

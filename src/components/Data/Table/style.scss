@@ -393,6 +393,41 @@ tbody tr.is-selected td {
   vertical-align: middle;
 }
 
+.table-tooltip {
+  position: fixed;
+  z-index: 1200;
+  box-sizing: border-box;
+  width: max-content;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--elf-text-primary) 12%, transparent);
+  border-radius: var(--elf-radius-sm);
+  background: color-mix(in srgb, var(--elf-text-primary) 94%, transparent);
+  box-shadow: var(--elf-shadow-md);
+  color: var(--elf-bg-paper);
+  font-size: var(--elf-font-size-xs);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+.table-tooltip::after {
+  position: absolute;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  content: "";
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.table-tooltip[data-placement^="top"]::after {
+  bottom: -4px;
+}
+
+.table-tooltip[data-placement^="bottom"]::after {
+  top: -4px;
+}
+
 .filter-panel {
   z-index: 1000;
   box-sizing: border-box;

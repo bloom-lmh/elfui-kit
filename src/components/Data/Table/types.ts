@@ -55,6 +55,22 @@ export interface TableFilterIconContext {
   filtered: boolean;
 }
 
+export type TableTooltipPlacement =
+  | "top"
+  | "top-start"
+  | "top-end"
+  | "bottom"
+  | "bottom-start"
+  | "bottom-end";
+
+export interface TableTooltipOptions {
+  placement?: TableTooltipPlacement;
+  offset?: number;
+  showAfter?: number;
+  hideAfter?: number;
+  maxWidth?: string | number;
+}
+
 export type TableRowClassName = string | ((context: TableRowContext) => string);
 export type TableRowStyle = TableStyle | ((context: TableRowContext) => TableStyle);
 export type TableCellClassName = string | ((context: TableCellContext) => string);
@@ -206,6 +222,7 @@ export interface TableProps {
   sortOrder: TableSortOrder;
   defaultSort?: TableDefaultSort;
   showOverflowTooltip: boolean;
+  tooltipOptions: TableTooltipOptions;
   showSummary: boolean;
   sumText: string;
   summaryMethod?: TableSummaryMethod;

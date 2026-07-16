@@ -9,6 +9,7 @@ let tableFilterTag = "";
 let tableResizeTag = "";
 let tableTreeTag = "";
 let tableRendererTag = "";
+let tableTooltipTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
@@ -22,6 +23,7 @@ beforeAll(async () => {
   const { PageTableEx17 } = await import("./ex17");
   const { PageTableEx18 } = await import("./ex18");
   const { PageTableEx19 } = await import("./ex19");
+  const { PageTableEx20 } = await import("./ex20");
   tablePaginationTag = ensureCustomElement(PageTableEx2);
   tableActionTag = ensureCustomElement(PageTableEx9);
   tableAdvancedTag = ensureCustomElement(PageTableEx13);
@@ -31,6 +33,7 @@ beforeAll(async () => {
   tableResizeTag = ensureCustomElement(PageTableEx17);
   tableTreeTag = ensureCustomElement(PageTableEx18);
   tableRendererTag = ensureCustomElement(PageTableEx19);
+  tableTooltipTag = ensureCustomElement(PageTableEx20);
 });
 
 afterEach(() => {
@@ -232,5 +235,25 @@ describe("TablePage", () => {
     table.shadowRoot!.querySelector<HTMLButtonElement>(".profile-button")!.click();
     await tick();
     expect(collectText(el)).toContain("正在查看：林舒");
+  });
+
+  it("溢出提示案例公开浮层配置并保留标题区状态", async () => {
+    const el = document.createElement(tableTooltipTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const table = el.shadowRoot!.querySelector("elf-table") as HTMLElement & {
+      showOverflowTooltip: boolean;
+      tooltipOptions: { placement: string; showAfter: number; maxWidth: number };
+    };
+    expect(table.showOverflowTooltip).toBe(true);
+    expect(table.tooltipOptions).toMatchObject({
+      placement: "top-start",
+      showAfter: 120,
+      maxWidth: 320
+    });
+    expect(el.shadowRoot!.querySelector('[slot="status"]')).toBeTruthy();
+    expect(collectText(el)).toContain("悬停或使用 Tab 聚焦被截断的单元格");
   });
 });

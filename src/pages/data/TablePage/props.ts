@@ -28,7 +28,8 @@ const propsRows = [
   { name: "expand-formatter", type: "(row, index) => unknown", default: "undefined", desc: "展开行内容格式化" },
   { name: "sort-prop / sort-order", type: "string / TableSortOrder", default: "''", desc: "受控排序字段与方向" },
   { name: "default-sort", type: "{ prop, order }", default: "undefined", desc: "非受控默认排序" },
-  { name: "show-overflow-tooltip", type: "boolean", default: "false", desc: "截断内容使用原生 title 提示" },
+  { name: "show-overflow-tooltip", type: "boolean", default: "false", desc: "内容截断时启用鼠标与键盘可访问的浮层提示" },
+  { name: "tooltip-options", type: "TableTooltipOptions", default: "top / 300ms / 320px", desc: "溢出浮层的位置、偏移、显隐延迟与最大宽度" },
   { name: "show-summary / sum-text", type: "boolean / string", default: "false / 合计", desc: "显示汇总行及首列文案" },
   { name: "summary-method", type: "({ columns, data }) => unknown[]", default: "undefined", desc: "自定义汇总单元格" },
   { name: "span-method", type: "(cellContext) => [rowspan, colspan] | object", default: "undefined", desc: "合并数据单元格；返回 0 隐藏当前位置" }
@@ -59,7 +60,7 @@ const columnRows = [
   { name: "cellClassName / cellStyle", type: "string | function / object | function", default: "undefined", desc: "当前列单元格样式" },
   { name: "selectable", type: "(row, index) => boolean", default: "undefined", desc: "selection 列的可选条件" },
   { name: "showOverflowTooltip", type: "boolean", default: "undefined", desc: "覆盖全局溢出提示配置" },
-  { name: "tooltipFormatter", type: "(row, column, index) => unknown", default: "undefined", desc: "自定义溢出提示" },
+  { name: "tooltipFormatter", type: "(row, column, index) => unknown", default: "undefined", desc: "自定义可访问溢出浮层的文本内容" },
   { name: "actions", type: "TableAction[]", default: "[]", desc: "操作列按钮配置" }
 ];
 

@@ -52,6 +52,13 @@ interface TableEl extends HTMLElement {
     columnIndex: number;
   }) => [number, number] | { rowspan: number; colspan: number } | undefined;
   showOverflowTooltip?: boolean;
+  tooltipOptions?: {
+    placement?: string;
+    offset?: number;
+    showAfter?: number;
+    hideAfter?: number;
+    maxWidth?: string | number;
+  };
   selectOnIndeterminate?: boolean;
   expandFormatter?: (row: Record<string, unknown>, index: number) => unknown;
   setScrollTop(value: number): void;
@@ -381,9 +388,67 @@ describe("elf-table", () => {
     expect(el.shadowRoot!.querySelectorAll<HTMLTableCellElement>("tfoot td")[1]!.textContent).toContain(
       "合计"
     );
-    expect(el.shadowRoot!.querySelectorAll<HTMLTableCellElement>("tbody td")[1]!.title).toBe(
-      "Alice"
-    );
+    const tooltipCell = el.shadowRoot!.querySelectorAll<HTMLTableCellElement>("tbody td")[1]!;
+    expect(tooltipCell.title).toBe("");
+    expect(tooltipCell.tabIndex).toBe(0);
+  });
+
+  it("溢出提示使用可访问浮层并支持 tooltipFormatter", async () => {
+    const formatter = vi.fn((row: Record<string, unknown>) => `${row.name} 的完整档案`);
+    const el = await mount((table) => {
+      table.columns = [{
+        prop: "name",
+        label: "姓名",
+        width: 80,
+        showOverflowTooltip: true,
+        tooltipFormatter: formatter
+      }];
+      table.tooltipOptions = {
+        placement: "bottom-start",
+        offset: 4,
+        showAfter: 0,
+        hideAfter: 0,
+        maxWidth: 240
+      };
+    });
+    const cell = el.shadowRoot!.querySelector<HTMLTableCellElement>("tbody td")!;
+    const content = cell.querySelector<HTMLElement>(".cell-text")!;
+    Object.defineProperty(content, "clientWidth", { value: 80, configurable: true });
+    Object.defineProperty(content, "scrollWidth", { value: 180, configurable: true });
+
+    cell.dispatchEvent(new MouseEvent("mouseenter"));
+    await tick();
+    const tooltip = el.shadowRoot!.querySelector<HTMLElement>('[role="tooltip"]')!;
+    expect(tooltip.textContent).toContain("Alice 的完整档案");
+    expect(tooltip.dataset.placement).toBe("bottom-start");
+    expect(tooltip.style.maxWidth).toBe("240px");
+    expect(cell.getAttribute("aria-describedby")).toBe(tooltip.id);
+    expect(formatter).toHaveBeenCalledWith(rows[0], expect.objectContaining({ prop: "name" }), 0);
+
+    cell.dispatchEvent(new MouseEvent("mouseleave"));
+    await tick();
+    expect(el.shadowRoot!.querySelector('[role="tooltip"]')).toBeNull();
+  });
+
+  it("溢出单元格可通过键盘聚焦查看提示并按 Escape 关闭", async () => {
+    const el = await mount((table) => {
+      table.columns = [{ prop: "name", label: "姓名", width: 80, showOverflowTooltip: true }];
+      table.tooltipOptions = { showAfter: 0, hideAfter: 0 };
+    });
+    const cell = el.shadowRoot!.querySelector<HTMLTableCellElement>("tbody td")!;
+    const content = cell.querySelector<HTMLElement>(".cell-text")!;
+    Object.defineProperty(content, "clientWidth", { value: 60, configurable: true });
+    Object.defineProperty(content, "scrollWidth", { value: 160, configurable: true });
+
+    cell.focus();
+    await tick();
+    expect(el.shadowRoot!.querySelector('[role="tooltip"]')?.textContent).toContain("Alice");
+
+    cell.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector('[role="tooltip"]')).toBeNull();
+    expect(document.activeElement).toBe(el);
+    expect(el.shadowRoot!.activeElement).toBe(cell);
   });
 
   it("支持 empty/append 插槽、scroll 事件与滚动公开方法", async () => {
