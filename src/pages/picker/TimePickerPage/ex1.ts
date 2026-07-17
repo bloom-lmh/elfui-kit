@@ -25,6 +25,7 @@ const PageTimePickerEx1 = defineHtml(html`
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
           <elf-time-picker
             :modelValue.prop="time"
+            label="开始时间"
             :step=${300}
             clearable
             @update:modelValue=${updateTime}

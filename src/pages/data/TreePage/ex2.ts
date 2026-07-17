@@ -63,7 +63,8 @@ const code2 = `<elf-tree
 const PageTreeEx2 = defineHtml(html`
   <h2>复选框与过滤</h2>
   <elf-playground title="父子级联勾选，输入关键字过滤节点" :code="code1">
-    <elf-tree
+    <elf-card variant="outlined" density="compact" style="width:100%;max-width:560px">
+      <elf-tree
       :data.prop="data"
       :props.prop="{ key: 'id', label: 'name', children: 'nodes' }"
       :checkedKeys.prop="checked"
@@ -72,13 +73,15 @@ const PageTreeEx2 = defineHtml(html`
       filterable
       default-expand-all
       filter-placeholder="搜索文件"
-    ></elf-tree>
+      ></elf-tree>
+    </elf-card>
     <p slot="status" class="demo-state">已勾选：{{ checkedText() }}</p>
   </elf-playground>
 
   <h2>严格勾选</h2>
   <elf-playground title="check-strictly 开启后父子节点互不影响" :code="code2">
-    <elf-tree
+    <elf-card variant="outlined" density="compact" style="width:100%;max-width:560px">
+      <elf-tree
       :data.prop="data"
       :props.prop="{ key: 'id', label: 'name', children: 'nodes' }"
       :checkedKeys.prop="checkedStrict"
@@ -86,7 +89,8 @@ const PageTreeEx2 = defineHtml(html`
       show-checkbox
       check-strictly
       default-expand-all
-    ></elf-tree>
+      ></elf-tree>
+    </elf-card>
     <p slot="status" class="demo-state">严格勾选：{{ checkedStrictText() }}</p>
   </elf-playground>
 `);

@@ -66,12 +66,12 @@ const onScroll = (event: Event): void => {
 
 const setScrollTop = (value: number): void => {
     const el = getWrap();
-    if (el) el.scrollTop = value;
+    if (el) el.scrollTop = Math.max(0, Number(value) || 0);
 };
 
 const setScrollLeft = (value: number): void => {
     const el = getWrap();
-    if (el) el.scrollLeft = value;
+    if (el) el.scrollLeft = Math.max(0, Number(value) || 0);
 };
 
 // 纯 CSS 实现，滚动尺寸由浏览器自动维护；保留以对齐 Element Plus API。

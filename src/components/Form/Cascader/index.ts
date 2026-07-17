@@ -20,9 +20,11 @@ import {
 } from "elfui";
 
 import { useDisabled, useFormItem } from "../../../composables";
-import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import { computeAnchoredPosition, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
+import { useLocaleProvider } from "../../Providers/context";
 import { FORM_ITEM_KEY } from "../context";
 import styles from "./style.scss?inline";
+import { normalizeFieldVariant } from "../../../types/field";
 import type {
     CascaderBeforeFilter,
     CascaderChangeDetail,
@@ -42,6 +44,7 @@ import type {
     CascaderShowCheckedStrategy,
     CascaderValue,
     CascaderValueOnClear,
+    CascaderVariant,
 } from "./types";
 
 export type {
@@ -109,7 +112,9 @@ const props = defineProps<CascaderProps>({
     modelValue: { type: Array, default: () => [] as CascaderPathValue },
     options: { type: Array, default: () => [] as CascaderOption[] },
     size: { type: String, default: "" },
-    placeholder: { type: String, default: "请选择" },
+    variant: { type: String, default: "filled" },
+    label: { type: String, default: "" },
+    placeholder: { type: String, default: "" },
     disabled: { type: Boolean, default: false },
     clearable: { type: Boolean, default: false },
     clearIcon: { type: String, default: "×" },
@@ -175,6 +180,7 @@ const fi = useFormItem(() => props.size as string);
 const formItem = inject(FORM_ITEM_KEY);
 const isDisabled = useDisabled(() => Boolean(props.disabled));
 const host = useHost();
+const locale = useLocaleProvider();
 const open = useRef(false);
 const selectedValues = useRef<CascaderPathValue[]>([]);
 const activePath = useRef<RawOption[]>([]);
@@ -190,6 +196,8 @@ let filterRequest = 0;
 let cleanupAnchoredOverlay = (): void => {};
 let overlayFrame = 0;
 let mounted = false;
+
+const placeholderText = (): string => props.placeholder || locale.t("common.select");
 
 const resolvePlacement = (value: unknown): CascaderPlacement => {
     const next = String(value || "bottom-start") as CascaderPlacement;
@@ -1108,16 +1116,14 @@ const connectAnchoredOverlay = (): void => {
     const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(requestOverlayUpdate) : undefined;
     if (trigger) observer?.observe(trigger);
     if (dropdown) observer?.observe(dropdown);
+    const cleanupOverlayMotion = listenForExternalOverlayMotion(() => [dropdown], closeDropdown);
     window.addEventListener("resize", requestOverlayUpdate, { passive: true });
-    window.addEventListener("scroll", requestOverlayUpdate, { passive: true, capture: true });
     window.visualViewport?.addEventListener("resize", requestOverlayUpdate, { passive: true });
-    window.visualViewport?.addEventListener("scroll", requestOverlayUpdate, { passive: true });
     cleanupAnchoredOverlay = () => {
         observer?.disconnect();
+        cleanupOverlayMotion();
         window.removeEventListener("resize", requestOverlayUpdate);
-        window.removeEventListener("scroll", requestOverlayUpdate, { capture: true });
         window.visualViewport?.removeEventListener("resize", requestOverlayUpdate);
-        window.visualViewport?.removeEventListener("scroll", requestOverlayUpdate);
     };
     syncTopLayer();
     requestOverlayUpdate();
@@ -1160,6 +1166,9 @@ useHostFlag("data-open", () => open.value);
 useHostAttr("data-state", () => fi.state);
 useHostFlag("disabled", isDisabled);
 useHostAttr("size", () => fi.formSize);
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostFlag("data-dirty", hasValue);
+useHostFlag("data-has-label", () => Boolean(props.label));
 
 defineExpose({
     clear,
@@ -1184,6 +1193,7 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
         @blur=${onTriggerBlur}
         @keydown=${onTriggerKeydown}
     >
+        <span v-if=${props.label} class="field-label">${props.label}</span>
         <span class="prefix" part="prefix"><slot name="prefix"></slot></span>
         <input
             v-if=${props.filterable}
@@ -1192,14 +1202,14 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
             autocomplete="off"
             :value=${query.value}
             :placeholder=${hasValue() ? displayLabel() : props.placeholder}
-            :aria-label=${props.placeholder}
+            :aria-label=${placeholderText()}
             @click=${stopClick}
             @input=${onFilterInput}
             @keydown=${onFilterKeydown}
             @focus=${onTriggerFocus}
             @blur=${onTriggerBlur}
         />
-        <span v-else-if=${!hasValue()} class="placeholder">${props.placeholder}</span>
+        <span v-else-if=${!hasValue()} class="placeholder">${placeholderText()}</span>
         <slot v-else-if=${isMultiple() && hasValue()} name="tag" :data=${getCheckedNodes()}>
             <span class="tags value">
                 <span v-for="entry in visibleTagEntries()" :key="entry.key" :class=${tagClass()}>
@@ -1208,7 +1218,7 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
                         type="button"
                         class="tag-remove"
                         :data-path-key="entry.key"
-                        :aria-label="'移除 ' + entry.label"
+                        :aria-label=${`${locale.t("common.remove")} ${entry.label}`}
                         @click=${removeTag}
                     >×</button>
                 </span>
@@ -1221,7 +1231,7 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
         </slot>
         <span v-else class="value">${displayLabel()}</span>
         <span class="suffix" part="suffix">
-            <button v-if=${showClear()} type="button" class="clear" aria-label="清空" @click=${clear}>${props.clearIcon}</button>
+            <button v-if=${showClear()} type="button" class="clear" :aria-label=${locale.t("common.clear")} @click=${clear}>${props.clearIcon}</button>
             <span v-else class="arrow" aria-hidden="true">▼</span>
         </span>
     </div>
@@ -1239,7 +1249,7 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
     >
         <slot name="header"></slot>
         <div v-if=${isSearchMode()} class="filter-results" role="listbox" @click=${onFilterResultsClick}>
-            <div v-if=${filtering.value} class="empty" aria-live="polite">Searching…</div>
+            <div v-if=${filtering.value} class="empty" aria-live="polite">${locale.t("table.loading")}</div>
             <template v-else>
                 <button
                     v-for="path in filteredPaths.value"
@@ -1255,11 +1265,11 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
                     </slot>
                 </button>
                 <slot v-if="filteredPaths.value.length === 0" name="empty">
-                    <div class="empty">No matching data</div>
+                    <div class="empty">${locale.t("field.noMatch")}</div>
                 </slot>
             </template>
         </div>
-        <slot v-else-if=${rawOptions().length === 0} name="empty"><div class="empty">暂无数据</div></slot>
+        <slot v-else-if=${rawOptions().length === 0} name="empty"><div class="empty">${locale.t("table.empty")}</div></slot>
         <div v-else class="columns" @click=${onColumnsClick}>
             <div v-for="column in columns()" :key="column.key" class="column">
                 <button

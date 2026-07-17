@@ -1,8 +1,12 @@
+import type { FieldVariant } from "../../../types/field";
+
 export type TextareaSize = "sm" | "md" | "lg" | "small" | "default" | "large";
 
 export type TextareaResize = "none" | "both" | "horizontal" | "vertical";
 
 export type TextareaWordLimitPosition = "inside" | "outside";
+
+export type TextareaVariant = FieldVariant;
 
 export interface TextareaAutosizeOptions {
   minRows?: number;
@@ -24,6 +28,7 @@ export interface TextareaProps {
   modelValue: string;
   modelModifiers: TextareaModelModifiers;
   size: TextareaSize;
+  variant: TextareaVariant;
   placeholder: string;
   disabled: boolean;
   readonly: boolean;

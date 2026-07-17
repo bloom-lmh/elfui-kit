@@ -1,6 +1,7 @@
 import { defineHtml, defineProps, defineStyle, html, useHost, useHostFlag } from "elfui";
 
 import styles from "./style.scss?inline";
+import { normalizeBreadcrumbSeparatorIcon } from "../Breadcrumb/separator";
 import type { BreadcrumbItemProps, BreadcrumbItemSlots, BreadcrumbRouteLocation } from "../Breadcrumb/types";
 
 export type { BreadcrumbItemProps, BreadcrumbItemSlots } from "../Breadcrumb/types";
@@ -45,7 +46,7 @@ const BreadcrumbItem = defineHtml<BreadcrumbItemProps, Record<string, never>, Br
     </button>
     <span v-else class="breadcrumb-text" :aria-current=${props.current ? "page" : null}><slot></slot></span>
     <span v-if=${!props.last} class="breadcrumb-separator" part="separator" aria-hidden="true">
-      <elf-icon v-if=${props.separatorIcon} class="breadcrumb-separator-icon" :name=${props.separatorIcon}></elf-icon>
+      <elf-icon v-if=${props.separatorIcon} class="breadcrumb-separator-icon" :name=${normalizeBreadcrumbSeparatorIcon(props.separatorIcon)}></elf-icon>
       <span v-else>${props.separator || "/"}</span>
     </span>
   </span>

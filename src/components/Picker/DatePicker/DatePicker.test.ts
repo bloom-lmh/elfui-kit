@@ -21,6 +21,8 @@ interface DatePickerEl extends HTMLElement {
   header?: string;
   clearable?: boolean;
   shortcuts?: unknown[];
+  variant?: string;
+  label?: string;
 }
 
 const mount = async (patch: Partial<DatePickerEl> = {}): Promise<DatePickerEl> => {
@@ -112,5 +114,46 @@ describe("elf-date-picker", () => {
     expect(el.shadowRoot!.querySelector(".header-title")?.textContent).toContain("选择月份");
     await openPanel(el);
     expect(el.shadowRoot!.querySelectorAll(".month-option")).toHaveLength(12);
+  });
+
+  it("uses the shared surface and closes only on outside interaction or external scroll", async () => {
+    const el = await mount({ variant: "outlined", label: "Publish date" });
+    await openPanel(el);
+    const panel = el.shadowRoot!.querySelector(".panel") as HTMLElement;
+
+    panel.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true }));
+    expect(el.shadowRoot!.querySelector(".panel")).not.toBeNull();
+    document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".panel")).toBeNull();
+
+    await openPanel(el);
+    window.dispatchEvent(new Event("scroll"));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".panel")).toBeNull();
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("Publish date");
+  });
+
+  it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(
+    "reflects the shared %s field variant",
+    async (variant) => {
+      const el = await mount({ variant });
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
+
+  it("starts a fresh visible range before committing the second day", async () => {
+    const el = await mount({ range: true, modelValue: "2026-06-05", endValue: "2026-06-12" });
+    await openPanel(el);
+    const calendar = el.shadowRoot!.querySelector("elf-calendar") as HTMLElement;
+    (calendar.shadowRoot!.querySelector('[data-date="2026-06-20"]') as HTMLButtonElement).click();
+    await tick();
+
+    expect(calendar.shadowRoot!.querySelector('[data-date="2026-06-20"]')?.classList.contains("is-range-start")).toBe(true);
+    expect(calendar.shadowRoot!.querySelector('[data-date="2026-06-05"]')?.classList.contains("is-range-start")).toBe(false);
+    expect(calendar.shadowRoot!.querySelector('[data-date="2026-06-12"]')?.classList.contains("is-range-end")).toBe(false);
+    expect(calendar.shadowRoot!.querySelectorAll(".is-in-range")).toHaveLength(0);
+    expect(el.shadowRoot!.querySelector(".panel")).not.toBeNull();
   });
 });

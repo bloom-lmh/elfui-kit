@@ -1,73 +1,97 @@
 @use "../../../styles/reset";
 
-// ───── host ────────────────────────────────────────
 :host {
+  --_card-padding-x: 20px;
+  --_card-padding-y: 18px;
+  --_card-title-size: 18px;
+
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  border-radius: var(--elf-radius-lg);
-  background: var(--elf-bg-paper);
+  min-width: 0;
   overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--elf-divider) 58%, transparent);
+  border-radius: 16px;
+  background: var(--elf-bg-paper);
+  color: var(--elf-text-primary);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 8%), 0 1px 2px rgb(15 23 42 / 5%);
   transition:
-    box-shadow var(--elf-transition-base),
-    transform var(--elf-transition-base);
+    border-color var(--elf-transition-base),
+    background-color var(--elf-transition-base),
+    box-shadow var(--elf-transition-base);
 }
 
-// ───── MD3 变体 ─────────────────────────────────
-// Element Plus-compatible shadow behaviour. The default is always.
-:host([shadow="always"]) {
-  box-shadow: var(--elf-shadow-1);
+:host([density="comfortable"]) {
+  --_card-padding-x: 18px;
+  --_card-padding-y: 14px;
+  --_card-title-size: 17px;
 }
 
-:host([shadow="hover"]),
-:host([shadow="never"]) {
+:host([density="compact"]) {
+  --_card-padding-x: 14px;
+  --_card-padding-y: 10px;
+  --_card-title-size: 16px;
+}
+
+// Vuetify-inspired surface variants: shape and content stay stable while
+// elevation, border, and tint communicate hierarchy.
+:host([variant="outlined"]) {
+  border-color: var(--elf-divider);
+  background: var(--elf-bg-paper);
+  box-shadow: none;
+}
+
+:host([variant="filled"]) {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--elf-text-primary) 5%, var(--elf-bg-paper));
+  box-shadow: none;
+}
+
+:host([variant="tonal"]) {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--elf-primary) 10%, var(--elf-bg-paper));
+  box-shadow: none;
+}
+
+:host([variant="flat"]) {
+  border-color: transparent;
+  background: var(--elf-bg-paper);
+  box-shadow: none;
+}
+
+:host([shadow="never"]),
+:host([shadow="hover"]) {
   box-shadow: none;
 }
 
 :host([shadow="hover"]:hover) {
-  box-shadow: var(--elf-shadow-1);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 12%), 0 2px 6px rgb(15 23 42 / 7%);
 }
 
-// outlined
-:host([variant="outlined"]) {
-  box-shadow: none;
-  outline: 1px solid var(--elf-border);
-}
-
-// filled
-:host([variant="filled"]) {
-  box-shadow: none;
-  background: var(--elf-bg-overlay);
-}
-
-:host([shadow="always"]) {
-  box-shadow: var(--elf-shadow-1);
-}
-
-// ───── 可点击 ───────────────────────────────────
 :host([clickable]) {
   cursor: pointer;
-
-  &:hover {
-    box-shadow: var(--elf-shadow-2);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    box-shadow: var(--elf-shadow-1);
-    transform: translateY(0);
-  }
 }
 
-// ───── 水平布局 ─────────────────────────────────
+:host([clickable]:hover) {
+  border-color: color-mix(in srgb, var(--elf-primary) 28%, var(--elf-divider));
+  box-shadow: 0 10px 28px rgb(15 23 42 / 13%), 0 2px 7px rgb(15 23 42 / 7%);
+}
+
+:host([clickable]:active) {
+  background: color-mix(in srgb, var(--elf-primary) 4%, var(--elf-bg-paper));
+  box-shadow: 0 3px 10px rgb(15 23 42 / 10%);
+}
+
 :host([image-placement="left"]) {
   flex-direction: row;
 }
 
-// ───── 封面图 ───────────────────────────────────
 .card-image-wrap {
   position: relative;
+  flex: 0 0 auto;
   overflow: hidden;
-  flex-shrink: 0;
+  background: color-mix(in srgb, var(--elf-text-secondary) 8%, var(--elf-bg-paper));
 }
 
 .card-image-wrap img,
@@ -76,15 +100,19 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 360ms ease;
 }
 
-// 顶部封面
+:host([clickable]:hover) .card-image-wrap img,
+:host([clickable]:hover) ::slotted(img[slot="cover"]) {
+  transform: scale(1.025);
+}
+
 :host(:not([image-placement="left"])) .card-image-wrap {
   width: 100%;
   height: var(--_image-h, 200px);
 }
 
-// 左侧封面
 :host([image-placement="left"]) .card-image-wrap {
   width: var(--_image-w, 40%);
   min-height: 100%;
@@ -95,90 +123,123 @@
   inset: 0;
 }
 
-// ───── 图片叠加层 ──────────────────────────────
 .image-overlay {
   position: absolute;
-  inset: auto 0 0 0;
-  padding: var(--elf-space-5);
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+  inset: auto 0 0;
+  padding: 48px var(--_card-padding-x) 14px;
+  background: linear-gradient(transparent, rgb(15 23 42 / 72%));
   color: #fff;
-  font-size: var(--elf-font-size-lg);
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
+  letter-spacing: 0.01em;
 }
 
-// ───── 内容区域 ─────────────────────────────────
 .card-content {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  flex: 1;
   min-width: 0;
+  outline: none;
 }
 
-// ───── 头部 ────────────────────────────────────
+.card-content:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--elf-primary);
+}
+
 .header {
   display: flex;
   align-items: center;
-  gap: var(--elf-space-4);
-  padding: var(--elf-space-5) var(--elf-space-5) 0;
+  gap: 12px;
+  padding: var(--_card-padding-y) var(--_card-padding-x) 0;
 
   .avatar {
+    flex: 0 0 auto;
     width: 40px;
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    flex-shrink: 0;
   }
 
   .header-text {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
   }
 
   .title {
-    font-size: var(--elf-font-size-md);
-    font-weight: 600;
-    line-height: 1.5;
+    overflow-wrap: anywhere;
     color: var(--elf-text-primary);
+    font-size: var(--_card-title-size);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
   }
 
   .subtitle {
-    font-size: var(--elf-font-size-xs);
+    margin-top: 3px;
+    overflow-wrap: anywhere;
     color: var(--elf-text-secondary);
-    line-height: 1.4;
-    margin-top: 2px;
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   .extra {
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    margin-inline-start: auto;
   }
 }
 
-// ───── 主体 ────────────────────────────────────
 .body {
-  padding: var(--elf-space-5);
-  flex: 1;
+  flex: 1 1 auto;
+  padding: var(--_card-padding-y) var(--_card-padding-x);
   color: var(--elf-text-secondary);
-  font-size: var(--elf-font-size-sm);
-  line-height: 1.7;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 :host([has-header]) .body {
-  padding-top: var(--elf-space-3);
+  padding-top: 10px;
 }
 
-// ───── 底部 ────────────────────────────────────
 .footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--elf-space-2);
-  padding: 0 var(--elf-space-5) var(--elf-space-4);
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 48px;
+  padding: 6px 12px 12px;
+  color: var(--elf-text-secondary);
+  font-size: 14px;
 }
 
-// ───── 空容器隐藏 ──────────────────────────────
+:host([density="compact"]) .footer {
+  min-height: 40px;
+  padding: 4px 8px 8px;
+}
+
 :host(:not([has-header])) .header,
 :host(:not([has-footer])) .footer,
 :host(:not([has-cover])) .card-image-wrap {
   display: none;
+}
+
+@media (max-width: 560px) {
+  :host([image-placement="left"]) {
+    flex-direction: column;
+  }
+
+  :host([image-placement="left"]) .card-image-wrap {
+    width: 100%;
+    height: var(--_image-h, 180px);
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .card-image-wrap img,
+  ::slotted(img[slot="cover"]) {
+    transition: none;
+  }
 }

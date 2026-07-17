@@ -1,0 +1,8 @@
+@use "../../../styles/reset";
+
+:host { display: block; min-width: 0; color: var(--elf-text-primary); }
+.list { margin: 0; padding: 0; list-style: none; background: var(--elf-bg-paper); border-radius: var(--elf-radius-md); }
+.list.is-bordered { border: 1px solid var(--elf-border); }
+.item { display: flex; align-items: center; min-height: 48px; padding: 8px 16px; box-sizing: border-box; }
+.list.is-divided .item + .item { border-top: 1px solid var(--elf-divider); }
+.empty { padding: 32px 16px; color: var(--elf-text-secondary); text-align: center; }

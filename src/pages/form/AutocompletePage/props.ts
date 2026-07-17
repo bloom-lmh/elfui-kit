@@ -1,6 +1,7 @@
 import { defineHtml, html } from "elfui";
 
 const rows = [
+  { name: "variant / label", type: "FieldVariant / string", default: "filled / ''", desc: "六种统一字段表面与浮动标签" },
   { name: "model-value / options", type: "string / AutocompleteOption[]", default: "'' / []" },
   { name: "fetch-suggestions / debounce", type: "(query, callback) => void | Promise<option[]> / number", default: "undefined / 300" },
   { name: "trigger-on-focus / highlight-first-item", type: "boolean", default: "true / false" },

@@ -492,7 +492,7 @@ describe("elf-cascader", () => {
     expect(collapsed.title).toContain("浙江 / 宁波");
   });
 
-  it("uses a top-layer panel and updates fixed positioning on captured scroll", async () => {
+  it("closes a top-layer panel on external scroll", async () => {
     const el = await mount({
       appendTo: "#overlay-root",
       fitInputWidth: true,
@@ -547,12 +547,37 @@ describe("elf-cascader", () => {
     expect(dropdown.style.top).toBe("110px");
     expect(dropdown.style.width).toBe("260px");
 
-    anchorLeft = 140;
+    dropdown.dispatchEvent(new Event("scroll", { bubbles: true, composed: true }));
+    await tick();
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
     window.dispatchEvent(new Event("scroll"));
     await frame();
     await tick();
-    expect(dropdown.style.left).toBe("150px");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(dropdown.hidePopover).toHaveBeenCalled();
   });
+
+  it("reflects the shared field surface contract", async () => {
+    const el = await mount({});
+    el.setAttribute("variant", "outlined");
+    el.setAttribute("label", "Region");
+    await tick();
+
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.hasAttribute("data-has-label")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("Region");
+  });
+
+  it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(
+    "reflects the shared %s field variant",
+    async (variant) => {
+      const el = await mount({});
+      el.setAttribute("variant", variant);
+      await tick();
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
 
   it("chooses the best configured fallback placement", () => {
     const result = computeAnchoredPosition(

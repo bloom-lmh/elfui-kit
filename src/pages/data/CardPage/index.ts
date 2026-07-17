@@ -12,7 +12,7 @@ useComponents({
 const PageCard = defineHtml(html`
   <elf-container
     ><h1>Card 卡片</h1>
-    <p>Material Design 风格卡片。支持封面图、标题、内容、底部操作栏。</p>
+    <p>参考 Vuetify 的 surface 层级设计，支持变体、内容密度、封面图与底部操作区。</p>
     <page-card-ex1 /><page-card-ex2 /><page-card-props
   /></elf-container>
 `);

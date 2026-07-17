@@ -90,6 +90,31 @@ describe("elf-transfer", () => {
     expect(el.shadowRoot!.querySelector(".panel-right")?.textContent).not.toContain("Disabled");
   });
 
+  it("clears both select-all controls after transferring all source items", async () => {
+    const el = await mount();
+    const selectAllSource = el.shadowRoot!.querySelector<HTMLInputElement>(
+      '.panel-left [aria-label="Select all source items"]'
+    )!;
+    selectAllSource.click();
+    await tick();
+    expect(selectAllSource.checked).toBe(true);
+
+    (el.shadowRoot!.querySelector(".buttons button:first-child") as HTMLButtonElement).click();
+    await tick();
+    await tick();
+
+    const sourceSelectAll = el.shadowRoot!.querySelector<HTMLInputElement>(
+      '.panel-left [aria-label="Select all source items"]'
+    )!;
+    const targetSelectAll = el.shadowRoot!.querySelector<HTMLInputElement>(
+      '.panel-right [aria-label="Select all target items"]'
+    )!;
+    expect(sourceSelectAll.checked).toBe(false);
+    expect(targetSelectAll.checked).toBe(false);
+    expect(el.shadowRoot!.querySelectorAll(".panel-left .panel-item")).toHaveLength(0);
+    expect(el.shadowRoot!.querySelectorAll(".panel-right .panel-item")).toHaveLength(4);
+  });
+
   it("supports unshift target order with controlled model writeback", async () => {
     const el = await mount((transfer) => {
       transfer.modelValue = ["2"];

@@ -11,6 +11,7 @@ import { PageTableEx17 } from "./ex17";
 import { PageTableEx18 } from "./ex18";
 import { PageTableEx19 } from "./ex19";
 import { PageTableEx20 } from "./ex20";
+import { PageTableEx21 } from "./ex21";
 import { PageTableEx2 } from "./ex2";
 import { PageTableEx3 } from "./ex3";
 import { PageTableEx4 } from "./ex4";
@@ -34,6 +35,7 @@ useComponents({
   "page-table-ex18": PageTableEx18,
   "page-table-ex19": PageTableEx19,
   "page-table-ex20": PageTableEx20,
+  "page-table-ex21": PageTableEx21,
   "page-table-ex2": PageTableEx2,
   "page-table-ex3": PageTableEx3,
   "page-table-ex4": PageTableEx4,
@@ -69,6 +71,7 @@ const PageTable = defineHtml(html`
     <page-table-ex18></page-table-ex18>
     <page-table-ex19></page-table-ex19>
     <page-table-ex20></page-table-ex20>
+    <page-table-ex21></page-table-ex21>
     <page-table-props></page-table-props>
   </elf-container>
 `);

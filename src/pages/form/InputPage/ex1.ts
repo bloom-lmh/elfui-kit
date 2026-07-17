@@ -67,11 +67,19 @@ const PageInputEx1 = defineHtml(html`
   </elf-playground>
 
   <h2>外观变体</h2>
-  <elf-playground title="filled / outlined" :code=${`<elf-input label="Filled" model-value="ElfUI" />
-<elf-input variant="outlined" label="Outlined" model-value="ElfUI" />`}>
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px;width:min(100%,560px)">
-      <elf-input label="Filled" model-value="ElfUI"></elf-input>
+  <elf-playground title="字段表面样式" :code=${`<elf-input variant="default" label="Default" model-value="ElfUI" />
+<elf-input variant="outlined" label="Outlined" model-value="ElfUI" />
+<elf-input variant="underlined" label="Underlined" model-value="ElfUI" />
+<elf-input variant="solo" label="Solo" model-value="ElfUI" />
+<elf-input variant="solo-filled" label="Solo filled" model-value="ElfUI" />
+<elf-input variant="solo-inverted" label="Solo inverted" model-value="ElfUI" />`}>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;width:100%">
+      <elf-input variant="default" label="Default" model-value="ElfUI"></elf-input>
       <elf-input variant="outlined" label="Outlined" model-value="ElfUI"></elf-input>
+      <elf-input variant="underlined" label="Underlined" model-value="ElfUI"></elf-input>
+      <elf-input variant="solo" label="Solo" model-value="ElfUI"></elf-input>
+      <elf-input variant="solo-filled" label="Solo filled" model-value="ElfUI"></elf-input>
+      <elf-input variant="solo-inverted" label="Solo inverted" model-value="ElfUI"></elf-input>
     </div>
   </elf-playground>
 

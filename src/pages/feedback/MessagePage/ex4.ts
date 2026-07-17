@@ -1,38 +1,37 @@
 import { defineHtml, html, useRef } from "elfui";
-
 import { ElfMessage } from "../../../components/Feedback";
 
 const lastEvent = useRef("等待交互");
 
-const showBottom = (): void => {
-  ElfMessage.success("保存完成，底部提示已出现", {
-    position: "bottom",
-    offset: 32,
-    zIndex: 3100,
+const showAction = (): void => {
+  ElfMessage.success("草稿已保存，可立即查看详情", {
+    action: "查看",
     closable: true,
     duration: 0,
-    onClick: () => lastEvent.set("点击了底部 Message"),
-    onClose: () => lastEvent.set("底部 Message 已关闭")
+    onAction: () => lastEvent.set("点击了操作按钮"),
+    onClose: () => lastEvent.set("提示已关闭")
   });
 };
 
-const code4 = `ElfMessage.success("保存完成，底部提示已出现", {
-  position: "bottom",
-  offset: 32,
-  zIndex: 3100,
-  closable: true,
-  duration: 0,
-  onClick: () => {},
-  onClose: () => {}
-})`;
+const showBottom = (): void => {
+  ElfMessage.info("同步任务正在后台运行", {
+    position: "bottom",
+    offset: 32,
+    action: "撤销",
+    closable: true,
+    duration: 0,
+    onAction: () => lastEvent.set("已撤销同步任务")
+  });
+};
+
+const code4 = `ElfMessage.success("草稿已保存，可立即查看详情", { action: "查看", closable: true, duration: 0, onAction: () => {} })`;
 
 const PageMessageEx4 = defineHtml(html`
-  <h2>位置与回调</h2>
-  <elf-playground title="位置、偏移与回调" :code="code4">
-    <div style="display:grid;gap:12px">
-      <elf-button color="success" @click="showBottom">底部提示</elf-button>
-      <p slot="status" class="demo-state">{{ lastEvent }}</p>
-    </div>
+  <h2>操作与位置</h2>
+  <elf-playground title="Snackbar 操作区" :code=${code4}>
+    <elf-button color="success" @click=${showAction}>顶部操作提示</elf-button>
+    <elf-button @click=${showBottom}>底部操作提示</elf-button>
+    <span slot="status" class="demo-state">${lastEvent}</span>
   </elf-playground>
 `);
 

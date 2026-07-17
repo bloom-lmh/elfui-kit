@@ -124,6 +124,27 @@ describe("elf-input", () => {
     expect(el.getAttribute("variant")).toBe("outlined");
   });
 
+  it.each(["default", "outlined", "underlined", "solo", "solo-filled", "solo-inverted"])(
+    "reflects the %s field variant",
+    async (variant) => {
+      const el = mount((node) => {
+        node.variant = variant;
+      });
+      await flush();
+
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
+
+  it("falls back to the compatible filled surface for an unknown variant", async () => {
+    const el = mount((node) => {
+      node.variant = "unknown";
+    });
+    await flush();
+
+    expect(el.getAttribute("variant")).toBe("filled");
+  });
+
   it("disabled host attribute 反射", async () => {
     const el = mount((node) => {
       node.disabled = true;

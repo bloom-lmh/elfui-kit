@@ -7,6 +7,8 @@ import {
     defineProps,
     defineStyle,
     html,
+    onMount,
+    onUnmount,
     useClickOutside,
     useEffect,
     useEventListener,
@@ -18,7 +20,10 @@ import {
 } from "elfui";
 
 import { useDisabled, useFormItem } from "../../../composables";
+import { listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
+import { useLocaleProvider } from "../../Providers/context";
 import styles from "./style.scss?inline";
+import { normalizeFieldVariant } from "../../../types/field";
 
 import type {
     SelectFieldNames,
@@ -32,6 +37,7 @@ export type {
     SelectOption,
     SelectProps,
     SelectSize,
+    SelectVariant,
     SelectValue,
 } from "./types";
 
@@ -50,7 +56,9 @@ const props = defineProps<SelectProps>({
         }),
     },
     size: { type: String, default: "" },
-    placeholder: { type: String, default: "请选择" },
+    variant: { type: String, default: "filled" },
+    label: { type: String, default: "" },
+    placeholder: { type: String, default: "" },
     disabled: { type: Boolean, default: false },
     valueKey: { type: String, default: "value" },
     clearable: { type: Boolean, default: false },
@@ -69,9 +77,9 @@ const props = defineProps<SelectProps>({
     defaultFirstOption: { type: Boolean, default: false },
     automaticDropdown: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
-    loadingText: { type: String, default: "加载中..." },
-    noDataText: { type: String, default: "暂无数据" },
-    noMatchText: { type: String, default: "无匹配项" },
+    loadingText: { type: String, default: "" },
+    noDataText: { type: String, default: "" },
+    noMatchText: { type: String, default: "" },
     valueOnClear: { type: null, default: undefined },
     emptyValues: { type: Array, default: () => [undefined, null, ""] },
     height: { type: Number, default: 240 },
@@ -99,6 +107,7 @@ const fi = useFormItem(() => props.size as string);
 const isDisabled = useDisabled(() => Boolean(props.disabled));
 
 const host = useHost();
+const locale = useLocaleProvider();
 
 const open = useRef(false);
 
@@ -111,6 +120,11 @@ const closing = useRef(false);
 const innerValue = useRef<unknown>(props.modelValue);
 
 let remoteTimer: ReturnType<typeof setTimeout> | null = null;
+
+const placeholderText = (): string => props.placeholder || locale.t("common.select");
+const loadingText = (): string => props.loadingText || locale.t("table.loading");
+const noDataText = (): string => props.noDataText || locale.t("table.empty");
+const noMatchText = (): string => props.noMatchText || locale.t("field.noMatch");
 
 useEffect(() => {
     innerValue.set(props.modelValue);
@@ -137,6 +151,8 @@ useHostAttr("data-state", () => fi.state);
 useHostFlag("disabled", isDisabled);
 
 useHostAttr("size", () => fi.formSize);
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostFlag("data-has-label", () => Boolean(props.label));
 
 useHostCssVar(
     "--_select-dropdown-height",
@@ -150,6 +166,9 @@ const closeDropdown = (emitChange = true): void => {
     if (emitChange) emit("visible-change", false);
 };
 
+const getDropdownEl = (): HTMLElement | null =>
+    host.shadowRoot?.querySelector<HTMLElement>(".dropdown") ?? null;
+
 const openDropdown = (): void => {
     if (isDisabled() || open.peek()) return;
     document.dispatchEvent(
@@ -162,6 +181,15 @@ const openDropdown = (): void => {
 useClickOutside(host, () => {
     closeDropdown();
 });
+
+let cleanupOverlayMotion = (): void => {};
+onMount(() => {
+    cleanupOverlayMotion = listenForExternalOverlayMotion(
+        () => [getDropdownEl()],
+        () => closeDropdown(),
+    );
+});
+onUnmount(() => cleanupOverlayMotion());
 
 useEventListener<CustomEvent<HTMLElement>>(document, SELECT_OPEN_EVENT, (e) => {
     if (e.detail !== host) closeDropdown();
@@ -296,6 +324,8 @@ const isSelected = (opt: SelectOption): boolean =>
     valueArr().some((value) => sameValue(value, optionValue(opt)));
 
 const hasValue = (): boolean => valueArr().length > 0;
+
+useHostFlag("data-dirty", hasValue);
 
 const displayOpts = (): SelectOption[] => {
     const sel = selectedOptions();
@@ -512,9 +542,10 @@ const Select = defineHtml(html`
         @blur=${onTriggerBlur}
         @keydown=${onTriggerKeydown}
     >
+        <span v-if=${props.label} class="field-label">${props.label}</span>
         <slot name="prefix"></slot>
         <span v-if=${!hasValue() && !showFilter()} class="placeholder"
-            >${props.placeholder}</span
+            >${placeholderText()}</span
         >
         <template v-if=${isMulti()}>
             <span
@@ -576,13 +607,13 @@ const Select = defineHtml(html`
         @scroll=${onDropdownScroll}
     >
         <div v-if=${props.loading} class="status">
-            <slot name="loading">${props.loadingText}</slot>
+            <slot name="loading">${loadingText()}</slot>
         </div>
         <div v-else-if=${viewOptions().length === 0} class="status">
             <slot name="empty"
                 >${filterText.value
-                    ? props.noMatchText
-                    : props.noDataText}</slot
+                    ? noMatchText()
+                    : noDataText()}</slot
             >
         </div>
         <div

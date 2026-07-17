@@ -1,5 +1,9 @@
 # Calendar Element Plus API 对齐计划
 
+## 2026-07-16 range polish
+
+- [x] Keep selected days circular and clear the committed range preview as soon as a new first day is chosen.
+
 更新时间：2026-07-13
 
 - [x] 单日期 `model-value`、`first-day-of-week`、`update:modelValue`、`change` 和 header slot。

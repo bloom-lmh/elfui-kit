@@ -1,0 +1,201 @@
+@mixin surface($selector) {
+  #{$selector} {
+    position: relative;
+    border: 0;
+    border-bottom: 1px solid var(--elf-border-strong);
+    border-radius: 6px 6px 0 0;
+    outline: none;
+    background: var(--elf-field-bg, var(--elf-bg-overlay));
+    color: var(--elf-text-primary);
+    transition:
+      border-color var(--elf-transition-fast),
+      background-color var(--elf-transition-fast),
+      box-shadow var(--elf-transition-fast),
+      color var(--elf-transition-fast);
+  }
+
+  #{$selector}::after {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--elf-primary);
+    content: "";
+    pointer-events: none;
+    transform: scaleX(0);
+    transition: transform var(--elf-transition-fast);
+  }
+
+  #{$selector}:hover {
+    background: var(--elf-field-hover-bg, var(--elf-bg-overlay));
+  }
+
+  #{$selector}:focus-within::after,
+  #{$selector}:focus-visible::after,
+  :host([data-open]) #{$selector}::after {
+    transform: scaleX(1);
+  }
+
+  :host([variant="outlined"]) #{$selector} {
+    border: 1px solid var(--elf-border);
+    border-radius: var(--elf-radius-sm);
+    background: var(--elf-bg-paper);
+  }
+
+  :host([variant="underlined"]) #{$selector} {
+    border-width: 0 0 1px;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  :host([variant="solo"]) #{$selector} {
+    border: 0;
+    border-radius: var(--elf-radius-md);
+    background: var(--elf-bg-paper);
+    box-shadow: var(--elf-shadow-1);
+  }
+
+  :host([variant="solo-filled"]) #{$selector} {
+    border: 1px solid transparent;
+    border-radius: var(--elf-radius-md);
+    background: var(--elf-bg-overlay);
+  }
+
+  :host([variant="solo-inverted"]) #{$selector} {
+    border: 1px solid transparent;
+    border-radius: var(--elf-radius-md);
+    background: color-mix(in srgb, var(--elf-text-primary) 10%, var(--elf-bg-paper));
+  }
+
+  :host([variant="outlined"]) #{$selector}::after,
+  :host([variant="solo"]) #{$selector}::after,
+  :host([variant="solo-filled"]) #{$selector}::after,
+  :host([variant="solo-inverted"]) #{$selector}::after {
+    display: none;
+  }
+
+  :host([variant="outlined"]) #{$selector}:hover {
+    border-color: var(--elf-border-strong);
+    background: var(--elf-bg-paper);
+  }
+
+  :host([variant="solo"]) #{$selector}:hover {
+    background: var(--elf-bg-paper);
+    box-shadow: var(--elf-shadow-2);
+  }
+
+  :host([variant="solo-filled"]) #{$selector}:hover,
+  :host([variant="solo-inverted"]) #{$selector}:hover {
+    background: var(--elf-field-hover-bg, var(--elf-bg-overlay));
+  }
+
+  :host([variant="outlined"]) #{$selector}:focus-within,
+  :host([variant="outlined"]) #{$selector}:focus-visible,
+  :host([variant="outlined"][data-open]) #{$selector},
+  :host([variant="solo-filled"]) #{$selector}:focus-within,
+  :host([variant="solo-filled"]) #{$selector}:focus-visible,
+  :host([variant="solo-filled"][data-open]) #{$selector} {
+    border-color: var(--elf-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 15%, transparent);
+  }
+
+  :host([variant="solo"]) #{$selector}:focus-within,
+  :host([variant="solo"]) #{$selector}:focus-visible,
+  :host([variant="solo"][data-open]) #{$selector} {
+    box-shadow:
+      var(--elf-shadow-2),
+      0 0 0 3px color-mix(in srgb, var(--elf-primary) 15%, transparent);
+  }
+
+  :host([variant="solo-inverted"]) #{$selector}:focus-within,
+  :host([variant="solo-inverted"]) #{$selector}:focus-visible,
+  :host([variant="solo-inverted"][data-open]) #{$selector} {
+    background: var(--elf-text-primary);
+    color: var(--elf-bg-paper);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-text-primary) 18%, transparent);
+  }
+
+  :host([variant="solo-inverted"]) #{$selector} :where(input, textarea, .value, .field-value, .filter-input) {
+    color: inherit;
+  }
+
+  :host([variant="solo-inverted"]) #{$selector}:focus-within :where(input, textarea)::placeholder,
+  :host([variant="solo-inverted"][data-open]) #{$selector} :where(input, textarea)::placeholder {
+    color: color-mix(in srgb, var(--elf-bg-paper) 68%, transparent);
+  }
+
+  :host([data-state="error"]) #{$selector} {
+    border-color: var(--elf-danger);
+    border-bottom-color: var(--elf-danger);
+  }
+
+  :host([data-state="error"]) #{$selector}::after {
+    background: var(--elf-danger);
+  }
+
+  :host([variant="outlined"][data-state="error"]) #{$selector}:focus-within,
+  :host([variant="outlined"][data-state="error"]) #{$selector}:focus-visible,
+  :host([variant="outlined"][data-state="error"][data-open]) #{$selector},
+  :host([variant="solo-filled"][data-state="error"]) #{$selector}:focus-within,
+  :host([variant="solo-filled"][data-state="error"]) #{$selector}:focus-visible,
+  :host([variant="solo-filled"][data-state="error"][data-open]) #{$selector} {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-danger) 15%, transparent);
+  }
+
+  :host([disabled]) #{$selector} {
+    background: var(--elf-bg-disabled, var(--elf-bg-overlay));
+    box-shadow: none;
+    color: var(--elf-text-disabled);
+    cursor: not-allowed;
+  }
+}
+
+@mixin floating-label($surface, $label: ".field-label") {
+  #{$label} {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: var(--elf-space-3);
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    color: var(--elf-text-secondary);
+    font-size: var(--elf-font-size-sm);
+    line-height: 1;
+    pointer-events: none;
+    text-overflow: ellipsis;
+    transform: translateY(-50%);
+    transform-origin: left top;
+    transition:
+      color var(--elf-transition-fast),
+      font-size var(--elf-transition-fast),
+      top var(--elf-transition-fast),
+      transform var(--elf-transition-fast);
+    white-space: nowrap;
+  }
+
+  :host([data-dirty]) #{$label},
+  :host([data-open]) #{$label},
+  #{$surface}:focus-within #{$label},
+  #{$surface}:focus-visible #{$label} {
+    top: 8px;
+    font-size: 11px;
+    transform: none;
+  }
+
+  :host([data-open]) #{$label},
+  #{$surface}:focus-within #{$label},
+  #{$surface}:focus-visible #{$label} {
+    color: var(--elf-primary);
+  }
+
+  :host([variant="solo-inverted"][data-open]) #{$label},
+  :host([variant="solo-inverted"]) #{$surface}:focus-within #{$label},
+  :host([variant="solo-inverted"]) #{$surface}:focus-visible #{$label} {
+    color: var(--elf-bg-paper);
+  }
+
+  :host([data-state="error"]) #{$label} {
+    color: var(--elf-danger);
+  }
+}

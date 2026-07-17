@@ -18,6 +18,7 @@ import {
 
 import styles from "./style.scss?inline";
 import type { AlertEmits, AlertProps, AlertSlots } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type {
   AlertDensity,
@@ -40,6 +41,8 @@ const props = defineProps({
   density: { type: String, default: "default" },
   prominent: { type: Boolean, default: false }
 }) as unknown as Readonly<AlertProps>;
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<AlertEmits>(["close"]);
 
@@ -137,7 +140,7 @@ const Alert = defineHtml(html`
             v-if=${props.closable}
             class="close"
             type="button"
-            :aria-label=${props.closeText || "关闭"}
+            :aria-label=${props.closeText || locale.t("common.close")}
             :disabled=${closing}
             @click=${onClose}
         >

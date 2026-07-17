@@ -38,6 +38,10 @@ export const routes: RouteRecord[] = [
     path: "/layout/scrollbar",
     component: () => import("../pages/layout/ScrollbarPage/index")
   },
+  {
+    path: "/layout/masonry",
+    component: () => import("../pages/layout/MasonryPage/index")
+  },
 
   // Basic
   {
@@ -239,6 +243,10 @@ export const routes: RouteRecord[] = [
     component: () => import("../pages/data/TablePage/index")
   },
   {
+    path: "/data/virtual-list",
+    component: () => import("../pages/data/VirtualListPage/index")
+  },
+  {
     path: "/data/skeleton",
     component: () => import("../pages/data/SkeletonPage/index")
   },
@@ -319,7 +327,16 @@ export const routes: RouteRecord[] = [
   {
     path: "/providers/theme",
     component: () => import("../pages/providers/ThemeProviderPage/index")
-  }
+  },
+
+  // Utilities
+  ...[
+    "borders", "border-radius", "content", "cursor", "display", "elevation", "flex",
+    "float", "opacity", "overflow", "position", "sizing", "spacing", "typography"
+  ].map((section) => ({
+    path: `/utilities/${section}`,
+    component: () => import("../pages/utilities/UtilitiesPage/index")
+  }))
 ];
 
 export interface NavItem {
@@ -338,6 +355,7 @@ export const navItems: NavItem[] = [
   { to: "/layout/sticky", text: "Sticky 吸附", group: "Layout 布局" },
   { to: "/layout/splitter", text: "Splitter 分割面板", group: "Layout 布局" },
   { to: "/layout/scrollbar", text: "Scrollbar 滚动条", group: "Layout 布局" },
+  { to: "/layout/masonry", text: "Masonry 瀑布流", group: "Layout 布局" },
 
   { to: "/basic/button", text: "Button 按钮", group: "Basic 基础" },
   { to: "/basic/link", text: "Link 链接", group: "Basic 基础" },
@@ -389,6 +407,7 @@ export const navItems: NavItem[] = [
   { to: "/data/pagination", text: "Pagination 分页", group: "Data 数据展示" },
   { to: "/data/progress", text: "Progress 进度条", group: "Data 数据展示" },
   { to: "/data/table", text: "Table 表格", group: "Data 数据展示" },
+  { to: "/data/virtual-list", text: "VirtualList 虚拟列表", group: "Data 数据展示" },
   { to: "/data/skeleton", text: "Skeleton 骨架屏", group: "Data 数据展示" },
   { to: "/data/carousel", text: "Carousel 轮播图", group: "Data 数据展示" },
   { to: "/data/timeline", text: "Timeline 时间轴", group: "Data 数据展示" },
@@ -410,5 +429,20 @@ export const navItems: NavItem[] = [
 
   { to: "/providers/defaults", text: "Defaults providers", group: "Providers 提供者" },
   { to: "/providers/locale", text: "Locale providers", group: "Providers 提供者" },
-  { to: "/providers/theme", text: "Theme providers", group: "Providers 提供者" }
+  { to: "/providers/theme", text: "Theme providers", group: "Providers 提供者" },
+
+  { to: "/utilities/borders", text: "Borders 边框", group: "Utilities 工具类" },
+  { to: "/utilities/border-radius", text: "Border radius 边框半径", group: "Utilities 工具类" },
+  { to: "/utilities/content", text: "Content 内容", group: "Utilities 工具类" },
+  { to: "/utilities/cursor", text: "Cursor 光标", group: "Utilities 工具类" },
+  { to: "/utilities/display", text: "Display 显示", group: "Utilities 工具类" },
+  { to: "/utilities/elevation", text: "Elevation 高程", group: "Utilities 工具类" },
+  { to: "/utilities/flex", text: "Flex 弹性布局", group: "Utilities 工具类" },
+  { to: "/utilities/float", text: "Float 浮动", group: "Utilities 工具类" },
+  { to: "/utilities/opacity", text: "Opacity 不透明度", group: "Utilities 工具类" },
+  { to: "/utilities/overflow", text: "Overflow 溢出", group: "Utilities 工具类" },
+  { to: "/utilities/position", text: "Position 位置", group: "Utilities 工具类" },
+  { to: "/utilities/sizing", text: "Sizing 缩放", group: "Utilities 工具类" },
+  { to: "/utilities/spacing", text: "Spacing 间距", group: "Utilities 工具类" },
+  { to: "/utilities/typography", text: "Text and typography 文本和排版", group: "Utilities 工具类" }
 ];

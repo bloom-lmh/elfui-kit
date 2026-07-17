@@ -89,6 +89,7 @@ const PageCascaderEx1 = defineHtml(html`
         <elf-cascader
           :options.prop=${options}
           :modelValue=${value}
+          label="地区"
           @update:modelValue=${onUpdate}
           @change=${onChange}
         ></elf-cascader>

@@ -1,4 +1,5 @@
 @use "../../../styles/reset";
+@use "../../../styles/field-surface" as field;
 
 :host {
   display: inline-block;
@@ -7,56 +8,43 @@
 }
 
 .trigger {
+  position: relative;
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 36px;
+  min-height: 52px;
   padding: 4px var(--elf-space-3);
-  background: var(--elf-bg-paper);
-  border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-sm);
   font-size: var(--elf-font-size-sm);
   cursor: pointer;
-  transition:
-    border-color var(--elf-transition-fast),
-    box-shadow var(--elf-transition-fast);
   user-select: none;
   gap: var(--elf-space-1);
   flex-wrap: wrap;
-
-  &:hover {
-    border-color: var(--elf-border-strong);
-  }
 }
 
-:host([data-open]) .trigger,
-.trigger:focus {
-  border-color: var(--elf-primary);
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
-  outline: none;
-}
-
-:host([data-state="error"]) .trigger {
-  border-color: var(--elf-danger);
-  &:focus {
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
-  }
-}
+@include field.surface(".trigger");
+@include field.floating-label(".trigger");
 
 :host([size="sm"]) .trigger {
-  min-height: 28px;
+  min-height: 40px;
   font-size: var(--elf-font-size-xs);
 }
 :host([size="lg"]) .trigger {
-  min-height: 44px;
+  min-height: 60px;
   font-size: var(--elf-font-size-md);
 }
 
 :host([disabled]) .trigger {
-  background: rgba(0, 0, 0, 0.04);
   cursor: not-allowed;
   pointer-events: none;
   color: var(--elf-text-disabled);
+}
+
+:host([data-has-label]) .trigger {
+  padding-top: 18px;
+}
+
+:host([data-has-label]:not([data-dirty]):not([data-open])) .placeholder {
+  color: transparent;
 }
 
 .placeholder {

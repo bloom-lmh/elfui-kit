@@ -223,4 +223,5 @@
 
 - [x] 2026-07-11 Navigation 第一阶段：补 `ellipsis/ellipsisIcon/menuTrigger/showTimeout/hideTimeout/popperOffset/popperClass/popperStyle/collapseTransition/closeOnClickOutside/persistent` 兼容入口，支持 `title/route/popperClass/teleported` 字段映射，补 `handleResize/updateActiveIndex` 暴露方法，新增定向测试和 PropsTable/hover 案例。
 - [x] 2026-07-14 增加可选 `bordered` 外框；修复自定义 toggle 双触发、搜索事件与折叠 header 裁切，并将稳定 toggle 放入 header 同行。
+- [x] 2026-07-17 header toggle 改用 `--m-bg / --m-color` 主题语义变量，兼容暗色主题与自定义颜色。
 - [x] 2026-07-15 完成组合式 `SubMenu / MenuItem / MenuItemGroup`，补齐子菜单级浮层样式、偏移、超时与状态图标，增加 `MenuItem click`、持久浮层、ARIA 和完整方向键导航；20 项定向单测、生产构建及真实浏览器交互通过（控制台 0 error）。`teleported` 保留层级语义，真实跨 Shadow DOM 锚定传送继续由 Dropdown 的共享浮层任务统一承接。

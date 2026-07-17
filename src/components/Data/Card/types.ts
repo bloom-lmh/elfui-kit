@@ -1,7 +1,8 @@
 // elf-card 类型定义
 
-export type CardVariant = "elevated" | "outlined" | "filled";
+export type CardVariant = "elevated" | "outlined" | "filled" | "tonal" | "flat";
 export type CardShadow = "always" | "hover" | "never";
+export type CardDensity = "default" | "comfortable" | "compact";
 export type CardBodyStyle = Record<string, string | number>;
 
 export interface CardProps {
@@ -18,6 +19,8 @@ export interface CardProps {
   shadow: CardShadow;
   /** MD3 变体：elevated(阴影) | outlined(边框) | filled(填充背景) */
   variant: CardVariant;
+  /** Vuetify 风格内容密度。 */
+  density: CardDensity;
   /** 头像/图标地址 */
   avatar: string;
   /** 标题 */

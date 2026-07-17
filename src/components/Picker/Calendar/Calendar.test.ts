@@ -14,7 +14,7 @@ afterEach(() => {
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
 
 interface CalendarEl extends HTMLElement {
-  modelValue?: string;
+  modelValue?: string | string[];
   range?: boolean;
   disabledDate?: (date: Date) => boolean;
   locale?: string;
@@ -95,5 +95,25 @@ describe("elf-calendar", () => {
     expect(onChange).not.toHaveBeenCalled();
     start.click();
     expect((onChange.mock.calls[0]![0] as CustomEvent).detail).toEqual(["2026-07-08", "2026-07-12"]);
+  });
+
+  it("clears the committed range preview as soon as a new range starts", async () => {
+    const el = document.createElement("elf-calendar") as CalendarEl;
+    el.modelValue = ["2026-07-05", "2026-07-12"];
+    el.range = true;
+    const onChange = vi.fn();
+    el.addEventListener("change", onChange as EventListener);
+    document.body.appendChild(el);
+    await tick();
+
+    (el.shadowRoot!.querySelector('[data-date="2026-07-20"]') as HTMLButtonElement).click();
+    await tick();
+    await tick();
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(el.shadowRoot!.querySelector('[data-date="2026-07-20"]')?.classList.contains("is-range-start")).toBe(true);
+    expect(el.shadowRoot!.querySelector('[data-date="2026-07-05"]')?.classList.contains("is-range-start")).toBe(false);
+    expect(el.shadowRoot!.querySelector('[data-date="2026-07-12"]')?.classList.contains("is-range-end")).toBe(false);
+    expect(el.shadowRoot!.querySelectorAll(".is-in-range")).toHaveLength(0);
   });
 });

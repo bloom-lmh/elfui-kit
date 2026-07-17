@@ -154,7 +154,7 @@ describe("elf-autocomplete", () => {
     expect(panel.classList.contains("is-teleported")).toBe(false);
   });
 
-  it("uses a top-layer panel and repositions it on captured scroll", async () => {
+  it("closes a top-layer panel on external scroll", async () => {
     const originalShow = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "showPopover");
     const originalHide = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "hidePopover");
     const showPopover = vi.fn();
@@ -204,7 +204,7 @@ describe("elf-autocomplete", () => {
         y: 0,
         toJSON: () => ({})
       })) as unknown as Element["getBoundingClientRect"];
-      window.dispatchEvent(new Event("scroll"));
+      window.dispatchEvent(new Event("resize"));
       await frame();
       await tick();
 
@@ -216,11 +216,15 @@ describe("elf-autocomplete", () => {
       expect(panel.style.top).toBe("152px");
       expect(panel.style.width).toBe("240px");
 
-      anchorLeft = 180;
+      panel.dispatchEvent(new Event("scroll", { bubbles: true, composed: true }));
+      await tick();
+      expect(input.getAttribute("aria-expanded")).toBe("true");
+
       window.dispatchEvent(new Event("scroll"));
       await frame();
       await tick();
-      expect(panel.style.left).toBe("192px");
+      expect(input.getAttribute("aria-expanded")).toBe("false");
+      expect(el.shadowRoot!.querySelector(".panel")).toBeNull();
     } finally {
       if (originalShow) Object.defineProperty(HTMLElement.prototype, "showPopover", originalShow);
       else delete (HTMLElement.prototype as HTMLElement & { showPopover?: () => void }).showPopover;
@@ -228,4 +232,27 @@ describe("elf-autocomplete", () => {
       else delete (HTMLElement.prototype as HTMLElement & { hidePopover?: () => void }).hidePopover;
     }
   });
+
+  it("reflects the shared field surface contract", async () => {
+    const el = document.createElement("elf-autocomplete") as AutocompleteEl;
+    el.setAttribute("variant", "outlined");
+    el.setAttribute("label", "Framework");
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.hasAttribute("data-has-label")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("Framework");
+  });
+
+  it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(
+    "reflects the shared %s field variant",
+    async (variant) => {
+      const el = document.createElement("elf-autocomplete") as AutocompleteEl;
+      el.setAttribute("variant", variant);
+      document.body.appendChild(el);
+      await tick();
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
 });

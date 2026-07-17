@@ -2,6 +2,7 @@ import { defineHtml, defineProps, defineStyle, html, useHostAttr, useHostFlag } 
 
 import styles from "./style.scss?inline";
 import type { BadgeProps, BadgeSlots } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { BadgeOffset, BadgeProps, BadgeSlots, BadgeStyle, BadgeType } from "./types";
 
@@ -18,6 +19,8 @@ const props = defineProps<BadgeProps>({
     badgeClass: { type: String, default: "" },
     content: { type: [String, Number], default: "" },
 });
+
+const locale = useLocaleProvider();
 
 const toBadgeValue = (value: unknown): string | number => {
     if (typeof value === "number" || typeof value === "string") return value;
@@ -89,7 +92,7 @@ const Badge = defineHtml<BadgeProps, Record<string, never>, BadgeSlots>(html`
             part="badge"
             :style=${badgeStyle()}
             role="status"
-            :aria-label=${props.isDot ? "状态提示" : String(formatValue())}
+            :aria-label=${props.isDot ? locale.t("a11y.status") : String(formatValue())}
         >
             <span v-if=${!props.isDot}>
                 <slot name="content">${formatValue()}</slot>

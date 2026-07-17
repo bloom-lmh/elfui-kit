@@ -160,3 +160,7 @@
 - [ ] 关键交互和边界状态有单测覆盖。
 - [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+
+## 2026-07-16 Field Surface 与预设色修复
+
+- [x] 接入共享 `filled / outlined`、浮动标签及禁用/暗色状态，修复预设色 style 绑定与事件代理并补定向测试。

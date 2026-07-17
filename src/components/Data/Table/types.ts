@@ -190,6 +190,14 @@ export interface TableProps {
   size: TableSize;
   height: string | number;
   maxHeight: string | number;
+  /** Only renders the visible row window. Requires a fixed `height`. */
+  virtual: boolean;
+  /** Minimum row count before virtualization activates. */
+  virtualThreshold: number;
+  /** Fixed row height used by the virtual window. */
+  rowHeight: number;
+  /** Extra rows rendered before and after the viewport. */
+  overscan: number;
   fit: boolean;
   tableLayout: TableLayout;
   scrollbarAlwaysOn: boolean;

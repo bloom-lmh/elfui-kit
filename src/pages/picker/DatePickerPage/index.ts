@@ -7,6 +7,7 @@ import { PageDatePickerEx4 } from "./ex4";
 import { PageDatePickerEx5 } from "./ex5";
 
 const propsRows = [
+  { name: "variant / label", type: "default | outlined | underlined | solo | solo-filled | solo-inverted / string", default: "filled / ''", desc: "输入表面与浮动标签" },
   { name: "modelValue", type: "string | string[]", default: "''", desc: "当前值，多选时为数组" },
   { name: "endValue", type: "string", default: "''", desc: "范围选择的结束值" },
   {

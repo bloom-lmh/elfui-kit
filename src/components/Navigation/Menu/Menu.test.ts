@@ -20,6 +20,7 @@ interface MenuEl extends HTMLElement {
   uniqueOpened?: boolean;
   collapse?: boolean;
   showToggle?: boolean;
+  theme?: string;
   menuTrigger?: string;
   showTimeout?: number;
   hideTimeout?: number;
@@ -297,6 +298,17 @@ describe("elf-menu", () => {
     expect(el.shadowRoot!.querySelector(".menu-header-content slot[name='header']")).toBeTruthy();
     expect(el.shadowRoot!.querySelector(".menu-toggle-slot--header .collapse-toggle")).toBeTruthy();
     expect(el.shadowRoot!.querySelector(".menu-footer .collapse-toggle")).toBeFalsy();
+  });
+
+  it("keeps the header toggle inside the dark theme surface", async () => {
+    const el = await mount();
+    el.theme = "dark";
+    el.showToggle = true;
+    await tick();
+    await tick();
+
+    expect(el.getAttribute("theme")).toBe("dark");
+    expect(el.shadowRoot!.querySelector(".menu-toggle-slot--header .collapse-toggle")).toBeTruthy();
   });
 
   it("supports a custom toggle in the header slot", async () => {

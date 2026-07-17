@@ -89,3 +89,10 @@
 - [x] `pnpm build` 通过；目标单测通过。
 
 2026-07-15 验收：Card 定向测试通过；浏览器验证交互计数 `0 → 1`，全部案例源码与 API 表格正常渲染，控制台无错误。
+
+## 2026-07-15 Vuetify 视觉升级
+
+- [x] 参考 Vuetify VCard 的 surface、variant、density 和 actions 信息层级，重做圆角、边界、阴影与内容间距。
+- [x] 新增 `tonal` / `flat` 变体与 `default` / `comfortable` / `compact` 密度。
+- [x] 点击卡片悬浮时仅提升边界和阴影，不再位移造成布局跳动；封面缩放遵循 reduced-motion。
+- [x] 案例和 PropsTable 同步中文化并覆盖新增能力。

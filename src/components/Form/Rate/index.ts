@@ -14,6 +14,7 @@ import {
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { RateProps, RateSize } from "./types";
 
@@ -48,7 +49,7 @@ const props = defineProps({
   showText: { type: Boolean, default: false },
   showScore: { type: Boolean, default: false },
   scoreTemplate: { type: String, default: "{value}" },
-  texts: { type: Array, default: () => ["极差", "失望", "一般", "满意", "惊喜"] },
+  texts: { type: Array, default: () => [] },
   lowThreshold: { type: Number, default: 2 },
   highThreshold: { type: Number, default: 4 },
   colors: { type: Array, default: () => [] },
@@ -62,6 +63,8 @@ const props = defineProps({
   label: { type: String, default: "" },
   validateEvent: { type: Boolean, default: true }
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits(["update:modelValue", "change", "hover-change", "clear"]);
 const ctl = useFormControl<number>(props, emit, {
@@ -185,7 +188,12 @@ const text = (): string => {
   if (props.showScore) {
     return String(props.scoreTemplate || "{value}").replace("{value}", value.toFixed(1));
   }
-  const texts = Array.isArray(props.texts) ? (props.texts as string[]) : [];
+  const providedTexts = Array.isArray(props.texts) ? (props.texts as string[]) : [];
+  const texts = providedTexts.length
+    ? providedTexts
+    : ["terrible", "disappointed", "fair", "satisfied", "surprised"].map((key) =>
+        locale.t(`rate.${key}`)
+      );
   const index = Math.max(0, Math.ceil(value) - 1);
   return texts[index] ?? "";
 };
@@ -224,7 +232,7 @@ const Rate = defineHtml(html`
         :disabled=${isDisabled() || props.readonly}
         @click="onClick(item, $event)"
         @mousemove="onMouseMove(item, $event)"
-        :aria-label="'评分 ' + item.score"
+        :aria-label=${locale.t("rate.score", { score: item.score })}
       >
         <span class="symbol">{{ iconOf(item) }}</span>
       </button>
@@ -235,7 +243,7 @@ const Rate = defineHtml(html`
       class="clear"
       type="button"
       @click=${clear}
-      aria-label="清空评分"
+      :aria-label=${locale.t("rate.clear")}
     >
       <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
     </button>

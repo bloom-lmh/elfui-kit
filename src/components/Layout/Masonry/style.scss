@@ -1,0 +1,16 @@
+@use "../../../styles/reset";
+
+:host {
+  display: block;
+  width: 100%;
+  columns: var(--_min-column-width, 240px) var(--_columns, 3);
+  column-gap: var(--_gap, 16px);
+}
+
+::slotted(*) {
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 var(--_gap, 16px);
+  box-sizing: border-box;
+  break-inside: avoid;
+}

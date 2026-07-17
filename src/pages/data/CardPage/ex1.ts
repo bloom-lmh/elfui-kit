@@ -5,11 +5,12 @@ const code1 = `<elf-card title="卡片标题" subtitle="副标题说明">
   <p style="color:var(--elf-text-secondary);margin-top:8px">支持标题、副标题、插槽内容。</p>
 </elf-card>`;
 
-const code2 = `<elf-card variant="elevated" title="Elevated">...</elf-card>
-<elf-card variant="outlined" title="Outlined">...</elf-card>
-<elf-card variant="filled" title="Filled">...</elf-card>`;
+const code2 = `<elf-card variant="elevated" title="浮层卡片">...</elf-card>
+<elf-card variant="outlined" title="描边卡片">...</elf-card>
+<elf-card variant="tonal" title="柔和卡片">...</elf-card>
+<elf-card variant="flat" title="平面卡片" density="compact">...</elf-card>`;
 
-const code3 = `<elf-card variant="outlined" clickable title="点击我" subtitle="hover 时上升 + 阴影" @click=\${handle}>
+const code3 = `<elf-card variant="outlined" clickable title="点击我" subtitle="悬浮时提升层级" @click=\${handle}>
   <p>整张卡片可点击</p>
   <template #footer>
     <elf-button variant="text" color="primary" size="sm">查看</elf-button>
@@ -43,32 +44,35 @@ const PageCardEx1 = defineHtml(html`
     </elf-card>
   </elf-playground>
 
-  <h2>MD3 三种变体</h2>
-  <elf-playground title="elevated / outlined / filled" :code=${code2} :script=${staticScript}>
-    <div style="display:flex;gap:16px;width:100%;max-width:720px">
-      <elf-card variant="elevated" title="Elevated" style="flex:1">
-        <p style="font-size:13px;color:var(--elf-text-secondary)">Material Design 3 默认阴影卡片</p>
+  <h2>Surface 变体</h2>
+  <elf-playground title="elevated / outlined / tonal / flat" :code=${code2} :script=${staticScript}>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;width:100%;max-width:880px">
+      <elf-card variant="elevated" title="浮层卡片">
+        <p>使用克制的一级阴影表达内容层级。</p>
       </elf-card>
-      <elf-card variant="outlined" title="Outlined" style="flex:1">
-        <p style="font-size:13px;color:var(--elf-text-secondary)">仅 outline 边框，无阴影</p>
+      <elf-card variant="outlined" title="描边卡片">
+        <p>使用清晰边界承载同级信息。</p>
       </elf-card>
-      <elf-card variant="filled" title="Filled" style="flex:1">
-        <p style="font-size:13px;color:var(--elf-text-secondary)">浅灰背景，层次柔和</p>
+      <elf-card variant="tonal" title="柔和卡片">
+        <p>使用主题色浅层填充突出关联内容。</p>
+      </elf-card>
+      <elf-card variant="flat" density="compact" title="平面卡片">
+        <p>紧凑密度适合侧栏和小型信息块。</p>
       </elf-card>
     </div>
   </elf-playground>
 
   <h2>可点击卡片</h2>
-  <elf-playground title="hover 时上升 2px + shadow-2" :code=${code3} :script=${script3}>
+  <elf-playground title="悬浮提升层级，不改变布局位置" :code=${code3} :script=${script3}>
     <elf-card
       variant="outlined"
       clickable
       title="点击我"
-      subtitle="悬浮有动效"
+      subtitle="悬浮时提升层级"
       style="max-width:360px"
       @click=${handle}
     >
-      <p style="color:var(--elf-text-secondary)">整张卡片可点击，hover 时向上浮起并增加阴影。</p>
+      <p>整张卡片可点击，悬浮时只调整边界与阴影，不产生位置跳动。</p>
       <template #footer>
         <elf-button variant="text" color="primary" size="sm">了解详情</elf-button>
       </template>

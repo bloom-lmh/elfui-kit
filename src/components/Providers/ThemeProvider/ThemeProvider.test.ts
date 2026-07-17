@@ -31,6 +31,7 @@ describe("elf-theme-provider", () => {
     expect(provider.style.getPropertyValue("--elf-primary")).toBe("#006a6a");
     expect(provider.style.getPropertyValue("--elf-bg-paper")).toBe("#102020");
     expect(provider.style.getPropertyValue("--elf-text-primary")).toContain("255");
+    expect(provider.style.getPropertyValue("--elf-field-bg")).toContain("255");
   });
 
   it("custom 主题只写入覆盖 token", async () => {

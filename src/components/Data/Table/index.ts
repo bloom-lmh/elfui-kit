@@ -18,7 +18,9 @@ import { directive, type DirectiveBinding } from "@elfui/runtime";
 
 import styles from "./style.scss?inline";
 import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import { useLocaleProvider } from "../../Providers/context";
 import { buildTableTree, normalizeTableTreeProps } from "./tree";
+import { computeVirtualWindow, type VirtualWindow } from "../virtual-window";
 import type {
   TableCellContext,
   TableColumn,
@@ -108,10 +110,14 @@ const props = defineProps<TableProps>({
   size: { type: String, default: "default" },
   height: { type: [String, Number], default: "" },
   maxHeight: { type: [String, Number], default: "" },
+  virtual: { type: Boolean, default: false },
+  virtualThreshold: { type: Number, default: 100 },
+  rowHeight: { type: Number, default: 48 },
+  overscan: { type: Number, default: 5 },
   fit: { type: Boolean, default: true },
   tableLayout: { type: String, default: "fixed" },
   scrollbarAlwaysOn: { type: Boolean, default: false },
-  emptyText: { type: String, default: "暂无数据" },
+  emptyText: { type: String, default: "" },
   loading: { type: Boolean, default: false },
   showHeader: { type: Boolean, default: true },
   stickyHeader: { type: Boolean, default: true },
@@ -148,7 +154,7 @@ const props = defineProps<TableProps>({
     default: () => ({ placement: "top", offset: 8, showAfter: 300, hideAfter: 80, maxWidth: 320 })
   },
   showSummary: { type: Boolean, default: false },
-  sumText: { type: String, default: "合计" },
+  sumText: { type: String, default: "" },
   summaryMethod: { type: Function },
   spanMethod: { type: Function }
 });
@@ -180,12 +186,15 @@ const emit = defineEmits([
 
 // Template references
 const host = useHost();
+const locale = useLocaleProvider();
 const wrapRef = useTemplateRef<HTMLElement>("wrap");
 const tooltipId = `elf-table-tooltip-${++tableTooltipSeed}`;
 
 const columnsState = useRef<TableColumnView[]>([]);
 
 const rowsState = useRef<TableRowView[]>([]);
+
+const virtualScrollTop = useRef(0);
 
 const allRowsState = useRef<TableRowView[]>([]);
 
@@ -267,7 +276,9 @@ const filterSignature = (values: unknown[]): string =>
 
 const cssSize = (value: unknown): string => {
   if (value == null || value === "") return "";
-  return typeof value === "number" ? `${value}px` : String(value);
+  if (typeof value === "number") return `${value}px`;
+  const normalized = String(value).trim();
+  return /^-?\d+(?:\.\d+)?$/.test(normalized) ? `${normalized}px` : normalized;
 };
 
 const cssSizeNumber = (value: string): number => {
@@ -390,7 +401,7 @@ const normalizeColumns = (
             : type === "index"
               ? "#"
               : type === "actions"
-                ? "操作"
+                ? locale.t("table.actions")
                 : prop)
       ),
       type: normalizedType,
@@ -729,6 +740,38 @@ const getColumns = (): TableColumnView[] => columnsState.value;
 
 const getRows = (): TableRowView[] => rowsState.value;
 
+const isVirtualized = (): boolean =>
+  Boolean(props.virtual)
+  && Boolean(props.height)
+  && !isTreeState.value
+  && rowsState.value.length >= Math.max(0, Number(props.virtualThreshold) || 0);
+
+const virtualWindow = (): VirtualWindow => {
+  const wrap = wrapRef.value;
+  const viewportSize = Math.max(0, (wrap?.clientHeight || cssSizeNumber(cssSize(props.height))) - (props.showHeader ? 48 : 0));
+  return computeVirtualWindow({
+    count: rowsState.value.length,
+    itemSize: Math.max(1, Number(props.rowHeight) || 48),
+    viewportSize,
+    scrollOffset: virtualScrollTop.value,
+    overscan: props.overscan
+  });
+};
+
+const getRenderRows = (): TableRowView[] => {
+  if (!isVirtualized()) return rowsState.value;
+  const range = virtualWindow();
+  return rowsState.value.slice(range.start, range.end);
+};
+
+const virtualTopSize = (): number => isVirtualized() ? virtualWindow().offset : 0;
+const virtualBottomSize = (): number => {
+  if (!isVirtualized()) return 0;
+  const range = virtualWindow();
+  return Math.max(0, range.totalSize - range.end * Math.max(1, Number(props.rowHeight) || 48));
+};
+const virtualSpacerStyle = (height: number): Record<string, string> => ({ height: `${height}px` });
+
 const tableClass = (): Record<string, boolean> => ({
   "is-stripe": Boolean(props.stripe),
   "is-border": Boolean(props.border),
@@ -738,13 +781,15 @@ const tableClass = (): Record<string, boolean> => ({
   "is-sticky-header": Boolean(props.stickyHeader),
   "is-fit": Boolean(props.fit),
   "is-scrollbar-always": Boolean(props.scrollbarAlwaysOn),
-  "is-resizing": Boolean(resizeState.value)
+  "is-resizing": Boolean(resizeState.value),
+  "is-virtualized": isVirtualized()
 });
 
 const wrapStyle = (): Record<string, string> => {
   const style: Record<string, string> = {};
   if (props.height) style.height = cssSize(props.height);
   if (props.maxHeight) style.maxHeight = cssSize(props.maxHeight);
+  if (isVirtualized()) style["--_virtual-row-height"] = `${Math.max(1, Number(props.rowHeight) || 48)}px`;
   return style;
 };
 
@@ -1505,8 +1550,8 @@ const treeCellStyle = (row: TableRowView): Record<string, string> => ({
 const isTreeLoading = (row: TableRowView): boolean => treeLoadingState.value.includes(row.key);
 
 const treeToggleLabel = (row: TableRowView): string => {
-  if (isTreeLoading(row)) return "正在加载子节点";
-  return isExpanded(row) ? "收起子节点" : "展开子节点";
+  if (isTreeLoading(row)) return locale.t("table.loadingChildren");
+  return locale.t(isExpanded(row) ? "table.collapseChildren" : "table.expandChildren");
 };
 
 const focusTreeToggle = (key: string): void => {
@@ -1657,7 +1702,8 @@ const onResizeKeydown = (column: TableColumnView, event: KeyboardEvent): void =>
   if (nextWidth !== oldWidth) emit("header-dragend", nextWidth, oldWidth, column.raw, event);
 };
 
-const resizeLabel = (column: TableColumnView): string => `${column.label || "当前列"}，调整列宽`;
+const resizeLabel = (column: TableColumnView): string =>
+  locale.t("table.resizeColumn", { column: column.label || locale.t("table.currentColumn") });
 
 const isColumnResizing = (column: TableColumnView): boolean =>
   resizeState.value?.columnId === column.id;
@@ -1712,8 +1758,12 @@ const ariaSort = (column: TableColumnView): "ascending" | "descending" | "none" 
 
 const sortLabel = (column: TableColumnView): string => {
   const order = ariaSort(column);
-  const state = order === "ascending" ? "升序" : order === "descending" ? "降序" : "未排序";
-  return `${column.label}，${state}`;
+  const state = locale.t(order === "ascending"
+    ? "table.ascending"
+    : order === "descending"
+      ? "table.descending"
+      : "table.unsorted");
+  return locale.t("table.sortState", { column: column.label, state });
 };
 
 const activeFilterColumn = (): TableColumnView | undefined =>
@@ -1742,10 +1792,14 @@ const filterButtonClass = (column: TableColumnView): Record<string, boolean> => 
 
 const filterLabel = (column: TableColumnView): string => {
   const count = filterValuesOf(column).length;
-  return count > 0 ? `${column.label}，已选择 ${count} 个筛选条件` : `${column.label}，筛选`;
+  return locale.t(count > 0 ? "table.filterSelected" : "table.filter", {
+    column: column.label,
+    count
+  });
 };
 
-const filterPanelLabel = (column: TableColumnView): string => `${column.label}筛选选项`;
+const filterPanelLabel = (column: TableColumnView): string =>
+  locale.t("table.filterOptions", { column: column.label });
 
 const filterValueEquals = (left: unknown, right: unknown): boolean =>
   filterValueKey(left) === filterValueKey(right);
@@ -1966,7 +2020,7 @@ const summaryCells = (): string[] => {
     columns.findIndex((column) => column.type === "default")
   );
   return columns.map((column, index) => {
-    if (index === labelIndex) return String(props.sumText || "合计");
+    if (index === labelIndex) return String(props.sumText || locale.t("table.sum"));
     const values = data.map((row) => row[column.prop]);
     if (values.length === 0 || values.some((value) => typeof value !== "number")) return "";
     return String(values.reduce<number>((sum, value) => sum + Number(value), 0));
@@ -1979,6 +2033,7 @@ const getWrap = (): HTMLElement | null =>
 const onScroll = (event: Event): void => {
   closeTooltip();
   const target = event.currentTarget as HTMLElement;
+  if (isVirtualized()) virtualScrollTop.set(target.scrollTop);
   const detail: TableScrollDetail = {
     scrollLeft: target.scrollLeft,
     scrollTop: target.scrollTop
@@ -2083,7 +2138,7 @@ const Table = defineHtml<TableProps>(html`
                 :disabled=${selectableRows().length === 0}
                 :aria-checked=${isIndeterminate() ? "mixed" : String(isAllSelected())}
                 @click.stop=${onToggleAllSelection()}
-                aria-label="全选"
+                :aria-label=${locale.t("table.selectAll")}
               >
                 <span class="checkbox-mark"></span>
               </button>
@@ -2149,14 +2204,14 @@ const Table = defineHtml<TableProps>(html`
                     </button>
                   </div>
                   <div class="filter-actions">
-                    <button type="button" @click=${resetFilter(column)}>重置</button>
+                    <button type="button" @click=${resetFilter(column)}>${locale.t("common.reset")}</button>
                     <button
                       v-if=${column.raw.filterMultiple !== false}
                       type="button"
                       class="is-primary"
                       @click=${applyFilterDraft(column)}
                     >
-                      确定
+                      ${locale.t("common.confirm")}
                     </button>
                   </div>
                 </div>
@@ -2179,7 +2234,10 @@ const Table = defineHtml<TableProps>(html`
           </tr>
         </thead>
         <tbody>
-          <template v-for="row in getRows()" :key="row.key">
+          <tr v-if=${virtualTopSize() > 0} class="virtual-spacer" aria-hidden="true">
+            <td :colspan=${getColumns().length} :style=${virtualSpacerStyle(virtualTopSize())}></td>
+          </tr>
+          <template v-for="row in getRenderRows()" :key="row.key">
             <tr
               :class="rowClass(row)"
               :style="rowStyle(row)"
@@ -2216,7 +2274,7 @@ const Table = defineHtml<TableProps>(html`
                   :disabled=${!isSelectable(row)}
                   :aria-checked=${isRowIndeterminate(row) ? "mixed" : String(isSelected(row))}
                   @click.stop=${onToggleRowSelection(row)}
-                  aria-label="选择行"
+                  :aria-label=${locale.t("table.selectRow")}
                 >
                   <span class="checkbox-mark"></span>
                 </button>
@@ -2226,7 +2284,7 @@ const Table = defineHtml<TableProps>(html`
                   class="expand-toggle"
                   :class="{ 'is-expanded': isExpanded(row) }"
                   @click.stop=${row.hasChildren ? toggleTreeRow(row) : toggleDetailRowExpansion(row)}
-                  aria-label="展开行"
+                  :aria-label=${locale.t("table.expandRow")}
                 >
                   <span class="expand-icon"></span>
                 </button>
@@ -2285,6 +2343,9 @@ const Table = defineHtml<TableProps>(html`
               </td>
             </tr>
           </template>
+          <tr v-if=${virtualBottomSize() > 0} class="virtual-spacer" aria-hidden="true">
+            <td :colspan=${getColumns().length} :style=${virtualSpacerStyle(virtualBottomSize())}></td>
+          </tr>
         </tbody>
         <tfoot v-if=${props.showSummary}>
           <tr class="summary-row">
@@ -2300,7 +2361,7 @@ const Table = defineHtml<TableProps>(html`
         </tfoot>
       </table>
       <div v-if=${getRows().length === 0} class="empty">
-        <slot name="empty">${props.emptyText || "暂无数据"}</slot>
+        <slot name="empty">${props.emptyText || locale.t("table.empty")}</slot>
       </div>
       <div class="append"><slot name="append"></slot></div>
     </div>
@@ -2312,7 +2373,7 @@ const Table = defineHtml<TableProps>(html`
       :style=${tooltipStyleState.value}
       role="tooltip"
     >{{ tooltipTextState }}</div>
-    <div v-if=${props.loading} class="loading">加载中...</div>
+    <div v-if=${props.loading} class="loading">${locale.t("table.loading")}</div>
   </div>
 `);
 

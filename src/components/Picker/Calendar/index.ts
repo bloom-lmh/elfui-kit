@@ -1,6 +1,7 @@
 import { defineEmits, defineHtml, defineProps, defineStyle, html, useHost, useRef, watchEffect } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type { CalendarProps } from "./types";
 
 export type { CalendarProps } from "./types";
@@ -29,6 +30,7 @@ const props = defineProps<CalendarProps>({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 const host = useHost();
+const locale = useLocaleProvider();
 
 const pad = (value: number): string => String(value).padStart(2, "0");
 const toIso = (date: Date): string => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
@@ -52,11 +54,22 @@ const view = useRef<CalendarView>("days");
 const yearPageStart = useRef(Math.floor(selectedDate().getFullYear() / 12) * 12);
 let syncedModelValue = "__elf-calendar-unset__";
 
+const resolvedLocale = (): string => props.locale || locale.name;
+
 const syncSelectedDom = (iso: string): void => {
     host.shadowRoot?.querySelectorAll<HTMLElement>(".day").forEach((element) => {
         const selected = element.dataset.date === iso;
         element.classList.toggle("is-current", selected);
         element.setAttribute("aria-selected", selected ? "true" : "false");
+    });
+};
+
+const syncRangeDraftDom = (iso: string): void => {
+    host.shadowRoot?.querySelectorAll<HTMLElement>(".day").forEach((element) => {
+        const isStart = element.dataset.date === iso;
+        element.classList.remove("is-current", "is-range-end", "is-in-range");
+        element.classList.toggle("is-range-start", isStart);
+        element.setAttribute("aria-selected", isStart ? "true" : "false");
     });
 };
 
@@ -76,17 +89,17 @@ const monthTitle = (): string => {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
 };
 
-const yearTitle = (): string => `${viewedDate.value.getFullYear()}年`;
+const yearTitle = (): string => locale.t("calendar.year", { year: viewedDate.value.getFullYear() });
 
 const monthLabel = (): string =>
-    String(props.locale || "").toLowerCase().startsWith("zh")
-        ? `${viewedDate.value.getMonth() + 1}月`
-        : new Intl.DateTimeFormat(props.locale || undefined, { month: "long" }).format(viewedDate.value);
+    resolvedLocale().toLowerCase().startsWith("zh")
+        ? locale.t("calendar.month", { month: viewedDate.value.getMonth() + 1 })
+        : new Intl.DateTimeFormat(resolvedLocale(), { month: "long" }).format(viewedDate.value);
 
 const monthItems = (): Array<{ id: number; label: string; active: boolean }> =>
     Array.from({ length: 12 }, (_, month) => ({
         id: month,
-        label: new Intl.DateTimeFormat(props.locale || undefined, { month: "short" }).format(
+        label: new Intl.DateTimeFormat(resolvedLocale(), { month: "short" }).format(
             new Date(viewedDate.value.getFullYear(), month, 1),
         ),
         active: month === viewedDate.value.getMonth(),
@@ -101,7 +114,7 @@ const yearItems = (): Array<{ id: number; active: boolean }> =>
 const yearRangeTitle = (): string => `${yearPageStart.value}–${yearPageStart.value + 11}`;
 
 const weekDays = (): string[] => {
-    const formatter = new Intl.DateTimeFormat(props.locale || undefined, { weekday: "short" });
+    const formatter = new Intl.DateTimeFormat(resolvedLocale(), { weekday: "short" });
     const sunday = new Date(2023, 0, 1);
     const names = Array.from({ length: 7 }, (_, index) => {
         const date = new Date(sunday);
@@ -123,13 +136,16 @@ const days = (): DayCell[] => {
         date.setDate(start.getDate() + index);
         const iso = toIso(date);
         const value = Array.isArray(props.modelValue) ? [...props.modelValue].sort() : [];
-        const rangeStartValue = rangeStart.value || value[0] || "";
-        const rangeEndValue = value[1] || "";
+        const pendingRangeStart = rangeStart.value;
+        const rangeStartValue = pendingRangeStart || value[0] || "";
+        // A new first click starts a fresh draft. Keeping the committed end here
+        // would visually connect the new start to the previous range.
+        const rangeEndValue = pendingRangeStart ? "" : value[1] || "";
         return {
             iso,
             label: date.getDate(),
             muted: date.getMonth() !== current.getMonth(),
-            current: iso === selectedIso.value,
+            current: !props.range && iso === selectedIso.value,
             disabled: typeof props.disabledDate === "function" && Boolean(props.disabledDate(date)),
             rangeStart: Boolean(rangeStartValue) && iso === rangeStartValue,
             rangeEnd: Boolean(rangeEndValue) && iso === rangeEndValue,
@@ -146,6 +162,7 @@ const select = (event: Event): void => {
         const start = rangeStart.value;
         if (!start || start === iso) {
             rangeStart.set(iso);
+            syncRangeDraftDom(iso);
             return;
         }
         const value = start < iso ? [start, iso] : [iso, start];
@@ -208,7 +225,7 @@ defineStyle(styles);
 const Calendar = defineHtml<CalendarProps>(html`
     <section class="calendar" part="calendar">
         <header class="header">
-            <button class="nav" type="button" aria-label="上一时间段" @click=${() => shiftPeriod(-1)}>‹</button>
+            <button class="nav" type="button" :aria-label=${locale.t("calendar.previousPeriod")} @click=${() => shiftPeriod(-1)}>‹</button>
             <div class="header-title">
                 <template v-if=${view.value === "years"}>
                     <span class="period-label">${yearRangeTitle()}</span>
@@ -218,7 +235,7 @@ const Calendar = defineHtml<CalendarProps>(html`
                     <button class="period-button" type="button" @click=${showMonths}>${monthLabel()}</button>
                 </template>
             </div>
-            <button class="nav" type="button" aria-label="下一时间段" @click=${() => shiftPeriod(1)}>›</button>
+            <button class="nav" type="button" :aria-label=${locale.t("calendar.nextPeriod")} @click=${() => shiftPeriod(1)}>›</button>
         </header>
         <div v-if=${view.value === "days"} class="calendar-body">
             <div class="week">
@@ -240,7 +257,7 @@ const Calendar = defineHtml<CalendarProps>(html`
                 </button>
             </div>
         </div>
-        <div v-if=${view.value === "months"} class="choice-grid month-grid" aria-label="选择月份">
+        <div v-if=${view.value === "months"} class="choice-grid month-grid" :aria-label=${locale.t("calendar.selectMonth")}>
             <button
                 v-for="option in monthItems()"
                 :key="option.id"
@@ -250,7 +267,7 @@ const Calendar = defineHtml<CalendarProps>(html`
                 @click=${selectMonth}
             >{{ option.label }}</button>
         </div>
-        <div v-if=${view.value === "years"} class="choice-grid year-grid" aria-label="选择年份">
+        <div v-if=${view.value === "years"} class="choice-grid year-grid" :aria-label=${locale.t("calendar.selectYear")}>
             <button
                 v-for="option in yearItems()"
                 :key="option.id"
@@ -261,7 +278,7 @@ const Calendar = defineHtml<CalendarProps>(html`
             >{{ option.id }}</button>
         </div>
         <footer class="calendar-footer">
-            <button type="button" class="today-button" @click=${() => { viewedDate.set(new Date()); showDays(); }}>今天</button>
+            <button type="button" class="today-button" @click=${() => { viewedDate.set(new Date()); showDays(); }}>${locale.t("calendar.today")}</button>
             <slot name="header"><span class="month-title">${monthTitle()}</span></slot>
         </footer>
     </section>

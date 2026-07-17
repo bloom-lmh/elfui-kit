@@ -2,6 +2,7 @@ import { defineHtml, html, useComponents } from "elfui";
 
 import { PageThemeProviderEx1 } from "./ex1";
 import { PageThemeProviderEx2 } from "./ex2";
+import { PageThemeProviderEx3 } from "./ex3";
 
 const propsRows = [
   {
@@ -21,7 +22,8 @@ const propsRows = [
 
 useComponents({
   "page-theme-provider-ex1": PageThemeProviderEx1,
-  "page-theme-provider-ex2": PageThemeProviderEx2
+  "page-theme-provider-ex2": PageThemeProviderEx2,
+  "page-theme-provider-ex3": PageThemeProviderEx3
 });
 
 const PageThemeProvider = defineHtml(html`
@@ -32,6 +34,8 @@ const PageThemeProvider = defineHtml(html`
     <page-theme-provider-ex1 />
 
     <page-theme-provider-ex2 />
+
+    <page-theme-provider-ex3 />
 
     <h2>API</h2>
     <elf-props-table title="ThemeProvider Props" :rows="propsRows"></elf-props-table>

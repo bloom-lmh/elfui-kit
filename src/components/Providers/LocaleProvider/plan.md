@@ -105,3 +105,9 @@
 - [ ] 关键交互和边界状态有单测覆盖。
 - [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+
+## 2026-07-17 国际化增强
+
+- [x] 内置 `zh-CN` 与 `en-US` 基础文案，并允许 messages 深度覆盖。
+- [x] 文档应用 Header 使用 LocaleProvider 切换中英文与菜单文案。
+- [x] 保留 RTL 方向能力与独立案例。

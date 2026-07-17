@@ -1,4 +1,5 @@
 @use "../../../styles/reset";
+@use "../../../styles/field-surface" as field;
 
 :host {
   display: inline-flex;
@@ -13,64 +14,15 @@
 }
 
 .wrapper {
-  position: relative;
   display: inline-flex;
   align-items: center;
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
-  background: var(--elf-field-bg, var(--elf-bg-overlay));
-  border: 0;
-  border-bottom: 1px solid var(--elf-border-strong);
-  border-radius: 6px 6px 0 0;
-  transition:
-    border-color var(--elf-transition-fast),
-    background-color var(--elf-transition-fast);
-
-  &::after {
-    position: absolute;
-    right: 0;
-    bottom: -1px;
-    left: 0;
-    height: 2px;
-    background: var(--elf-primary);
-    content: "";
-    pointer-events: none;
-    transform: scaleX(0);
-    transition: transform var(--elf-transition-fast);
-  }
   overflow: hidden;
-
-  &:hover {
-    background: var(--elf-field-hover-bg, var(--elf-bg-overlay));
-  }
-
-  &:focus-within {
-    &::after {
-      transform: scaleX(1);
-    }
-  }
 }
 
-:host([variant="outlined"]) .wrapper {
-  background: var(--elf-bg-paper);
-  border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-sm);
-
-  &::after {
-    display: none;
-  }
-
-  &:hover {
-    border-color: var(--elf-border-strong);
-    background: var(--elf-bg-paper);
-  }
-
-  &:focus-within {
-    border-color: var(--elf-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 15%, transparent);
-  }
-}
+@include field.surface(".wrapper");
 
 .has-prepend .wrapper {
   border-top-left-radius: 0;
@@ -80,27 +32,6 @@
 .has-append .wrapper {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
-}
-
-:host([disabled]) .wrapper {
-  background: var(--elf-bg-disabled);
-  cursor: not-allowed;
-}
-
-:host([data-state="error"]) .wrapper {
-  border-bottom-color: var(--elf-danger);
-
-  &::after {
-    background: var(--elf-danger);
-  }
-
-  &:focus-within {
-    box-shadow: none;
-  }
-}
-
-:host([variant="outlined"][data-state="error"]) .wrapper:focus-within {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-danger) 15%, transparent);
 }
 
 .label {
@@ -137,6 +68,10 @@
   color: var(--elf-danger);
 }
 
+:host([variant="solo-inverted"]) .wrapper:focus-within .label {
+  color: var(--elf-bg-paper);
+}
+
 input {
   flex: 1 1 auto;
   min-width: 0;
@@ -147,7 +82,7 @@ input {
   padding: 0 var(--elf-space-3);
   font-family: inherit;
   font-size: var(--elf-font-size-sm);
-  color: var(--elf-text-primary);
+  color: inherit;
   background: transparent;
 
   &::placeholder {

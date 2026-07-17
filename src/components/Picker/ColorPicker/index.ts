@@ -1,13 +1,26 @@
-import { defineEmits, defineProps, defineStyle, html, useRef, watchEffect, defineHtml } from "elfui";
+import {
+    defineEmits,
+    defineHtml,
+    defineProps,
+    defineStyle,
+    html,
+    useHostAttr,
+    useHostFlag,
+    useRef,
+    watchEffect,
+} from "elfui";
 
 import styles from "./style.scss?inline";
+import { normalizeFieldVariant } from "../../../types/field";
 import type { ColorFormat, ColorPreset } from "./types";
 
-export type { ColorFormat, ColorPickerProps, ColorPreset } from "./types";
+export type { ColorFormat, ColorPickerProps, ColorPickerVariant, ColorPreset } from "./types";
 
 const props = defineProps({
     modelValue: { type: String, default: "#6750a4" },
     format: { type: String, default: "hex" },
+    variant: { type: String, default: "filled" },
+    label: { type: String, default: "" },
     presets: { type: Array, default: () => [] },
     showAlpha: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
@@ -86,11 +99,27 @@ const presetItems = (): ColorPreset[] =>
               } as ColorPreset),
     );
 
+const onPresetClick = (event: Event): void => {
+    const index = Number((event.currentTarget as HTMLElement).dataset.index);
+    const preset = presetItems()[index];
+    if (preset) commit(preset.value);
+};
+
+const presetStyle = (preset: ColorPreset): Record<string, string> => ({
+    background: normalizeHex(preset.value),
+});
+
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostFlag("disabled", () => Boolean(props.disabled));
+useHostFlag("data-dirty", () => Boolean(props.modelValue));
+useHostFlag("data-has-label", () => Boolean(props.label));
+
 defineStyle(styles);
 
 const ColorPicker = defineHtml(html`
     <div :class=${["color-picker", { "is-disabled": props.disabled }]}>
         <label class="trigger">
+            <span v-if=${props.label} class="field-label">${props.label}</span>
             <span class="swatch" aria-hidden="true"
                 ><span class="swatch-fill" :style=${{ background: outputValue() }}></span
             ></span>
@@ -105,17 +134,18 @@ const ColorPicker = defineHtml(html`
                 :value.prop=${alpha}
                 @input=${onAlpha}
             />
-            <button v-if=${props.clearable} class="clear" type="button" @click=${clear()}>×</button>
+            <button v-if=${props.clearable} class="clear" type="button" @click=${clear}>×</button>
         </label>
         <div v-if=${presetItems().length > 0} class="presets">
             <button
-                v-for="item in presetItems()"
+                v-for="(item, index) in presetItems()"
                 :key="item.value"
                 type="button"
                 class="preset"
+                :data-index="index"
                 :title="item.label"
-                :style="{ background: item.value }"
-                @click="commit(item.value)"
+                :style="presetStyle(item)"
+                @click=${onPresetClick}
             ></button>
         </div>
     </div>

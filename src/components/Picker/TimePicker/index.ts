@@ -5,15 +5,22 @@ import {
   defineProps,
   defineStyle,
   html,
+  onMount,
+  onUnmount,
+  useHost,
   useHostAttr,
+  useHostFlag,
   useRef,
   watchEffect
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { normalizeFieldVariant } from "../../../types/field";
+import { isEventInside, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
+import { useLocaleProvider } from "../../Providers/context";
 import type { TimePickerModelValue, TimeShortcut } from "./types";
 
-export type { TimePickerModelValue, TimePickerProps, TimePickerSize, TimeShortcut } from "./types";
+export type { TimePickerModelValue, TimePickerProps, TimePickerSize, TimePickerVariant, TimeShortcut } from "./types";
 
 type EditingTarget = "start" | "end";
 type ClockUnit = "hour" | "minute";
@@ -29,10 +36,12 @@ const props = defineProps({
   readonly: { type: Boolean, default: false },
   editable: { type: Boolean, default: true },
   size: { type: String, default: "" },
-  placeholder: { type: String, default: "选择时间" },
-  startPlaceholder: { type: String, default: "开始时间" },
-  endPlaceholder: { type: String, default: "结束时间" },
-  rangeSeparator: { type: String, default: "至" },
+  variant: { type: String, default: "filled" },
+  label: { type: String, default: "" },
+  placeholder: { type: String, default: "" },
+  startPlaceholder: { type: String, default: "" },
+  endPlaceholder: { type: String, default: "" },
+  rangeSeparator: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   clearable: { type: Boolean, default: true },
   id: { type: null, default: "" },
@@ -54,11 +63,19 @@ const emit = defineEmits<{
   "visible-change": [visible: boolean];
 }>();
 
+const locale = useLocaleProvider();
+
 const start = useRef("");
 const end = useRef("");
 const open = useRef(false);
 const editingTarget = useRef<EditingTarget>("start");
 const activeUnit = useRef<ClockUnit>("hour");
+const host = useHost();
+
+const placeholderText = (): string => props.placeholder || locale.t("timePicker.placeholder");
+const startPlaceholderText = (): string => props.startPlaceholder || locale.t("timePicker.startPlaceholder");
+const endPlaceholderText = (): string => props.endPlaceholder || locale.t("timePicker.endPlaceholder");
+const rangeSeparatorText = (): string => props.rangeSeparator || locale.t("timePicker.rangeSeparator");
 
 watchEffect(() => {
   if (Array.isArray(props.modelValue)) {
@@ -232,6 +249,16 @@ const handleClose = (): void => {
   emit("visible-change", false);
 };
 
+const getPanelEl = (): HTMLElement | null =>
+  host.shadowRoot?.querySelector<HTMLElement>(".panel") ?? null;
+
+const onDocumentPointerDown = (event: Event): void => {
+  if (!open.peek() || isEventInside(event, [host, getPanelEl()])) return;
+  handleClose();
+};
+
+let cleanupOverlayMotion = (): void => {};
+
 const onTriggerClick = (event: Event): void => {
   const target = ((event.currentTarget as HTMLElement).dataset.target || "start") as EditingTarget;
   if (open.peek() && editingTarget.peek() === target) handleClose();
@@ -253,6 +280,19 @@ const adjustByKeyboard = (event: KeyboardEvent): void => {
 };
 
 useHostAttr("size", () => String(props.size || ""));
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostFlag("disabled", () => Boolean(props.disabled));
+useHostFlag("data-open", () => open.value);
+useHostFlag("data-dirty", hasValue);
+useHostFlag("data-has-label", () => Boolean(props.label));
+onMount(() => {
+  document.addEventListener("pointerdown", onDocumentPointerDown, true);
+  cleanupOverlayMotion = listenForExternalOverlayMotion(() => [getPanelEl()], handleClose);
+});
+onUnmount(() => {
+  document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+  cleanupOverlayMotion();
+});
 defineExpose({ handleOpen, handleClose });
 defineStyle(styles);
 
@@ -262,7 +302,7 @@ const TimePicker = defineHtml(html`
       <button
         type="button"
         class="field-trigger"
-        :class=${{ "is-active": open.value && editingTarget.value === "start" }}
+        :class=${{ "is-active": open.value && editingTarget.value === "start", "has-label": Boolean(props.label) }}
         data-target="start"
         :tabindex=${props.tabindex}
         :disabled=${props.disabled}
@@ -272,12 +312,13 @@ const TimePicker = defineHtml(html`
         @blur=${onBlur}
         @keydown=${adjustByKeyboard}
       >
+        <span v-if=${props.label} class="field-label">${props.label}</span>
         <span class="clock-icon" aria-hidden="true"></span>
         <span :class=${["field-value", { "is-placeholder": !start.value }]}>
-          {{ start.value || (rangeMode() ? props.startPlaceholder : props.placeholder) }}
+          ${start.value || (rangeMode() ? startPlaceholderText() : placeholderText())}
         </span>
       </button>
-      <span v-if=${rangeMode()} class="separator">${props.rangeSeparator}</span>
+      <span v-if=${rangeMode()} class="separator">${rangeSeparatorText()}</span>
       <button
         v-if=${rangeMode()}
         type="button"
@@ -294,10 +335,10 @@ const TimePicker = defineHtml(html`
       >
         <span class="clock-icon" aria-hidden="true"></span>
         <span :class=${["field-value", { "is-placeholder": !end.value }]}>
-          {{ end.value || props.endPlaceholder }}
+          ${end.value || endPlaceholderText()}
         </span>
       </button>
-      <button v-if=${props.clearable && hasValue()} type="button" class="clear" @click=${clear}>清空</button>
+      <button v-if=${props.clearable && hasValue()} type="button" class="clear" @click=${clear}>${locale.t("common.clear")}</button>
     </div>
 
     <div v-if=${open.value} class="panel">
@@ -319,7 +360,7 @@ const TimePicker = defineHtml(html`
         </div>
       </div>
 
-      <div class="clock-face" :aria-label=${activeUnit.value === "hour" ? "选择小时" : "选择分钟"}>
+      <div class="clock-face" :aria-label=${activeUnit.value === "hour" ? locale.t("timePicker.selectHour") : locale.t("timePicker.selectMinute")}>
         <span class="clock-center"></span>
         <button
           v-for="item in clockItems()"
@@ -344,8 +385,8 @@ const TimePicker = defineHtml(html`
       </div>
 
       <div class="panel-actions">
-        <span>{{ editingTarget.value === "start" ? "开始时间" : "结束时间" }}</span>
-        <button type="button" @click=${handleClose}>完成</button>
+        <span>${editingTarget.value === "start" ? startPlaceholderText() : endPlaceholderText()}</span>
+        <button type="button" @click=${handleClose}>${locale.t("common.done")}</button>
       </div>
     </div>
   </div>

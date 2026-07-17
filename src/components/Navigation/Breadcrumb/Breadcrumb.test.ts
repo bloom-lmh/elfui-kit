@@ -122,6 +122,15 @@ describe("elf-breadcrumb", () => {
     expect(icon.name || icon.getAttribute("name")).toBe(">");
   });
 
+  it("normalizes common named separator icons to compact glyphs", async () => {
+    const el = await mount({ separatorIcon: "chevron_right" });
+    const icon = el.shadowRoot!.querySelector(".breadcrumb-separator-icon") as HTMLElement & {
+      name?: string;
+    };
+
+    expect(icon.name || icon.getAttribute("name")).toBe("›");
+  });
+
   it("supports route object and replace navigation", async () => {
     const replaceState = vi.spyOn(window.history, "replaceState");
     const el = await mount({

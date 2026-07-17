@@ -1,5 +1,7 @@
 // elf-input 类型
 
+import type { FieldVariant } from "../../../types/field";
+
 export type InputType =
   | "text"
   | "password"
@@ -18,7 +20,7 @@ export type InputSize = "sm" | "md" | "lg" | "small" | "default" | "large";
 
 export type InputWordLimitPosition = "inside" | "outside";
 
-export type InputVariant = "filled" | "outlined";
+export type InputVariant = FieldVariant;
 
 export type InputNativeValue = string | number;
 

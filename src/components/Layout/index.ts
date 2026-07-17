@@ -11,6 +11,7 @@ import { GridItem } from "./GridItem/index";
 import { Header } from "./Header/index";
 import { Layout } from "./Layout/index";
 import { Main } from "./Main/index";
+import { Masonry } from "./Masonry/index";
 import { Scrollbar } from "./Scrollbar/index";
 import { Splitter, SplitterPanel } from "./Splitter/index";
 import { Sticky } from "./Sticky/index";
@@ -25,8 +26,12 @@ registerComponents(
   Aside,
   Main,
   Footer,
+  Masonry,
   Sticky,
   Scrollbar,
   Splitter,
   SplitterPanel
 );
+
+export { Masonry } from "./Masonry/index";
+export type { MasonryGap, MasonryProps, MasonrySlots } from "./Masonry/types";

@@ -571,7 +571,7 @@ describe("elf-dropdown", () => {
     expect(result).toEqual({ left: 132, top: 52, placement: "top-end" });
   });
 
-  it("uses top-layer popover positioning and updates on captured scroll", async () => {
+  it("closes top-layer popovers on external scroll", async () => {
     const el = await mount({
       teleported: true,
       appendTo: "#overlay-root",
@@ -619,10 +619,13 @@ describe("elf-dropdown", () => {
     expect(menuEl.style.left).toBe("112px");
     expect(menuEl.style.top).toBe("158px");
 
-    anchorLeft = 180;
+    menuEl.dispatchEvent(new Event("scroll", { bubbles: true, composed: true }));
+    await frame();
+    expect(trigger(el).getAttribute("aria-expanded")).toBe("true");
+
     window.dispatchEvent(new Event("scroll"));
     await frame();
-    expect(menuEl.style.left).toBe("192px");
+    expect(trigger(el).getAttribute("aria-expanded")).toBe("false");
 
     await openByClick(el);
     expect(menuEl.hidePopover).toHaveBeenCalled();

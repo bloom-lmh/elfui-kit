@@ -48,6 +48,29 @@ type TextareaHost = HTMLElement & {
 };
 
 describe("elf-textarea", () => {
+  it("reflects the shared field surface contract", async () => {
+    const el = document.createElement("elf-textarea") as TextareaHost;
+    el.setAttribute("variant", "outlined");
+    el.setAttribute("label", "Description");
+    document.body.appendChild(el);
+    await flush();
+
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.hasAttribute("data-has-label")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("Description");
+  });
+
+  it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(
+    "reflects the shared %s field variant",
+    async (variant) => {
+      const el = document.createElement("elf-textarea") as TextareaHost;
+      el.setAttribute("variant", variant);
+      document.body.appendChild(el);
+      await flush();
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
+
   const mount = (): TextareaHost => {
     const el = document.createElement("elf-textarea") as TextareaHost;
     document.body.appendChild(el);

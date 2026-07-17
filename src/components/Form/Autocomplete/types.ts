@@ -1,3 +1,5 @@
+import type { FieldVariant } from "../../../types/field";
+
 export interface AutocompleteOption {
   value?: string;
   label?: string;
@@ -11,6 +13,8 @@ export type AutocompletePlacement =
   | "bottom"
   | "bottom-start"
   | "bottom-end";
+
+export type AutocompleteVariant = FieldVariant;
 
 export type AutocompleteFetchSuggestions = (
   query: string,
@@ -38,6 +42,8 @@ export interface AutocompleteProps {
   options: AutocompleteOption[];
   fetchSuggestions?: AutocompleteFetchSuggestions;
   placeholder: string;
+  label: string;
+  variant: AutocompleteVariant;
   disabled: boolean;
   clearable: boolean;
   triggerOnFocus: boolean;

@@ -18,6 +18,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { TreeFieldNames, TreeNode, TreeProps } from "./types";
 
@@ -42,11 +43,13 @@ const props = defineProps({
   expandOnClickNode: { type: Boolean, default: true },
   checkOnClickNode: { type: Boolean, default: false },
   filterable: { type: Boolean, default: false },
-  filterPlaceholder: { type: String, default: "搜索节点" },
-  emptyText: { type: String, default: "暂无数据" },
+  filterPlaceholder: { type: String, default: "" },
+  emptyText: { type: String, default: "" },
   indent: { type: Number, default: 20 },
   bordered: { type: Boolean, default: false }
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits([
   "update:modelValue",
@@ -577,14 +580,14 @@ const Tree = defineHtml(html`
       <input
         type="search"
         :value=${filterText}
-        :placeholder=${props.filterPlaceholder || "搜索节点"}
+        :placeholder=${props.filterPlaceholder || locale.t("tree.search")}
         @input="onFilterInput($event)"
       />
     </div>
 
     <div class="tree-body">
       <div v-if=${getVisibleNodes().length === 0} class="tree-empty">
-        ${props.emptyText || "暂无数据"}
+        ${props.emptyText || locale.t("table.empty")}
       </div>
 
       <div
@@ -603,7 +606,7 @@ const Tree = defineHtml(html`
           :class="{ 'is-expanded': isExpanded(row.key) }"
           type="button"
           :disabled="!row.hasChildren"
-          :title="isExpanded(row.key) ? '收起' : '展开'"
+          :title=${locale.t(isExpanded(row.key) ? "common.collapse" : "common.expand")}
           @click.stop="toggleExpand(row)"
         >
           <span v-if="row.hasChildren" class="switch-icon"></span>

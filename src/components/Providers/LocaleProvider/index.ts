@@ -3,13 +3,13 @@
 import { defineProps, defineStyle, html, provide, useEffect, useHost, defineHtml } from "elfui";
 
 import {
-    DEFAULT_LOCALE_MESSAGES,
     LOCALE_PROVIDER_KEY,
     createTranslator,
     mergeMessages,
     type LocaleDirection,
     type LocaleMessages,
     type LocaleProviderContext,
+    localeMessagesFor,
 } from "../context";
 import styles from "./style.scss?inline";
 
@@ -25,7 +25,7 @@ const props = defineProps({
 const host = useHost();
 
 const readMessages = (): LocaleMessages =>
-    mergeMessages(DEFAULT_LOCALE_MESSAGES, (props.messages || {}) as LocaleMessages);
+    mergeMessages(localeMessagesFor(String(props.name || "zh-CN")), (props.messages || {}) as LocaleMessages);
 
 const readDir = (): LocaleDirection => {
     if (props.rtl) return "rtl";

@@ -51,11 +51,11 @@ const partsRows = [
 
 const PagePaginationProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows"></elf-props-table>
-  <elf-props-table title="Events" :rows="eventsRows"></elf-props-table>
-  <elf-props-table title="Slots" :rows="slotsRows"></elf-props-table>
-  <elf-props-table title="Methods" :rows="methodsRows"></elf-props-table>
-  <elf-props-table title="Parts" :rows="partsRows"></elf-props-table>
+  <elf-props-table title="Props" :rows.prop=${propsRows}></elf-props-table>
+  <elf-props-table title="Events" :rows.prop=${eventsRows}></elf-props-table>
+  <elf-props-table title="Slots" :rows.prop=${slotsRows}></elf-props-table>
+  <elf-props-table title="Methods" :rows.prop=${methodsRows}></elf-props-table>
+  <elf-props-table title="Parts" :rows.prop=${partsRows}></elf-props-table>
 `);
 
 export { PagePaginationProps };

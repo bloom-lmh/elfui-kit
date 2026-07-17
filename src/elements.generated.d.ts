@@ -34,6 +34,8 @@ declare global {
       options: unknown[];
       fetchSuggestions: unknown;
       placeholder: string;
+      label: string;
+      variant: string;
       disabled: boolean;
       clearable: boolean;
       triggerOnFocus: boolean;
@@ -123,6 +125,8 @@ declare global {
       modelValue: unknown[];
       options: unknown[];
       size: string;
+      variant: string;
+      label: string;
       placeholder: string;
       disabled: boolean;
       clearable: boolean;
@@ -178,6 +182,8 @@ declare global {
     "elf-color-picker": HTMLElement & {
       modelValue: string;
       format: string;
+      variant: string;
+      label: string;
       presets: unknown[];
       showAlpha: boolean;
       disabled: boolean;
@@ -191,6 +197,8 @@ declare global {
       modelValue: unknown;
       endValue: string;
       type: string;
+      variant: string;
+      label: string;
       range: boolean;
       multiple: boolean;
       actions: boolean;
@@ -328,6 +336,8 @@ declare global {
       modelModifiers: Record<string, unknown>;
       type: string;
       size: string;
+      variant: string;
+      label: string;
       placeholder: string;
       disabled: boolean;
       readonly: boolean;
@@ -406,6 +416,14 @@ declare global {
     "elf-layout": HTMLElement & {
       direction: string;
     };
+    "elf-list": HTMLElement & {
+      items: unknown[];
+      itemKey: unknown;
+      renderItem: unknown;
+      bordered: boolean;
+      divided: boolean;
+      emptyText: string;
+    };
     "elf-loading": HTMLElement & {
       loading: boolean;
       text: string;
@@ -420,6 +438,11 @@ declare global {
       messages: Record<string, unknown>;
     };
     "elf-main": HTMLElement;
+    "elf-masonry": HTMLElement & {
+      columns: number;
+      minColumnWidth: string | number;
+      gap: string | number;
+    };
     "elf-mention": HTMLElement & {
       modelValue: string;
       options: unknown[];
@@ -462,6 +485,7 @@ declare global {
       type: string;
       position: string;
       closable: boolean;
+      action: string;
       close: (...args: unknown[]) => void;
       closing: unknown;
     };
@@ -578,6 +602,8 @@ declare global {
       options: unknown[];
       props: Record<string, unknown>;
       size: string;
+      variant: string;
+      label: string;
       placeholder: string;
       disabled: boolean;
       valueKey: string;
@@ -683,6 +709,10 @@ declare global {
       size: string;
       height: string;
       maxHeight: string;
+      virtual: boolean;
+      virtualThreshold: number;
+      rowHeight: number;
+      overscan: number;
       emptyText: string;
       loading: boolean;
       showHeader: boolean;
@@ -733,6 +763,8 @@ declare global {
     "elf-textarea": HTMLElement & {
       modelValue: string;
       size: string;
+      variant: string;
+      label: string;
       placeholder: string;
       disabled: boolean;
       readonly: boolean;
@@ -766,6 +798,8 @@ declare global {
       readonly: boolean;
       editable: boolean;
       size: string;
+      variant: string;
+      label: string;
       placeholder: string;
       startPlaceholder: string;
       endPlaceholder: string;
@@ -911,6 +945,19 @@ declare global {
       abort: (...args: unknown[]) => void;
       handleStart: (...args: unknown[]) => void;
       handleRemove: (...args: unknown[]) => void;
+    };
+    "elf-virtual-list": HTMLElement & {
+      items: unknown[];
+      itemKey: unknown;
+      renderItem: unknown;
+      height: string;
+      itemHeight: number;
+      overscan: number;
+      bordered: boolean;
+      divided: boolean;
+      emptyText: string;
+      scrollToIndex: (...args: unknown[]) => void;
+      scrollToOffset: (...args: unknown[]) => void;
     };
   }
 }

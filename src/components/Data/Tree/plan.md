@@ -1,5 +1,7 @@
 # Tree Element Plus API 对标计划
 
+- [x] 2026-07-17 文档案例统一使用轻量 outlined Card 承载，保持 Playground 标题操作与树内容层级稳定。
+
 生成时间：2026-07-05
 
 ## 对标定位

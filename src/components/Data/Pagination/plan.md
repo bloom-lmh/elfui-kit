@@ -1,5 +1,10 @@
 # Pagination alignment plan
 
+## 2026-07-17 pager stability
+
+- [x] Keep a constant pager slot count and preserve the active page column when ellipses change at a boundary.
+- [x] Close the page-size overlay on external page motion while retaining internal panel scrolling.
+
 ## Completed
 
 - [x] Controlled `current-page` and `page-size` paths, with distinct one-time `default-current-page` and `default-page-size` initialization.

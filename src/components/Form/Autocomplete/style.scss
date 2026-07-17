@@ -1,4 +1,5 @@
 @use "../../../styles/reset";
+@use "../../../styles/field-surface" as field;
 
 :host {
   position: relative;
@@ -10,23 +11,29 @@
 .autocomplete {
   position: relative;
   width: 100%;
+  min-height: 52px;
 }
+
+@include field.surface(".autocomplete");
+@include field.floating-label(".autocomplete");
 
 input {
   width: 100%;
-  height: 34px;
+  height: 52px;
   padding: 0 var(--elf-space-3);
-  border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-md);
+  border: 0;
   outline: none;
-  background: var(--elf-bg-paper, #fff);
+  background: transparent;
   color: inherit;
   font: inherit;
 }
 
-input:focus {
-  border-color: var(--elf-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 14%, transparent);
+:host([data-has-label]) input {
+  padding-top: 14px;
+}
+
+:host([data-has-label]:not([data-dirty])) .autocomplete:not(:focus-within) input::placeholder {
+  color: transparent;
 }
 
 .clear {

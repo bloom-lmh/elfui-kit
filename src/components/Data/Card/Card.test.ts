@@ -66,6 +66,27 @@ describe("elf-card", () => {
     expect(el.getAttribute("shadow")).toBe(shadow);
   });
 
+  it.each(["elevated", "outlined", "filled", "tonal", "flat"])(
+    "supports the %s surface variant",
+    async (variant) => {
+      const el = document.createElement("elf-card");
+      el.setAttribute("variant", variant);
+      document.body.appendChild(el);
+      await tick();
+
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
+
+  it.each(["default", "comfortable", "compact"])("supports %s density", async (density) => {
+    const el = document.createElement("elf-card");
+    el.setAttribute("density", density);
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.getAttribute("density")).toBe(density);
+  });
+
   it("makes clickable cards keyboard accessible", async () => {
     const el = document.createElement("elf-card");
     el.setAttribute("clickable", "");

@@ -1,74 +1,56 @@
 // 组件级（局部）自定义指令验证
 
-import { compile } from "@elfui/compiler";
-import { setTemplateCompiler, type RenderFn } from "@elfui/chain";
-import { defineComponent, directive } from "elfui";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { directive, type DirectiveDefinition } from "@elfui/runtime";
+import { resolveDirective } from "@elfui/runtime/internal";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-setTemplateCompiler((template) => compile(template) as unknown as RenderFn);
+import { localDualCalls, TestDualDirective } from "./dual-directive-fixture";
+import { localOnlyCalls, TestLocalDirective } from "./local-only-directive-fixture";
+
+const globalDualCalls: string[] = [];
+let removeGlobalDual = (): void => {};
+
+const localDirectives = (component: unknown): Record<string, DirectiveDefinition> =>
+  (component as { __elfDefinition: { directives: Record<string, DirectiveDefinition> } })
+    .__elfDefinition.directives;
+
+const invokeMounted = (definition: DirectiveDefinition, element: HTMLElement): void => {
+  const binding = { value: undefined, oldValue: undefined, modifiers: {} };
+  if (typeof definition === "function") definition(element, binding);
+  else definition.mounted?.(element, binding);
+};
+
+beforeAll(() => {
+  removeGlobalDual = directive("dual", { mounted: () => globalDualCalls.push("global") });
+});
+
+afterAll(() => removeGlobalDual());
 
 afterEach(() => {
   document.body.innerHTML = "";
+  localOnlyCalls.length = 0;
+  localDualCalls.length = 0;
+  globalDualCalls.length = 0;
 });
-
-let id = 0;
-const next = (): string => `elf-test-local-dir-${++id}`;
 
 describe("组件级自定义指令（builder.directive）", () => {
   it("仅组件内可见，不污染全局", () => {
-    const tag = next();
-    const mounted = vi.fn();
+    const local = resolveDirective("local-only", localDirectives(TestLocalDirective));
+    expect(local).toBeTruthy();
+    expect(resolveDirective("local-only")).toBeUndefined();
+    invokeMounted(local!, document.createElement("button"));
 
-    defineComponent({
-      name: tag,
-      directives: {
-        "local-only": {
-          mounted: (el: HTMLElement) => {
-            mounted(el.tagName.toLowerCase());
-          }
-        }
-      },
-      template: `<button v-local-only>x</button>`
-    });
-
-    const el = document.createElement(tag);
-    document.body.appendChild(el);
-
-    return new Promise<void>((resolve) => {
-      queueMicrotask(() => {
-        expect(mounted).toHaveBeenCalledWith("button");
-        // 全局没注册过该指令
-        resolve();
-      });
-    });
+    expect(localOnlyCalls).toEqual(["button"]);
   });
 
   it("局部指令优先于同名全局指令", () => {
-    const tag = next();
-    const localFn = vi.fn();
-    const globalFn = vi.fn();
+    const global = resolveDirective("dual");
+    const local = resolveDirective("dual", localDirectives(TestDualDirective));
+    expect(local).toBeTruthy();
+    expect(local).not.toBe(global);
+    invokeMounted(local!, document.createElement("button"));
 
-    // 全局
-    directive("dual", { mounted: globalFn });
-
-    defineComponent({
-      name: tag,
-      directives: {
-        dual: { mounted: localFn }
-      },
-      template: `<button v-dual>x</button>`
-    });
-
-    const el = document.createElement(tag);
-    document.body.appendChild(el);
-
-    return new Promise<void>((resolve) => {
-      queueMicrotask(() => {
-        expect(localFn).toHaveBeenCalledTimes(1);
-        // 全局没被调用
-        expect(globalFn).not.toHaveBeenCalled();
-        resolve();
-      });
-    });
+    expect(localDualCalls).toEqual(["local"]);
+    expect(globalDualCalls).toEqual([]);
   });
 });

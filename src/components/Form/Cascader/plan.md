@@ -254,7 +254,7 @@
 
 ## 差距与任务
 
-- [x] P0 完成 `teleported` Top Layer、`append-to`、`persistent`、`placement`、`fit-input-width`、`popper-class/style/options`，支持 offset、flip、碰撞约束、视觉视口与捕获滚动重定位。
+- [x] P0 完成 `teleported` Top Layer、`append-to`、`persistent`、`placement`、`fit-input-width`、`popper-class/style/options`，支持 offset、flip、碰撞约束、视觉视口与外部滚动关闭。
 - [x] P0 完成可移除多选标签、`collapse-tags-tooltip` 和 `remove-tag` 原始模型值事件。
 - [x] P1 完成 `empty`、`prefix`、`suggestion-item`、`tag`、`header`、`footer` 与节点默认插槽。
 - [x] P1 完成触发器/菜单方向键、Home、End、Escape 键盘访问，并接入 change/blur 表单校验触发。
@@ -263,6 +263,7 @@
 - [x] P1 完成 lazy/lazyLoad 真实加载状态、resolve 后展开、reject/异常后的可重试恢复，并避免重复值节点缓存冲突。
 - [x] P1 使用原生 Custom Element focus/blur，提供 `getContentElement`、`getCheckedNodes` 等语义方法；CascaderPanel 默认/empty 插槽已核验。
 - [x] P2 完成公开 emits/slots/expose/element 类型、PropsTable、页面冒烟和视觉回归终审。
+- [x] 接入共享 `filled / outlined`、浮动标签、暗色/错误/禁用状态；面板内部滚动不误关闭。
 
 ## 验收清单
 

@@ -21,6 +21,16 @@ const items = [
   }
 ];
 
+const horizontalItems = [
+  { title: "Overview", href: "#anchor-nested-start" },
+  { title: "Installation", href: "#anchor-nested-install" },
+  { title: "Registration", href: "#anchor-nested-register" },
+  { title: "Design tokens", href: "#anchor-nested-advanced" },
+  { title: "Accessibility", href: "#anchor-nested-events" },
+  { title: "Keyboard navigation", href: "#anchor-nested-events" },
+  { title: "Release notes", href: "#anchor-nested-events" }
+];
+
 const onUpdate = (event: CustomEvent): void => {
   active.set(event.detail);
 };
@@ -34,7 +44,7 @@ const code = `<elf-anchor
 />`;
 
 const horizontalCode = `<elf-anchor
-  :items=\${items}
+  :items=\${horizontalItems}
   direction="horizontal"
   type="underline"
   :marker=\${false}
@@ -101,13 +111,15 @@ const PageAnchorEx2 = defineHtml(html`
   </elf-playground>
 
   <elf-playground title="horizontal / underline / marker=false" :code=${horizontalCode}>
-    <elf-anchor
-      :items=${items}
-      direction="horizontal"
-      type="underline"
-      :marker=${false}
-      default-active="#anchor-nested-start"
-    ></elf-anchor>
+    <div style="width:100%;max-width:560px">
+      <elf-anchor
+        :items=${horizontalItems}
+        direction="horizontal"
+        type="underline"
+        :marker=${false}
+        default-active="#anchor-nested-start"
+      ></elf-anchor>
+    </div>
   </elf-playground>
 `);
 

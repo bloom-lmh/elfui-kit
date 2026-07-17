@@ -5,7 +5,7 @@ const propsRows = [
   { name: "model-modifiers", type: "{ trim?: boolean; number?: boolean; lazy?: boolean }" },
   { name: "type", type: "text | password | email | tel | url | search | number", default: "text" },
   { name: "size", type: "small | default | large | sm | md | lg", default: "md" },
-  { name: "variant", type: "filled | outlined", default: "filled" },
+  { name: "variant", type: "default | filled | outlined | underlined | solo | solo-filled | solo-inverted", default: "filled", desc: "字段表面样式；filled 是 default 的兼容别名" },
   { name: "placeholder", type: "string" },
   { name: "disabled", type: "boolean" },
   { name: "readonly", type: "boolean" },

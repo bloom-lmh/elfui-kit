@@ -29,10 +29,11 @@
 ## 实现说明
 
 - `teleported` 使用原生 Popover top layer，在不搬离 Shadow DOM 的前提下脱离裁切与 transform 祖先；`appendTo` 作为目标声明保留在浮层元数据中，浏览器 top layer 负责最终承载。
-- 共享 `computeAnchoredPosition` 内核处理 offset、flip、preventOverflow、visualViewport、捕获阶段滚动、窗口缩放和元素尺寸变化，虚拟触发与普通触发统一走同一条定位链路。
+- 共享 `computeAnchoredPosition` 内核处理 offset、flip、preventOverflow、visualViewport、窗口缩放和元素尺寸变化；外部滚动关闭菜单，菜单内部滚动保持可用。
 - ElfUI 默认 trigger 继续使用 `click` 以保持现有版本兼容；显式传入 `hover` 可获得 Element Plus 默认交互。
 - `command` 事件保留 `{ command, item }` 结构，避免破坏现有调用方；其中 command 支持 Element Plus 的 string、number 和 object。
 
 ## 本轮记录
 
 - [x] 2026-07-15 完成共享锚定定位内核与 Dropdown top layer 接入；新增 transform + overflow 裁切案例，32 项定向单测、生产构建和真实浏览器交互通过，控制台 0 error。
+- [x] 2026-07-16 修复页面滚动时菜单产生 sticky 错觉：捕获外部滚动后关闭，菜单内部滚动不误关。

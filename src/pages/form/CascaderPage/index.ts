@@ -9,6 +9,7 @@ import { PageCascaderEx6 } from "./ex6";
 import { PageCascaderEx7 } from "./ex7";
 
 const propsRows = [
+  { name: "variant / label", type: "FieldVariant / string", default: "filled / ''", desc: "六种统一字段表面与浮动标签" },
   {
     name: "modelValue",
     type: "CascaderValue[] | CascaderValue[][]",

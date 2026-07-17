@@ -1,6 +1,9 @@
 // elf-select 类型
 
+import type { FieldVariant } from "../../../types/field";
+
 export type SelectSize = "small" | "default" | "large" | "sm" | "md" | "lg";
+export type SelectVariant = FieldVariant;
 export type SelectPrimitiveValue = string | number | boolean;
 export type SelectValue = SelectPrimitiveValue | Record<string, unknown>;
 
@@ -24,6 +27,8 @@ export interface SelectProps {
   options: SelectOption[];
   props: SelectFieldNames;
   size: SelectSize;
+  variant: SelectVariant;
+  label: string;
   placeholder: string;
   disabled: boolean;
   valueKey: string;

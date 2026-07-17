@@ -13,6 +13,7 @@ import { Divider } from "./Divider/index";
 import { Empty } from "./Empty/index";
 import { Image } from "./Image/index";
 import { InfiniteScroll } from "./InfiniteScroll/index";
+import { List } from "./List/index";
 import { registerInfiniteScrollDirective } from "./InfiniteScroll/directive";
 import { Pagination } from "./Pagination/index";
 import { Progress } from "./Progress/index";
@@ -23,6 +24,7 @@ import { Table } from "./Table/index";
 import { Timeline } from "./Timeline/index";
 import { Transfer } from "./Transfer/index";
 import { Tree } from "./Tree/index";
+import { VirtualList } from "./VirtualList/index";
 import { Watermark } from "./Watermark/index";
 
 registerComponents(
@@ -38,6 +40,7 @@ registerComponents(
   Empty,
   Image,
   InfiniteScroll,
+  List,
   Pagination,
   Progress,
   Result,
@@ -47,6 +50,7 @@ registerComponents(
   Timeline,
   Transfer,
   Tree,
+  VirtualList,
   Watermark
 );
 
@@ -61,3 +65,10 @@ export type {
   InfiniteScrollProps,
   InfiniteScrollSlots
 } from "./InfiniteScroll/types";
+
+export { List } from "./List/index";
+export type { ListItemKey, ListItemRenderer, ListProps } from "./List/types";
+export { VirtualList } from "./VirtualList/index";
+export type { VirtualListExpose, VirtualListProps } from "./VirtualList/types";
+export { computeVirtualWindow } from "./virtual-window";
+export type { VirtualWindow, VirtualWindowOptions } from "./virtual-window";

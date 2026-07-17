@@ -11,6 +11,7 @@ import {
     useComputed,
     useEventListener,
     useHost,
+    useHostAttr,
     useRef,
     useShadowRoot,
     watchEffect,
@@ -20,6 +21,7 @@ import {
 import baseStyles from "./style-base.scss?inline";
 import modeStyles from "./style-mode.scss?inline";
 import themeStyles from "./style-theme.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type {
     MenuFieldNames,
     MenuItemClickDetail,
@@ -146,9 +148,11 @@ const props = defineProps<MenuRuntimeProps>({
     showToggle: { type: Boolean, default: false },
     togglePlacement: { type: String, default: "header" },
     searchable: { type: Boolean, default: false },
-    searchPlaceholder: { type: String, default: "搜索..." },
+    searchPlaceholder: { type: String, default: "" },
     trigger: { type: String, default: "click" },
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<{
     "update:modelValue": [index: string];
@@ -157,6 +161,8 @@ const emit = defineEmits<{
     close: [index: string, indexPath: string[], item: MenuRawItem];
     "collapse-change": [collapsed: boolean];
 }>();
+
+useHostAttr("theme", () => (props.theme === "dark" ? "dark" : "light"));
 
 const host = useHost();
 
@@ -268,7 +274,7 @@ const showHeaderToggle = (): boolean =>
 const showFooterToggle = (): boolean =>
     Boolean(props.showToggle && !isHorizontal.value && togglePlacement() !== "header");
 
-const toggleTitle = (): string => (isCollapsed.value ? "展开菜单" : "折叠菜单");
+const toggleTitle = (): string => locale.t(isCollapsed.value ? "menu.expand" : "menu.collapse");
 
 const matchesSearch = (item: MenuViewItem): boolean => {
     const kw = searchText.value.toLowerCase();
@@ -1009,7 +1015,7 @@ const Menu = defineHtml<MenuRuntimeProps, Record<string, never>, MenuSlots>(html
 
         <div class="menu-search" v-if=${props.searchable && !isHorizontal && !isCollapsed} @input=${onCustomSearchInput}>
             <slot name="search">
-                <input class="search-input" :placeholder=${props.searchPlaceholder || "搜索..."} />
+                <input class="search-input" :placeholder=${props.searchPlaceholder || locale.t("menu.search")} />
             </slot>
         </div>
 
@@ -1111,7 +1117,7 @@ const Menu = defineHtml<MenuRuntimeProps, Record<string, never>, MenuSlots>(html
                         <span v-if="item.hasChildren && !isCollapsed" class="menu-arrow" aria-hidden="true">{{ itemArrow(item) }}</span>
                     </button>
                 </template>
-                <div v-if=${getVisibleItems().length === 0} class="menu-empty">暂无结果</div>
+                <div v-if=${getVisibleItems().length === 0} class="menu-empty">${locale.t("common.noResults")}</div>
 
                 <div
                     v-if=${isCollapsed && getHoveredChildren().length > 0}

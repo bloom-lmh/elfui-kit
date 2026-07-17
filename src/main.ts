@@ -7,6 +7,7 @@
 // 5. 引入自动生成的类型增强（HTMLElementTagNameMap）
 
 import "./components";
+import "./styles/utilities.scss";
 /* import "./elements.generated"; */
 
 import { createRouter } from "@elfui/router";

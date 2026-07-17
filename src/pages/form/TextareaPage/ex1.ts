@@ -1,7 +1,7 @@
 import { defineHtml, html } from "elfui";
 
 const code1 = `<div style="width:100%;max-width:480px">
-  <elf-textarea rows="4" placeholder="请输入多行内容..." />
+  <elf-textarea rows="4" label="描述" placeholder="请输入多行内容..." />
 </div>`;
 
 const code2 = `<div style="width:100%;max-width:480px">
@@ -12,7 +12,7 @@ const PageTextareaEx1 = defineHtml(html`
   <h2>基础</h2>
   <elf-playground title="四行文本框" :code=${code1}>
     <div style="width:100%;max-width:480px">
-      <elf-textarea rows="4" placeholder="请输入多行内容..." />
+      <elf-textarea rows="4" label="描述" placeholder="请输入多行内容..." />
     </div>
   </elf-playground>
   <h2>字符计数</h2>

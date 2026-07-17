@@ -2,6 +2,7 @@ import { defineProps, defineStyle, html, useHostAttr, useHostCssVar, useHostFlag
 
 import styles from "./style.scss?inline";
 import type { ProgressProps, ProgressStatus, ProgressType, ProgressVariant } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { ProgressProps, ProgressStatus, ProgressType, ProgressVariant } from "./types";
 
@@ -28,6 +29,8 @@ const props = defineProps({
     indeterminate: { type: Boolean, default: false },
     format: { type: Function, default: undefined },
 }) as unknown as Readonly<ProgressProps>;
+
+const locale = useLocaleProvider();
 
 const max = (): number => Math.max(1, Number(props.max) || 100);
 
@@ -72,7 +75,7 @@ const tokenColor = (): string => {
 const label = (): string => {
     const formatter = props.format;
     if (typeof formatter === "function") return formatter(percent(), value());
-    return props.indeterminate ? "进行中" : `${percent()}%`;
+    return props.indeterminate ? locale.t("loading.active") : `${percent()}%`;
 };
 
 const circleSize = (): string => `${Math.max(40, Number(props.size) || Number(props.width) || 126)}px`;

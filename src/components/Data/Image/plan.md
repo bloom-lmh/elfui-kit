@@ -1,5 +1,11 @@
 # Image Element Plus API 对标计划
 
+## 2026-07-17 regression completion
+
+- [x] Verify runtime fit and fixed-size updates instead of only initial CSS variables.
+- [x] Verify lazy loading keeps `src` unset until intersection and disconnects its observer afterwards.
+- [x] Expose semantic load/error events and document the complete Props, Events, and Slots surface.
+
 生成时间：2026-07-05
 
 ## 第一批实现

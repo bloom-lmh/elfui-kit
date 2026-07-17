@@ -15,6 +15,7 @@ import {
 
 import { SplitterPanel } from "./panel";
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type {
   SplitterEmits,
   SplitterPanelProps,
@@ -46,6 +47,7 @@ const props = defineProps<SplitterProps>({
 });
 
 const emit = defineEmits<SplitterEmits>();
+const locale = useLocaleProvider();
 const host = useHost<HTMLElement>();
 
 // State
@@ -267,7 +269,9 @@ const Splitter = defineHtml<SplitterProps, SplitterEmits, SplitterSlots>(html`
       :aria-valuenow=${currentSize()}
       :aria-valuemin=${panelMin()}
       :aria-valuemax=${panelMax()}
-      :aria-valuetext=${collapsed.value ? "已折叠" : `${Math.round(currentSize())}%`}
+      :aria-valuetext=${collapsed.value
+        ? locale.t("a11y.collapsed")
+        : locale.t("splitter.size", { size: Math.round(currentSize()) })}
       :aria-orientation=${props.vertical ? "vertical" : "horizontal"}
       @pointerdown=${onPointerDown}
       @pointermove=${onPointerMove}
@@ -280,7 +284,9 @@ const Splitter = defineHtml<SplitterProps, SplitterEmits, SplitterSlots>(html`
         v-if=${canCollapse()}
         class="collapse-button"
         type="button"
-        :aria-label=${collapsed.value ? "展开第一个面板" : "折叠第一个面板"}
+        :aria-label=${locale.t(
+          collapsed.value ? "a11y.expandFirstPanel" : "a11y.collapseFirstPanel"
+        )}
         @pointerdown=${stopCollapsePointerDown}
         @click.stop=${toggleCollapse}
       >

@@ -1,4 +1,5 @@
 @use "../../../styles/reset";
+@use "../../../styles/field-surface" as field;
 
 :host {
   position: relative;
@@ -22,31 +23,26 @@
 }
 
 .field-trigger {
+  position: relative;
   display: grid;
   grid-template-columns: 18px minmax(72px, 1fr);
   align-items: center;
   gap: 8px;
   min-width: 142px;
-  min-height: 42px;
+  min-height: 52px;
   padding: 0 12px;
-  border: 1px solid var(--elf-border);
-  border-radius: 12px;
   outline: none;
-  background: var(--elf-bg-paper);
   color: var(--elf-text-primary);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
 }
 
-.field-trigger:hover,
-.field-trigger:focus-visible,
-.field-trigger.is-active {
-  border-color: var(--elf-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 13%, transparent);
+@include field.surface(".field-trigger");
+@include field.floating-label(".field-trigger");
+
+.field-trigger.has-label {
+  padding-top: 14px;
 }
 
 .clock-icon {
@@ -261,12 +257,12 @@
 
 :host([size="sm"]),
 :host([size="small"]) {
-  .field-trigger { min-height: 36px; }
+  .field-trigger { min-height: 40px; }
 }
 
 :host([size="lg"]),
 :host([size="large"]) {
-  .field-trigger { min-height: 48px; }
+  .field-trigger { min-height: 60px; }
 }
 
 @keyframes time-panel-enter {

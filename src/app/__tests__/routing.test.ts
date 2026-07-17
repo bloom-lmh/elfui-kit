@@ -5,7 +5,8 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { createRouter as createRouterFactory } from "@elfui/router";
-import type { RenderFn } from "@elfui/runtime";
+import { TestButton } from "./test-button-fixture";
+import { TestHome } from "./test-home-fixture";
 
 let createRouterForTest: typeof createRouterFactory;
 
@@ -13,29 +14,18 @@ beforeAll(async () => {
   await import("../../components");
   const { App } = await import("../AppShell/index");
   const { createRouter } = await import("@elfui/router");
-  const { compile } = await import("@elfui/compiler");
-  const { setTemplateCompiler } = await import("@elfui/chain");
-  const { defineComponent, registerComponents } = await import("elfui");
-  setTemplateCompiler((template) => compile(template) as unknown as RenderFn);
+  const { registerComponents } = await import("elfui");
   createRouterForTest = createRouter;
-  registerComponents(App);
-
-  // 三个简单页面
-  if (!customElements.get("test-home")) {
-    defineComponent({ name: "test-home", template: "<div>HOME</div>" });
-  }
-  if (!customElements.get("test-button")) {
-    defineComponent({ name: "test-button", template: "<div>BUTTON-PAGE</div>" });
-  }
+  registerComponents(App, TestHome, TestButton);
 }, 30000);
 
 beforeEach(() => {
   createRouterForTest({
     mode: "memory",
     routes: [
-      { path: "/", name: "home", component: "test-home" },
-      { path: "/button", name: "button", component: "test-button" },
-      { path: "/basic/button", component: "test-button" }
+      { path: "/", name: "home", component: "elf-test-home" },
+      { path: "/button", name: "button", component: "elf-test-button" },
+      { path: "/basic/button", component: "elf-test-button" }
     ]
   });
 });
@@ -57,6 +47,11 @@ describe("路由跳转", () => {
 
     const menu = app.shadowRoot?.querySelector("elf-menu");
     expect(menu).toBeTruthy();
+    const layout = Array.from(
+      menu?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".menu-item") ?? []
+    ).find((node) => node.textContent?.includes("Layout 布局"));
+    layout?.click();
+    await tick();
     expect(menu?.shadowRoot?.textContent).toContain("Container 容器");
   });
 
@@ -72,12 +67,17 @@ describe("路由跳转", () => {
     const router = createRouter({
       mode: "memory",
       routes: [
-        { path: "/", component: "test-home" },
-        { path: "/basic/button", component: "test-button" }
+        { path: "/", component: "elf-test-home" },
+        { path: "/basic/button", component: "elf-test-button" }
       ]
     });
 
     const menu = app.shadowRoot?.querySelector("elf-menu");
+    const basic = Array.from(
+      menu?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".menu-item") ?? []
+    ).find((node) => node.textContent?.includes("Basic 基础"));
+    basic?.click();
+    await tick();
     const button = Array.from(
       menu?.shadowRoot?.querySelectorAll<HTMLButtonElement>(".menu-item") ?? []
     ).find((node) => node.textContent?.includes("Button 按钮"));
@@ -100,34 +100,50 @@ describe("路由跳转", () => {
     await tick();
     await wait(20);
 
-    const child = view.querySelector("test-home");
+    const child = view.querySelector("elf-test-home");
     expect(child).toBeTruthy();
     expect(child!.shadowRoot!.textContent).toContain("HOME");
   });
 
-  it("点击 elf-link 后 router-view 更新", async () => {
+  it("router.push 后 router-view 更新", async () => {
     const view = document.createElement("elf-router-view");
-    const link = document.createElement("elf-link");
-    link.setAttribute("to", "/button");
-    link.textContent = "去按钮页";
     document.body.appendChild(view);
-    document.body.appendChild(link);
     await tick();
     await tick();
     await wait(20);
 
     // 初始为 HOME（memory 模式默认 "/"）
-    expect(view.querySelector("test-home")).toBeTruthy();
+    expect(view.querySelector("elf-test-home")).toBeTruthy();
 
-    // 模拟点击
-    const a = link.querySelector("a") as HTMLAnchorElement;
-    expect(a).toBeTruthy();
-    a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    const { getActiveRouter } = await import("@elfui/router");
+    await getActiveRouter()!.push("/button");
 
     await tick();
     await tick();
     await wait(50);
 
-    expect(view.querySelector("test-button")).toBeTruthy();
+    expect(view.querySelector("elf-test-button")).toBeTruthy();
+  });
+
+  it("切换英文后同步更新侧栏菜单项", async () => {
+    localStorage.setItem("elfui-ui-locale", "zh-CN");
+    const app = document.createElement("elf-app");
+    document.body.appendChild(app);
+    await tick();
+    await tick();
+    await wait(20);
+
+    const languageButton = app.shadowRoot?.querySelector<HTMLElement>(".header-action");
+    languageButton?.click();
+    await tick();
+    await tick();
+    await wait(20);
+
+    const menu = app.shadowRoot?.querySelector<HTMLElement & { items?: Array<{ label: string }> }>(
+      "elf-menu"
+    );
+    expect(menu?.items?.[0]?.label).toBe("Home");
+    expect(menu?.shadowRoot?.textContent).toContain("Home");
+    expect(menu?.shadowRoot?.textContent).not.toContain("Layout 布局");
   });
 });

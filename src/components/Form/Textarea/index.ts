@@ -15,6 +15,7 @@ import {
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
+import { normalizeFieldVariant } from "../../../types/field";
 
 import type { TextareaProps, TextareaSize } from "./types";
 
@@ -27,6 +28,7 @@ export type {
   TextareaProps,
   TextareaResize,
   TextareaSize,
+  TextareaVariant,
   TextareaWordLimitPosition
 } from "./types";
 
@@ -42,6 +44,7 @@ const props = defineProps<TextareaProps>({
   modelValue: { type: String, default: "" },
   modelModifiers: { type: Object, default: () => ({}) },
   size: { type: String, default: "" },
+  variant: { type: String, default: "filled" },
   placeholder: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
@@ -252,8 +255,11 @@ const ariaText = (): string | null => props.ariaLabel || props.label || props.pl
 useHostAttr("data-state", () => formItem.state);
 useHostAttr("size", () => formItem.formSize);
 useHostAttr("resize", () => props.resize);
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
 useHostFlag("disabled", isDisabled);
 useHostFlag("autosize", autosizeEnabled);
+useHostFlag("data-dirty", () => Boolean(modelText()));
+useHostFlag("data-has-label", () => Boolean(props.label));
 
 useEffect(() => {
   void ctl.model.value;
@@ -291,6 +297,7 @@ const Textarea = defineHtml(html`
 
     <div class="field">
       <div class="wrapper" part="wrapper">
+        <span v-if=${props.label} class="field-label">${props.label}</span>
         <div v-if=${hasPrefix() || hasSuffix()} class="decorations" part="decorations">
           <span v-if=${hasPrefix()} class="prefix" part="prefix">
             <slot name="prefix" @slotchange=${touchSlots}>${props.prefixIcon}</slot>

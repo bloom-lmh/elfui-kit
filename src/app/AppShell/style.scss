@@ -5,6 +5,11 @@
   height: 100vh;
 }
 
+elf-locale-provider,
+elf-theme-provider {
+  color: var(--elf-text-primary);
+}
+
 elf-layout {
   height: 100%;
 }
@@ -40,4 +45,24 @@ elf-layout {
 
 .spacer {
   flex: 1;
+}
+
+.header-action {
+  flex: 0 0 auto;
+}
+
+.skin-action {
+  min-width: 112px;
+  color: var(--elf-primary);
+}
+
+.icon-action {
+  min-width: 40px;
+}
+
+@media (max-width: 720px) {
+  .brand > span,
+  .skin-action {
+    display: none;
+  }
 }

@@ -39,20 +39,20 @@ const selected = useRef<string[]>(["2", "5"])`;
 
 const PageTransferEx1 = defineHtml(html`
   <h2>基础用法</h2>
-  <elf-playground title="勾选左侧项，点击 → 移到右侧" :code="code1">
+  <elf-playground title="勾选左侧项，点击 → 移到右侧" :code=${code1}>
     <elf-transfer
-      :data="data"
-      :modelValue="selected1"
-      @update:modelValue="onTransfer1"
+      :data.prop=${data}
+      :modelValue.prop=${selected1.value}
+      @update:modelValue=${onTransfer1}
     ></elf-transfer>
   </elf-playground>
 
   <h2>默认选中</h2>
-  <elf-playground title="modelValue 设置初始选中项" :code="code2">
+  <elf-playground title="modelValue 设置初始选中项" :code=${code2}>
     <elf-transfer
-      :data="data"
-      :modelValue="selected2"
-      @update:modelValue="onTransfer2"
+      :data.prop=${data}
+      :modelValue.prop=${selected2.value}
+      @update:modelValue=${onTransfer2}
     ></elf-transfer>
   </elf-playground>
 `);

@@ -252,6 +252,28 @@ describe("elf-tabs", () => {
     expect(contentSlot.assignedNodes().map((node) => node.textContent).join("")).toContain("任务面板");
   });
 
+  it("chooses the active fallback before a controlled pane is removed synchronously", async () => {
+    const el = await mountComposed(`
+      <elf-tab-pane label="概览" name="overview" closable>概览面板</elf-tab-pane>
+      <elf-tab-pane label="任务" name="tasks" closable>任务面板</elf-tab-pane>
+      <elf-tab-pane label="临时" name="temporary" closable>临时面板</elf-tab-pane>
+    `, { modelValue: "temporary", editable: true });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    el.addEventListener("tab-remove", (event) => {
+      const removed = String((event as CustomEvent).detail);
+      Array.from(el.querySelectorAll("elf-tab-pane"))
+        .find((pane) => String((pane as HTMLElement & { name?: string }).name) === removed)
+        ?.remove();
+    });
+
+    (el.shadowRoot!.querySelector(".tab.is-active .tab-close") as HTMLElement).click();
+    await tick();
+    await tick();
+
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toBe("tasks");
+  });
+
   it("supports the add-icon slot and navigation exposes", async () => {
     const el = await mountComposed(`
       <span slot="add-icon">新增</span>

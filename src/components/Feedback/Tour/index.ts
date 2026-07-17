@@ -23,6 +23,7 @@ import {
 
 import styles from "./style.scss?inline";
 import type { TourChangeDetail, TourPlacement, TourProps, TourStep } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { TourChangeDetail, TourPlacement, TourProps, TourStep } from "./types";
 
@@ -59,6 +60,8 @@ const emit = defineEmits<{
   finish: [];
 }>();
 
+const locale = useLocaleProvider();
+
 const host = useHost();
 const overlayRef = useTemplateRef<HTMLElement>("overlay");
 const panelRef = useTemplateRef<HTMLElement>("panel");
@@ -89,8 +92,9 @@ const placement = (): TourPlacement => {
 const isFirstStep = (): boolean => currentStep.value <= 0;
 const isLastStep = (): boolean => currentStep.value >= stepCount() - 1;
 const currentNumber = (): number => currentStep.value + 1;
-const nextButtonText = (): string => activeStep()?.nextText || (isLastStep() ? "完成" : "下一步");
-const prevButtonText = (): string => activeStep()?.prevText || "上一步";
+const nextButtonText = (): string =>
+  activeStep()?.nextText || locale.t(isLastStep() ? "common.done" : "common.next");
+const prevButtonText = (): string => activeStep()?.prevText || locale.t("common.previous");
 
 const clearCloseTimer = (): void => {
   if (closeTimer) clearTimeout(closeTimer);
@@ -392,7 +396,7 @@ const Tour = defineHtml<TourProps>(html`
       <section ref="panel" class="tour-panel" :class=${placement()} :style=${bubbleStyle()}>
         <header class="tour-header">
           <span class="tour-progress">${currentNumber()} / ${stepCount()}</span>
-          <button class="tour-close" type="button" aria-label="关闭引导" @click=${skip}>
+          <button class="tour-close" type="button" :aria-label=${locale.t("tour.close")} @click=${skip}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18"></path>
             </svg>
@@ -403,7 +407,7 @@ const Tour = defineHtml<TourProps>(html`
           <p class="tour-content">${activeStep()?.content}</p>
         </div>
         <footer class="tour-footer">
-          <button class="tour-button tour-button--text" type="button" @click=${skip}>跳过</button>
+          <button class="tour-button tour-button--text" type="button" @click=${skip}>${locale.t("common.skip")}</button>
           <span class="tour-spacer"></span>
           <button
             class="tour-button tour-button--text"

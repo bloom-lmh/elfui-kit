@@ -27,9 +27,9 @@ const exposesRows = [
 
 const PageTransferProps = defineHtml(html`
   <h2>API</h2>
-  <elf-props-table title="Props" :rows="propsRows" />
-  <elf-props-table title="Events" :rows="eventsRows" />
-  <elf-props-table title="Exposes" :rows="exposesRows" />
+  <elf-props-table title="Props" :rows.prop=${propsRows} />
+  <elf-props-table title="Events" :rows.prop=${eventsRows} />
+  <elf-props-table title="Exposes" :rows.prop=${exposesRows} />
 `);
 
 export { PageTransferProps };

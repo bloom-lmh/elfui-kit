@@ -10,9 +10,15 @@ const propsRows = [
   { name: "shadow", type: "always | hover | never", default: "always", desc: "阴影显示时机" },
   {
     name: "variant",
-    type: "elevated | outlined | filled",
+    type: "elevated | outlined | filled | tonal | flat",
     default: "elevated",
     desc: "MD3 变体"
+  },
+  {
+    name: "density",
+    type: "default | comfortable | compact",
+    default: "default",
+    desc: "内容区纵向密度"
   },
   { name: "avatar", type: "string", default: "''", desc: "头像图片地址" },
   { name: "title", type: "string", default: "''", desc: "标题文本" },
@@ -26,7 +32,7 @@ const propsRows = [
     name: "clickable",
     type: "boolean",
     default: "false",
-    desc: "是否可点击，hover 时上升 + 阴影"
+    desc: "是否可点击，悬浮时提升边界与阴影层级"
   }
 ];
 

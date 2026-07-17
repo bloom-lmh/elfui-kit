@@ -22,7 +22,8 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import { computeAnchoredPosition, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
+import { useLocaleProvider } from "../../Providers/context";
 import type {
     DropdownButtonType,
     DropdownCommand,
@@ -183,7 +184,7 @@ const cssSize = (value: unknown, fallback: string): string => {
 
 const props = defineProps<DropdownProps>({
     items: { type: Array, default: () => [] },
-    label: { type: String, default: "下拉菜单" },
+    label: { type: String, default: "" },
     trigger: { type: [String, Array], default: "click" },
     placement: { type: String, default: "bottom-start" },
     size: { type: String, default: "md" },
@@ -223,6 +224,8 @@ const props = defineProps<DropdownProps>({
         }),
     },
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<DropdownEmits>();
 
@@ -301,7 +304,7 @@ const hasCompositionalMenu = (): boolean => Boolean(host.querySelector("elf-drop
 
 const menuRole = (): string => hasCompositionalMenu() ? "presentation" : String(props.role || "menu");
 
-const triggerLabel = (): string => selectedLabel.value || String(props.label || "");
+const triggerLabel = (): string => selectedLabel.value || String(props.label || locale.t("menu.label"));
 
 const isSelected = (item: ViewItem): boolean =>
     selectedCommand.value !== null && item.command === selectedCommand.value;
@@ -659,17 +662,16 @@ const connectAnchoredOverlay = (): void => {
     if (reference instanceof Element) observer?.observe(reference);
     if (panel) observer?.observe(panel);
 
+    const cleanupOverlayMotion = listenForExternalOverlayMotion(() => [panel], closeDropdown);
+
     window.addEventListener("resize", requestOverlayUpdate, { passive: true });
-    window.addEventListener("scroll", requestOverlayUpdate, { passive: true, capture: true });
     window.visualViewport?.addEventListener("resize", requestOverlayUpdate, { passive: true });
-    window.visualViewport?.addEventListener("scroll", requestOverlayUpdate, { passive: true });
 
     cleanupAnchoredOverlay = () => {
         observer?.disconnect();
+        cleanupOverlayMotion();
         window.removeEventListener("resize", requestOverlayUpdate);
-        window.removeEventListener("scroll", requestOverlayUpdate, { capture: true });
         window.visualViewport?.removeEventListener("resize", requestOverlayUpdate);
-        window.visualViewport?.removeEventListener("scroll", requestOverlayUpdate);
     };
     syncTopLayer();
     requestOverlayUpdate();
@@ -789,7 +791,7 @@ const Dropdown = defineHtml<DropdownProps, DropdownEmits, DropdownSlots>(html`
                 :tabindex=${props.tabindex}
                 @click=${onTriggerClick}
                 @keydown=${onTriggerKeydown}
-                aria-label="展开菜单"
+                :aria-label=${locale.t("menu.expand")}
             >
                 <span class="arrow" v-if=${props.showArrow} aria-hidden="true">▼</span>
             </button>

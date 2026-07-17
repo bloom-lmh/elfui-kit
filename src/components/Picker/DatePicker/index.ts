@@ -4,21 +4,31 @@ import {
   defineProps,
   defineStyle,
   html,
+  onMount,
+  onUnmount,
   useComponents,
+  useHost,
+  useHostAttr,
+  useHostFlag,
   useRef,
   watchEffect
 } from "elfui";
 
 import { Calendar } from "../Calendar";
+import { isEventInside, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
+import { useLocaleProvider } from "../../Providers/context";
 import styles from "./style.scss?inline";
+import { normalizeFieldVariant } from "../../../types/field";
 import type { DatePickerType, DatePickerValue, DateShortcut } from "./types";
 
-export type { DatePickerProps, DatePickerType, DatePickerValue, DateShortcut } from "./types";
+export type { DatePickerProps, DatePickerType, DatePickerValue, DatePickerVariant, DateShortcut } from "./types";
 
 const props = defineProps({
   modelValue: { type: null, default: "" },
   endValue: { type: String, default: "" },
   type: { type: String, default: "date" },
+  variant: { type: String, default: "filled" },
+  label: { type: String, default: "" },
   range: { type: Boolean, default: false },
   multiple: { type: Boolean, default: false },
   actions: { type: Boolean, default: false },
@@ -26,14 +36,14 @@ const props = defineProps({
   header: { type: String, default: "" },
   min: { type: String, default: "" },
   max: { type: String, default: "" },
-  placeholder: { type: String, default: "选择日期" },
-  endPlaceholder: { type: String, default: "结束日期" },
+  placeholder: { type: String, default: "" },
+  endPlaceholder: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
   clearable: { type: Boolean, default: false },
   shortcuts: { type: Array, default: () => [] },
-  confirmText: { type: String, default: "确定" },
-  cancelText: { type: String, default: "取消" },
-  clearText: { type: String, default: "清空" }
+  confirmText: { type: String, default: "" },
+  cancelText: { type: String, default: "" },
+  clearText: { type: String, default: "" }
 });
 
 const emit = defineEmits<{
@@ -46,12 +56,20 @@ const emit = defineEmits<{
 }>();
 
 useComponents({ "date-picker-calendar": Calendar });
+const locale = useLocaleProvider();
 
 const start = useRef("");
 const end = useRef("");
 const selected = useRef<string[]>([]);
 const open = useRef(false);
 const monthYear = useRef(new Date().getFullYear());
+const host = useHost();
+
+const placeholderText = (): string => props.placeholder || locale.t("datePicker.placeholder");
+const endPlaceholderText = (): string => props.endPlaceholder || locale.t("datePicker.endPlaceholder");
+const confirmText = (): string => props.confirmText || locale.t("common.confirm");
+const cancelText = (): string => props.cancelText || locale.t("common.cancel");
+const clearText = (): string => props.clearText || locale.t("common.clear");
 
 const readModelValue = (): DatePickerValue => props.modelValue as DatePickerValue;
 
@@ -147,6 +165,16 @@ const toggleOpen = (): void => {
 };
 
 const closePanel = (): void => open.set(false);
+
+const getPanelEl = (): HTMLElement | null =>
+  host.shadowRoot?.querySelector<HTMLElement>(".panel") ?? null;
+
+const onDocumentPointerDown = (event: Event): void => {
+  if (!open.peek() || isEventInside(event, [host, getPanelEl()])) return;
+  closePanel();
+};
+
+let cleanupOverlayMotion = (): void => {};
 
 const onNativeStart = (event: Event): void => {
   const value = (event.target as HTMLInputElement).value;
@@ -253,20 +281,36 @@ const hasValue = (): boolean => Boolean(start.value || end.value || selected.val
 
 const displayValue = (): string => {
   if (props.multiple)
-    return selected.value.length ? `已选择 ${selected.value.length} 个日期` : props.placeholder;
+    return selected.value.length
+      ? locale.t("datePicker.selectedCount", { count: selected.value.length })
+      : placeholderText();
   if (props.range)
     return start.value || end.value
-      ? `${start.value || props.placeholder} — ${end.value || props.endPlaceholder}`
-      : `${props.placeholder} — ${props.endPlaceholder}`;
-  return start.value || props.placeholder;
+      ? `${start.value || placeholderText()} — ${end.value || endPlaceholderText()}`
+      : `${placeholderText()} — ${endPlaceholderText()}`;
+  return start.value || placeholderText();
 };
 
 const headerText = (): string => {
   if (props.header) return String(props.header);
-  if (props.multiple) return "多日期选择";
-  if (props.range) return "日期范围";
-  return inputType() === "month" ? "选择月份" : "选择日期";
+  if (props.multiple) return locale.t("datePicker.multiple");
+  if (props.range) return locale.t("datePicker.range");
+  return inputType() === "month" ? locale.t("datePicker.month") : locale.t("datePicker.placeholder");
 };
+
+onMount(() => {
+  document.addEventListener("pointerdown", onDocumentPointerDown, true);
+  cleanupOverlayMotion = listenForExternalOverlayMotion(() => [getPanelEl()], closePanel);
+});
+onUnmount(() => {
+  document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+  cleanupOverlayMotion();
+});
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostFlag("disabled", () => Boolean(props.disabled));
+useHostFlag("data-open", () => open.value);
+useHostFlag("data-dirty", hasValue);
+useHostFlag("data-has-label", () => Boolean(props.label));
 
 defineStyle(styles);
 
@@ -296,11 +340,11 @@ const DatePicker = defineHtml(html`
           :value.prop=${start}
           :min=${props.min}
           :max=${props.max}
-          :placeholder=${props.placeholder}
+          :placeholder=${placeholderText()}
           :disabled=${props.disabled}
           @change=${onNativeStart}
         />
-        <span v-if=${props.range && !props.multiple} class="separator">至</span>
+        <span v-if=${props.range && !props.multiple} class="separator">${locale.t("datePicker.rangeSeparator")}</span>
         <input
           v-if=${props.range && !props.multiple}
           class="field"
@@ -308,7 +352,7 @@ const DatePicker = defineHtml(html`
           :value.prop=${end}
           :min=${props.min}
           :max=${props.max}
-          :placeholder=${props.endPlaceholder}
+          :placeholder=${endPlaceholderText()}
           :disabled=${props.disabled}
           @change=${onNativeEnd}
         />
@@ -322,12 +366,13 @@ const DatePicker = defineHtml(html`
         :disabled=${props.disabled}
         @click=${toggleOpen}
       >
+        <span v-if=${props.label} class="field-label">${props.label}</span>
         <span class="calendar-icon" aria-hidden="true"></span>
         <span :class=${["field-value", { "is-placeholder": !hasValue() }]}>${displayValue()}</span>
         <span class="chevron" aria-hidden="true"></span>
       </button>
       <button v-if=${props.clearable && hasValue()} type="button" class="clear" @click=${clear}>
-        ${props.clearText}
+        ${clearText()}
       </button>
     </div>
 
@@ -347,7 +392,7 @@ const DatePicker = defineHtml(html`
       <div v-if=${inputType() === "month"} class="month-panel">
         <div class="month-nav">
           <button type="button" @click=${() => shiftMonthYear(-1)}>‹</button>
-          <strong>{{ monthYear }}年</strong>
+          <strong>${locale.t("datePicker.yearSuffix", { year: monthYear.value })}</strong>
           <button type="button" @click=${() => shiftMonthYear(1)}>›</button>
         </div>
         <div class="month-grid">
@@ -381,11 +426,11 @@ const DatePicker = defineHtml(html`
 
       <div v-if=${props.actions} class="actions">
         <button v-if=${props.clearable} type="button" class="text-action" @click=${clear}>
-          ${props.clearText}
+          ${clearText()}
         </button>
         <span class="actions-spacer"></span>
-        <button type="button" class="text-action" @click=${cancel}>${props.cancelText}</button>
-        <button type="button" class="primary-action" @click=${confirm}>${props.confirmText}</button>
+        <button type="button" class="text-action" @click=${cancel}>${cancelText()}</button>
+        <button type="button" class="primary-action" @click=${confirm}>${confirmText()}</button>
       </div>
     </div>
   </div>

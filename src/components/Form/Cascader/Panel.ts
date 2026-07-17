@@ -13,6 +13,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type {
   CascaderChangeDetail,
   CascaderFieldNames,
@@ -76,6 +77,8 @@ const props = defineProps<CascaderPanelProps>({
     })
   }
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<{
   "update:modelValue": [value: CascaderModelValue];
@@ -438,7 +441,7 @@ defineStyle(styles);
 
 const CascaderPanel = defineHtml<CascaderPanelProps>(html`
   <div class="panel" part="panel">
-    <div v-if=${rawOptions().length === 0} class="empty"><slot name="empty">暂无数据</slot></div>
+    <div v-if=${rawOptions().length === 0} class="empty"><slot name="empty">${locale.t("table.empty")}</slot></div>
     <div v-else class="columns">
       <div v-for="column in columns()" :key="column.key" class="column">
         <button

@@ -1,6 +1,7 @@
 import { defineHtml, html } from "elfui";
 
 const propsRows = [
+  { name: "variant", type: "default | filled | outlined | underlined | solo | solo-filled | solo-inverted", default: "filled", desc: "统一字段表面样式" },
   { name: "modelValue", type: "string" },
   { name: "model-modifiers", type: "{ trim?: boolean; lazy?: boolean }" },
   { name: "size", type: "small | default | large | sm | md | lg" },

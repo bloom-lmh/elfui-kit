@@ -4,12 +4,14 @@ import { PageImageEx1 } from "./ex1";
 import { PageImageEx2 } from "./ex2";
 import { PageImageEx3 } from "./ex3";
 import { PageImageEx4 } from "./ex4";
+import { PageImageProps } from "./props";
 
 useComponents({
   "page-image-ex1": PageImageEx1,
   "page-image-ex2": PageImageEx2,
   "page-image-ex3": PageImageEx3,
-  "page-image-ex4": PageImageEx4
+  "page-image-ex4": PageImageEx4,
+  "page-image-props": PageImageProps
 });
 
 const PageImage = defineHtml(html`
@@ -24,6 +26,8 @@ const PageImage = defineHtml(html`
     <page-image-ex3 />
 
     <page-image-ex4 />
+
+    <page-image-props />
   </elf-container>
 `);
 

@@ -194,3 +194,7 @@
   - [x] 支持在文本框右下角浮动展示当前字数统计，如果配置了 `maxlength` 则以 `当前字数/最大字数` 形式展示。
 - [x] **2.4 主流浏览器兼容**:
   - [x] 支持通过 `resize` 属性（如 `none`, `both`, `horizontal`, `vertical`）传入 host data-attribute，在 CSS 中控制多行文本框的拖拽缩放行为。
+
+## 2026-07-16 Field Surface
+
+- [x] 接入共享 `filled / outlined`、浮动标签、底部激活线及错误/禁用/暗色状态契约；补齐 API、案例和定向测试。

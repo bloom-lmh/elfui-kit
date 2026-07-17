@@ -11,6 +11,7 @@ import {
 
 import styles from "./style.scss?inline";
 import type { LoadingEmits, LoadingProps, LoadingSlots, LoadingVariant } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type {
   LoadingDirectiveValue,
@@ -36,6 +37,7 @@ const props = defineProps<LoadingProps>({
 });
 
 const emit = defineEmits<LoadingEmits>();
+const locale = useLocaleProvider();
 
 const normalizedVariant = (): LoadingVariant => {
   const variant = String(props.variant || "spinner") as LoadingVariant;
@@ -64,7 +66,7 @@ const Loading = defineHtml<LoadingProps, LoadingEmits, LoadingSlots>(html`
       part="overlay"
       :role=${overlayRole()}
       :aria-modal=${isInteractiveFullscreen() ? "true" : null}
-      :aria-label=${props.text || "正在加载"}
+      :aria-label=${props.text || locale.t("loading.active")}
     >
       <div class="box">
         <span :class=${["indicator", `is-${normalizedVariant()}`]} aria-hidden="true">
@@ -91,10 +93,10 @@ const Loading = defineHtml<LoadingProps, LoadingEmits, LoadingSlots>(html`
         v-if=${props.fullscreen && props.closable}
         class="close"
         type="button"
-        aria-label="退出全屏加载"
+        :aria-label=${locale.t("loading.exitFullscreen")}
         @click=${close}
       >
-        退出全屏加载
+        ${locale.t("loading.exitFullscreen")}
       </button>
     </div>
   </div>

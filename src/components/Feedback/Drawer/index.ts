@@ -20,6 +20,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { DrawerDirection, DrawerProps } from "./types";
 
@@ -39,6 +40,7 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "closed", "opened"]);
 const model = defineModel<boolean>("open", { default: false });
+const locale = useLocaleProvider();
 
 const nextId = (): string => {
     const store = globalThis as typeof globalThis & {
@@ -194,7 +196,7 @@ const Drawer = defineHtml(html`
                         v-if=${props.closable}
                         class="elf-drawer-close close"
                         type="button"
-                        aria-label="关闭"
+                        :aria-label=${locale.t("a11y.closeDrawer")}
                         @click=${onCloseClick}
                     >
                         <svg viewBox="0 0 24 24" aria-hidden="true">

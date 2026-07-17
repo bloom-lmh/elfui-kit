@@ -109,9 +109,12 @@
 .day {
   position: relative;
   display: grid;
+  width: 36px;
+  height: 36px;
   min-width: 36px;
-  min-height: 38px;
+  min-height: 36px;
   place-items: center;
+  justify-self: center;
   padding: 0;
   border-radius: 50%;
   background: transparent;

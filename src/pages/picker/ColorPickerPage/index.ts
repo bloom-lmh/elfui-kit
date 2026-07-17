@@ -5,6 +5,7 @@ import { PageColorPickerEx1 } from "./ex1";
 import { PageColorPickerEx2 } from "./ex2";
 
 const propsRows = [
+  { name: "variant / label", type: "filled | outlined / string", default: "filled / ''", desc: "输入表面与浮动标签" },
   { name: "modelValue", type: "string", default: "#6750a4", desc: "当前颜色" },
   { name: "format", type: "hex | rgb", default: "hex", desc: "输出格式" },
   { name: "presets", type: "Array", default: "[]", desc: "预设色" },

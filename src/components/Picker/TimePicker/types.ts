@@ -1,3 +1,5 @@
+import type { FieldVariant } from "../../../types/field";
+
 export interface TimeShortcut {
   label: string;
   value: string;
@@ -6,6 +8,7 @@ export interface TimeShortcut {
 
 export type TimePickerModelValue = string | [string, string];
 export type TimePickerSize = "small" | "default" | "large" | "sm" | "md" | "lg" | "";
+export type TimePickerVariant = FieldVariant;
 
 export interface TimePickerProps {
   modelValue: TimePickerModelValue;
@@ -18,6 +21,8 @@ export interface TimePickerProps {
   readonly: boolean;
   editable: boolean;
   size: TimePickerSize;
+  variant: TimePickerVariant;
+  label: string;
   placeholder: string;
   startPlaceholder: string;
   endPlaceholder: string;

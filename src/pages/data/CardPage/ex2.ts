@@ -31,7 +31,7 @@ const code2 = `<elf-card
 </elf-card>`;
 
 const code3 = `<elf-card
-  variant="filled"
+  variant="tonal"
   avatar="https://i.pravatar.cc/40?img=3"
   title="张三"
   subtitle="产品设计师"
@@ -90,9 +90,9 @@ const PageCardEx2 = defineHtml(html`
   </elf-playground>
 
   <h2>用户卡片（头像 + extra）</h2>
-  <elf-playground title="avatar + extra + filled" :code=${code3} :script=${staticScript}>
+  <elf-playground title="avatar + extra + tonal" :code=${code3} :script=${staticScript}>
     <elf-card
-      variant="filled"
+      variant="tonal"
       avatar="https://i.pravatar.cc/40?img=3"
       title="张三"
       subtitle="产品设计师"

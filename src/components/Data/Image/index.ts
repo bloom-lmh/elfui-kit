@@ -18,6 +18,7 @@ import {
 import styles from "./style.scss?inline";
 import previewStyles from "./preview.scss?inline";
 import type { ImageFit, ImageProps } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { ImageFit, ImageProps } from "./types";
 
@@ -35,7 +36,9 @@ const props = defineProps<ImageProps>({
     toolbar: { type: Boolean, default: true },
 });
 
-const emit = defineEmits(["preview-open", "preview-close", "preview-change"]);
+const locale = useLocaleProvider();
+
+const emit = defineEmits(["load", "error", "preview-open", "preview-close", "preview-change"]);
 const host = useHost();
 const error = useRef(false);
 const previewOpen = useRef(false);
@@ -45,8 +48,13 @@ const visible = useRef(false);
 const resolvedSrc = useRef("");
 let observer: IntersectionObserver | undefined;
 
-const cssSize = (value: number | string): string =>
-    typeof value === "number" ? `${Math.max(0, value)}px` : value || "auto";
+const cssSize = (value: number | string): string => {
+    if (typeof value === "number") return `${Math.max(0, value)}px`;
+    const normalized = String(value || "auto").trim();
+    return /^-?\d+(?:\.\d+)?$/.test(normalized)
+        ? `${Math.max(0, Number(normalized))}px`
+        : normalized;
+};
 
 const fit = (): ImageFit => {
     const value = String(props.fit || "fill") as ImageFit;
@@ -55,8 +63,13 @@ const fit = (): ImageFit => {
 
 const imageClass = useComputed(() => `fit-${fit()}`);
 
-const onError = (): void => {
+const onLoad = (event: Event): void => {
+    emit("load", event);
+};
+
+const onError = (event: Event): void => {
     error.set(true);
+    emit("error", event);
 };
 
 const previewSources = (): string[] =>
@@ -154,7 +167,7 @@ const Image = defineHtml<ImageProps>(html`
         <slot v-if=${error.value} name="error">
             <div class="error">Load failed</div>
         </slot>
-        <div v-else-if=${!resolvedSrc.value} class="pending" part="placeholder" aria-live="polite">图片将在进入视口后加载</div>
+        <div v-else-if=${!resolvedSrc.value} class="pending" part="placeholder" aria-live="polite">${locale.t("a11y.imagePending")}</div>
         <img
             v-else
             part="img"
@@ -162,6 +175,7 @@ const Image = defineHtml<ImageProps>(html`
             :src=${resolvedSrc}
             :alt=${props.alt}
             :loading=${props.lazy ? "lazy" : null}
+            @load=${onLoad}
             @error=${onError}
         />
     </div>

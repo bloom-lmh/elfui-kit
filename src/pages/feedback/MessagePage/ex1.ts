@@ -1,29 +1,13 @@
 import { defineHtml, html } from "elfui";
 import { ElfMessage } from "../../../components/Feedback";
 
-const showInfo = (): void => {
-  ElfMessage("这是一条普通提示");
-};
-
-const showSuccess = (): void => {
-  ElfMessage.success("操作成功");
-};
-
-const showWarning = (): void => {
-  ElfMessage.warning("注意小心");
-};
-
-const showDanger = (): void => {
-  ElfMessage.danger("发生错误");
-};
-
 const PageMessageEx1 = defineHtml(html`
-  <h2>基础</h2>
-  <elf-playground title="四种类型">
-    <elf-button @click=${showInfo}>info</elf-button>
-    <elf-button color="success" @click=${showSuccess}>success</elf-button>
-    <elf-button color="warning" @click=${showWarning}>warning</elf-button>
-    <elf-button color="danger" @click=${showDanger}>danger</elf-button>
+  <h2>基础类型</h2>
+  <elf-playground title="四种语义提示">
+    <elf-button @click=${() => ElfMessage.info("这是一条普通提示")}>info</elf-button>
+    <elf-button color="success" @click=${() => ElfMessage.success("操作已成功完成")}>success</elf-button>
+    <elf-button color="warning" @click=${() => ElfMessage.warning("请检查当前配置")}>warning</elf-button>
+    <elf-button color="danger" @click=${() => ElfMessage.danger("操作失败，请稍后重试")}>danger</elf-button>
   </elf-playground>
 `);
 

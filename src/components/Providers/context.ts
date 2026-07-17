@@ -36,6 +36,8 @@ export type ThemeTokens = Partial<{
   bgDefault: string;
   bgPaper: string;
   bgOverlay: string;
+  fieldBg: string;
+  fieldHoverBg: string;
   border: string;
   borderStrong: string;
   divider: string;
@@ -59,13 +61,318 @@ export const DEFAULT_LOCALE_MESSAGES: LocaleMessages = {
     cancel: "取消",
     clear: "清空",
     close: "关闭",
-    submit: "提交"
+    submit: "提交",
+    done: "完成",
+    next: "下一步",
+    previous: "上一步",
+    skip: "跳过",
+    reset: "重置",
+    search: "搜索",
+    noResults: "暂无结果",
+    select: "请选择",
+    preview: "预览",
+    remove: "移除",
+    expand: "展开",
+    collapse: "收起"
   },
   table: {
     empty: "暂无数据",
-    loading: "加载中"
+    loading: "加载中",
+    sum: "合计",
+    actions: "操作",
+    selectAll: "全选",
+    selectRow: "选择行",
+    expandRow: "展开行",
+    loadingChildren: "正在加载子节点",
+    collapseChildren: "收起子节点",
+    expandChildren: "展开子节点",
+    currentColumn: "当前列",
+    resizeColumn: "{column}，调整列宽",
+    ascending: "升序",
+    descending: "降序",
+    unsorted: "未排序",
+    sortState: "{column}：{state}",
+    filter: "{column}，筛选",
+    filterSelected: "{column}，已选择 {count} 个筛选条件",
+    filterOptions: "{column}筛选选项"
+  },
+  field: {
+    noMatch: "无匹配项",
+    validating: "校验中..."
+  },
+  datePicker: {
+    placeholder: "选择日期",
+    endPlaceholder: "结束日期",
+    selectedCount: "已选择 {count} 个日期",
+    multiple: "多日期选择",
+    range: "日期范围",
+    month: "选择月份",
+    yearSuffix: "{year}年",
+    rangeSeparator: "至"
+  },
+  timePicker: {
+    placeholder: "选择时间",
+    startPlaceholder: "开始时间",
+    endPlaceholder: "结束时间",
+    rangeSeparator: "至",
+    selectHour: "选择小时",
+    selectMinute: "选择分钟"
+  },
+  calendar: {
+    year: "{year}年",
+    month: "{month}月",
+    previousPeriod: "上一时间段",
+    nextPeriod: "下一时间段",
+    selectMonth: "选择月份",
+    selectYear: "选择年份",
+    today: "今天"
+  },
+  pagination: {
+    navigation: "分页导航",
+    total: "共 {total} 条",
+    page: "第 {page} 页",
+    jumpTo: "跳转到第 {page} 页",
+    perPage: "{size} 条/页",
+    previous: "上一页",
+    next: "下一页",
+    pageSize: "每页条数",
+    goTo: "前往",
+    jumpPage: "跳转页码",
+    pageSuffix: "页"
+  },
+  upload: {
+    choose: "选择文件",
+    drop: "拖拽文件到这里，或点击上传",
+    start: "开始上传",
+    limit: "最多只能选择 {limit} 个文件",
+    invalidType: "{name} 不符合文件类型要求",
+    sizeExceeded: "{name} 超过大小限制",
+    invalidPattern: "fileNamePattern 不是有效正则",
+    invalidName: "{name} 不符合文件名规则",
+    rejected: "{name} 未通过上传前检查",
+    failed: "上传失败",
+    missingFile: "缺少原始文件，无法分片上传",
+    cancelled: "上传已取消"
+  },
+  tour: {
+    close: "关闭引导"
+  },
+  menu: {
+    label: "导航菜单",
+    search: "搜索...",
+    expand: "展开菜单",
+    collapse: "折叠菜单"
+  },
+  carousel: {
+    previous: "上一张",
+    next: "下一张",
+    pagination: "轮播页选择",
+    goTo: "切换到第 {page} 张"
+  },
+  loading: {
+    active: "正在加载",
+    exitFullscreen: "退出全屏加载"
+  },
+  tree: {
+    search: "搜索节点"
+  },
+  rate: {
+    terrible: "极差",
+    disappointed: "失望",
+    fair: "一般",
+    satisfied: "满意",
+    surprised: "惊喜",
+    score: "评分 {score}",
+    clear: "清空评分"
+  },
+  a11y: {
+    closeTag: "关闭标签",
+    closeMessage: "关闭提示",
+    closeNotification: "关闭通知",
+    closeDrawer: "关闭抽屉",
+    closeDialog: "关闭对话框",
+    breadcrumb: "面包屑",
+    status: "状态提示",
+    addTab: "新增标签",
+    expandFirstPanel: "展开第一个面板",
+    collapseFirstPanel: "折叠第一个面板",
+    collapsed: "已折叠",
+    imagePending: "图片将在进入视口后加载"
+  },
+  playground: {
+    source: "示例源码",
+    copy: "复制",
+    copied: "已复制",
+    name: "名称",
+    type: "类型",
+    default: "默认值",
+    description: "说明"
+  },
+  splitter: {
+    size: "{size}%"
   }
 };
+
+export const EN_LOCALE_MESSAGES: LocaleMessages = {
+  common: {
+    confirm: "Confirm",
+    cancel: "Cancel",
+    clear: "Clear",
+    close: "Close",
+    submit: "Submit",
+    done: "Done",
+    next: "Next",
+    previous: "Previous",
+    skip: "Skip",
+    reset: "Reset",
+    search: "Search",
+    noResults: "No results",
+    select: "Select",
+    preview: "Preview",
+    remove: "Remove",
+    expand: "Expand",
+    collapse: "Collapse"
+  },
+  table: {
+    empty: "No data",
+    loading: "Loading",
+    sum: "Sum",
+    actions: "Actions",
+    selectAll: "Select all",
+    selectRow: "Select row",
+    expandRow: "Expand row",
+    loadingChildren: "Loading child rows",
+    collapseChildren: "Collapse child rows",
+    expandChildren: "Expand child rows",
+    currentColumn: "Current column",
+    resizeColumn: "{column}, resize column",
+    ascending: "ascending",
+    descending: "descending",
+    unsorted: "not sorted",
+    sortState: "{column}: {state}",
+    filter: "{column}, filter",
+    filterSelected: "{column}, {count} filters selected",
+    filterOptions: "{column} filter options"
+  },
+  field: {
+    noMatch: "No matching data",
+    validating: "Validating..."
+  },
+  datePicker: {
+    placeholder: "Select date",
+    endPlaceholder: "End date",
+    selectedCount: "{count} dates selected",
+    multiple: "Select multiple dates",
+    range: "Select date range",
+    month: "Select month",
+    yearSuffix: "{year}",
+    rangeSeparator: "to"
+  },
+  timePicker: {
+    placeholder: "Select time",
+    startPlaceholder: "Start time",
+    endPlaceholder: "End time",
+    rangeSeparator: "to",
+    selectHour: "Select hour",
+    selectMinute: "Select minute"
+  },
+  calendar: {
+    year: "{year}",
+    month: "{month}",
+    previousPeriod: "Previous period",
+    nextPeriod: "Next period",
+    selectMonth: "Select month",
+    selectYear: "Select year",
+    today: "Today"
+  },
+  pagination: {
+    navigation: "Pagination",
+    total: "{total} items",
+    page: "Page {page}",
+    jumpTo: "Jump to page {page}",
+    perPage: "{size} / page",
+    previous: "Previous page",
+    next: "Next page",
+    pageSize: "Items per page",
+    goTo: "Go to",
+    jumpPage: "Page number",
+    pageSuffix: "page"
+  },
+  upload: {
+    choose: "Choose file",
+    drop: "Drop files here or click to upload",
+    start: "Start upload",
+    limit: "You can select up to {limit} files",
+    invalidType: "{name} does not match the accepted file types",
+    sizeExceeded: "{name} exceeds the size limit",
+    invalidPattern: "fileNamePattern is not a valid regular expression",
+    invalidName: "{name} does not match the file name rule",
+    rejected: "{name} did not pass the pre-upload check",
+    failed: "Upload failed",
+    missingFile: "The original file is unavailable for chunked upload",
+    cancelled: "Upload cancelled"
+  },
+  tour: {
+    close: "Close tour"
+  },
+  menu: {
+    label: "Navigation menu",
+    search: "Search...",
+    expand: "Expand menu",
+    collapse: "Collapse menu"
+  },
+  carousel: {
+    previous: "Previous slide",
+    next: "Next slide",
+    pagination: "Carousel pagination",
+    goTo: "Go to slide {page}"
+  },
+  loading: {
+    active: "Loading",
+    exitFullscreen: "Exit fullscreen loading"
+  },
+  tree: {
+    search: "Search nodes"
+  },
+  rate: {
+    terrible: "Terrible",
+    disappointed: "Disappointed",
+    fair: "Fair",
+    satisfied: "Satisfied",
+    surprised: "Surprised",
+    score: "Rating {score}",
+    clear: "Clear rating"
+  },
+  a11y: {
+    closeTag: "Close tag",
+    closeMessage: "Close message",
+    closeNotification: "Close notification",
+    closeDrawer: "Close drawer",
+    closeDialog: "Close dialog",
+    breadcrumb: "Breadcrumb",
+    status: "Status",
+    addTab: "Add tab",
+    expandFirstPanel: "Expand first panel",
+    collapseFirstPanel: "Collapse first panel",
+    collapsed: "Collapsed",
+    imagePending: "Image will load when it enters the viewport"
+  },
+  playground: {
+    source: "Example source",
+    copy: "Copy",
+    copied: "Copied",
+    name: "Name",
+    type: "Type",
+    default: "Default",
+    description: "Description"
+  },
+  splitter: {
+    size: "{size}%"
+  }
+};
+
+export const localeMessagesFor = (name: string): LocaleMessages =>
+  String(name).toLowerCase().startsWith("en") ? EN_LOCALE_MESSAGES : DEFAULT_LOCALE_MESSAGES;
 
 const readPath = (messages: LocaleMessages, path: string): unknown => {
   return path.split(".").reduce<unknown>((current, key) => {

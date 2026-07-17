@@ -64,6 +64,7 @@ interface MessageEl extends HTMLElement {
     type?: MessageType;
     position?: MessagePosition;
     closable?: boolean;
+    action?: string;
     close?: () => void;
 }
 
@@ -91,7 +92,9 @@ const createMessage = (
         el.classList.add(...opts.customClass.split(/\s+/).filter(Boolean));
     }
     if (opts.closable) el.closable = true;
+    if (opts.action) el.action = opts.action;
     if (opts.onClick) el.addEventListener("click", opts.onClick);
+    if (opts.onAction) el.addEventListener("action", opts.onAction);
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     let removed = false;

@@ -1,0 +1,33 @@
+import { defineHtml, html } from "elfui";
+
+const options = [
+  { label: "Design", value: "design" },
+  { label: "Development", value: "development" }
+];
+
+const code = `<elf-locale-provider name="en-US">
+  <elf-select :options.prop="options"></elf-select>
+  <elf-date-picker></elf-date-picker>
+  <elf-pagination total="96" show-total show-jumper></elf-pagination>
+</elf-locale-provider>`;
+
+const PageLocaleProviderEx2 = defineHtml(html`
+  <elf-playground title="组件级英文覆盖" :code="code">
+    <elf-locale-provider name="en-US">
+      <div
+        style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;width:100%"
+      >
+        <elf-select :options.prop=${options}></elf-select>
+        <elf-date-picker></elf-date-picker>
+        <elf-time-picker></elf-time-picker>
+        <elf-cascader></elf-cascader>
+        <elf-tree bordered></elf-tree>
+        <elf-virtual-list height="96"></elf-virtual-list>
+        <elf-upload :auto-upload=${false}></elf-upload>
+        <elf-pagination total="96" show-total show-jumper></elf-pagination>
+      </div>
+    </elf-locale-provider>
+  </elf-playground>
+`);
+
+export { PageLocaleProviderEx2 };

@@ -13,6 +13,7 @@ import {
 
 import styles from "./style.scss?inline";
 import type { TagColor, TagEmits, TagProps, TagSlots, TagVariant } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { TagColor, TagEffect, TagEmits, TagProps, TagSize, TagSlots, TagVariant } from "./types";
 
@@ -31,6 +32,7 @@ const props = defineProps({
 }) as unknown as Readonly<TagProps>;
 
 const emit = defineEmits<TagEmits>();
+const locale = useLocaleProvider();
 const host = useHost();
 
 // Reactive state
@@ -127,7 +129,7 @@ const Tag = defineHtml<TagProps, TagEmits, TagSlots>(html`
             class="close"
             part="close"
             @click=${onClose}
-            aria-label="关闭标签"
+            :aria-label=${locale.t("a11y.closeTag")}
             type="button"
         >
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">

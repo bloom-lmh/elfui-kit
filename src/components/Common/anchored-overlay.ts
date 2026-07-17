@@ -119,3 +119,40 @@ export const computeAnchoredPosition = (
     placement
   };
 };
+
+export const isEventInside = (
+  event: Event,
+  containers: ArrayLike<Element | null | undefined>
+): boolean => {
+  const path = event.composedPath();
+  return Array.from(containers).some((container) =>
+    Boolean(
+      container &&
+      path.some((target) => target === container || (target instanceof Node && container.contains(target)))
+    )
+  );
+};
+
+export const listenForExternalOverlayMotion = (
+  containers: () => ArrayLike<Element | null | undefined>,
+  onExternalMotion: () => void
+): (() => void) => {
+  if (typeof window === "undefined") return () => {};
+
+  const onMotion = (event: Event): void => {
+    if (!isEventInside(event, containers())) onExternalMotion();
+  };
+  const options: AddEventListenerOptions = { capture: true, passive: true };
+
+  window.addEventListener("scroll", onMotion, options);
+  window.addEventListener("wheel", onMotion, options);
+  window.addEventListener("touchmove", onMotion, options);
+  window.visualViewport?.addEventListener("scroll", onMotion, { passive: true });
+
+  return () => {
+    window.removeEventListener("scroll", onMotion, { capture: true });
+    window.removeEventListener("wheel", onMotion, { capture: true });
+    window.removeEventListener("touchmove", onMotion, { capture: true });
+    window.visualViewport?.removeEventListener("scroll", onMotion);
+  };
+};

@@ -13,7 +13,8 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import { computeAnchoredPosition, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
+import { useLocaleProvider } from "../../Providers/context";
 import type {
   PaginationEmits,
   PaginationPopperStyle,
@@ -78,12 +79,13 @@ const props = defineProps<PaginationProps>({
   popperStyle: { type: [String, Object], default: "" },
   disabled: { type: Boolean, default: false },
   hideOnSinglePage: { type: Boolean, default: false },
-  ariaLabel: { type: String, default: "分页导航" }
+  ariaLabel: { type: String, default: "" }
 });
 
 const emit = defineEmits<PaginationEmits>();
 
 const host = useHost();
+const locale = useLocaleProvider();
 const initialSize = Math.max(1, Math.trunc(Number(props.defaultPageSize) || 10));
 const page = useRef(Math.max(1, Math.trunc(Number(props.defaultCurrentPage) || 1)));
 const size = useRef(initialSize);
@@ -118,7 +120,7 @@ const hasPart = (part: string): boolean =>
 const isHidden = (): boolean => Boolean(props.hideOnSinglePage && pageCount() <= 1);
 const isFirst = (): boolean => page.value <= 1;
 const isLast = (): boolean => page.value >= pageCount();
-const totalText = (): string => `共 ${total()} 条`;
+const totalText = (): string => locale.t("pagination.total", { total: total() });
 const componentClass = (): Record<string, boolean> => ({
   "is-background": props.background,
   "is-small": props.small || props.size === "small",
@@ -140,16 +142,14 @@ const pageItems = (): PagerItem[] => {
     }));
   }
 
+  // Keep a constant pager slot count while the window changes. The active
+  // page remains in the same visual column at both transition boundaries.
   const side = Math.floor((pagerCount - 3) / 2);
-  let start = Math.max(2, current - side);
-  let end = Math.min(count - 1, current + side);
-  if (current <= side + 2) {
-    start = 2;
-    end = pagerCount - 2;
-  } else if (current >= count - side - 1) {
-    start = count - pagerCount + 3;
-    end = count - 1;
-  }
+  const nearStart = current <= side + 2;
+  const nearEndStart = count - (pagerCount - side - 1);
+  const nearEnd = current >= nearEndStart;
+  const start = nearStart ? 2 : nearEnd ? count - pagerCount + 1 : current - side;
+  const end = nearStart ? pagerCount : nearEnd ? count - 1 : current + side;
 
   const items: PagerItem[] = [{ key: "1", label: "1", page: 1, ellipsis: false }];
   if (start > 2) items.push({ key: "prev-more", label: "...", page: Math.max(1, start - 1), ellipsis: true });
@@ -163,9 +163,9 @@ const pageItems = (): PagerItem[] => {
 
 const isPageActive = (item: PagerItem): boolean => !item.ellipsis && item.page === page.value;
 const pageLabel = (item: PagerItem): string =>
-  item.ellipsis ? `跳转到第 ${item.page} 页` : `第 ${item.page} 页`;
+  locale.t(item.ellipsis ? "pagination.jumpTo" : "pagination.page", { page: item.page });
 const isSizeSelected = (item: unknown): boolean => Number(item) === size.value;
-const selectedSizeLabel = (): string => `${pageSize()} 条/页`;
+const selectedSizeLabel = (): string => locale.t("pagination.perPage", { size: pageSize() });
 const sizeOptionId = (index: number): string => `elf-pagination-size-${index}`;
 const sizePanelClass = (): unknown[] => [
   "size-panel",
@@ -183,8 +183,8 @@ const getSizeTrigger = (): HTMLButtonElement | null =>
   host.shadowRoot?.querySelector<HTMLButtonElement>(".size-trigger") || null;
 const getSizePanel = (): HTMLElement | null =>
   host.shadowRoot?.querySelector<HTMLElement>(".size-panel") || null;
-const prevLabel = (): string => props.prevText || "上一页";
-const nextLabel = (): string => props.nextText || "下一页";
+const prevLabel = (): string => props.prevText || locale.t("pagination.previous");
+const nextLabel = (): string => props.nextText || locale.t("pagination.next");
 const defaultPageSize = (): number => {
   const attribute = host.getAttribute("default-page-size");
   return Math.max(1, Math.trunc(Number(attribute ?? props.defaultPageSize) || initialSize));
@@ -299,16 +299,17 @@ const connectSizeOverlay = (): void => {
     : undefined;
   if (trigger) observer?.observe(trigger);
   if (panel) observer?.observe(panel);
+  const cleanupMotion = listenForExternalOverlayMotion(
+    () => [getSizePanel()],
+    () => closeSizeMenu()
+  );
   window.addEventListener("resize", requestSizeOverlayUpdate, { passive: true });
-  window.addEventListener("scroll", requestSizeOverlayUpdate, { passive: true, capture: true });
   window.visualViewport?.addEventListener("resize", requestSizeOverlayUpdate, { passive: true });
-  window.visualViewport?.addEventListener("scroll", requestSizeOverlayUpdate, { passive: true });
   cleanupAnchoredOverlay = () => {
     observer?.disconnect();
+    cleanupMotion();
     window.removeEventListener("resize", requestSizeOverlayUpdate);
-    window.removeEventListener("scroll", requestSizeOverlayUpdate, { capture: true });
     window.visualViewport?.removeEventListener("resize", requestSizeOverlayUpdate);
-    window.visualViewport?.removeEventListener("scroll", requestSizeOverlayUpdate);
   };
 };
 
@@ -473,7 +474,7 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
     class="pagination"
     :class=${componentClass()}
     role="navigation"
-    :aria-label=${props.ariaLabel}
+    :aria-label=${props.ariaLabel || locale.t("pagination.navigation")}
   >
     <span v-if=${hasPart("total")} class="total">${totalText()}</span>
 
@@ -499,7 +500,7 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
         :style=${sizePanelStyle()}
         part="size-dropdown"
         role="listbox"
-        aria-label="每页条数"
+        :aria-label=${locale.t("pagination.pageSize")}
         :data-append-size-to=${sizeAppendTarget()}
         @keydown=${onSizePanelKeydown}
       >
@@ -514,7 +515,7 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
           @mouseenter="setSizeActive(index)"
           @click="selectPageSize(item)"
         >
-          {{ item }} 条/页
+          ${locale.t("pagination.perPage", { size: item })}
         </button>
       </div>
     </div>
@@ -566,19 +567,19 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
     </button>
 
     <label v-if=${hasPart("jumper")} class="jumper">
-      <span>前往</span>
+      <span>${locale.t("pagination.goTo")}</span>
       <input
         :value=${jumpValue.value}
         :disabled=${props.disabled}
         type="number"
         min="1"
         :max=${pageCount()}
-        aria-label="跳转页码"
+        :aria-label=${locale.t("pagination.jumpPage")}
         @input=${onJumpInput}
         @change=${commitJump}
         @keydown=${onJumpKeydown}
       />
-      <span>页</span>
+      <span>${locale.t("pagination.pageSuffix")}</span>
     </label>
     <slot></slot>
   </nav>

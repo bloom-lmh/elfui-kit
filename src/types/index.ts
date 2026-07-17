@@ -6,3 +6,6 @@ export type {
   FormItemContext,
   RadioGroupContext
 } from "./form-context";
+
+export { FIELD_VARIANTS, normalizeFieldVariant } from "./field";
+export type { FieldVariant } from "./field";

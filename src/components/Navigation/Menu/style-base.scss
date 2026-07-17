@@ -367,7 +367,8 @@
   flex: 0 0 auto;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--elf-divider);
+  border: 1px solid color-mix(in srgb, var(--m-color, var(--elf-text-primary)) 18%, transparent);
   border-radius: 10px;
-  background: var(--elf-bg-paper);
+  background: var(--m-bg, var(--elf-bg-paper));
+  color: var(--m-color, var(--elf-text-secondary));
 }

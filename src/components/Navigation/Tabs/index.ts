@@ -14,6 +14,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type {
   TabPaneName,
   TabsAlign,
@@ -117,6 +118,8 @@ const props = defineProps<TabsProps>({
     })
   }
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<{
   "update:modelValue": [value: TabPaneName];
@@ -408,10 +411,11 @@ const nextAfterRemove = (item: TabsViewItem): TabPaneName | "" => {
 const removeTab = (value: TabPaneName): void => {
   const item = viewItems().find((entry) => sameName(entry.value, value));
   if (!item || !isClosable(item)) return;
+  const wasActive = isActive(item);
+  const next = wasActive ? nextAfterRemove(item) : "";
   emit("tab-remove", item.value);
   emit("edit", item.value, "remove");
-  if (!isActive(item)) return;
-  const next = nextAfterRemove(item);
+  if (!wasActive) return;
   if (hasName(next)) select(next);
 };
 
@@ -525,7 +529,7 @@ const Tabs = defineHtml<TabsProps, Record<string, never>, TabsSlots>(html`
           class="tab-close"
           role="button"
           tabindex="-1"
-          aria-label="关闭标签"
+          :aria-label=${locale.t("a11y.closeTag")}
           @click="onRemoveClick(item, $event)"
         >
           <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -538,7 +542,7 @@ const Tabs = defineHtml<TabsProps, Record<string, never>, TabsSlots>(html`
         v-if=${props.addable || props.editable}
         class="tab-add"
         type="button"
-        aria-label="新增标签"
+        :aria-label=${locale.t("a11y.addTab")}
         @click=${add}
       >
         <slot name="add-icon">

@@ -136,7 +136,12 @@ const context: DefaultsProviderContext = {
 
 provide(DEFAULTS_PROVIDER_KEY, context);
 
-onMount(() => queueMicrotask(() => applyDefaults()));
+onMount(() => {
+    // Apply before slotted custom-element children finish mounting, so their
+    // reflected default attributes are not mistaken for explicit user input.
+    applyDefaults();
+    queueMicrotask(() => applyDefaults());
+});
 
 useEffect(() => {
     readDefaults();

@@ -4,14 +4,17 @@ import { defineProps, defineStyle, html, defineHtml } from "elfui";
 
 import styles from "./style.scss?inline";
 import type { PropsTableProps, PropsTableSlots, TableRow } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { PropsTableProps, PropsTableSlots, TableCellValue, TableRow } from "./types";
 
 const props = defineProps<PropsTableProps>({
   title: { type: String, default: "Props" },
   rows: { type: Array, default: () => [] as TableRow[] },
-  emptyText: { type: String, default: "暂无数据" }
+  emptyText: { type: String, default: "" }
 });
+
+const locale = useLocaleProvider();
 
 const rows = (): TableRow[] => Array.isArray(props.rows) ? props.rows : [];
 
@@ -24,10 +27,10 @@ const PropsTable = defineHtml<PropsTableProps, Record<string, never>, PropsTable
       <table part="table" :aria-label=${props.title}>
         <thead part="header">
           <tr>
-            <th>名称</th>
-            <th>类型</th>
-            <th>默认值</th>
-            <th>说明</th>
+            <th>${locale.t("playground.name")}</th>
+            <th>${locale.t("playground.type")}</th>
+            <th>${locale.t("playground.default")}</th>
+            <th>${locale.t("playground.description")}</th>
           </tr>
         </thead>
         <tbody part="body">
@@ -38,7 +41,7 @@ const PropsTable = defineHtml<PropsTableProps, Record<string, never>, PropsTable
             <td>{{ row.desc ?? "" }}</td>
           </tr>
           <tr v-if=${rows().length === 0} class="empty-row">
-            <td colspan="4"><slot name="empty">${props.emptyText}</slot></td>
+            <td colspan="4"><slot name="empty">${props.emptyText || locale.t("table.empty")}</slot></td>
           </tr>
         </tbody>
       </table>

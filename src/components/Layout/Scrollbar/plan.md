@@ -22,6 +22,7 @@
 - [x] 独立展示页面，覆盖 height、max-height、always、scroll 事件。
 - [x] 横向滚动案例（展示 thumb 横向样式）。
 - [x] 命令式 API（setScrollTop）演示。
+- [x] 修复 Playground slot 边界下模板 ref 未解析导致“回到顶部 / 滚到底部”无效，并增加页面级回归测试。
 
 ## 实现要点
 

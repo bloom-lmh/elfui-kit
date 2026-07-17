@@ -22,6 +22,7 @@ import type {
   UploadRequestOptions,
   UploadStatus
 } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type {
   UploadChunkRequestOptions,
@@ -55,7 +56,7 @@ const props = defineProps({
   chunkSize: { type: Number, default: 0 },
   listType: { type: String, default: "text" },
   showFileList: { type: Boolean, default: true },
-  buttonText: { type: String, default: "选择文件" },
+  buttonText: { type: String, default: "" },
   tip: { type: String, default: "" },
   beforeUpload: { type: Function, default: undefined },
   beforeRemove: { type: Function, default: undefined },
@@ -70,6 +71,8 @@ const props = defineProps({
   onExceed: { type: Function, default: undefined },
   chunkRequest: { type: Function, default: undefined }
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits([
   "update:modelValue",
@@ -134,7 +137,7 @@ const canAdd = (incoming: File[]): boolean => {
     setInvalid({
       files: incoming,
       reason: "limit",
-      message: `最多只能选择 ${limit} 个文件`
+      message: locale.t("upload.limit", { limit })
     });
     emit("exceed", incoming, [...files.value]);
     (props.onExceed as ((files: File[], uploadFiles: UploadFileItem[]) => void) | undefined)?.(
@@ -170,13 +173,13 @@ const matchesAccept = (file: File): boolean => {
 
 const validateFile = async (file: File): Promise<boolean> => {
   if (!matchesAccept(file)) {
-    setInvalid({ file, reason: "accept", message: `${file.name} 不符合文件类型要求` });
+    setInvalid({ file, reason: "accept", message: locale.t("upload.invalidType", { name: file.name }) });
     return false;
   }
 
   const maxSize = Number(props.maxSize || 0);
   if (maxSize > 0 && file.size > maxSize) {
-    setInvalid({ file, reason: "size", message: `${file.name} 超过大小限制` });
+    setInvalid({ file, reason: "size", message: locale.t("upload.sizeExceeded", { name: file.name }) });
     return false;
   }
 
@@ -186,11 +189,11 @@ const validateFile = async (file: File): Promise<boolean> => {
     try {
       regexp = new RegExp(pattern);
     } catch {
-      setInvalid({ file, reason: "name", message: "fileNamePattern 不是有效正则" });
+      setInvalid({ file, reason: "name", message: locale.t("upload.invalidPattern") });
       return false;
     }
     if (!regexp.test(file.name)) {
-      setInvalid({ file, reason: "name", message: `${file.name} 不符合文件名规则` });
+      setInvalid({ file, reason: "name", message: locale.t("upload.invalidName", { name: file.name }) });
       return false;
     }
   }
@@ -199,7 +202,7 @@ const validateFile = async (file: File): Promise<boolean> => {
   if (!guard) return true;
   const result = await guard(file);
   if (result === false) {
-    setInvalid({ file, reason: "before-upload", message: `${file.name} 未通过上传前检查` });
+    setInvalid({ file, reason: "before-upload", message: locale.t("upload.rejected", { name: file.name }) });
     return false;
   }
   return true;
@@ -286,7 +289,7 @@ const uploadFile = async (file: UploadFileItem): Promise<void> => {
     notifyChange(file);
   };
   const onError = (error: unknown): void => {
-    const message = error instanceof Error ? error.message : String(error || "上传失败");
+    const message = error instanceof Error ? error.message : String(error || locale.t("upload.failed"));
     updateFile(file.uid, { status: "error", error, message });
     notice.set(message);
     emit("error", error, file, [...files.value]);
@@ -342,7 +345,7 @@ const uploadChunks = async (
 ): Promise<void> => {
   const raw = file.raw;
   if (!raw) {
-    onError(new Error("缺少原始文件，无法分片上传"));
+    onError(new Error(locale.t("upload.missingFile")));
     return;
   }
 
@@ -435,8 +438,8 @@ const abort = (file?: UploadFileItem): void => {
     }
     updateFile(item.uid, {
       status: "error",
-      error: new Error("上传已取消"),
-      message: "上传已取消"
+      error: new Error(locale.t("upload.cancelled")),
+      message: locale.t("upload.cancelled")
     });
   }
 };
@@ -500,14 +503,14 @@ const Upload = defineHtml(html`
       @dragover=${onDragOver}
     >
       <span class="drop-icon">↑</span>
-      <span>拖拽文件到这里，或点击上传</span>
+      <span>${locale.t("upload.drop")}</span>
     </div>
     <div v-else class="trigger" part="trigger">
       <slot name="trigger">
-        <button class="button" type="button" @click=${select}>${props.buttonText}</button>
+        <button class="button" type="button" @click=${select}>${props.buttonText || locale.t("upload.choose")}</button>
       </slot>
       <button v-if=${!props.autoUpload} class="manual" type="button" @click=${submit}>
-        开始上传
+        ${locale.t("upload.start")}
       </button>
     </div>
     <div v-if=${props.tip} class="tip"><slot name="tip">${props.tip}</slot></div>
@@ -534,7 +537,7 @@ const Upload = defineHtml(html`
             type="button"
             data-action="preview"
             :data-uid="file.uid"
-            aria-label="预览"
+            :aria-label=${locale.t("common.preview")}
           >
             ⌕
           </button>
@@ -543,7 +546,7 @@ const Upload = defineHtml(html`
             type="button"
             data-action="remove"
             :data-uid="file.uid"
-            aria-label="移除"
+            :aria-label=${locale.t("common.remove")}
           >
             ×
           </button>

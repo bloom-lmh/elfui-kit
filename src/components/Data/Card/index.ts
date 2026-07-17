@@ -25,9 +25,9 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
-import type { CardProps, CardShadow } from "./types";
+import type { CardDensity, CardProps, CardShadow, CardVariant } from "./types";
 
-export type { CardBodyStyle, CardProps, CardShadow, CardVariant } from "./types";
+export type { CardBodyStyle, CardDensity, CardProps, CardShadow, CardVariant } from "./types";
 
 const props = defineProps({
     header: { type: String, default: "" },
@@ -38,6 +38,7 @@ const props = defineProps({
     footerClass: { type: String, default: "" },
     shadow: { type: String, default: "always" },
     variant: { type: String, default: "elevated" },
+    density: { type: String, default: "default" },
     avatar: { type: String, default: "" },
     title: { type: String, default: "" },
     subtitle: { type: String, default: "" },
@@ -67,6 +68,16 @@ const normalizedShadow = (): CardShadow => {
     return shadow === "hover" || shadow === "never" ? shadow : "always";
 };
 
+const normalizedVariant = (): CardVariant => {
+    const variant = String(props.variant || "elevated") as CardVariant;
+    return ["outlined", "filled", "tonal", "flat"].includes(variant) ? variant : "elevated";
+};
+
+const normalizedDensity = (): CardDensity => {
+    const density = String(props.density || "default") as CardDensity;
+    return density === "comfortable" || density === "compact" ? density : "default";
+};
+
 const onSlotChange =
     (target: "header" | "footer" | "cover") =>
     (event: Event): void => {
@@ -89,8 +100,9 @@ const handleKeydown = (event: KeyboardEvent): void => {
     emit("click");
 };
 
-useHostAttr("variant", () => props.variant || "elevated");
+useHostAttr("variant", normalizedVariant);
 useHostAttr("shadow", normalizedShadow);
+useHostAttr("density", normalizedDensity);
 useHostAttr("image-placement", () => props.imagePlacement || "top");
 useHostFlag("clickable", () => Boolean(props.clickable));
 useHostFlag("has-header", () => showHeader.value);

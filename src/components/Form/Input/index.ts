@@ -17,6 +17,7 @@ import {
 } from "elfui";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
+import { normalizeFieldVariant } from "../../../types/field";
 import styles from "./style.scss?inline";
 
 import type { InputNativeValue, InputProps, InputSize } from "./types";
@@ -108,7 +109,7 @@ const slotVersion = useRef(0);
 
 useHostAttr("data-state", () => fi.state);
 useHostAttr("size", () => fi.formSize);
-useHostAttr("variant", () => (props.variant === "outlined" ? "outlined" : "filled"));
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
 useHostFlag("disabled", isDisabled);
 useHostFlag("data-dirty", () => {
   const value = ctl.model.value;

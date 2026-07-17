@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useTemplateRef } from "elfui";
+import { defineHtml, defineStyle, html, useHost, useRef } from "elfui";
 import type { ScrollbarExpose } from "../../../components/Layout/Scrollbar/types";
 import styles from "./style.scss?inline";
 const mail = Array.from({ length: 10 }, (_, index) => ({
@@ -9,12 +9,28 @@ const mail = Array.from({ length: 10 }, (_, index) => ({
     text: "A compact list item keeps the scrollbar demo close to real product usage.",
 }));
 
-const sbRef = useTemplateRef<HTMLElement & ScrollbarExpose>("sbCmd");
-const toTop = (): void => sbRef.value?.setScrollTop(0);
-const toBottom = (): void => sbRef.value?.setScrollTop(99999);
+const host = useHost();
+const position = useRef("顶部");
+
+const getScrollbar = (): (HTMLElement & ScrollbarExpose) | null =>
+    host.shadowRoot?.querySelector<HTMLElement & ScrollbarExpose>("[data-command-scrollbar]") ?? null;
+
+const toTop = (): void => getScrollbar()?.setScrollTop(0);
+const toBottom = (): void => {
+    const scrollbar = getScrollbar();
+    scrollbar?.setScrollTop(scrollbar.wrapRef?.scrollHeight ?? Number.MAX_SAFE_INTEGER);
+};
+
+const onCommandScroll = (event: CustomEvent<{ scrollTop: number }>): void => {
+    const scrollbar = getScrollbar();
+    const wrap = scrollbar?.wrapRef;
+    const top = Number(event.detail?.scrollTop) || 0;
+    const max = wrap ? Math.max(0, wrap.scrollHeight - wrap.clientHeight) : 0;
+    position.set(top <= 1 ? "顶部" : top >= max - 1 ? "底部" : `距顶部 ${Math.round(top)}px`);
+};
 
 const code =
-    '<elf-scrollbar ref="sbCmd" :height=${220 + "px"} always>\n' +
+    '<elf-scrollbar data-command-scrollbar :height=${220 + "px"} always @scroll=${onCommandScroll}>\n' +
     '  <ul class="mail-list">\n' +
     '    <li v-for="item in mail" :key="item.id" class="mail-item">\n' +
     '      <img class="mail-avatar" :src="item.avatar" alt="" />\n' +
@@ -26,17 +42,28 @@ const code =
     "  </ul>\n" +
     "</elf-scrollbar>\n" +
     '<elf-button size="sm" @click="toTop">回到顶部</elf-button>\n' +
-    '<elf-button size="sm" @click="toBottom">滚到底部</elf-button>';
+    '<elf-button size="sm" @click="toBottom">滚到底部</elf-button>\n' +
+    '<span>当前位置：{{ position }}</span>';
 
 const script =
-    'const sbRef = useTemplateRef("sbCmd");\n' +
-    "const toTop = () => sbRef.value?.setScrollTop(0);\n" +
-    "const toBottom = () => sbRef.value?.setScrollTop(99999);";
+    'const host = useHost();\n' +
+    'const position = useRef("顶部");\n' +
+    'const getScrollbar = () => host.shadowRoot?.querySelector("[data-command-scrollbar]");\n' +
+    "const toTop = () => getScrollbar()?.setScrollTop(0);\n" +
+    "const toBottom = () => {\n" +
+    "  const scrollbar = getScrollbar();\n" +
+    "  scrollbar?.setScrollTop(scrollbar.wrapRef?.scrollHeight ?? Number.MAX_SAFE_INTEGER);\n" +
+    "};";
 
 const PageScrollbarEx3 = defineHtml(html`
     <h2>命令控制</h2>
     <elf-playground title="setScrollTop" :code=${code} :script=${script}>
-        <elf-scrollbar ref="sbCmd" :height=${220 + "px"} always>
+        <elf-scrollbar
+            data-command-scrollbar
+            :height=${220 + "px"}
+            always
+            @scroll=${onCommandScroll}
+        >
             <ul class="mail-list">
                 <li v-for="item in mail" :key="item.id" class="mail-item">
                     <img class="mail-avatar" :src="item.avatar" alt="" />
@@ -50,6 +77,7 @@ const PageScrollbarEx3 = defineHtml(html`
         <span class="cmd-row">
             <elf-button size="sm" variant="outlined" @click=${toTop}>回到顶部</elf-button>
             <elf-button size="sm" variant="outlined" @click=${toBottom}>滚到底部</elf-button>
+            <span class="command-status">当前位置：{{ position }}</span>
         </span>
     </elf-playground>
 `);

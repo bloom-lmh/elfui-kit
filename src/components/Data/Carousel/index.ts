@@ -14,6 +14,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type {
     CarouselArrow,
@@ -48,6 +49,8 @@ const props = defineProps({
     direction: { type: String, default: "horizontal" },
     ariaLabel: { type: String, default: "Carousel" },
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits(["change"]);
 const host = useHost();
@@ -288,10 +291,10 @@ const Carousel = defineHtml(html`
         </div>
 
         <div class="arrows" v-if=${showArrows}>
-            <button class="arrow arrow-left" type="button" aria-label="上一张" @click=${doPrev}>
+            <button class="arrow arrow-left" type="button" :aria-label=${locale.t("carousel.previous")} @click=${doPrev}>
                 <span aria-hidden="true"></span>
             </button>
-            <button class="arrow arrow-right" type="button" aria-label="下一张" @click=${doNext}>
+            <button class="arrow arrow-right" type="button" :aria-label=${locale.t("carousel.next")} @click=${doNext}>
                 <span aria-hidden="true"></span>
             </button>
         </div>
@@ -300,7 +303,7 @@ const Carousel = defineHtml(html`
             class="indicators"
             v-if=${showIndicators && props.indicatorPosition !== "outside"}
             role="tablist"
-            aria-label="轮播页选择"
+            :aria-label=${locale.t("carousel.pagination")}
         >
             <button
                 v-for="(dot, idx) in dots"
@@ -308,7 +311,7 @@ const Carousel = defineHtml(html`
                 class="dot"
                 :class="{ 'is-active': idx === active }"
                 :data-index="idx"
-                :aria-label="'切换到第 ' + (idx + 1) + ' 张'"
+                :aria-label=${locale.t("carousel.goTo", { page: idx + 1 })}
                 :aria-current="idx === active ? 'true' : undefined"
                 type="button"
                 @click=${onIndicatorClick}
@@ -323,7 +326,7 @@ const Carousel = defineHtml(html`
         class="indicators"
         v-if=${showIndicators && props.indicatorPosition === "outside"}
         role="tablist"
-        aria-label="轮播页选择"
+        :aria-label=${locale.t("carousel.pagination")}
     >
         <button
             v-for="(dot, idx) in dots"
@@ -331,7 +334,7 @@ const Carousel = defineHtml(html`
             class="dot"
             :class="{ 'is-active': idx === active }"
             :data-index="idx"
-            :aria-label="'切换到第 ' + (idx + 1) + ' 张'"
+            :aria-label=${locale.t("carousel.goTo", { page: idx + 1 })}
             :aria-current="idx === active ? 'true' : undefined"
             type="button"
             @click=${onIndicatorClick}

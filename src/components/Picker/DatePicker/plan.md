@@ -1,5 +1,10 @@
 # DatePicker Element Plus API 对标计划
 
+## 2026-07-16 interaction polish
+
+- [x] Share the circular day selection and fresh range-draft semantics with Calendar.
+- [x] Close the anchored panel on outside pointer interaction and external page motion while preserving internal scrolling.
+
 生成时间：2026-07-05
 
 ## 对标定位
@@ -340,3 +345,7 @@
 
 - [x] 使用 Calendar 作为单日期、范围和多日期面板，月份使用层级网格，保留快捷项与确认/取消草稿语义。
 - [x] 新面板完成圆角 surface、暗色主题、受控回显和真实浏览器验收；相关测试与 `pnpm build` 通过。
+
+## 2026-07-16 Field Surface 与关闭语义
+
+- [x] 接入共享 `filled / outlined` 和浮动标签；点击外部或外部滚动关闭面板，面板内部交互保持打开。

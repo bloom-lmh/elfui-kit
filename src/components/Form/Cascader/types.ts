@@ -1,3 +1,5 @@
+import type { FieldVariant } from "../../../types/field";
+
 export type CascaderValue = string | number | boolean;
 export type CascaderPathValue = CascaderValue[];
 export type CascaderMultipleValue = CascaderPathValue[];
@@ -7,6 +9,7 @@ export type CascaderModelValue =
   | CascaderValue[]
   | CascaderMultipleValue;
 export type CascaderSize = "small" | "default" | "large" | "sm" | "md" | "lg";
+export type CascaderVariant = FieldVariant;
 export type CascaderExpandTrigger = "click" | "hover";
 export type CascaderShowCheckedStrategy = "child" | "parent";
 export type CascaderPlacement =
@@ -80,6 +83,8 @@ export interface CascaderProps {
   modelValue: CascaderModelValue;
   options: CascaderOption[];
   size: CascaderSize | "";
+  variant: CascaderVariant;
+  label: string;
   placeholder: string;
   disabled: boolean;
   clearable: boolean;

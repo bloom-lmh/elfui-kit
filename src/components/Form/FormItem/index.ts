@@ -24,6 +24,7 @@ import type { FormRule, RuleTrigger } from "../Form/types";
 import { getPath, setPath } from "../../../utils/path";
 import { validateFieldAsync } from "../../../utils/validator";
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { FormItemProps, FormItemSize, FormItemValidateState, ValidateError } from "./types";
 
@@ -42,6 +43,8 @@ const props = defineProps({
   inlineMessage: { type: Boolean, default: undefined },
   showMessage: { type: Boolean, default: undefined }
 });
+
+const locale = useLocaleProvider();
 
 const host = useHost();
 
@@ -213,7 +216,7 @@ const FormItem = defineHtml(html`
         </span>
       </div>
       <div v-if=${showMessage() && !isInline()} :class=${feedbackClass()}>
-        <span v-if=${hasValidating()}>校验中...</span>
+        <span v-if=${hasValidating()}>${locale.t("field.validating")}</span>
         <slot v-else-if=${hasError()} name="error">${message}</slot>
       </div>
     </div>

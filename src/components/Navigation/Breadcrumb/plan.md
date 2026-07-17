@@ -1,5 +1,7 @@
 # Breadcrumb Element Plus API 对标计划
 
+- [x] 2026-07-17 组合式 BreadcrumbItem 保持独立 flex 尺寸和父级 current/last 状态；常用 Material separator-icon 名称归一为紧凑字形，避免长图标名挤压重叠。
+
 更新时间：2026-07-15
 
 ## 对标定位

@@ -112,3 +112,9 @@
 - [ ] 关键交互和边界状态有单测覆盖。
 - [ ] 文档示例能在 Playground 中显示 Template / Script，且复制内容正确。
 - [ ] `npm --prefix ui-kit run build` 通过；涉及运行时能力时补跑目标测试。
+
+## 2026-07-17 Provider 皮肤增强
+
+- [x] 补齐输入表面 `fieldBg`、`fieldHoverBg` 语义 token。
+- [x] 提供 Material、Midnight、Forest、Sunset 四套皮肤案例。
+- [x] 文档应用 Header 使用 ThemeProvider 动态切换皮肤。

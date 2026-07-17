@@ -23,7 +23,8 @@ export type { FormProps, FormRule, FormRules, RuleTrigger, ValidateField } from 
 export type {
   AutocompleteFetchSuggestions,
   AutocompleteOption,
-  AutocompleteProps
+  AutocompleteProps,
+  AutocompleteVariant
 } from "./Autocomplete/types";
 export type {
   FormItemProps,
@@ -31,7 +32,7 @@ export type {
   FormItemValidateState,
   ValidateError
 } from "./FormItem/types";
-export type { InputProps, InputSize, InputType } from "./Input/types";
+export type { InputProps, InputSize, InputType, InputVariant } from "./Input/types";
 export type {
   InputNumberControlsPosition,
   InputNumberProps,
@@ -40,11 +41,11 @@ export type {
 export type { InputOtpProps, InputOtpSize, InputOtpType } from "./InputOtp/types";
 export type { InputTagProps, InputTagSize } from "./InputTag/types";
 export type { MentionOption, MentionProps } from "./Mention/types";
-export type { TextareaProps, TextareaSize } from "./Textarea/types";
+export type { TextareaProps, TextareaSize, TextareaVariant } from "./Textarea/types";
 export type { SwitchProps, SwitchSize } from "./Switch/types";
 export type { CheckboxProps, CheckboxSize } from "./Checkbox/types";
 export type { RadioProps, RadioSize } from "./Radio/types";
-export type { SelectOption, SelectProps, SelectSize } from "./Select/types";
+export type { SelectOption, SelectProps, SelectSize, SelectVariant } from "./Select/types";
 export type {
   SegmentedFieldNames,
   SegmentedOption,
@@ -63,7 +64,8 @@ export type {
   CascaderProps,
   CascaderSize,
   CascaderShowCheckedStrategy,
-  CascaderValue
+  CascaderValue,
+  CascaderVariant
 } from "./Cascader/types";
 export type { UploadFileItem, UploadProps, UploadRequestOptions } from "./Upload/types";
 export type { RateProps, RateSize } from "./Rate/types";

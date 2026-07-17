@@ -1,5 +1,10 @@
 # Transfer alignment plan
 
+## 2026-07-17 regression completion
+
+- [x] Prevent panel flex-basis collapse with a full-width host, stable desktop panel minimums, and a zero-minimum narrow layout.
+- [x] Repair the basic controlled examples and API tables to use explicit macro property bindings.
+
 ## Completed
 
 - [x] Source/target controlled data flow, selectable disabled records, panel headers, filters, and transfer controls.

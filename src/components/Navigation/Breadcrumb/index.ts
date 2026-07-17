@@ -13,6 +13,8 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
+import { normalizeBreadcrumbSeparatorIcon } from "./separator";
 import type {
   BreadcrumbFieldNames,
   BreadcrumbProps,
@@ -70,6 +72,8 @@ const props = defineProps<BreadcrumbProps>({
     default: () => ({ label: "label", to: "to", disabled: "disabled", replace: "replace" })
   }
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<{
   click: [item: BreadcrumbRawItem, to: string];
@@ -158,7 +162,7 @@ const syncItemChildren = (): void => {
     child.current = currentPath ? to === currentPath : index === children.length - 1;
     child.last = index === children.length - 1;
     child.separator = props.separator || "/";
-    child.separatorIcon = props.separatorIcon || "";
+    child.separatorIcon = normalizeBreadcrumbSeparatorIcon(props.separatorIcon);
   });
 };
 
@@ -214,7 +218,7 @@ onBeforeUnmount(() => {
 defineStyle(styles);
 
 const Breadcrumb = defineHtml<BreadcrumbProps, Record<string, never>, BreadcrumbSlots>(html`
-  <nav class="breadcrumb" aria-label="面包屑">
+  <nav class="breadcrumb" :aria-label=${locale.t("a11y.breadcrumb")}>
     <ol class="breadcrumb-list">
       <slot v-if=${hasItemChildren} @slotchange=${onItemsSlotChange}></slot>
       <template v-if=${!hasItemChildren}>
@@ -232,7 +236,7 @@ const Breadcrumb = defineHtml<BreadcrumbProps, Record<string, never>, Breadcrumb
           >{{ item.label }}</button>
           <span v-else class="breadcrumb-text" :aria-current="item.current ? 'page' : ''">{{ item.label }}</span>
           <span v-if="!item.last" class="breadcrumb-separator" aria-hidden="true">
-            <elf-icon v-if=${props.separatorIcon} class="breadcrumb-separator-icon" :name=${props.separatorIcon}></elf-icon>
+            <elf-icon v-if=${props.separatorIcon} class="breadcrumb-separator-icon" :name=${normalizeBreadcrumbSeparatorIcon(props.separatorIcon)}></elf-icon>
             <span v-else>${props.separator || "/"}</span>
           </span>
         </li>

@@ -15,7 +15,7 @@
 
 .anchor.is-horizontal {
   min-width: 0;
-  padding: 0 0 8px;
+  padding: 0;
 }
 
 .track {
@@ -40,6 +40,24 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+  scrollbar-color: var(--elf-border-strong) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.anchor.is-horizontal .list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.anchor.is-horizontal .list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.anchor.is-horizontal .list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--elf-border-strong);
 }
 
 .item {
@@ -62,7 +80,7 @@
 .anchor.is-horizontal .item::before {
   top: auto;
   right: 10px;
-  bottom: -7px;
+  bottom: -5px;
   left: 10px;
   width: auto;
   height: 3px;

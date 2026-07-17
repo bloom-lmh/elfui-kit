@@ -21,6 +21,7 @@ interface PaginationEl extends HTMLElement {
   defaultPageSize?: number;
   pageCount?: number;
   pageSizes?: number[];
+  pagerCount?: number;
   prevText?: string;
   nextText?: string;
   prevIcon?: string;
@@ -47,6 +48,27 @@ const mount = async (setup?: (el: PaginationEl) => void): Promise<PaginationEl> 
 };
 
 describe("elf-pagination", () => {
+  it("keeps a stable pager window when a boundary page is selected", async () => {
+    const el = await mount((pagination) => {
+      pagination.total = 90;
+      pagination.pagerCount = 7;
+    });
+    const labels = (): string[] => Array.from(
+      el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".page"),
+      (button) => button.textContent?.trim() || ""
+    );
+
+    expect(labels()).toEqual(["1", "2", "3", "4", "5", "6", "7", "...", "9"]);
+    const pageSeven = Array.from(el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".page"))
+      .find((button) => button.textContent?.trim() === "7")!;
+    pageSeven.click();
+    await tick();
+
+    expect(labels()).toEqual(["1", "...", "3", "4", "5", "6", "7", "8", "9"]);
+    expect(el.shadowRoot!.querySelectorAll(".page")).toHaveLength(9);
+    expect(el.shadowRoot!.querySelector(".page.is-active")).toBe(pageSeven);
+  });
+
   it("渲染总数和页码", async () => {
     const el = await mount();
 
@@ -238,6 +260,21 @@ describe("elf-pagination", () => {
     expect(el.shadowRoot!.querySelector(".size-panel")).toBeTruthy();
 
     document.body.dispatchEvent(new Event("pointerdown", { bubbles: true, composed: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".size-panel")).toBeNull();
+  });
+
+  it("keeps size-panel scrolling usable and closes on external page motion", async () => {
+    const el = await mount();
+    el.openSizeMenu?.();
+    await tick();
+    const panel = el.shadowRoot!.querySelector(".size-panel") as HTMLElement;
+
+    panel.dispatchEvent(new Event("scroll", { bubbles: true, composed: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".size-panel")).toBeTruthy();
+
+    document.body.dispatchEvent(new Event("wheel", { bubbles: true, composed: true }));
     await tick();
     expect(el.shadowRoot!.querySelector(".size-panel")).toBeNull();
   });

@@ -5,6 +5,7 @@ import { PageTimePickerEx2 } from "./ex2";
 import { PageTimePickerEx3 } from "./ex3";
 
 const propsRows = [
+  { name: "variant / label", type: "filled | outlined / string", default: "filled / ''", desc: "输入表面与浮动标签" },
   {
     name: "modelValue",
     type: "string | [string, string]",

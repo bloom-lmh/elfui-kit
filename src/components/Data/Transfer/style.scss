@@ -2,6 +2,8 @@
 
 :host {
   display: block;
+  width: 100%;
+  min-width: 0;
   container-type: inline-size;
   font-family: var(--elf-font-family);
   font-size: var(--elf-font-size-sm);
@@ -9,14 +11,17 @@
 
 .transfer {
   display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   align-items: stretch;
   gap: var(--elf-space-4);
 }
 
 // ───── 面板 ────────────────────────────────────────
 .panel {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 0;
+  min-width: 220px;
   border: 1px solid var(--elf-border);
   border-radius: var(--elf-radius-md);
   display: flex;
@@ -147,9 +152,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
+    min-width: 32px;
+    width: auto;
     height: 32px;
-    padding: 0;
+    padding: 0 var(--elf-space-2);
     border: 1px solid var(--elf-border);
     border-radius: var(--elf-radius-sm);
     background: var(--elf-bg-paper);
@@ -182,5 +188,9 @@
 
   .buttons button {
     width: min(120px, 100%);
+  }
+
+  .panel {
+    min-width: 0;
   }
 }

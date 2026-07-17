@@ -228,7 +228,7 @@ const Transfer = defineHtml(html`
   <div class="transfer">
   <section class="panel panel-left" aria-label="Source transfer panel">
     <div class="panel-header">
-      <input type="checkbox" :checked=${leftAllChecked()} @change="toggleAll('left', $event)" aria-label="Select all source items" />
+      <input type="checkbox" :checked.prop=${leftAllChecked()} @change="toggleAll('left', $event)" aria-label="Select all source items" />
       <span>${title("left")}</span>
       <span class="count">${countText("left")}</span>
     </div>
@@ -238,7 +238,7 @@ const Transfer = defineHtml(html`
     <div class="panel-body" role="list">
       <div v-if=${sourceItems().length === 0} class="panel-empty"><slot name="left-empty">No data</slot></div>
       <label v-for="item in sourceItems()" :key="item.__key" class="panel-item" :class="{ 'is-disabled': item.__disabled }">
-        <input type="checkbox" :checked="leftChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('left', item, $event.target.checked)" />
+        <input type="checkbox" :checked.prop="leftChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('left', item, $event.target.checked)" />
         <span>{{ item.__label }}</span>
       </label>
     </div>
@@ -252,7 +252,7 @@ const Transfer = defineHtml(html`
 
   <section class="panel panel-right" aria-label="Target transfer panel">
     <div class="panel-header">
-      <input type="checkbox" :checked=${rightAllChecked()} @change="toggleAll('right', $event)" aria-label="Select all target items" />
+      <input type="checkbox" :checked.prop=${rightAllChecked()} @change="toggleAll('right', $event)" aria-label="Select all target items" />
       <span>${title("right")}</span>
       <span class="count">${countText("right")}</span>
     </div>
@@ -262,7 +262,7 @@ const Transfer = defineHtml(html`
     <div class="panel-body" role="list">
       <div v-if=${targetItems().length === 0} class="panel-empty"><slot name="right-empty">No data</slot></div>
       <label v-for="item in targetItems()" :key="item.__key" class="panel-item" :class="{ 'is-disabled': item.__disabled }">
-        <input type="checkbox" :checked="rightChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('right', item, $event.target.checked)" />
+        <input type="checkbox" :checked.prop="rightChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('right', item, $event.target.checked)" />
         <span>{{ item.__label }}</span>
       </label>
     </div>

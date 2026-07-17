@@ -11,6 +11,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 
 const ICONS: Record<string, string> = {
   info: "i",
@@ -31,6 +32,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["close"]);
+const locale = useLocaleProvider();
 const closing = useRef(false);
 useHostFlag("data-closing", () => closing.value);
 useHostAttr("position", () => props.position as string);
@@ -63,7 +65,7 @@ const Notification = defineHtml(html`
       :class=${["close", { "is-label": hasCloseLabel() }]}
       type="button"
       @click.stop=${close}
-      :aria-label=${hasCloseLabel() ? props.closeIcon : "关闭通知"}
+      :aria-label=${hasCloseLabel() ? props.closeIcon : locale.t("a11y.closeNotification")}
     >
       ${props.closeIcon}
     </button>

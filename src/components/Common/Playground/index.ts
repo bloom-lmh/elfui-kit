@@ -24,6 +24,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type { PlaygroundEmits, PlaygroundProps, PlaygroundSlots } from "./types";
 
 export type {
@@ -159,7 +160,9 @@ const highlightedCode = (): string =>
     ? highlightScript(activeCode())
     : highlightTemplate(activeCode());
 
-const copyText = (): string => (copied.value ? "已复制" : "复制");
+const locale = useLocaleProvider();
+const copyText = (): string =>
+  locale.t(copied.value ? "playground.copied" : "playground.copy");
 
 const syncStatusSlots = (): void => {
   const states = host.querySelectorAll<HTMLElement>('.demo-state, [slot="status"]');
@@ -234,7 +237,7 @@ const Playground = defineHtml<PlaygroundProps, PlaygroundEmits, PlaygroundSlots>
     <div class="demo"><slot></slot></div>
     <div class="source" v-if=${hasSource()}>
       <div class="source-toolbar">
-        <div class="tabs" role="tablist" aria-label="示例源码" v-if=${showTabs()}>
+        <div class="tabs" role="tablist" :aria-label=${locale.t("playground.source")} v-if=${showTabs()}>
           <button
             type="button"
             role="tab"

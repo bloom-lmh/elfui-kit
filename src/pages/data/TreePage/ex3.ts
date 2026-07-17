@@ -77,7 +77,8 @@ const PageTreeEx3 = defineHtml(html`
       <elf-button size="small" variant="text" @click="selectAdmin()">管理员模板</elf-button>
       <elf-button size="small" variant="text" @click="clear()">清空</elf-button>
     </div>
-    <elf-tree
+    <elf-card variant="outlined" density="compact" style="width:100%;max-width:560px">
+      <elf-tree
       :data.prop="permissions"
       node-key="id"
       :props.prop="{ label: 'title' }"
@@ -85,7 +86,8 @@ const PageTreeEx3 = defineHtml(html`
       @update:checkedKeys="onChecked"
       show-checkbox
       default-expand-all
-    ></elf-tree>
+      ></elf-tree>
+    </elf-card>
   </elf-playground>
 `);
 

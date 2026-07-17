@@ -1,6 +1,7 @@
 import { defineHtml, html } from "elfui";
 
 const propsRows = [
+  { name: "variant / label", type: "FieldVariant / string", default: "filled / ''", desc: "六种字段表面与浮动标签；filled 兼容旧用法" },
   { name: "modelValue", type: "SelectValue | SelectValue[]", default: "''", desc: "当前选中值" },
   { name: "options", type: "SelectOption[]", default: "[]", desc: "选项数据" },
   {

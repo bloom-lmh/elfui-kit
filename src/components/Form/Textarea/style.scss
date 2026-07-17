@@ -1,4 +1,5 @@
 @use "../../../styles/reset";
+@use "../../../styles/field-surface" as field;
 
 :host {
   display: block;
@@ -21,22 +22,10 @@
   position: relative;
   display: block;
   width: 100%;
-  background: var(--elf-bg-paper);
-  border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-sm);
-  transition:
-    border-color var(--elf-transition-fast),
-    box-shadow var(--elf-transition-fast);
-
-  &:hover {
-    border-color: var(--elf-border-strong);
-  }
-
-  &:focus-within {
-    border-color: var(--elf-primary);
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
-  }
 }
+
+@include field.surface(".wrapper");
+@include field.floating-label(".wrapper");
 
 .decorations {
   display: flex;
@@ -90,14 +79,6 @@
   border-radius: 0;
 }
 
-:host([data-state="error"]) .wrapper {
-  border-color: var(--elf-danger);
-
-  &:focus-within {
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
-  }
-}
-
 textarea {
   display: block;
   width: 100%;
@@ -121,8 +102,12 @@ textarea {
   }
 }
 
-:host([disabled]) textarea {
-  background: var(--elf-bg-muted);
+:host([data-has-label]) textarea {
+  padding-top: 22px;
+}
+
+:host([data-has-label]:not([data-dirty])) .wrapper:not(:focus-within) textarea::placeholder {
+  color: transparent;
 }
 
 :host([resize="none"]) textarea {

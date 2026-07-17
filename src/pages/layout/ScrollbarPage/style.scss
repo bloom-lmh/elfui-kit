@@ -72,3 +72,16 @@
     font-weight: 500;
   }
 }
+
+.cmd-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.command-status {
+  color: var(--elf-text-secondary);
+  font-size: 13px;
+}

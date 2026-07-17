@@ -14,4 +14,5 @@
 
 ## Remaining gap
 
-- [x] Support a correctly-positioned `teleported` panel with `append-to`, popper customization, collision handling, captured-scroll updates, visual viewport support, and optional input-width fitting.
+- [x] Support a correctly-positioned `teleported` panel with `append-to`, popper customization, collision handling, external-scroll closing, visual viewport support, and optional input-width fitting.
+- [x] Share the `filled / outlined` field surface, floating label, dark/error/disabled states, and preserve scrolling inside the suggestion panel.

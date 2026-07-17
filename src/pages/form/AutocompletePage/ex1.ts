@@ -40,15 +40,29 @@ const onKeywordUpdate = (event: CustomEvent): void => {
 const onSelect = (): void => undefined;
 
 const PageAutocompleteEx1 = defineHtml(html`
+<h2>基础</h2>
 <elf-playground title="本地建议与清空" :code=${code1} :script=${script1}>
       <elf-autocomplete
         :options.prop=${suggestions}
         :modelValue=${keyword}
+        label="前端框架"
         clearable
         placeholder="输入框架名"
         @update:modelValue=${onKeywordUpdate}
         @select=${onSelect}
       ></elf-autocomplete>
+    </elf-playground>
+
+    <h2>外观变体</h2>
+    <elf-playground title="六种输入表面">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;width:100%">
+        <elf-autocomplete :options.prop=${suggestions} variant="default" label="Default" model-value="ElfUI"></elf-autocomplete>
+        <elf-autocomplete :options.prop=${suggestions} variant="outlined" label="Outlined" model-value="ElfUI"></elf-autocomplete>
+        <elf-autocomplete :options.prop=${suggestions} variant="underlined" label="Underlined" model-value="ElfUI"></elf-autocomplete>
+        <elf-autocomplete :options.prop=${suggestions} variant="solo" label="Solo" model-value="ElfUI"></elf-autocomplete>
+        <elf-autocomplete :options.prop=${suggestions} variant="solo-filled" label="Solo filled" model-value="ElfUI"></elf-autocomplete>
+        <elf-autocomplete :options.prop=${suggestions} variant="solo-inverted" label="Solo inverted" model-value="ElfUI"></elf-autocomplete>
+      </div>
     </elf-playground>
 `);
 

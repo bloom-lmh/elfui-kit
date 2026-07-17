@@ -20,14 +20,15 @@ import {
 
 import styles from "./style.scss?inline";
 import type { PopConfirmPlacement, PopConfirmProps, PopConfirmTrigger } from "./types";
+import { useLocaleProvider } from "../../Providers/context";
 
 export type { PopConfirmPlacement, PopConfirmProps, PopConfirmTrigger } from "./types";
 
 const props = defineProps<PopConfirmProps>({
     title: { type: String, default: "" },
     content: { type: String, default: "" },
-    confirmText: { type: String, default: "确认" },
-    cancelText: { type: String, default: "取消" },
+    confirmText: { type: String, default: "" },
+    cancelText: { type: String, default: "" },
     placement: { type: String, default: "top" },
     trigger: { type: String, default: "click" },
     visible: { type: Boolean, default: undefined },
@@ -36,6 +37,8 @@ const props = defineProps<PopConfirmProps>({
     closeOnEscape: { type: Boolean, default: true },
     closeOnClickOutside: { type: Boolean, default: true },
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<{
     confirm: [];
@@ -253,10 +256,10 @@ const PopConfirm = defineHtml<PopConfirmProps>(html`
             </div>
             <div class="pop-confirm-actions">
                 <button class="pop-confirm-action ghost" type="button" @click=${cancel} @keydown=${onPanelKeydown}>
-                    ${props.cancelText}
+                    ${props.cancelText || locale.t("common.cancel")}
                 </button>
                 <button class="pop-confirm-action primary" type="button" @click=${confirm} @keydown=${onPanelKeydown}>
-                    ${props.confirmText}
+                    ${props.confirmText || locale.t("common.confirm")}
                 </button>
             </div>
         </section>

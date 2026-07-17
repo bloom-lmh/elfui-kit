@@ -55,13 +55,15 @@ const expanded = useRef(["guide"])
 const PageTreeEx1 = defineHtml(html`
   <h2>基础用法</h2>
   <elf-playground title="点击节点选择，点击箭头展开或收起" :code="code">
-    <elf-tree
+    <elf-card variant="outlined" density="compact" style="width:100%;max-width:560px">
+      <elf-tree
       :data.prop="data"
       :modelValue.prop="selected"
       :expandedKeys.prop="expanded"
       @update:modelValue="onSelect"
       @update:expandedKeys="onExpanded"
-    ></elf-tree>
+      ></elf-tree>
+    </elf-card>
     <p slot="status" class="demo-state">当前选中：{{ selectedText() }}；展开节点：{{ expandedText() }}</p>
   </elf-playground>
 `);

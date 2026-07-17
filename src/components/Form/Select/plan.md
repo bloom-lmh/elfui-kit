@@ -374,3 +374,7 @@
   - [x] 将 Trigger 元素点击修改为 `@click.stop`，避免向外部逃逸引发不期望的重置事件。
   - [x] 在 `selectOption(opt, e)` 处理器中显式执行 `e?.stopPropagation()` 与 `e?.preventDefault()` 双重防逃逸机制。
 - [x] **2.4 自定义展示页与测试**: 确保 `page-select` 的 5 个展示 Demo 功能齐全且状态独立。
+
+## 2026-07-16 Field Surface 与浮层滚动
+
+- [x] 接入共享 `filled / outlined` 和浮动标签；外部滚动关闭下拉，面板内部滚动继续触发 `popup-scroll / end-reached`。

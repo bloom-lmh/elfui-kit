@@ -51,6 +51,43 @@ describe("elf-select", () => {
     return el;
   };
 
+  it("reflects the shared field surface contract", async () => {
+    const el = mount();
+    el.setAttribute("variant", "outlined");
+    el.setAttribute("label", "Framework");
+    await tick();
+
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.hasAttribute("data-has-label")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("Framework");
+  });
+
+  it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(
+    "reflects the shared %s field variant",
+    async (variant) => {
+      const el = mount();
+      el.setAttribute("variant", variant);
+      await tick();
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
+
+  it("keeps internal scrolling usable and closes on external page motion", async () => {
+    const el = mount();
+    el.options = opts;
+    await tick();
+    (el.shadowRoot!.querySelector(".trigger") as HTMLElement).click();
+    await tick();
+    const dropdown = el.shadowRoot!.querySelector(".dropdown") as HTMLElement;
+
+    dropdown.dispatchEvent(new Event("scroll", { bubbles: true, composed: true }));
+    await tick();
+    expect(el.hasAttribute("data-open")).toBe(true);
+    document.body.dispatchEvent(new Event("wheel", { bubbles: true, composed: true }));
+    await tick();
+    expect(el.hasAttribute("data-open")).toBe(false);
+  });
+
   // ═══ 基础功能 ═══
 
   it("点击 trigger 展开下拉", async () => {

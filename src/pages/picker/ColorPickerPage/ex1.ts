@@ -31,7 +31,7 @@ const updateColor = (event) => color.set(event.detail);`;
 const PageColorPickerEx1 = defineHtml(html`
 <elf-playground title="基础选择与预设色" :code=${basicCode} :script=${basicScript}>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:100%;max-width:760px">
-        <elf-color-picker :modelValue=${color} :presets.prop=${presets} clearable @update:modelValue=${updateColor}></elf-color-picker>
+        <elf-color-picker label="品牌色" :modelValue=${color} :presets.prop=${presets} clearable @update:modelValue=${updateColor}></elf-color-picker>
         <span slot="status" class="demo-state">{{ color }}</span>
       </div>
     </elf-playground>

@@ -15,6 +15,8 @@ interface TimePickerEl extends HTMLElement {
   clearable?: boolean;
   isRange?: boolean;
   shortcuts?: Array<{ label: string; value: string; endValue?: string }>;
+  variant?: string;
+  label?: string;
 }
 
 describe("elf-time-picker", () => {
@@ -154,4 +156,40 @@ describe("elf-time-picker", () => {
     buttons[0]!.click();
     expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toEqual(["09:00", "18:00"]);
   });
+
+  it("uses the shared surface and closes only on outside interaction or external scroll", async () => {
+    const el = document.createElement("elf-time-picker") as TimePickerEl;
+    el.variant = "outlined";
+    el.label = "Start time";
+    document.body.appendChild(el);
+    await tick();
+    (el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement).click();
+    await tick();
+    const panel = el.shadowRoot!.querySelector(".panel") as HTMLElement;
+
+    panel.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true }));
+    expect(el.shadowRoot!.querySelector(".panel")).not.toBeNull();
+    document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, composed: true }));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".panel")).toBeNull();
+
+    (el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement).click();
+    await tick();
+    window.dispatchEvent(new Event("scroll"));
+    await tick();
+    expect(el.shadowRoot!.querySelector(".panel")).toBeNull();
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("Start time");
+  });
+
+  it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(
+    "reflects the shared %s field variant",
+    async (variant) => {
+      const el = document.createElement("elf-time-picker") as TimePickerEl;
+      el.variant = variant;
+      document.body.appendChild(el);
+      await tick();
+      expect(el.getAttribute("variant")).toBe(variant);
+    }
+  );
 });

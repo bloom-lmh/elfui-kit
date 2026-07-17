@@ -9,18 +9,22 @@ import {
     onUnmount,
     useEffect,
     useHost,
+    useHostAttr,
+    useHostFlag,
     useRef,
 } from "elfui";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
-import { computeAnchoredPosition } from "../../Common/anchored-overlay";
+import { computeAnchoredPosition, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
 import styles from "./style.scss?inline";
+import { normalizeFieldVariant } from "../../../types/field";
 import type {
     AutocompleteOption,
     AutocompletePlacement,
     AutocompletePopperModifier,
     AutocompletePopperOptions,
     AutocompleteProps,
+    AutocompleteVariant,
 } from "./types";
 
 export type {
@@ -48,6 +52,8 @@ const props = defineProps<AutocompleteProps>({
     options: { type: Array, default: () => [] },
     fetchSuggestions: { type: Function, default: undefined },
     placeholder: { type: String, default: "" },
+    label: { type: String, default: "" },
+    variant: { type: String, default: "filled" },
     disabled: { type: Boolean, default: false },
     clearable: { type: Boolean, default: false },
     triggerOnFocus: { type: Boolean, default: true },
@@ -402,17 +408,16 @@ const connectAnchoredOverlay = (): void => {
     if (input) observer?.observe(input);
     if (panel) observer?.observe(panel);
 
+    const cleanupOverlayMotion = listenForExternalOverlayMotion(() => [panel], close);
+
     window.addEventListener("resize", requestOverlayUpdate, { passive: true });
-    window.addEventListener("scroll", requestOverlayUpdate, { passive: true, capture: true });
     window.visualViewport?.addEventListener("resize", requestOverlayUpdate, { passive: true });
-    window.visualViewport?.addEventListener("scroll", requestOverlayUpdate, { passive: true });
 
     cleanupAnchoredOverlay = () => {
         observer?.disconnect();
+        cleanupOverlayMotion();
         window.removeEventListener("resize", requestOverlayUpdate);
-        window.removeEventListener("scroll", requestOverlayUpdate, { capture: true });
         window.visualViewport?.removeEventListener("resize", requestOverlayUpdate);
-        window.visualViewport?.removeEventListener("scroll", requestOverlayUpdate);
     };
     syncTopLayer();
     requestOverlayUpdate();
@@ -422,6 +427,13 @@ const close = (): void => {
     open.set(false);
     activeIndex.set(-1);
 };
+
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostAttr("data-state", () => fi.state);
+useHostFlag("disabled", isDisabled);
+useHostFlag("data-open", () => open.value);
+useHostFlag("data-dirty", () => Boolean(ctl.model.value));
+useHostFlag("data-has-label", () => Boolean(props.label));
 
 useEffect(() => {
     void open.value;
@@ -465,6 +477,7 @@ const Autocomplete = defineHtml<AutocompleteProps>(html`
         ]}
         :data-state=${fi.state || null}
     >
+        <span v-if=${props.label} class="field-label">${props.label}</span>
         <input
             ref="inputEl"
             part="input"

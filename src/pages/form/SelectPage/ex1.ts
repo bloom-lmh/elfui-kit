@@ -38,6 +38,7 @@ const PageSelectEx1 = defineHtml(html`
       <elf-select
         :options.prop=${opts}
         :modelValue=${single}
+        label="前端框架"
         placeholder="选个框架"
         @update:modelValue=${onSingleUpdate}
       ></elf-select>
