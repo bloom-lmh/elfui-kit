@@ -40,8 +40,50 @@ const ICONS: Record<string, string> = {
 };
 
 const APP_MESSAGES: Record<string, LocaleMessages> = {
-  "zh-CN": { app: { search: "搜索组件…", collapse: "切换侧栏", language: "切换为英文", skin: "切换主题皮肤", footer: "组件库与设计系统" } },
-  "en-US": { app: { search: "Search components…", collapse: "Toggle sidebar", language: "Switch to Chinese", skin: "Switch theme skin", footer: "Component library and design system" } }
+  "zh-CN": {
+    app: { search: "搜索组件…", collapse: "切换侧栏", language: "切换为英文", skin: "切换主题皮肤", footer: "组件库与设计系统" },
+    home: {
+      eyebrow: "面向产品团队的 Web Components",
+      titleLead: "构建精致界面，",
+      titleAccent: "不再绑定框架。",
+      description: "ElfUI 将稳定的组件契约、Material 设计语言与原生 Web 标准组合在一起，让设计系统真正跨项目复用。",
+      primaryAction: "浏览组件", secondaryAction: "查看 Provider", proofLabel: "项目指标",
+      proofComponents: "组件与模式", proofTests: "自动化测试", proofRuntime: "框架依赖",
+      visualLabel: "ElfUI 仪表盘界面预览", live: "实时", visualEyebrow: "工作空间", visualTitle: "运营概览",
+      metricRevenue: "本月收入", metricUsers: "活跃用户", metricActivity: "项目活跃度", metricWeek: "最近 7 天", visualReady: "系统运行正常",
+      principlesEyebrow: "为长期维护而设计", principlesTitle: "一套组件系统，三个清晰原则。",
+      principlesDescription: "从组件边界到主题与无障碍，每层都保持可预测、可测试，也方便团队继续扩展。",
+      principleOneTitle: "原生且可组合", principleOneDescription: "基于 Custom Elements 与 Shadow DOM，适配任何框架，也能直接在浏览器中使用。",
+      principleTwoTitle: "设计语言集中管理", principleTwoDescription: "主题、语言、默认值和图标通过 Provider 统一下发，业务组件只关心自己的内容。",
+      principleThreeTitle: "交互质量可验证", principleThreeDescription: "键盘、焦点、表单语义与边界状态进入组件契约，并由严格测试持续保护。",
+      starterEyebrow: "从真实场景开始", starterTitle: "选择一种模式，快速建立第一块界面。",
+      starterDescription: "每个组件页面都包含交互案例、源码、API 表格和边界行为说明。",
+      starterForm: "搭建表单流程", starterData: "构建数据工作台", starterLayout: "规划响应式布局",
+      codeTitle: "Provider 驱动配置", codeComment: "在应用入口集中配置"
+    }
+  },
+  "en-US": {
+    app: { search: "Search components…", collapse: "Toggle sidebar", language: "Switch to Chinese", skin: "Switch theme skin", footer: "Component library and design system" },
+    home: {
+      eyebrow: "Web Components for product teams",
+      titleLead: "Ship polished interfaces,",
+      titleAccent: "without framework lock-in.",
+      description: "ElfUI combines stable component contracts, Material design language, and native web standards so your design system can travel across products.",
+      primaryAction: "Explore components", secondaryAction: "View Providers", proofLabel: "Project metrics",
+      proofComponents: "components & patterns", proofTests: "automated tests", proofRuntime: "framework dependencies",
+      visualLabel: "ElfUI dashboard interface preview", live: "Live", visualEyebrow: "Workspace", visualTitle: "Operations overview",
+      metricRevenue: "Monthly revenue", metricUsers: "Active users", metricActivity: "Project activity", metricWeek: "Last 7 days", visualReady: "All systems operational",
+      principlesEyebrow: "Built for the long run", principlesTitle: "One component system. Three clear principles.",
+      principlesDescription: "From component boundaries to themes and accessibility, every layer stays predictable, testable, and ready for teams to extend.",
+      principleOneTitle: "Native and composable", principleOneDescription: "Built on Custom Elements and Shadow DOM, it works across frameworks or directly in the browser.",
+      principleTwoTitle: "Design language, centralized", principleTwoDescription: "Themes, locale, defaults, and icons flow through Providers while product components stay focused on content.",
+      principleThreeTitle: "Interaction quality, verified", principleThreeDescription: "Keyboard, focus, form semantics, and boundary states are part of the contract and protected by strict tests.",
+      starterEyebrow: "Start with a real pattern", starterTitle: "Choose a path and assemble your first interface.",
+      starterDescription: "Every component page includes interactive examples, source, API tables, and boundary behavior.",
+      starterForm: "Build a form flow", starterData: "Create a data workspace", starterLayout: "Plan a responsive layout",
+      codeTitle: "Provider-driven setup", codeComment: "Configure once at the application root"
+    }
+  }
 };
 
 const readStorage = (key: string, fallback: string): string => {
@@ -82,7 +124,7 @@ const currentMessages = (): LocaleMessages => APP_MESSAGES[localeName.value] || 
 const text = (zh: string, en: string): string => isEnglish() ? en : zh;
 const localizeLabel = (label: string): string => isEnglish() ? englishLabel(label) : label;
 const collapseIcon = (): string => collapsed.value ? "☰" : "✕";
-const languageLabel = (): string => isEnglish() ? "中" : "EN";
+const languageLabel = (): string => isEnglish() ? "中文" : "English";
 const skinLabel = (): string => `● ${currentSkin().label}`;
 const appMessage = (key: string): string => String((currentMessages().app as Record<string, string>)[key] || key);
 

@@ -1,26 +1,44 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, defineStyle, html } from "elfui";
 
-const panel = "padding:22px;border:1px solid var(--elf-border);border-radius:18px;background:var(--elf-bg-paper);box-shadow:0 8px 24px rgba(0,0,0,.06);box-sizing:border-box";
-const barStyle = (height: number): string => `flex:1;height:${height}px;border-radius:8px 8px 3px 3px;background:color-mix(in srgb,var(--elf-primary) 72%,transparent)`;
+import { createDocsTranslator } from "../../docsLocale";
+import demoStyles from "../demo-cards.scss?inline";
+
+const t = createDocsTranslator({
+  heading: { zh: "数据看板", en: "Data dashboard" },
+  title: { zh: "非对称分析网格", en: "Asymmetric analytics grid" },
+  users: { zh: "月度活跃用户", en: "Monthly active users" },
+  channels: { zh: "渠道构成", en: "Channel mix" },
+  organic: { zh: "自然流量 46%", en: "Organic traffic 46%" },
+  conversion: { zh: "转化率", en: "Conversion rate" },
+  duration: { zh: "平均停留", en: "Average session" },
+  health: { zh: "系统健康度", en: "System health" }
+});
+
+const code = (): string => `<elf-grid columns="12" gutter="18">
+  <elf-grid-item span="8" :sm=\${12}><article>${t("users")}</article></elf-grid-item>
+  <elf-grid-item span="4" :sm=\${12}><article>${t("channels")}</article></elf-grid-item>
+  <elf-grid-item span="3"><article>${t("conversion")}</article></elf-grid-item>
+  <elf-grid-item span="3"><article>${t("duration")}</article></elf-grid-item>
+</elf-grid>`;
+
+defineStyle(demoStyles);
 
 const PageGridEx4 = defineHtml(html`
-  <h2>数据看板</h2>
-  <elf-playground title="非对称 Dashboard 网格">
+  <h2>${t("heading")}</h2>
+  <elf-playground :title=${t("title")} :code=${code()}>
     <elf-grid columns="12" gutter="18" style="width:100%">
       <elf-grid-item span="8" :md=${{ span: 8 }} :sm=${12}>
-        <article style=${`${panel};min-height:310px;background:linear-gradient(150deg,color-mix(in srgb,var(--elf-primary) 12%,var(--elf-bg-paper)),var(--elf-bg-paper) 58%)`}>
-          <small style="color:var(--elf-text-secondary)">月度活跃用户</small><strong style="display:block;margin:8px 0 26px;font-size:34px">128,480</strong>
-          <div style="display:flex;align-items:end;gap:10px;height:150px">
-            <i v-for="height in [38,62,49,88,72,108,126,116,142,132,148,140]" :key="height" :style=${barStyle(height)}></i>
-          </div>
+        <article class="demo-card dashboard-card tone-primary" style="min-height:310px">
+          <div class="grid-label"><span>${t("users")}</span><span>+18.4%</span></div><strong class="metric-value">128,480</strong>
+          <div class="bar-chart" style="height:158px"><i style="--height:28%"></i><i style="--height:44%"></i><i style="--height:36%"></i><i style="--height:63%"></i><i style="--height:52%"></i><i style="--height:77%"></i><i style="--height:68%"></i><i style="--height:91%"></i><i style="--height:82%"></i></div>
         </article>
       </elf-grid-item>
       <elf-grid-item span="4" :sm=${12}>
-        <article style=${`${panel};min-height:310px`}><small style="color:var(--elf-text-secondary)">渠道构成</small><div style="width:150px;height:150px;margin:34px auto 20px;border-radius:50%;background:conic-gradient(var(--elf-primary) 0 46%,var(--elf-success) 46% 72%,var(--elf-warning) 72% 88%,var(--elf-divider) 88%)"></div><p style="text-align:center;color:var(--elf-text-secondary)">自然流量 46%</p></article>
+        <article class="demo-card dashboard-card" style="min-height:310px"><small>${t("channels")}</small><div class="donut"></div><p style="text-align:center;color:var(--elf-text-secondary);font-size:12px">${t("organic")}</p></article>
       </elf-grid-item>
-      <elf-grid-item span="3" :sm=${6} :xs=${12}><article style=${panel}><small>转化率</small><strong style="display:block;margin-top:8px;font-size:26px">12.8%</strong></article></elf-grid-item>
-      <elf-grid-item span="3" :sm=${6} :xs=${12}><article style=${panel}><small>平均停留</small><strong style="display:block;margin-top:8px;font-size:26px">8m 24s</strong></article></elf-grid-item>
-      <elf-grid-item span="6" :sm=${12}><article style=${panel}><small>系统健康度</small><strong style="display:block;margin-top:8px;font-size:26px;color:var(--elf-success)">99.98%</strong></article></elf-grid-item>
+      <elf-grid-item span="3" :sm=${6} :xs=${12}><article class="demo-card"><small>${t("conversion")}</small><strong class="metric-value">12.8%</strong><span class="metric-trend">+2.1%</span></article></elf-grid-item>
+      <elf-grid-item span="3" :sm=${6} :xs=${12}><article class="demo-card"><small>${t("duration")}</small><strong class="metric-value">8m 24s</strong><div class="mini-progress" style="--progress:66%"></div></article></elf-grid-item>
+      <elf-grid-item span="6" :sm=${12}><article class="demo-card tone-success"><small>${t("health")}</small><strong class="metric-value" style="color:var(--elf-success)">99.98%</strong><span class="metric-trend">● Operational</span></article></elf-grid-item>
     </elf-grid>
   </elf-playground>
 `);

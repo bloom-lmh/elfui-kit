@@ -1,0 +1,200 @@
+@use "../../styles/reset";
+
+:host {
+  display: block;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h2 {
+  margin: 30px 0 12px;
+  font-size: 20px;
+  letter-spacing: -.01em;
+}
+
+.demo-stack {
+  display: grid;
+  width: 100%;
+  gap: 16px;
+}
+
+.demo-stage {
+  width: 100%;
+  padding: 18px;
+  border: 1px dashed color-mix(in srgb, var(--elf-primary) 30%, var(--elf-border));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--elf-primary) 3%, var(--elf-bg-paper));
+}
+
+.demo-stage.is-tall {
+  min-height: 142px;
+}
+
+.demo-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--elf-border);
+  border-radius: 16px;
+  background: var(--elf-bg-paper);
+  box-shadow: 0 8px 22px rgb(0 0 0 / .055);
+}
+
+.demo-card.compact {
+  padding: 13px 15px;
+}
+
+.demo-card.tone-primary {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--elf-primary) 12%, var(--elf-bg-paper)), var(--elf-bg-paper));
+}
+
+.demo-card.tone-success {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--elf-success) 12%, var(--elf-bg-paper)), var(--elf-bg-paper));
+}
+
+.demo-card.tone-warning {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--elf-warning) 13%, var(--elf-bg-paper)), var(--elf-bg-paper));
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  display: grid;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--elf-primary) 15%, var(--elf-bg-paper));
+  color: var(--elf-primary);
+  font-weight: 800;
+}
+
+.avatar.success {
+  background: color-mix(in srgb, var(--elf-success) 16%, var(--elf-bg-paper));
+  color: var(--elf-success);
+}
+
+.card-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.card-copy strong,
+.demo-card > strong {
+  color: var(--elf-text-primary);
+  font-size: 14px;
+}
+
+.card-copy small,
+.demo-card > small,
+.metric-label {
+  color: var(--elf-text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--elf-primary) 11%, transparent);
+  color: var(--elf-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.metric-value {
+  display: block;
+  margin-top: 7px;
+  color: var(--elf-text-primary);
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 720;
+  line-height: 1;
+}
+
+.metric-trend {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--elf-success);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mini-progress {
+  overflow: hidden;
+  height: 5px;
+  margin-top: 14px;
+  border-radius: 99px;
+  background: var(--elf-bg-overlay);
+}
+
+.mini-progress::after {
+  display: block;
+  width: var(--progress, 68%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--elf-primary);
+  content: "";
+}
+
+.grid-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: var(--elf-text-secondary);
+  font-size: 11px;
+}
+
+.dashboard-card {
+  min-height: 132px;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: end;
+  gap: 7px;
+  height: 92px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--elf-border);
+}
+
+.bar-chart i {
+  flex: 1;
+  height: var(--height);
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, var(--elf-primary), color-mix(in srgb, var(--elf-primary) 26%, transparent));
+}
+
+.donut {
+  width: 112px;
+  height: 112px;
+  margin: 18px auto 8px;
+  border-radius: 50%;
+  background: conic-gradient(var(--elf-primary) 0 46%, var(--elf-success) 46% 72%, var(--elf-warning) 72% 88%, var(--elf-divider) 88%);
+  mask: radial-gradient(circle, transparent 52%, #000 54%);
+}
+
+@media (max-width: 600px) {
+  .demo-stage { padding: 12px; }
+  .demo-card { padding: 15px; }
+
+  elf-grid-item {
+    --_xs-span: 12 !important;
+    --_xs-total: 12 !important;
+    --_xs-content-width: 100% !important;
+    --_xs-offset-width: 0 !important;
+    --_xs-shift: 0 !important;
+  }
+}
