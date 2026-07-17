@@ -1,7 +1,10 @@
 node_modules/
 dist/
+lib-dist/
 coverage/
 output/
 *.log
 *.tsbuildinfo
 .DS_Store
+
+.vercel
