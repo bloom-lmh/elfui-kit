@@ -155,13 +155,13 @@
 
 .dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% - 1px);
   left: 0;
   right: 0;
-  margin-top: 4px;
+  margin-top: 0;
   background: var(--elf-bg-paper);
   border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-sm);
+  border-radius: 0 0 var(--elf-radius-sm) var(--elf-radius-sm);
   box-shadow: var(--elf-shadow-3);
   max-height: var(--_select-dropdown-height, 240px);
   overflow-y: auto;

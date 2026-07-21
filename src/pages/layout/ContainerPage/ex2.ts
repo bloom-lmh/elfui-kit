@@ -18,36 +18,36 @@ const PageContainerEx2 = defineHtml(html`
     <elf-container
       padding="0"
       max-width="md"
-      style="background: var(--elf-bg-overlay); margin: 4px 0; outline: 1px dashed var(--elf-border)"
+      style="background:transparent;margin:4px 0;border:1px dashed var(--elf-border-strong);border-radius:4px"
       >padding=0</elf-container
     >
     <elf-container
       padding="sm"
       max-width="md"
-      style="background: var(--elf-bg-overlay); margin: 4px 0; outline: 1px dashed var(--elf-border)"
+      style="background:transparent;margin:4px 0;border:1px dashed var(--elf-border-strong);border-radius:4px"
       >padding=sm</elf-container
     >
     <elf-container
       padding="md"
       max-width="md"
-      style="background: var(--elf-bg-overlay); margin: 4px 0; outline: 1px dashed var(--elf-border)"
+      style="background:transparent;margin:4px 0;border:1px dashed var(--elf-border-strong);border-radius:4px"
       >padding=md</elf-container
     >
     <elf-container
       padding="lg"
       max-width="md"
-      style="background: var(--elf-bg-overlay); margin: 4px 0; outline: 1px dashed var(--elf-border)"
+      style="background:transparent;margin:4px 0;border:1px dashed var(--elf-border-strong);border-radius:4px"
       >padding=lg</elf-container
     >
   </elf-playground>
 
   <h2>全宽与内容限宽组合</h2>
   <elf-playground title="fluid 外壳 + 居中正文" :code=${code2} :script=${script}>
-    <elf-container fluid padding="lg" style="border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--elf-primary) 14%,var(--elf-bg-paper)),var(--elf-bg-paper))">
-      <elf-container max-width="md" padding="md">
+    <elf-container fluid padding="lg" style="border:1px dashed var(--elf-border-strong);border-radius:4px;background:transparent">
+      <elf-container max-width="md" padding="md" style="border:1px dashed var(--elf-primary);border-radius:4px">
         <small style="color:var(--elf-primary);font-weight:700">工作台布局</small>
         <h3 style="margin:8px 0">全宽承载背景，内容保持舒适阅读宽度</h3>
-        <p style="margin:0;color:var(--elf-text-secondary);line-height:1.7">适合仪表盘页头、营销横幅和带背景色的业务分区，移动端会自动收紧左右内边距。</p>
+        <p style="margin:0;color:var(--elf-text-secondary);line-height:1.7">外层虚线框表示全宽容器，内层虚线框表示限宽并居中的正文。</p>
       </elf-container>
     </elf-container>
   </elf-playground>

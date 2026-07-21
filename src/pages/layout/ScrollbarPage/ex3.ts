@@ -30,7 +30,12 @@ const onCommandScroll = (event: CustomEvent<{ scrollTop: number }>): void => {
 };
 
 const code =
-    '<elf-scrollbar data-command-scrollbar :height=${220 + "px"} always @scroll=${onCommandScroll}>\n' +
+    '<span slot="status" class="cmd-row">\n' +
+    '  <elf-button size="sm" @click=${toTop}>回到顶部</elf-button>\n' +
+    '  <elf-button size="sm" @click=${toBottom}>滚到底部</elf-button>\n' +
+    '  <span>当前位置：${position}</span>\n' +
+    '</span>\n' +
+    '<elf-scrollbar class="mail-scrollbar" data-command-scrollbar :height=${220 + "px"} always @scroll=${onCommandScroll}>\n' +
     '  <ul class="mail-list">\n' +
     '    <li v-for="item in mail" :key="item.id" class="mail-item">\n' +
     '      <img class="mail-avatar" :src="item.avatar" alt="" />\n' +
@@ -40,10 +45,7 @@ const code =
     "      </span>\n" +
     "    </li>\n" +
     "  </ul>\n" +
-    "</elf-scrollbar>\n" +
-    '<elf-button size="sm" @click="toTop">回到顶部</elf-button>\n' +
-    '<elf-button size="sm" @click="toBottom">滚到底部</elf-button>\n' +
-    '<span>当前位置：{{ position }}</span>';
+    "</elf-scrollbar>";
 
 const script =
     'const host = useHost();\n' +
@@ -58,7 +60,13 @@ const script =
 const PageScrollbarEx3 = defineHtml(html`
     <h2>命令控制</h2>
     <elf-playground title="setScrollTop" :code=${code} :script=${script}>
+        <span slot="status" class="cmd-row">
+            <elf-button size="sm" variant="outlined" @click=${toTop}>回到顶部</elf-button>
+            <elf-button size="sm" variant="outlined" @click=${toBottom}>滚到底部</elf-button>
+            <span class="command-status">当前位置：{{ position }}</span>
+        </span>
         <elf-scrollbar
+            class="mail-scrollbar"
             data-command-scrollbar
             :height=${220 + "px"}
             always
@@ -74,11 +82,6 @@ const PageScrollbarEx3 = defineHtml(html`
                 </li>
             </ul>
         </elf-scrollbar>
-        <span class="cmd-row">
-            <elf-button size="sm" variant="outlined" @click=${toTop}>回到顶部</elf-button>
-            <elf-button size="sm" variant="outlined" @click=${toBottom}>滚到底部</elf-button>
-            <span class="command-status">当前位置：{{ position }}</span>
-        </span>
     </elf-playground>
 `);
 defineStyle(styles);

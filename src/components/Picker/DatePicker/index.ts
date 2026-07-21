@@ -384,7 +384,7 @@ const DatePicker = defineHtml(html`
         class="chip"
         @click="removeValue(value)"
       >
-        <span>{{ value }}</span><span aria-hidden="true">×</span>
+        <span>{{ value }}</span><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
       </button>
     </div>
 

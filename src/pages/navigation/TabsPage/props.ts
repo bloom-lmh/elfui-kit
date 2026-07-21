@@ -26,7 +26,12 @@ const propsRows = [
   { name: "beforeLeave", type: "(newName, oldName) => boolean | Promise", default: "-", desc: "切换前拦截" },
   { name: "tabindex", type: "number", default: "0", desc: "tab 按钮 tabindex" },
   { name: "color", type: "string", default: "''", desc: "激活色" },
+  { name: "backgroundColor", type: "string", default: "''", desc: "标签导航背景色" },
+  { name: "sliderColor", type: "string", default: "''", desc: "激活指示条颜色" },
   { name: "grow", type: "boolean", default: "false", desc: "等分铺满" },
+  { name: "fixedTabs", type: "boolean", default: "false", desc: "标签使用固定宽度并居中分布" },
+  { name: "centerActive", type: "boolean", default: "false", desc: "切换时将激活项滚动到中央" },
+  { name: "showArrows", type: "boolean", default: "false", desc: "显示标签滚动翻页按钮" },
   { name: "stacked", type: "boolean", default: "false", desc: "图标和文字上下排列" },
   { name: "showPanels", type: "boolean", default: "false", desc: "显示内置内容面板" },
   { name: "hideSlider", type: "boolean", default: "false", desc: "隐藏激活指示条" },
@@ -78,7 +83,8 @@ const paneRows = [
 const slotsRows = [
   { name: "default", type: "elf-tab-pane[]", desc: "组合式标签面板" },
   { name: "add-icon", type: "unknown", desc: "自定义新增按钮内容" },
-  { name: "addIcon", type: "unknown", desc: "旧版新增按钮插槽别名" }
+  { name: "addIcon", type: "unknown", desc: "旧版新增按钮插槽别名" },
+  { name: "prev-icon / next-icon", type: "unknown", desc: "自定义标签滚动翻页图标" }
 ];
 
 const paneSlotsRows = [

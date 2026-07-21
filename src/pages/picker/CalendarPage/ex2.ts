@@ -23,12 +23,12 @@ const weekendDisabled = (date: Date): boolean => date.getDay() === 0 || date.get
 const PageCalendarEx2 = defineHtml(html`
 <elf-playground title="本地化、翻月与禁用日期" :code=${localeCode} :script=${localeScript}>
       <elf-calendar
-        :modelValue=${workday.value}
+        :modelValue.prop="workday"
         locale="zh-CN"
-        :first-day-of-week=${1}
-        :disabled-date=${weekendDisabled}
+        :firstDayOfWeek.prop="1"
+        :disabledDate.prop="weekendDisabled"
         aria-label="工作日历"
-        @update:modelValue=${onWorkdayUpdate}
+        @update:modelValue="onWorkdayUpdate"
       ></elf-calendar>
       <span slot="status" class="demo-state">周末不可选；点击标题中的年份或月份可快速切换层级。</span>
     </elf-playground>

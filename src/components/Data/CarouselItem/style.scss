@@ -14,6 +14,15 @@
   border-radius: inherit;
 }
 
+::slotted(img),
+::slotted(picture),
+::slotted(video) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .carousel-item__label {
   position: absolute;
   right: 16px;

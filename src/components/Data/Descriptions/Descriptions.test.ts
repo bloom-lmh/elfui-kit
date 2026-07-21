@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { registerComponents } from "elfui";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
@@ -64,5 +65,12 @@ describe("elf-descriptions", () => {
     expect(children[0]!.shadowRoot!.textContent).toContain("Name");
     expect(children[0]!.textContent).toContain("Elf");
     expect(children[1]!.shadowRoot!.querySelector('slot[name="label"]')).toBeTruthy();
+  });
+
+  it("uses a shared horizontal label track and a mobile single-column fallback", () => {
+    const cssText = readFileSync("src/components/Data/Descriptions/style.scss", "utf8");
+    expect(cssText).toContain("grid-template-columns: 88px minmax(0, 1fr)");
+    expect(cssText).toContain("@media (max-width: 640px)");
+    expect(cssText).toContain("grid-column: 1 / -1 !important");
   });
 });

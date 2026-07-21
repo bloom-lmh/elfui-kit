@@ -72,6 +72,7 @@ export const DEFAULT_LOCALE_MESSAGES: LocaleMessages = {
     select: "请选择",
     preview: "预览",
     remove: "移除",
+    retry: "重试",
     expand: "展开",
     collapse: "收起"
   },
@@ -197,12 +198,16 @@ export const DEFAULT_LOCALE_MESSAGES: LocaleMessages = {
     expandFirstPanel: "展开第一个面板",
     collapseFirstPanel: "折叠第一个面板",
     collapsed: "已折叠",
-    imagePending: "图片将在进入视口后加载"
+    imagePending: "图片将在进入视口后加载",
+    anchorNavigation: "锚点导航"
   },
   playground: {
     source: "示例源码",
     copy: "复制",
     copied: "已复制",
+    controls: "配置",
+    collapseControls: "收起配置面板",
+    expandControls: "展开配置面板",
     name: "名称",
     type: "类型",
     default: "默认值",
@@ -230,6 +235,7 @@ export const EN_LOCALE_MESSAGES: LocaleMessages = {
     select: "Select",
     preview: "Preview",
     remove: "Remove",
+    retry: "Retry",
     expand: "Expand",
     collapse: "Collapse"
   },
@@ -355,12 +361,16 @@ export const EN_LOCALE_MESSAGES: LocaleMessages = {
     expandFirstPanel: "Expand first panel",
     collapseFirstPanel: "Collapse first panel",
     collapsed: "Collapsed",
-    imagePending: "Image will load when it enters the viewport"
+    imagePending: "Image will load when it enters the viewport",
+    anchorNavigation: "Anchor navigation"
   },
   playground: {
     source: "Example source",
     copy: "Copy",
     copied: "Copied",
+    controls: "Configuration",
+    collapseControls: "Collapse configuration panel",
+    expandControls: "Expand configuration panel",
     name: "Name",
     type: "Type",
     default: "Default",

@@ -12,8 +12,9 @@
 
 .home {
   width: min(1180px, calc(100% - 40px));
+  min-height: 100vh;
   margin: 0 auto;
-  padding: clamp(32px, 5vw, 72px) 0 80px;
+  padding: clamp(32px, 5vw, 72px) 0;
 }
 
 .hero {
@@ -22,7 +23,7 @@
   grid-template-columns: minmax(0, 1.02fr) minmax(420px, .98fr);
   align-items: center;
   gap: clamp(36px, 6vw, 88px);
-  min-height: min(680px, calc(100vh - 104px));
+  min-height: calc(100vh - clamp(64px, 10vw, 144px));
 }
 
 .hero::before {
@@ -165,7 +166,7 @@ h1 {
 .visual-glow {
   position: absolute;
   z-index: -1;
-  inset: 8% -8% -8% 8%;
+  inset: 8% 0 -8% 8%;
   border-radius: 46%;
   background: linear-gradient(145deg, color-mix(in srgb, var(--elf-primary) 30%, transparent), color-mix(in srgb, var(--elf-info) 12%, transparent));
   filter: blur(52px);
@@ -344,7 +345,7 @@ h1 {
 
 .floating-chip {
   position: absolute;
-  right: -24px;
+  right: 10px;
   bottom: 24px;
   display: flex;
   align-items: center;

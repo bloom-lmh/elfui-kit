@@ -1,4 +1,10 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html, useRef } from "elfui";
+
+const mappedState = useRef("disabled");
+
+const onMappedState = (event: CustomEvent): void => {
+  mappedState.set(String(event.detail));
+};
 
 const propsRows = [
   { name: "model-value", type: "boolean | unknown[]", default: "false", desc: "Standalone value or selected value array" },
@@ -24,19 +30,37 @@ const groupRows = [
 ];
 
 const stateCode = `<elf-checkbox
-  true-value="enabled"
-  false-value="disabled"
+  :modelValue.prop=\${mappedState}
+  :trueValue.prop=\${"enabled"}
+  :falseValue.prop=\${"disabled"}
   border
   aria-label="启用通知"
   label="通知"
+  @update:modelValue=\${onMappedState}
 />
+<span slot="status">当前值：\${mappedState}</span>
 <elf-checkbox indeterminate label="全选" />
 <elf-checkbox disabled label="不可用" />`;
 
+const stateScript = `const mappedState = useRef("disabled");
+
+const onMappedState = (event) => {
+  mappedState.set(event.detail);
+};`;
+
 const PageCheckboxProps = defineHtml(html`
   <h2>State mappings and accessibility</h2>
-  <elf-playground title="Use true-value / false-value for non-boolean state" :code=${stateCode}>
-    <elf-checkbox true-value="enabled" false-value="disabled" border aria-label="Enable notifications" label="Notifications" />
+  <elf-playground title="Use true-value / false-value for non-boolean state" :code=${stateCode} :script=${stateScript}>
+    <span slot="status" class="demo-state">当前值：{{ mappedState }}</span>
+    <elf-checkbox
+      :modelValue.prop=${mappedState}
+      :trueValue.prop=${"enabled"}
+      :falseValue.prop=${"disabled"}
+      border
+      aria-label="Enable notifications"
+      label="Notifications"
+      @update:modelValue=${onMappedState}
+    ></elf-checkbox>
     <elf-checkbox indeterminate label="Select all" />
     <elf-checkbox disabled label="Unavailable" />
   </elf-playground>

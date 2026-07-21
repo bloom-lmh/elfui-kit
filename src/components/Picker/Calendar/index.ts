@@ -49,6 +49,7 @@ const selectedDate = (): Date => {
 
 const viewedDate = useRef(selectedDate());
 const selectedIso = useRef(toIso(selectedDate()));
+const focusedIso = useRef(toIso(selectedDate()));
 const rangeStart = useRef<string | null>(null);
 const view = useRef<CalendarView>("days");
 const yearPageStart = useRef(Math.floor(selectedDate().getFullYear() / 12) * 12);
@@ -79,9 +80,12 @@ watchEffect(() => {
     syncedModelValue = signature;
     const selected = selectedDate();
     selectedIso.set(toIso(selected));
+    focusedIso.set(toIso(selected));
     viewedDate.set(selected);
     yearPageStart.set(Math.floor(selected.getFullYear() / 12) * 12);
-    queueMicrotask(() => syncSelectedDom(selectedIso.peek()));
+    queueMicrotask(() => {
+        if (!props.range) syncSelectedDom(selectedIso.peek());
+    });
 });
 
 const monthTitle = (): string => {
@@ -157,6 +161,7 @@ const days = (): DayCell[] => {
 const select = (event: Event): void => {
     const iso = (event.currentTarget as HTMLElement).dataset.date;
     if (!iso) return;
+    focusedIso.set(iso);
     if (days().find((day) => day.iso === iso)?.disabled) return;
     if (props.range) {
         const start = rangeStart.value;
@@ -175,6 +180,44 @@ const select = (event: Event): void => {
     syncSelectedDom(iso);
     emit("update:modelValue", iso);
     emit("change", iso);
+};
+
+const focusDay = (date: Date): void => {
+    const iso = toIso(date);
+    focusedIso.set(iso);
+    viewedDate.set(new Date(date.getFullYear(), date.getMonth(), 1));
+    queueMicrotask(() => {
+        host.shadowRoot?.querySelector<HTMLButtonElement>(`[data-date="${iso}"]`)?.focus();
+    });
+};
+
+const onDayFocus = (event: Event): void => {
+    const iso = (event.currentTarget as HTMLElement).dataset.date;
+    if (iso) focusedIso.set(iso);
+};
+
+const onDayKeydown = (event: KeyboardEvent): void => {
+    const iso = (event.currentTarget as HTMLElement).dataset.date;
+    if (!iso) return;
+    const current = parseDate(iso);
+    const next = new Date(current);
+    const firstDay = Math.max(0, Math.min(6, Number(props.firstDayOfWeek) || 0));
+
+    if (event.key === "ArrowLeft") next.setDate(current.getDate() - 1);
+    else if (event.key === "ArrowRight") next.setDate(current.getDate() + 1);
+    else if (event.key === "ArrowUp") next.setDate(current.getDate() - 7);
+    else if (event.key === "ArrowDown") next.setDate(current.getDate() + 7);
+    else if (event.key === "Home") next.setDate(current.getDate() - ((current.getDay() - firstDay + 7) % 7));
+    else if (event.key === "End") next.setDate(current.getDate() + ((firstDay + 6 - current.getDay() + 7) % 7));
+    else if (event.key === "PageUp" || event.key === "PageDown") {
+        const monthOffset = event.key === "PageUp" ? -1 : 1;
+        const targetMonth = new Date(current.getFullYear(), current.getMonth() + monthOffset, 1);
+        const finalDay = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+        next.setFullYear(targetMonth.getFullYear(), targetMonth.getMonth(), Math.min(current.getDate(), finalDay));
+    } else return;
+
+    event.preventDefault();
+    focusDay(next);
 };
 
 const shiftMonth = (offset: number): void => {
@@ -250,8 +293,11 @@ const Calendar = defineHtml<CalendarProps>(html`
                     :data-date="day.iso"
                     :disabled="day.disabled"
                     :aria-label="day.iso"
-                    :aria-selected="day.current ? 'true' : 'false'"
+                    :aria-selected="day.current || day.rangeStart || day.rangeEnd ? 'true' : 'false'"
+                    :tabindex="day.iso === focusedIso.value ? 0 : -1"
                     @click=${select}
+                    @focus=${onDayFocus}
+                    @keydown=${onDayKeydown}
                 >
                     {{ day.label }}
                 </button>

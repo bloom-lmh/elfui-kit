@@ -1,5 +1,10 @@
 # Carousel alignment plan
 
+## 2026-07-21 image fill regression
+
+- [x] Keep the host transparent when indicators are outside the viewport so the reserved area does not render as a gray band.
+- [x] Make slotted images, pictures, and videos fill CarouselItem cards with `object-fit: cover`.
+
 ## Completed
 
 - [x] Element-style navigation props: `initial-index`, `trigger`, `arrow`, `indicator-position`, and `direction`.
@@ -21,3 +26,10 @@
 - [x] Restore card labels, guarantee 100% host width and explicit vertical height, and apply one rounded clipping contract to every layout.
 - [x] Verify basic, vertical, keyboard, and card-label cases in a real dark-theme browser session.
 - [x] 2026-07-15: added a dedicated outside-indicator example, fixed indicators being clipped by the carousel viewport, passed 10 focused tests, and verified vertical/outside screenshots with no browser console errors.
+
+## 2026-07-21 detail-quality regression
+
+- [x] Use inert leading/trailing clones for a seamless loop transition, then reset the visual index after `transitionend` without animation.
+- [x] Support horizontal and vertical pointer swipes while preserving click/tap interactions.
+- [x] Unify every demo at the same responsive 1000 × 400 maximum viewport and use real, lazy-decoded images in every variant.
+- [x] Verify desktop loop boundaries, vertical/card sizing, native lazy-loading attributes, and 390 px mobile overflow in a real browser.

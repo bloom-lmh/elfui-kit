@@ -10,8 +10,8 @@ import { PageFlexProps } from "./props";
 const t = createDocsTranslator({
   title: { zh: "Flex 弹性布局", en: "Flex layout" },
   description: {
-    zh: "用于一维方向、对齐、换行和自适应空间分配；每个案例都使用真实卡片场景展示布局关系。",
-    en: "Control direction, alignment, wrapping, and adaptive space distribution through realistic card-based layouts."
+    zh: "用于一维方向、对齐、换行和自适应空间分配；虚线框只表达布局关系，不混入装饰内容。",
+    en: "Control direction, alignment, wrapping, and adaptive space distribution through plain dashed layout guides."
   }
 });
 

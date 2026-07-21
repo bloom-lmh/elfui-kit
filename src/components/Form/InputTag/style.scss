@@ -1,4 +1,5 @@
 @use "../../../styles/reset";
+@use "../../../styles/field-surface" as field;
 
 :host {
   display: block;
@@ -11,24 +12,14 @@
 .input-tag {
   display: flex;
   width: 100%;
-  min-height: 36px;
-  align-items: flex-start;
+  min-height: 52px;
+  align-items: center;
   gap: var(--elf-space-2);
-  flex-wrap: wrap;
   position: relative;
-  padding: 3px var(--elf-space-3);
-  border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-md);
-  background: var(--elf-bg-paper, #fff);
-  transition:
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
+  padding: 7px var(--elf-space-3);
 }
 
-.input-tag:focus-within {
-  border-color: var(--elf-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-primary) 14%, transparent);
-}
+@include field.surface(".input-tag");
 
 .input-token {
   flex: 0 0 auto;
@@ -41,6 +32,7 @@
   min-width: 0;
   flex: 1 1 auto;
   max-width: 100%;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--elf-space-2);
 }
@@ -100,9 +92,11 @@ input:disabled {
 }
 
 :host([size="sm"]) .input-tag {
-  min-height: 30px;
+  min-height: 40px;
+  padding-block: 4px;
 }
 
 :host([size="lg"]) .input-tag {
-  min-height: 42px;
+  min-height: 60px;
+  padding-block: 9px;
 }

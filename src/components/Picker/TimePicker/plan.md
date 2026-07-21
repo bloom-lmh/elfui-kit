@@ -1,5 +1,11 @@
 # TimePicker Element Plus API 对标计划
 
+## 2026-07-19 interaction and field fixes
+
+- [x] Keep the floating label above an empty placeholder so the clock icon, label, and placeholder never overlap.
+- [x] Give hour and minute dial nodes unit-specific keys to prevent stale labels, positions, and active states after switching units.
+- [x] Cover dial switching, active state, range clearing, shortcuts, and shared field surfaces with focused tests.
+
 生成时间：2026-07-05
 
 ## 对标定位

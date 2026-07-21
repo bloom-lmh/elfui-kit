@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { registerComponents } from "elfui";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -113,8 +114,23 @@ describe("elf-image", () => {
     notify([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
     await tick();
 
-    expect((el.shadowRoot!.querySelector("img") as HTMLImageElement).getAttribute("src")).toBe("lazy.png");
+    const image = el.shadowRoot!.querySelector("img") as HTMLImageElement;
+    expect(image.getAttribute("src")).toBe("lazy.png");
+    expect(image.classList.contains("is-loaded")).toBe(false);
+    expect(el.shadowRoot!.querySelector(".pending")).toBeTruthy();
+    image.dispatchEvent(new Event("load"));
+    await tick();
+    expect(image.classList.contains("is-loaded")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".pending")).toBeNull();
     expect(disconnect).toHaveBeenCalled();
+  });
+
+  it("provides a shimmer, success fade, and reduced-motion fallback", () => {
+    const cssText = readFileSync("src/components/Data/Image/style.scss", "utf8");
+    expect(cssText).toContain("img.is-loaded { opacity: 1; }");
+    expect(cssText).toContain("animation: image-pending");
+    expect(cssText).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(cssText).toContain(".pending { animation: none; }");
   });
 
   it("emits semantic load and error events", async () => {

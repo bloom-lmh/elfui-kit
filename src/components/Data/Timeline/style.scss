@@ -138,6 +138,17 @@
   line-height: 1.7;
 }
 
+::slotted([slot^="item-"]) {
+  display: block;
+  min-width: 0;
+}
+
+::slotted([slot^="dot-"]) {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
 :host([data-mode="end"]) .item {
   grid-template-columns: minmax(0, 1fr) 40px;
 }

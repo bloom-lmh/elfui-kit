@@ -90,6 +90,10 @@ describe("elf-input-tag", () => {
     await tick();
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toEqual(["Vue", "Solid"]);
+    expect([...el.shadowRoot!.querySelectorAll("elf-tag")].map((tag) => tag.textContent?.trim())).toEqual([
+      "Vue",
+      "Solid"
+    ]);
   });
 
   it("reuses elf-tag semantics for type, effect, size, and close", async () => {
@@ -105,5 +109,10 @@ describe("elf-input-tag", () => {
     expect(tag.getAttribute("effect")).toBe("plain");
     expect(tag.size).toBe("lg");
     expect(tag.closable).toBe(true);
+  });
+
+  it("uses the outlined shared field surface by default", async () => {
+    const el = await mount({ modelValue: [] });
+    expect(el.getAttribute("variant")).toBe("outlined");
   });
 });

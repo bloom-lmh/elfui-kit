@@ -1,5 +1,5 @@
 .mail-list {
-  width: min(540px, 100%);
+  width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -7,6 +7,12 @@
   border: 1px solid var(--elf-divider);
   border-radius: var(--elf-radius-lg);
   overflow: hidden;
+}
+
+.mail-scrollbar {
+  display: block;
+  width: min(540px, 100%);
+  max-width: 100%;
 }
 
 .mail-item {
@@ -78,7 +84,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 14px;
+  margin: 0;
 }
 
 .command-status {

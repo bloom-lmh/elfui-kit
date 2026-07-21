@@ -379,4 +379,14 @@ describe("elf-input", () => {
     expect(onFocus).toHaveBeenCalledTimes(1);
     expect(onBlur).toHaveBeenCalledTimes(1);
   });
+
+  it("projects a custom background color to the shared field surface", async () => {
+    const el = mount((node) => {
+      node.backgroundColor = "#fff8e1";
+    });
+    await flush();
+
+    expect(el.style.getPropertyValue("--elf-field-bg")).toBe("#fff8e1");
+    expect(el.style.getPropertyValue("--elf-field-hover-bg")).toBe("#fff8e1");
+  });
 });

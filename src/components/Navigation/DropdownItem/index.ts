@@ -14,7 +14,8 @@ const props = defineProps<DropdownItemProps>({
   command: { type: null, default: "" },
   disabled: { type: Boolean, default: false },
   divided: { type: Boolean, default: false },
-  icon: { type: String, default: "" }
+  icon: { type: String, default: "" },
+  selected: { type: Boolean, default: false }
 });
 
 const host = useHost();
@@ -48,6 +49,7 @@ const onClick = (event: MouseEvent): void => {
 
 useHostFlag("disabled", () => Boolean(props.disabled));
 useHostFlag("data-divided", () => Boolean(props.divided));
+useHostFlag("data-selected", () => Boolean(props.selected));
 
 defineStyle(styles);
 
@@ -57,8 +59,10 @@ const DropdownItem = defineHtml<DropdownItemProps, Record<string, never>, Dropdo
     part="item"
     type="button"
     role="menuitem"
+    :class="{ 'is-selected': props.selected }"
     :disabled=${props.disabled}
     :aria-label=${label()}
+    :aria-current=${props.selected ? "true" : null}
     @click=${onClick}
   >
     <span class="icon" part="icon" aria-hidden="true"><slot name="icon">${props.icon}</slot></span>

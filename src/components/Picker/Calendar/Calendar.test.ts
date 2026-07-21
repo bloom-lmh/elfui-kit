@@ -116,4 +116,36 @@ describe("elf-calendar", () => {
     expect(el.shadowRoot!.querySelector('[data-date="2026-07-12"]')?.classList.contains("is-range-end")).toBe(false);
     expect(el.shadowRoot!.querySelectorAll(".is-in-range")).toHaveLength(0);
   });
+
+  it("keeps one roving day focus and supports keyboard navigation across months", async () => {
+    const el = document.createElement("elf-calendar") as CalendarEl;
+    el.modelValue = "2026-07-31";
+    document.body.appendChild(el);
+    await tick();
+
+    const selected = el.shadowRoot!.querySelector('[data-date="2026-07-31"]') as HTMLButtonElement;
+    expect(selected.tabIndex).toBe(0);
+    expect(el.shadowRoot!.querySelectorAll('.day[tabindex="0"]')).toHaveLength(1);
+    selected.focus();
+    selected.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, cancelable: true }));
+    await tick();
+    await tick();
+
+    const next = el.shadowRoot!.querySelector('[data-date="2026-08-01"]') as HTMLButtonElement;
+    expect(next).not.toBeNull();
+    expect(next.tabIndex).toBe(0);
+    expect(el.shadowRoot!.activeElement).toBe(next);
+    expect(el.shadowRoot!.querySelector(".header")?.textContent).toContain("8");
+  });
+
+  it("exposes both committed range endpoints as selected", async () => {
+    const el = document.createElement("elf-calendar") as CalendarEl;
+    el.modelValue = ["2026-07-08", "2026-07-12"];
+    el.range = true;
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.shadowRoot!.querySelector('[data-date="2026-07-08"]')?.getAttribute("aria-selected")).toBe("true");
+    expect(el.shadowRoot!.querySelector('[data-date="2026-07-12"]')?.getAttribute("aria-selected")).toBe("true");
+  });
 });

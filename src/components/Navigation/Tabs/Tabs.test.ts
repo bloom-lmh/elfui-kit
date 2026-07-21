@@ -26,6 +26,11 @@ interface TabsEl extends HTMLElement {
   showPanels?: boolean;
   transition?: string;
   transitionDuration?: number;
+  backgroundColor?: string;
+  sliderColor?: string;
+  fixedTabs?: boolean;
+  centerActive?: boolean;
+  showArrows?: boolean;
   props?: Record<string, string>;
   select?: (value: string | number) => void;
   remove?: (value: string | number) => void;
@@ -191,6 +196,24 @@ describe("elf-tabs", () => {
     expect(root.className).toContain("is-vertical");
     expect(root.className).toContain("is-border-card");
     expect(root.className).toContain("is-stretch");
+  });
+
+  it("supports interactive appearance, fixed tabs, centered active item and scroll arrows", async () => {
+    const el = await mount({
+      backgroundColor: "#eef2ff",
+      sliderColor: "#0f766e",
+      fixedTabs: true,
+      centerActive: true,
+      showArrows: true
+    });
+    const root = el.shadowRoot!.querySelector<HTMLElement>(".tabs")!;
+
+    expect(root.className).toContain("is-fixed-tabs");
+    expect(root.className).toContain("is-center-active");
+    expect(root.className).toContain("has-arrows");
+    expect(root.style.getPropertyValue("--tabs-background-color")).toBe("#eef2ff");
+    expect(root.style.getPropertyValue("--tabs-slider-color")).toBe("#0f766e");
+    expect(el.shadowRoot!.querySelectorAll(".tab-scroll")).toHaveLength(2);
   });
 
   it("supports numeric names and roving keyboard navigation", async () => {

@@ -120,4 +120,13 @@ describe("elf-mention", () => {
     await tick();
     expect(el.shadowRoot!.querySelector(".panel")).not.toBeNull();
   });
+
+  it("uses the shared outlined field surface by default", async () => {
+    const el = document.createElement("elf-mention") as MentionEl;
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.shadowRoot!.querySelector("textarea")).toBeTruthy();
+  });
 });

@@ -1,29 +1,50 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, defineStyle, html } from "elfui";
 
 const cards = [
-  { title: "Design systems at scale", text: "A practical guide to tokens, component contracts, accessibility and cross-product governance.", tone: "primary", height: 220 },
-  { title: "Release 0.8", text: "42 components passed visual regression and keyboard navigation checks.", tone: "success", height: 150 },
-  { title: "Team notes", text: "Keep state together, keep methods together, and make templates structural.", tone: "warning", height: 190 },
-  { title: "Performance", text: "VirtualList keeps ten thousand records responsive with a bounded DOM window.", tone: "info", height: 170 },
-  { title: "Theme studio", text: "Material, Midnight, Forest and Sunset skins inherit through ThemeProvider without rewriting component CSS.", tone: "secondary", height: 240 },
-  { title: "Internationalization", text: "LocaleProvider scopes messages and direction to any subtree.", tone: "primary", height: 145 },
-  { title: "Layout primitives", text: "Use Flex for one-dimensional flow, Grid for precise two-dimensional structure, and Masonry for editorial collections.", tone: "success", height: 210 }
+  { title: "Mist over Dolomites", meta: "意大利 · 山地", image: "https://picsum.photos/seed/elf-mountain/640/440", imageHeight: 220 },
+  { title: "Quiet architecture", meta: "京都 · 建筑", image: "https://picsum.photos/seed/elf-architecture/640/520", imageHeight: 260 },
+  { title: "Coastal study", meta: "冰岛 · 海岸", image: "https://picsum.photos/seed/elf-coast/640/360", imageHeight: 180 },
+  { title: "Forest rhythm", meta: "挪威 · 森林", image: "https://picsum.photos/seed/elf-forest/640/480", imageHeight: 240 },
+  { title: "Blue hour", meta: "赫尔辛基 · 城市", image: "https://picsum.photos/seed/elf-city/640/400", imageHeight: 200 },
+  { title: "Desert light", meta: "摩洛哥 · 旅途", image: "https://picsum.photos/seed/elf-desert/640/560", imageHeight: 280 },
+  { title: "Morning lake", meta: "瑞士 · 湖泊", image: "https://picsum.photos/seed/elf-lake/640/420", imageHeight: 210 }
 ];
 
-const cardStyle = (card: { tone: string; height: number }): string =>
-  `min-height:${card.height}px;padding:22px;border:1px solid var(--elf-border);border-radius:18px;background:linear-gradient(145deg,color-mix(in srgb,var(--elf-${card.tone}) 14%,var(--elf-bg-paper)),var(--elf-bg-paper) 62%);box-shadow:0 10px 30px rgba(0,0,0,.07)`;
+const code = `<elf-masonry columns="4" min-column-width="230" gap="lg">
+  <article v-for="item in cards" :key="item.title">
+    <img :src="item.image" :alt="item.title" />
+    <h3>{{ item.title }}</h3>
+    <p>{{ item.meta }}</p>
+  </article>
+</elf-masonry>`;
+
+const script = `const cards = [
+  { title: "Mist over Dolomites", image: "...", imageHeight: 220 },
+  { title: "Quiet architecture", image: "...", imageHeight: 260 }
+];`;
+
+const imageStyle = (height: number): string => `height:${height}px`;
+
+defineStyle(`
+  :host { display:block; }
+  * { box-sizing:border-box; }
+  .masonry-card { overflow:hidden; border:1px solid var(--elf-border); border-radius:6px; background:var(--elf-bg-paper); }
+  .masonry-card img { display:block; width:100%; object-fit:cover; border-radius:4px 4px 0 0; background:var(--elf-bg-overlay); }
+  .masonry-copy { padding:14px 15px 16px; }
+  .masonry-copy h3 { margin:0 0 6px; color:var(--elf-text-primary); font-size:16px; }
+  .masonry-copy p { margin:0; color:var(--elf-text-secondary); font-size:13px; }
+`);
 
 const PageMasonry = defineHtml(html`
   <elf-container>
     <h1>Masonry 瀑布流</h1>
     <p>适合图片墙、灵感卡片和内容高度不一致的编辑型页面；宽度不足时会自动减少列数。</p>
-    <elf-playground title="响应式内容画廊">
+    <elf-playground title="响应式图片瀑布流" :code=${code} :script=${script}>
       <span slot="status" class="demo-state">最多 4 列 · 最小列宽 230px</span>
       <elf-masonry columns="4" min-column-width="230" gap="lg" style="width:100%">
-        <article v-for="card in cards" :key="card.title" :style=${cardStyle(card)}>
-          <small style="color:var(--elf-primary);font-weight:700;text-transform:uppercase;letter-spacing:.08em">{{ card.tone }}</small>
-          <h3 style="margin:14px 0 10px;font-size:21px">{{ card.title }}</h3>
-          <p style="margin:0;color:var(--elf-text-secondary);line-height:1.7">{{ card.text }}</p>
+        <article v-for="card in cards" :key="card.title" class="masonry-card">
+          <img :src="card.image" :alt="card.title" :style="imageStyle(card.imageHeight)" loading="lazy" />
+          <div class="masonry-copy"><h3>{{ card.title }}</h3><p>{{ card.meta }}</p></div>
         </article>
       </elf-masonry>
     </elf-playground>

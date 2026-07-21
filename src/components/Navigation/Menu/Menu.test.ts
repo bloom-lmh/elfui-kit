@@ -30,6 +30,7 @@ interface MenuEl extends HTMLElement {
   popperStyle?: Record<string, string>;
   props?: Record<string, string>;
   router?: boolean;
+  searchable?: boolean;
   updateActiveIndex?: (index: string) => void;
   handleResize?: () => void;
   open?: (index: string) => void;
@@ -345,6 +346,31 @@ describe("elf-menu", () => {
     const labels = Array.from(el.shadowRoot!.querySelectorAll(".menu-label"), (node) => node.textContent?.trim());
     expect(labels).toContain("Settings");
     expect(labels).not.toContain("Dashboard");
+  });
+
+  it("搜索后选择菜单项会清空搜索并恢复完整菜单", async () => {
+    const el = document.createElement("elf-menu") as MenuEl;
+    el.items = [
+      { index: "/dashboard", label: "Dashboard" },
+      { index: "/projects", label: "Projects" },
+      { index: "/settings", label: "Settings" }
+    ];
+    el.searchable = true;
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>(".search-input")!;
+    input.value = "Dashboard";
+    input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await tick();
+    expect(labels(el)).toEqual(["Dashboard"]);
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".menu-item")!.click();
+    await tick();
+    await tick();
+    expect(el.shadowRoot!.querySelector<HTMLInputElement>(".search-input")?.value).toBe("");
+    expect(labels(el)).toEqual(["Dashboard", "Projects", "Settings"]);
   });
 
   it("supports menuTrigger hover timeout and closeOnClickOutside=false", async () => {

@@ -36,6 +36,7 @@ describe("elf-checkbox alignment", () => {
     el.modelValue = "yes";
     await flush();
     expect(el.getAttribute("data-checked")).not.toBeNull();
+    expect(el.shadowRoot!.querySelector(".box")?.getAttribute("aria-checked")).toBe("true");
   });
 
   it("renders border, aria attributes, and a disabled tab stop correctly", async () => {
@@ -72,5 +73,14 @@ describe("elf-checkbox alignment", () => {
     document.body.appendChild(group);
     await flush();
     expect(group.shadowRoot!.querySelector(".group")?.getAttribute("aria-label")).toBe("Available features");
+  });
+
+  it("announces an indeterminate checkbox as mixed", async () => {
+    const el = document.createElement("elf-checkbox") as HTMLElement & { indeterminate?: boolean };
+    el.indeterminate = true;
+    document.body.appendChild(el);
+    await flush();
+
+    expect(el.shadowRoot!.querySelector(".box")?.getAttribute("aria-checked")).toBe("mixed");
   });
 });

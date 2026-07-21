@@ -2,7 +2,7 @@ import { defineHtml, html } from "elfui";
 
 const imageCode = `<elf-avatar src="https://i.pravatar.cc/80?img=1" alt="Jane Doe"></elf-avatar>
 <elf-avatar src="https://i.pravatar.cc/80?img=2" alt="John Smith"></elf-avatar>
-<elf-avatar src="https://broken.url/img.jpg" alt="Error Fallback"></elf-avatar>`;
+<elf-avatar src="" alt="Error Fallback"></elf-avatar>`;
 
 const fitCode = `<elf-avatar src="https://i.pravatar.cc/120?img=3" fit="cover"></elf-avatar>
 <elf-avatar src="https://i.pravatar.cc/120?img=3" fit="contain"></elf-avatar>
@@ -22,7 +22,7 @@ const PageAvatarEx2 = defineHtml(html`
     <div style="display:flex;align-items:center;gap:12px">
       <elf-avatar src="https://i.pravatar.cc/80?img=1" alt="Jane Doe"></elf-avatar>
       <elf-avatar src="https://i.pravatar.cc/80?img=2" alt="John Smith"></elf-avatar>
-      <elf-avatar src="https://broken.url/img.jpg" alt="Error Fallback"></elf-avatar>
+      <elf-avatar src="" alt="Error Fallback"></elf-avatar>
     </div>
   </elf-playground>
   <elf-playground title="fit / src-set" :code=${fitCode}>

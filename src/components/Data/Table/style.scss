@@ -17,6 +17,7 @@
 
 .table-wrap {
   position: relative;
+  box-sizing: border-box;
   width: 100%;
   overflow: auto;
   border-radius: inherit;
@@ -46,15 +47,33 @@
   }
 }
 
-.is-virtualized tbody tr:not(.virtual-spacer) {
+.is-virtualized table {
+  display: block;
+}
+
+.is-virtualized thead,
+.is-virtualized tfoot,
+.is-virtualized tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.is-virtualized tbody {
+  display: block;
+  box-sizing: border-box;
+}
+
+.is-virtualized tbody tr {
   height: var(--_virtual-row-height);
 }
 
-.virtual-spacer td {
-  height: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
+.is-virtualized .table-wrap {
+  // Paint containment on a table whose spacer is hundreds of thousands of
+  // pixels tall can force Chromium to rebuild a huge paint surface on every
+  // window change. Keep layout/style isolation without containing that paint.
+  contain: layout style;
+  overflow-anchor: none;
 }
 
 .is-scrollbar-always .table-wrap {
@@ -62,6 +81,7 @@
 }
 
 table {
+  box-sizing: border-box;
   width: 100%;
   min-width: 100%;
   border-collapse: separate;
@@ -80,7 +100,8 @@ td {
 
 th {
   position: relative;
-  background: var(--elf-bg-paper);
+  background: var(--elf-table-header-bg, var(--elf-bg-paper));
+  background-clip: padding-box;
   color: var(--elf-text-secondary);
   font-weight: 600;
 }
@@ -89,6 +110,7 @@ th {
   position: sticky;
   top: 0;
   z-index: 2;
+  isolation: isolate;
 }
 
 td {
@@ -174,7 +196,8 @@ tbody tr.is-selected td.is-fixed-right {
 
   th,
   td {
-    border-right: 1px solid var(--elf-divider);
+    border-right: 0;
+    box-shadow: inset -1px 0 var(--elf-divider);
   }
 
   .is-fixed-left {
@@ -187,7 +210,7 @@ tbody tr.is-selected td.is-fixed-right {
 
   th:last-child,
   td:last-child {
-    border-right: 0;
+    box-shadow: none;
   }
 }
 
@@ -572,7 +595,7 @@ tbody tr.is-selected td {
 .column-resizer {
   position: absolute;
   top: 0;
-  right: -4px;
+  right: 0;
   bottom: 0;
   z-index: 4;
   width: 9px;
@@ -583,7 +606,7 @@ tbody tr.is-selected td {
   &::after {
     position: absolute;
     top: 22%;
-    right: 4px;
+    right: 0;
     bottom: 22%;
     width: 2px;
     border-radius: 999px;

@@ -17,15 +17,21 @@ const code = `<elf-anchor
   </elf-anchor-link>
 </elf-anchor>`;
 
+const script = `const active = useRef("#anchor-links-overview");
+
+const onChange = (event) => {
+  active.set(event.detail.href);
+};`;
+
 const PageAnchorEx3 = defineHtml(html`
   <h2>Compositional links</h2>
-  <elf-playground title="AnchorLink and nested sub-link" :code=${code}>
+  <elf-playground title="AnchorLink and nested sub-link" :code=${code} :script=${script}>
     <div
       style="display:grid;grid-template-columns:minmax(160px,220px) 1fr;gap:20px;width:100%;max-width:860px"
     >
       <elf-anchor
         container="#anchor-links-scroll"
-        :modelValue=${active}
+        :modelValue.prop=${active.value}
         @change=${onChange}
       >
         <elf-anchor-link href="#anchor-links-overview" title="Overview"></elf-anchor-link>

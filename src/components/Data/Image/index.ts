@@ -41,6 +41,7 @@ const locale = useLocaleProvider();
 const emit = defineEmits(["load", "error", "preview-open", "preview-close", "preview-change"]);
 const host = useHost();
 const error = useRef(false);
+const loaded = useRef(false);
 const previewOpen = useRef(false);
 const activeIndex = useRef(0);
 const scale = useRef(1);
@@ -64,10 +65,12 @@ const fit = (): ImageFit => {
 const imageClass = useComputed(() => `fit-${fit()}`);
 
 const onLoad = (event: Event): void => {
+    loaded.set(true);
     emit("load", event);
 };
 
 const onError = (event: Event): void => {
+    loaded.set(false);
     error.set(true);
     emit("error", event);
 };
@@ -129,6 +132,7 @@ const onPreviewMaskClick = (event: MouseEvent): void => {
 useEffect(() => {
     props.src;
     error.set(false);
+    loaded.set(false);
 });
 
 useEffect(() => {
@@ -167,11 +171,11 @@ const Image = defineHtml<ImageProps>(html`
         <slot v-if=${error.value} name="error">
             <div class="error">Load failed</div>
         </slot>
-        <div v-else-if=${!resolvedSrc.value} class="pending" part="placeholder" aria-live="polite">${locale.t("a11y.imagePending")}</div>
+        <div v-if=${!error.value && (!resolvedSrc.value || !loaded.value)} class="pending" part="placeholder" role="status" aria-live="polite">${locale.t("a11y.imagePending")}</div>
         <img
-            v-else
+            v-if=${!error.value && resolvedSrc.value}
             part="img"
-            :class=${imageClass}
+            :class=${[imageClass, { "is-loaded": loaded.value }]}
             :src=${resolvedSrc}
             :alt=${props.alt}
             :loading=${props.lazy ? "lazy" : null}

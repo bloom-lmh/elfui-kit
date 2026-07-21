@@ -19,6 +19,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type { StepItem, StepStatus, StepsChangeDetail, StepsDirection, StepsProps, StepsSize, StepsSlots } from "./types";
 
 export type {
@@ -83,6 +84,13 @@ const props = defineProps<StepsProps>({
     size: { type: String, default: "md" },
     clickable: { type: Boolean, default: true },
     alternativeLabel: { type: Boolean, default: false },
+    altLabels: { type: Boolean, default: false },
+    editable: { type: Boolean, default: false },
+    linear: { type: Boolean, default: true },
+    showPanels: { type: Boolean, default: false },
+    hideActions: { type: Boolean, default: false },
+    previousText: { type: String, default: "" },
+    nextText: { type: String, default: "" },
 });
 
 const emit = defineEmits<{
@@ -91,6 +99,7 @@ const emit = defineEmits<{
 }>();
 
 const host = useHost();
+const locale = useLocaleProvider();
 const compact = useRef(false);
 const currentActive = useRef(0);
 const hasStepChildren = useRef(false);
@@ -144,6 +153,22 @@ const inferStatus = (item: StepItem, index: number): StepViewItem["status"] => {
     return "wait";
 };
 
+const adjacentEnabledIndex = (from: number, directionValue: -1 | 1): number => {
+    const source = rawItems();
+    for (let index = from + directionValue; index >= 0 && index < source.length; index += directionValue) {
+        if (!source[index]?.disabled) return index;
+    }
+    return from;
+};
+
+const canSelectIndex = (index: number, active: number): boolean => {
+    const item = rawItems()[index];
+    if (!item || item.disabled || index === active) return false;
+    if (props.editable || !props.linear) return true;
+    if (!props.clickable) return false;
+    return index < active || index === adjacentEnabledIndex(active, 1);
+};
+
 const syncStepChildren = (): void => {
     const children = stepChildren();
     hasStepChildren.set(children.length > 0);
@@ -156,12 +181,15 @@ const syncStepChildren = (): void => {
         child.resolvedStatus = inferStatus(items[index]!, index);
         child.active = index === active;
         child.last = index === children.length - 1;
-        child.clickable = Boolean(props.clickable);
+        // Keep the active composed step keyboard-enabled so Arrow/Home/End can
+        // move focus and selection. The parent still gates actual selection
+        // through canSelectIndex, so linear and disabled semantics remain intact.
+        child.clickable = !child.disabled && Boolean(props.clickable || props.editable || !props.linear);
         child.direction = direction();
         child.size = size();
         child.simple = Boolean(props.simple);
         child.alignCenter = Boolean(props.alignCenter);
-        child.alternativeLabel = Boolean(props.alternativeLabel);
+        child.alternativeLabel = Boolean(props.alternativeLabel) || Boolean(props.altLabels);
     });
 };
 
@@ -183,7 +211,7 @@ const stepItems = useComputed<StepViewItem[]>(() => {
             index,
             isLast: index === raw.length - 1,
             isActive: index === active,
-            isClickable: Boolean(props.clickable) && !item.disabled && index !== active,
+            isClickable: canSelectIndex(index, active),
         };
     });
 });
@@ -191,9 +219,10 @@ const stepItems = useComputed<StepViewItem[]>(() => {
 const rootClass = useComputed((): string => {
     const classes = ["steps", `is-${direction()}`, `size-${size()}`];
     if (compact.value) classes.push("is-compact");
-    if (props.alternativeLabel) classes.push("is-alternative");
+    if (props.alternativeLabel || props.altLabels) classes.push("is-alternative");
     if (props.alignCenter) classes.push("is-align-center");
     if (props.simple) classes.push("is-simple");
+    if (props.linear) classes.push("is-linear");
     if (normalizeSpace()) classes.push("has-space");
     if (hasStepChildren.value) classes.push("has-step-children");
     return classes.join(" ");
@@ -228,8 +257,11 @@ const setActive = (index: number): void => {
     emit("change", { active: next, item });
 };
 
-const next = (): void => setActive(clampedActive() + 1);
-const prev = (): void => setActive(clampedActive() - 1);
+const next = (): void => setActive(adjacentEnabledIndex(clampedActive(), 1));
+const prev = (): void => setActive(adjacentEnabledIndex(clampedActive(), -1));
+const activeItem = (): StepItem | undefined => rawItems()[clampedActive()];
+const previousText = (): string => String(props.previousText || locale.t("common.previous"));
+const nextText = (): string => String(props.nextText || locale.t("common.next"));
 
 const onStepClick = (item: StepViewItem): void => {
     if (!item.isClickable) return;
@@ -260,18 +292,20 @@ const navigateStep = (detail: StepNavigateDetail): void => {
     }
 
     const nextIndex = enabled[nextPosition]!;
-    setActive(nextIndex);
-    focusStep(nextIndex);
+    if (canSelectIndex(nextIndex, clampedActive())) {
+        setActive(nextIndex);
+        focusStep(nextIndex);
+    }
 };
 
 const onStepsSlotChange = (): void => syncStepChildren();
 
 const statusIcon = (item: StepViewItem): string => {
     if (item.icon) return item.icon;
-    if (item.status === "finish") return "✓";
-    if (item.status === "error") return "!";
     return String(item.index + 1);
 };
+const showFinishIcon = (item: StepViewItem): boolean => !item.icon && item.status === "finish";
+const showErrorIcon = (item: StepViewItem): boolean => !item.icon && item.status === "error";
 
 useResizeObserver(host, ({ width }) => {
     compact.set(width > 0 && width < 420);
@@ -290,6 +324,9 @@ useEffect(() => {
     void props.simple;
     void props.alignCenter;
     void props.alternativeLabel;
+    void props.altLabels;
+    void props.editable;
+    void props.linear;
     void props.processStatus;
     void props.finishStatus;
     syncStepChildren();
@@ -298,7 +335,7 @@ useEventListener(host, "elf-step-select", (event) => {
     event.stopPropagation();
     const child = event.target as StepElement;
     const index = stepChildren().indexOf(child);
-    if (index >= 0) setActive(index);
+    if (index >= 0 && canSelectIndex(index, clampedActive())) setActive(index);
 });
 useEventListener(host, "elf-step-navigate", (event) => {
     event.stopPropagation();
@@ -320,6 +357,7 @@ defineExpose({
 defineStyle(styles);
 
 const Steps = defineHtml<StepsProps, Record<string, never>, StepsSlots>(html`
+  <div :class=${["stepper", { "has-panels": props.showPanels }]}>
     <div :class=${rootClass} :style=${rootStyle} role="list" :aria-orientation=${direction()}>
         <slot v-if=${hasStepChildren} @slotchange=${onStepsSlotChange}></slot>
         <template v-if=${!hasStepChildren}>
@@ -340,7 +378,11 @@ const Steps = defineHtml<StepsProps, Record<string, never>, StepsSlots>(html`
                     @click="onStepClick(item)"
                 >
                     <span class="step-head">
-                        <span class="step-icon" aria-hidden="true">{{ statusIcon(item) }}</span>
+                        <span class="step-icon" aria-hidden="true">
+                          <svg v-if="showFinishIcon(item)" viewBox="0 0 18 18"><path d="m4 9.25 3.1 3.1L14 5.75"></path></svg>
+                          <svg v-else-if="showErrorIcon(item)" viewBox="0 0 18 18"><path d="M9 4.5v5.25M9 13.25v.25"></path></svg>
+                          <span v-else>{{ statusIcon(item) }}</span>
+                        </span>
                     </span>
                     <span class="step-main">
                         <span class="step-title">{{ item.title }}</span>
@@ -354,6 +396,23 @@ const Steps = defineHtml<StepsProps, Record<string, never>, StepsSlots>(html`
             </div>
         </template>
     </div>
+    <section v-if=${props.showPanels} class="stepper-panel" role="region" aria-live="polite">
+      <slot name="panel">
+        <h3>{{ activeItem()?.title || '' }}</h3>
+        <p>{{ activeItem()?.content || activeItem()?.description || '' }}</p>
+      </slot>
+    </section>
+    <footer v-if=${props.showPanels && !props.hideActions} class="stepper-actions">
+      <button type="button" class="stepper-action is-previous" :disabled=${clampedActive() <= 0} @click=${prev}>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3.5-4.5 4.5 4.5 4.5"></path></svg>
+        <span>{{ previousText() }}</span>
+      </button>
+      <button type="button" class="stepper-action is-next" :disabled=${clampedActive() >= count() - 1} @click=${next}>
+        <span>{{ nextText() }}</span>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5"></path></svg>
+      </button>
+    </footer>
+  </div>
 `);
 
 export { Steps };

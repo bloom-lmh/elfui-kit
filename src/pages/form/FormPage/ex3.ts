@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useReactive, useRef, useTemplateRef } from "elfui";
+import { defineHtml, defineStyle, html, useHost, useReactive, useRef } from "elfui";
 
 import type { FormRules } from "../../../components/Form";
 import demoStyles from "./demo.scss?inline";
@@ -9,7 +9,9 @@ interface FormHost extends HTMLElement {
   clearValidate(): void;
 }
 
-const formEl = useTemplateRef<FormHost>("formEl");
+const pageHost = useHost();
+
+const getForm = (): FormHost | null => pageHost.shadowRoot?.querySelector<FormHost>("elf-form") ?? null;
 
 const message = useRef("等待提交");
 
@@ -32,17 +34,17 @@ const owners = [
 ];
 
 const submit = async (): Promise<void> => {
-  const ok = await formEl.value?.validate();
+  const ok = await getForm()?.validate();
   message.set(ok ? `已提交：${model.project}` : "校验未通过");
 };
 
 const reset = (): void => {
-  formEl.value?.resetFields();
+  getForm()?.resetFields();
   message.set("已重置");
 };
 
 const clear = (): void => {
-  formEl.value?.clearValidate();
+  getForm()?.clearValidate();
   message.set("已清除校验状态");
 };
 
@@ -54,7 +56,7 @@ defineStyle(demoStyles);
 
 const PageFormEx3 = defineHtml(html`
   <h2>提交校验</h2>
-  <elf-playground title="validate / resetFields / clearValidate" :code="code">
+  <elf-playground title="validate / resetFields / clearValidate" :code=${code}>
     <p slot="status" class="demo-state">{{ message }}</p>
     <elf-card
       class="form-demo-card"
@@ -63,7 +65,6 @@ const PageFormEx3 = defineHtml(html`
       subtitle="校验结果与操作按钮保持在同一张 Card 中"
     >
       <elf-form
-        ref="formEl"
         :model.prop="model"
         :rules.prop="rules"
         label-position="top"

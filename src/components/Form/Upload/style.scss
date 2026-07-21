@@ -83,8 +83,21 @@
 
 .drop-icon {
   display: block;
+  width: 30px;
+  height: 30px;
   margin-bottom: var(--elf-space-2);
-  font-size: 28px;
+  color: var(--elf-primary);
+}
+
+.drop-icon svg,
+.icon-button svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
 .tip {
@@ -204,6 +217,11 @@
     background: var(--elf-bg-overlay);
     color: var(--elf-primary);
   }
+}
+
+.icon-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .list.is-picture-card {

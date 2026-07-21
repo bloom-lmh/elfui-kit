@@ -4,11 +4,14 @@ import {
   defineProps,
   defineStyle,
   html,
+  useHostAttr,
+  useHostFlag,
   useRef,
   useTemplateRef
 } from "elfui";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
+import { normalizeFieldVariant } from "../../../types/field";
 import styles from "./style.scss?inline";
 import type { MentionOption, MentionProps, MentionPrefix } from "./types";
 
@@ -42,6 +45,7 @@ const props = defineProps<MentionProps>({
   prefix: { type: [String, Array], default: "@" },
   prefixes: { type: Array, default: () => [] },
   placeholder: { type: String, default: "" },
+  variant: { type: String, default: "outlined" },
   disabled: { type: Boolean, default: false },
   rows: { type: Number, default: 3 },
   split: { type: String, default: " " },
@@ -202,6 +206,10 @@ const onOptionMouseenter = (event: Event): void => {
   const index = Number((event.currentTarget as HTMLElement).dataset.index);
   if (Number.isInteger(index) && !options()[index]?.disabled) activeIndex.set(index);
 };
+
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostAttr("data-state", () => fi.state || "");
+useHostFlag("disabled", isDisabled);
 
 defineStyle(styles);
 

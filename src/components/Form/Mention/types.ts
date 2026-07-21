@@ -16,6 +16,7 @@ export interface MentionProps {
   /** Web Component-safe alternative for multiple prefixes; `prefix` collides with Node.prefix. */
   prefixes: string[];
   placeholder: string;
+  variant: FieldVariant;
   disabled: boolean;
   rows: number;
   split: string;
@@ -30,3 +31,4 @@ export interface MentionProps {
   ariaLabel: string;
   validateEvent: boolean;
 }
+import type { FieldVariant } from "../../../types/field";

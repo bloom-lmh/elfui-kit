@@ -98,7 +98,12 @@ const props = defineProps<TabsProps>({
   beforeLeave: { type: Function, default: null },
   tabindex: { type: Number, default: 0 },
   color: { type: String, default: "" },
+  backgroundColor: { type: String, default: "" },
+  sliderColor: { type: String, default: "" },
   grow: { type: Boolean, default: false },
+  fixedTabs: { type: Boolean, default: false },
+  centerActive: { type: Boolean, default: false },
+  showArrows: { type: Boolean, default: false },
   stacked: { type: Boolean, default: false },
   showPanels: { type: Boolean, default: false },
   hideSlider: { type: Boolean, default: false },
@@ -252,9 +257,13 @@ const tabType = (): TabsType => {
 
 const hostStyle = useComputed(() => {
   const color = String(props.color || "");
+  const backgroundColor = String(props.backgroundColor || "");
+  const sliderColor = String(props.sliderColor || "");
   const duration = Math.max(0, Number(props.transitionDuration || 180));
   return {
     ...(color ? { "--tabs-color": color } : {}),
+    ...(backgroundColor ? { "--tabs-background-color": backgroundColor } : {}),
+    ...(sliderColor ? { "--tabs-slider-color": sliderColor } : {}),
     "--tabs-transition-duration": `${duration}ms`
   };
 });
@@ -264,6 +273,9 @@ const rootClass = () => ({
   [`is-${tabPosition()}`]: true,
   [`is-${tabType()}`]: true,
   "is-grow": Boolean(props.grow),
+  "is-fixed-tabs": Boolean(props.fixedTabs),
+  "is-center-active": Boolean(props.centerActive),
+  "has-arrows": Boolean(props.showArrows),
   "is-stretch": Boolean(props.stretch),
   "is-stacked": Boolean(props.stacked),
   "is-closable": Boolean(props.closable) || Boolean(props.editable),
@@ -338,6 +350,7 @@ const commitActive = (item: TabsViewItem): void => {
   emit("update:modelValue", item.value);
   emit("change", item.value, item.raw);
   emit("tab-change", item.value);
+  queueMicrotask(scrollToActiveTab);
 };
 
 const runBeforeLeave = (item: TabsViewItem, oldValue: TabPaneName | "", commit: () => void): void => {
@@ -434,7 +447,21 @@ const currentName = (): TabPaneName | "" => active.value;
 const setActive = (value: TabPaneName): void => select(value);
 const scrollToActiveTab = (): void => {
   const index = viewItems().findIndex((item) => isActive(item));
-  tabButtons()[index]?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  tabButtons()[index]?.scrollIntoView?.({
+    block: props.centerActive && tabPosition() !== "top" && tabPosition() !== "bottom" ? "center" : "nearest",
+    inline: props.centerActive && (tabPosition() === "top" || tabPosition() === "bottom") ? "center" : "nearest"
+  });
+};
+const scrollTabs = (direction: -1 | 1): void => {
+  const list = tabListRef();
+  if (!list) return;
+  const vertical = tabPosition() === "left" || tabPosition() === "right";
+  const distance = Math.max(160, (vertical ? list.clientHeight : list.clientWidth) * 0.8) * direction;
+  list.scrollBy?.({
+    left: vertical ? 0 : distance,
+    top: vertical ? distance : 0,
+    behavior: "smooth"
+  });
 };
 const removeFocus = (): void => {
   const root = host.shadowRoot;
@@ -499,11 +526,23 @@ defineStyle(styles);
 
 const Tabs = defineHtml<TabsProps, Record<string, never>, TabsSlots>(html`
   <div :class=${["tabs", rootClass()]} :style=${hostStyle}>
-    <div
-      class="tab-list"
-      role="tablist"
-      :aria-orientation=${tabPosition() === "left" || tabPosition() === "right" ? "vertical" : "horizontal"}
-    >
+    <div class="tab-navigation">
+      <button
+        v-if=${props.showArrows}
+        type="button"
+        class="tab-scroll tab-scroll-prev"
+        :aria-label=${locale.t("pagination.previous")}
+        @click=${() => scrollTabs(-1)}
+      >
+        <slot name="prev-icon">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3.5-4.5 4.5 4.5 4.5"></path></svg>
+        </slot>
+      </button>
+      <div
+        class="tab-list"
+        role="tablist"
+        :aria-orientation=${tabPosition() === "left" || tabPosition() === "right" ? "vertical" : "horizontal"}
+      >
       <button
         v-for="item in viewItems()"
         :key="item.key"
@@ -551,6 +590,18 @@ const Tabs = defineHtml<TabsProps, Record<string, never>, TabsSlots>(html`
               <path d="M8 3.25v9.5M3.25 8h9.5"></path>
             </svg>
           </slot>
+        </slot>
+      </button>
+      </div>
+      <button
+        v-if=${props.showArrows}
+        type="button"
+        class="tab-scroll tab-scroll-next"
+        :aria-label=${locale.t("pagination.next")}
+        @click=${() => scrollTabs(1)}
+      >
+        <slot name="next-icon">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5"></path></svg>
         </slot>
       </button>
     </div>

@@ -4,6 +4,7 @@ import { PageAnchorEx3 } from "./ex3";
 import { PageAnchorProps } from "./props";
 
 import { defineHtml, html, useComponents } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
 
 useComponents({
   "page-anchor-ex1": PageAnchorEx1,
@@ -12,13 +13,18 @@ useComponents({
   "page-anchor-props": PageAnchorProps
 });
 
+const t = createDocsTranslator({
+  title: { zh: "Anchor 锚点", en: "Anchor" },
+  description: {
+    zh: "Anchor 会让导航与滚动容器保持同步，支持嵌套项、受控激活状态、禁用项以及点击和变更事件。",
+    en: "Anchor keeps navigation in sync with a scroll container. It supports nested items, controlled active state, disabled entries, and click/change events."
+  }
+});
+
 const PageAnchor = defineHtml(html`
   <elf-container>
-    <h1>Anchor</h1>
-    <p>
-      Anchor keeps navigation in sync with a scroll container. It supports nested items, controlled
-      active state, disabled entries and click/change events.
-    </p>
+    <h1>${t("title")}</h1>
+    <p>${t("description")}</p>
     <page-anchor-ex1></page-anchor-ex1>
     <page-anchor-ex2></page-anchor-ex2>
     <page-anchor-ex3></page-anchor-ex3>

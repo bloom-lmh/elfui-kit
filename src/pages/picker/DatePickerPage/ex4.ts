@@ -20,7 +20,7 @@ const selectedDates = (): string => dates.value.join("，") || "暂无";
 
 const PageDatePickerEx4 = defineHtml(html`
 <elf-playground title="多日期" :code="multipleCode">
-      <div style="display:grid;gap:12px;max-width:620px">
+      <div style="display:grid;gap:12px;width:min(360px,100%)">
         <elf-date-picker
           multiple
           clearable

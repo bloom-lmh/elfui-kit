@@ -1,4 +1,12 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  hover: { zh: "悬停展开", en: "Open on hover" },
+  hoverTitle: { zh: "悬停触发子菜单", en: "Hover-triggered submenu" },
+  theme: { zh: "主题与自定义颜色", en: "Theme and custom colors" },
+  themeTitle: { zh: "暗色主题与自定义颜色", en: "Dark theme and custom colors" }
+});
 
 const active = useRef("analytics");
 const activeDark = useRef("home");
@@ -68,9 +76,18 @@ const code2 = `<elf-menu :items=\${items} :modelValue=\${activeDark} theme="dark
   rounded
 />`;
 
+const script = `const active = useRef("analytics-overview");
+const items = [
+  { index: "analytics", label: "Analytics", children: [
+    { index: "analytics-overview", label: "Overview" },
+    { index: "analytics-realtime", label: "Realtime" }
+  ] },
+  { index: "settings", label: "Settings" }
+];`;
+
 const PageMenuEx6 = defineHtml(html`
-  <h2>hover 展开</h2>
-  <elf-playground title="menu-trigger hover" :code=${code1}>
+  <h2>${t("hover")}</h2>
+  <elf-playground :title=${t("hoverTitle")} :code=${code1} :script=${script}>
     <elf-menu
       bordered
       :items=${items}
@@ -90,9 +107,9 @@ const PageMenuEx6 = defineHtml(html`
     </elf-menu>
   </elf-playground>
 
-  <h2>theme + custom colors</h2>
-  <elf-playground title="dark theme + custom colors" :code=${code2}>
-    <div style="display:flex;gap:16px">
+  <h2>${t("theme")}</h2>
+  <elf-playground :title=${t("themeTitle")} :code=${code2} :script=${script}>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
       <elf-menu
         bordered
         :items=${themeItems}

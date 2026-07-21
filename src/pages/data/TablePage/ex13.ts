@@ -39,7 +39,7 @@ const rowStyle = ({ row }: { row: Record<string, unknown> }): Record<string, str
   row.status === "已归档" ? { opacity: "0.58" } : {};
 
 const headerCellStyle = (): Record<string, string> => ({
-  background: "var(--elf-bg-overlay)",
+  background: "var(--elf-bg-paper)",
   color: "var(--elf-text-primary)"
 });
 

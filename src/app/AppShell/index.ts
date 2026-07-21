@@ -27,7 +27,7 @@ interface AppMenuItem {
 }
 
 const ICONS: Record<string, string> = {
-  首页: "⌂",
+  样式和动画: "S",
   "Layout 布局": "L",
   "Basic 基础": "B",
   "Form 表单": "F",
@@ -41,7 +41,7 @@ const ICONS: Record<string, string> = {
 
 const APP_MESSAGES: Record<string, LocaleMessages> = {
   "zh-CN": {
-    app: { search: "搜索组件…", collapse: "切换侧栏", language: "切换为英文", skin: "切换主题皮肤", footer: "组件库与设计系统" },
+    app: { search: "搜索组件…", collapse: "切换侧栏", language: "切换为英文", skin: "切换主题皮肤", footer: "组件库与设计系统", home: "返回首页", closeNavigation: "关闭导航" },
     home: {
       eyebrow: "面向产品团队的 Web Components",
       titleLead: "构建精致界面，",
@@ -63,7 +63,7 @@ const APP_MESSAGES: Record<string, LocaleMessages> = {
     }
   },
   "en-US": {
-    app: { search: "Search components…", collapse: "Toggle sidebar", language: "Switch to Chinese", skin: "Switch theme skin", footer: "Component library and design system" },
+    app: { search: "Search components…", collapse: "Toggle sidebar", language: "Switch to Chinese", skin: "Switch theme skin", footer: "Component library and design system", home: "Back to home", closeNavigation: "Close navigation" },
     home: {
       eyebrow: "Web Components for product teams",
       titleLead: "Ship polished interfaces,",
@@ -90,12 +90,16 @@ const readStorage = (key: string, fallback: string): string => {
   try { return localStorage.getItem(key) || fallback; } catch { return fallback; }
 };
 
-const readCurrentPath = (): string => {
-  const router = getActiveRouter();
-  if (router) return router.current.peek().path;
+const readHashPath = (): string => {
   if (typeof window === "undefined") return "/";
   const hash = window.location.hash || "#/";
   return hash.startsWith("#") ? hash.slice(1) || "/" : hash || "/";
+};
+
+const readCurrentPath = (): string => {
+  const router = getActiveRouter();
+  const currentPath = router?.current.peek().path;
+  return currentPath || readHashPath();
 };
 
 const normalizeSkin = (value: string): string => {
@@ -105,6 +109,8 @@ const normalizeSkin = (value: string): string => {
 
 const englishLabel = (label: string): string => {
   if (label === "首页") return "Home";
+  if (label === "样式和动画") return "Styles and animations";
+  if (label === "工具类") return "Utilities";
   const stripped = label.replace(/[\u3400-\u9fff\u3000-\u303f]+/g, "").replace(/\s+/g, " ").trim();
   return stripped || label;
 };
@@ -114,8 +120,11 @@ const initialSkin = normalizeSkin(readStorage(SKIN_KEY, readStorage(LEGACY_THEME
 const skinName = useRef(initialSkin);
 const localeName = useRef(readStorage(LOCALE_KEY, "zh-CN") === "en-US" ? "en-US" : "zh-CN");
 const collapsed = useRef(false);
+const compactViewport = useRef(false);
+const mobileMenuOpen = useRef(false);
 const active = useRef(readCurrentPath());
 let removeHashListener = (): void => {};
+let removeViewportListener = (): void => {};
 
 // Derived state
 const currentSkin = (): AppSkin => APP_SKINS.find((skin) => skin.id === skinName.value) || APP_SKINS[0]!;
@@ -123,10 +132,13 @@ const isEnglish = (): boolean => localeName.value === "en-US";
 const currentMessages = (): LocaleMessages => APP_MESSAGES[localeName.value] || APP_MESSAGES["zh-CN"]!;
 const text = (zh: string, en: string): string => isEnglish() ? en : zh;
 const localizeLabel = (label: string): string => isEnglish() ? englishLabel(label) : label;
-const collapseIcon = (): string => collapsed.value ? "☰" : "✕";
+const collapseIcon = (): string => compactViewport.value
+  ? (mobileMenuOpen.value ? "✕" : "☰")
+  : (collapsed.value ? "☰" : "✕");
 const languageLabel = (): string => isEnglish() ? "中文" : "English";
 const skinLabel = (): string => `● ${currentSkin().label}`;
 const appMessage = (key: string): string => String((currentMessages().app as Record<string, string>)[key] || key);
+const isHome = (): boolean => active.value === "/" || active.value === "";
 
 const menuItems = useComputed((): AppMenuItem[] => {
   const groups: Record<string, AppMenuItem[]> = {};
@@ -163,10 +175,27 @@ const toggleLocale = (): void => {
   try { localStorage.setItem(LOCALE_KEY, localeName.value); } catch { /* storage unavailable */ }
 };
 
-const toggleCollapsed = (): void => collapsed.set(!collapsed.value);
+const toggleCollapsed = (): void => {
+  if (compactViewport.value) {
+    mobileMenuOpen.set(!mobileMenuOpen.value);
+    return;
+  }
+  collapsed.set(!collapsed.value);
+};
+
+const closeMobileMenu = (): void => mobileMenuOpen.set(false);
+
+const goHome = (): void => {
+  closeMobileMenu();
+  active.set("/");
+  const router = getActiveRouter();
+  if (router) void router.push("/");
+  else if (typeof window !== "undefined") window.location.hash = "/";
+};
 
 const onSelect = (event: Event): void => {
   const next = String((event as CustomEvent).detail ?? "/");
+  closeMobileMenu();
   active.set(next);
   const router = getActiveRouter();
   if (router) void router.push(next);
@@ -185,24 +214,40 @@ onMount(() => {
   applyDocumentSkin();
   active.set(readCurrentPath());
   if (typeof window === "undefined") return;
-  const syncFromHash = () => active.set(readCurrentPath());
+  const syncFromHash = () => active.set(readHashPath());
   window.addEventListener("hashchange", syncFromHash);
   removeHashListener = () => window.removeEventListener("hashchange", syncFromHash);
+
+  if (typeof window.matchMedia !== "function") return;
+  const media = window.matchMedia("(max-width: 720px)");
+  const syncViewport = (): void => {
+    compactViewport.set(media.matches);
+    if (!media.matches) closeMobileMenu();
+  };
+  syncViewport();
+  media.addEventListener?.("change", syncViewport);
+  removeViewportListener = () => media.removeEventListener?.("change", syncViewport);
 });
 
-onUnmount(() => removeHashListener());
+onUnmount(() => {
+  removeHashListener();
+  removeViewportListener();
+});
 
 defineStyle(styles);
 
 const App = defineHtml(html`
   <elf-locale-provider :name=${localeName.value} :messages.prop=${currentMessages()}>
     <elf-theme-provider :theme=${currentSkin().providerTheme} :tokens.prop=${currentSkin().tokens}>
-      <elf-layout>
+      <elf-layout v-if=${isHome()} class="home-shell">
+        <elf-router-view></elf-router-view>
+      </elf-layout>
+      <elf-layout v-else>
         <elf-header height="64px">
-          <span class="brand">
+          <button class="brand" type="button" :aria-label=${appMessage("home")} @click=${goHome}>
             <img class="brand-logo" src="/logo.png" alt="ElfUI logo" />
             <span>ElfUI</span>
-          </span>
+          </button>
           <span class="spacer"></span>
           <elf-button class="header-action" variant="text" size="sm" :title=${appMessage("language")} @click=${toggleLocale}>${languageLabel()}</elf-button>
           <elf-button class="header-action skin-action" variant="text" size="sm" :title=${appMessage("skin")} @click=${cycleSkin}>${skinLabel()}</elf-button>
@@ -210,7 +255,7 @@ const App = defineHtml(html`
         </elf-header>
 
         <elf-layout direction="horizontal">
-          <elf-aside class="app-aside" :width=${collapsed.value ? "68px" : "264px"}>
+          <elf-aside :class=${{ "app-aside": true, "mobile-open": mobileMenuOpen.value }} :width=${collapsed.value ? "68px" : "264px"}>
             <elf-menu
               v-if=${isEnglish()}
               key="en-menu"
@@ -239,7 +284,16 @@ const App = defineHtml(html`
             ></elf-menu>
           </elf-aside>
 
+          <button
+            v-if=${compactViewport.value && mobileMenuOpen.value}
+            class="nav-scrim"
+            type="button"
+            :aria-label=${appMessage("closeNavigation")}
+            @click=${closeMobileMenu}
+          ></button>
+
           <elf-main><elf-router-view></elf-router-view></elf-main>
+          <elf-docs-toc :routeKey=${active.value + ":" + localeName.value}></elf-docs-toc>
         </elf-layout>
 
         <elf-footer height="40px">© 2026 ElfUI · ${appMessage("footer")}</elf-footer>

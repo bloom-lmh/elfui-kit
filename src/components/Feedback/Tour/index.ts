@@ -18,7 +18,7 @@ import {
   useRef,
   useResizeObserver,
   useScrollLock,
-  useTemplateRef
+  useTemplateRef,
 } from "elfui";
 
 import styles from "./style.scss?inline";
@@ -50,7 +50,7 @@ const props = defineProps<TourProps>({
   keyboard: { type: Boolean, default: true },
   lockScroll: { type: Boolean, default: true },
   gap: { type: Number, default: 12 },
-  zIndex: { type: Number, default: 3000 }
+  zIndex: { type: Number, default: 3000 },
 });
 
 const emit = defineEmits<{
@@ -92,8 +92,7 @@ const placement = (): TourPlacement => {
 const isFirstStep = (): boolean => currentStep.value <= 0;
 const isLastStep = (): boolean => currentStep.value >= stepCount() - 1;
 const currentNumber = (): number => currentStep.value + 1;
-const nextButtonText = (): string =>
-  activeStep()?.nextText || locale.t(isLastStep() ? "common.done" : "common.next");
+const nextButtonText = (): string => activeStep()?.nextText || locale.t(isLastStep() ? "common.done" : "common.next");
 const prevButtonText = (): string => activeStep()?.prevText || locale.t("common.previous");
 
 const clearCloseTimer = (): void => {
@@ -121,7 +120,7 @@ const updateTarget = (): void => {
     width: rect.width,
     height: rect.height,
     right: rect.right,
-    bottom: rect.bottom
+    bottom: rect.bottom,
   });
 };
 
@@ -138,8 +137,7 @@ const cancelScheduledFocus = (): void => {
   focusFrameId = 0;
 };
 
-const resolveOverlay = (): HTMLElement | null =>
-  overlayRef.peek() || document.getElementById(layerId.peek());
+const resolveOverlay = (): HTMLElement | null => overlayRef.peek() || document.getElementById(layerId.peek());
 
 const focusOverlay = (): void => {
   cancelScheduledFocus();
@@ -229,7 +227,8 @@ const onLayerClick = (event: MouseEvent): void => {
 };
 
 const onKeydown = (event: KeyboardEvent): void => {
-  if (!props.keyboard || !rendered.value || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (!props.keyboard || !rendered.value || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey)
+    return;
   if (event.key === "ArrowRight" || event.key === "ArrowDown") {
     event.preventDefault();
     next();
@@ -247,7 +246,7 @@ const highlightStyle = (): Record<string, string> => {
     left: `${Math.max(8, box.left - gap)}px`,
     top: `${Math.max(8, box.top - gap)}px`,
     width: `${Math.max(0, box.width + gap * 2)}px`,
-    height: `${Math.max(0, box.height + gap * 2)}px`
+    height: `${Math.max(0, box.height + gap * 2)}px`,
   };
 };
 
@@ -258,7 +257,7 @@ const bubbleStyle = (): Record<string, string> => {
       left: "50%",
       top: "50%",
       transform: "translate(-50%, -50%)",
-      zIndex: String(props.zIndex + 2)
+      zIndex: String(props.zIndex + 2),
     };
   }
   const gap = Math.max(8, Number(props.gap) || 12) + 8;
@@ -318,12 +317,12 @@ const bubbleStyle = (): Record<string, string> => {
   if (p === "top" || p === "bottom") {
     left = Math.min(
       window.innerWidth - viewportPadding - panelWidth / 2,
-      Math.max(viewportPadding + panelWidth / 2, left)
+      Math.max(viewportPadding + panelWidth / 2, left),
     );
   } else {
     top = Math.min(
       window.innerHeight - viewportPadding - panelHeight / 2,
-      Math.max(viewportPadding + panelHeight / 2, top)
+      Math.max(viewportPadding + panelHeight / 2, top),
     );
   }
 
@@ -331,7 +330,7 @@ const bubbleStyle = (): Record<string, string> => {
     left: `${left}px`,
     top: `${top}px`,
     transform,
-    zIndex: String(props.zIndex + 2)
+    zIndex: String(props.zIndex + 2),
   };
 };
 
@@ -409,17 +408,10 @@ const Tour = defineHtml<TourProps>(html`
         <footer class="tour-footer">
           <button class="tour-button tour-button--text" type="button" @click=${skip}>${locale.t("common.skip")}</button>
           <span class="tour-spacer"></span>
-          <button
-            class="tour-button tour-button--text"
-            type="button"
-            :disabled=${isFirstStep()}
-            @click=${prev}
-          >
+          <button class="tour-button tour-button--text" type="button" :disabled=${isFirstStep()} @click=${prev}>
             ${prevButtonText()}
           </button>
-          <button class="tour-button tour-button--primary" type="button" @click=${next}>
-            ${nextButtonText()}
-          </button>
+          <button class="tour-button tour-button--primary" type="button" @click=${next}>${nextButtonText()}</button>
         </footer>
       </section>
     </div>

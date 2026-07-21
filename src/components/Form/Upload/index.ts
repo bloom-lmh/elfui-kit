@@ -472,6 +472,7 @@ const onFileActionClick = (event: Event): void => {
   if (!file) return;
   if (action === "preview") previewFile(file);
   if (action === "remove") void removeFile(file);
+  if (action === "retry") void uploadFile(file);
 };
 
 defineExpose({ select, submit, clearFiles, abort, handleStart, handleRemove });
@@ -491,6 +492,8 @@ const Upload = defineHtml(html`
       :directory=${props.directory}
       :crossorigin=${props.crossorigin || null}
       :disabled=${isDisabled()}
+      tabindex="-1"
+      aria-hidden="true"
       @change=${onInputChange}
     />
 
@@ -502,7 +505,11 @@ const Upload = defineHtml(html`
       @drop=${onDrop}
       @dragover=${onDragOver}
     >
-      <span class="drop-icon">↑</span>
+      <span class="drop-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v5h14v-5"></path>
+        </svg>
+      </span>
       <span>${locale.t("upload.drop")}</span>
     </div>
     <div v-else class="trigger" part="trigger">
@@ -527,7 +534,14 @@ const Upload = defineHtml(html`
         <div class="meta">
           <div class="name"><slot name="file">{{ file.name }}</slot></div>
           <div class="desc">{{ formatSize(file.size) }} · {{ file.message || file.status }}</div>
-          <div v-if="file.status === 'uploading' || file.status === 'success'" class="progress">
+          <div
+            v-if="file.status === 'uploading' || file.status === 'success'"
+            class="progress"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :aria-valuenow="file.percentage"
+          >
             <div class="bar" :style="{ width: file.percentage + '%' }"></div>
           </div>
         </div>
@@ -539,7 +553,23 @@ const Upload = defineHtml(html`
             :data-uid="file.uid"
             :aria-label=${locale.t("common.preview")}
           >
-            ⌕
+            <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+              <path d="M2.5 10s2.8-5 7.5-5 7.5 5 7.5 5-2.8 5-7.5 5-7.5-5-7.5-5Z"></path>
+              <circle cx="10" cy="10" r="2.25"></circle>
+            </svg>
+          </button>
+          <button
+            v-if="file.status === 'error'"
+            class="icon-button"
+            type="button"
+            data-action="retry"
+            :data-uid="file.uid"
+            :aria-label=${locale.t("common.retry")}
+          >
+            <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+              <path d="M15.7 7.2A6.25 6.25 0 1 0 16 11"></path>
+              <path d="M15.8 3.8v3.8H12"></path>
+            </svg>
           </button>
           <button
             class="icon-button"
@@ -548,7 +578,9 @@ const Upload = defineHtml(html`
             :data-uid="file.uid"
             :aria-label=${locale.t("common.remove")}
           >
-            ×
+            <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+              <path d="M5 5l10 10M15 5 5 15"></path>
+            </svg>
           </button>
         </div>
       </div>

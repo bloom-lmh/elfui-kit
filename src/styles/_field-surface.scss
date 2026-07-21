@@ -1,6 +1,7 @@
 @mixin surface($selector) {
   #{$selector} {
     position: relative;
+    box-sizing: border-box;
     border: 0;
     border-bottom: 1px solid var(--elf-border-strong);
     border-radius: 6px 6px 0 0;
@@ -28,7 +29,7 @@
   }
 
   #{$selector}:hover {
-    background: var(--elf-field-hover-bg, var(--elf-bg-overlay));
+    background: var(--elf-field-hover-bg, var(--elf-field-bg, var(--elf-bg-overlay)));
   }
 
   #{$selector}:focus-within::after,
@@ -40,7 +41,7 @@
   :host([variant="outlined"]) #{$selector} {
     border: 1px solid var(--elf-border);
     border-radius: var(--elf-radius-sm);
-    background: var(--elf-bg-paper);
+    background: var(--elf-field-bg, var(--elf-bg-paper));
   }
 
   :host([variant="underlined"]) #{$selector} {
@@ -52,20 +53,20 @@
   :host([variant="solo"]) #{$selector} {
     border: 0;
     border-radius: var(--elf-radius-md);
-    background: var(--elf-bg-paper);
+    background: var(--elf-field-bg, var(--elf-bg-paper));
     box-shadow: var(--elf-shadow-1);
   }
 
   :host([variant="solo-filled"]) #{$selector} {
     border: 1px solid transparent;
     border-radius: var(--elf-radius-md);
-    background: var(--elf-bg-overlay);
+    background: var(--elf-field-bg, var(--elf-bg-overlay));
   }
 
   :host([variant="solo-inverted"]) #{$selector} {
     border: 1px solid transparent;
     border-radius: var(--elf-radius-md);
-    background: color-mix(in srgb, var(--elf-text-primary) 10%, var(--elf-bg-paper));
+    background: var(--elf-field-bg, color-mix(in srgb, var(--elf-text-primary) 10%, var(--elf-bg-paper)));
   }
 
   :host([variant="outlined"]) #{$selector}::after,
@@ -77,11 +78,11 @@
 
   :host([variant="outlined"]) #{$selector}:hover {
     border-color: var(--elf-border-strong);
-    background: var(--elf-bg-paper);
+    background: var(--elf-field-hover-bg, var(--elf-field-bg, var(--elf-bg-paper)));
   }
 
   :host([variant="solo"]) #{$selector}:hover {
-    background: var(--elf-bg-paper);
+    background: var(--elf-field-hover-bg, var(--elf-field-bg, var(--elf-bg-paper)));
     box-shadow: var(--elf-shadow-2);
   }
 
@@ -111,7 +112,7 @@
   :host([variant="solo-inverted"]) #{$selector}:focus-within,
   :host([variant="solo-inverted"]) #{$selector}:focus-visible,
   :host([variant="solo-inverted"][data-open]) #{$selector} {
-    background: var(--elf-text-primary);
+    background: var(--elf-field-bg, var(--elf-text-primary));
     color: var(--elf-bg-paper);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--elf-text-primary) 18%, transparent);
   }
@@ -178,7 +179,7 @@
   :host([data-open]) #{$label},
   #{$surface}:focus-within #{$label},
   #{$surface}:focus-visible #{$label} {
-    top: 8px;
+    top: 10px;
     font-size: 11px;
     transform: none;
   }

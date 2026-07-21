@@ -1,0 +1,45 @@
+@use "../../../styles/reset";
+
+:host {
+  display: flex;
+  flex-direction: var(--_direction, row);
+  align-items: var(--_alignment, center);
+  flex-wrap: var(--_wrap, nowrap);
+  gap: var(--_gap, 8px);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+slot {
+  display: contents;
+}
+
+::slotted(*) {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+:host([wrap]) {
+  --_wrap: wrap;
+}
+
+:host([fill]) {
+  width: 100%;
+}
+
+:host([fill][direction="horizontal"]) ::slotted(*) {
+  flex: 0 0 var(--_fill-ratio, 100%);
+  max-width: var(--_fill-ratio, 100%);
+}
+
+:host([fill][direction="vertical"]) ::slotted(*) {
+  min-height: var(--_fill-ratio, 100%);
+}
+
+/* 字符分隔符属于视觉增强；不包裹、不搬运用户的 Light DOM。 */
+:host([has-spacer]) ::slotted(:not(:last-child))::after {
+  content: var(--_spacer-content);
+  display: inline-block;
+  margin-inline-start: var(--_gap, 8px);
+  color: var(--elf-text-disabled);
+}

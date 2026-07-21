@@ -12,6 +12,15 @@ afterEach(() => {
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
 
 interface UploadEl extends HTMLElement {
+  modelValue?: Array<{
+    uid: string;
+    name: string;
+    size: number;
+    type: string;
+    status: "ready" | "uploading" | "success" | "error";
+    percentage: number;
+    message?: string;
+  }>;
   autoUpload?: boolean;
   multiple?: boolean;
   limit?: number;
@@ -290,5 +299,32 @@ describe("elf-upload", () => {
 
     expect(el.shadowRoot!.querySelector(".file.is-error")).toBeTruthy();
     expect(el.shadowRoot!.textContent).toContain("上传已取消");
+  });
+
+  it("renders a retry action for failed files and can upload them again", async () => {
+    vi.useFakeTimers();
+    const el = document.createElement("elf-upload") as UploadEl;
+    el.modelValue = [{
+      uid: "failed-1",
+      name: "failed.csv",
+      size: 128,
+      type: "text/csv",
+      status: "error",
+      percentage: 35,
+      message: "网络中断"
+    }];
+    document.body.appendChild(el);
+    await tick();
+
+    const retry = el.shadowRoot!.querySelector('[data-action="retry"]') as HTMLButtonElement;
+    expect(retry).not.toBeNull();
+    expect(retry.querySelector("svg")).not.toBeNull();
+    retry.click();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".file.is-uploading")).not.toBeNull();
+
+    await vi.runAllTimersAsync();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".file.is-success")).not.toBeNull();
   });
 });

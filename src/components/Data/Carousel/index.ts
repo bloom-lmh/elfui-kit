@@ -56,9 +56,13 @@ const emit = defineEmits(["change"]);
 const host = useHost();
 const active = useRef(0);
 const total = useRef(0);
+const visualIndex = useRef(0);
 
 let timer: ReturnType<typeof setInterval> | null = null;
 let initialized = false;
+let pendingLoopReset: number | null = null;
+let pointerId: number | null = null;
+let pointerStart = 0;
 
 const clearTimer = (): void => {
     if (timer) clearInterval(timer);
@@ -72,6 +76,44 @@ const clampIndex = (index: number): number => {
 
 const slides = (): HTMLElement[] => Array.from(host.children) as HTMLElement[];
 const trackElement = (): HTMLElement | null => host.shadowRoot?.querySelector<HTMLElement>(".track") ?? null;
+const isLoopSlideMode = (): boolean =>
+    props.loop && props.effect !== "fade" && !isCardMode() && total.value > 1;
+
+const normalVisualIndex = (index: number): number => (isLoopSlideMode() ? index + 1 : index);
+
+const stripCloneInteraction = (root: HTMLElement): void => {
+    root.removeAttribute("id");
+    root.setAttribute("aria-hidden", "true");
+    root.setAttribute("tabindex", "-1");
+    root.querySelectorAll<HTMLElement>("[id], a, button, input, select, textarea, [tabindex]").forEach((element) => {
+        element.removeAttribute("id");
+        element.setAttribute("tabindex", "-1");
+        element.setAttribute("aria-hidden", "true");
+    });
+};
+
+const syncLoopClones = (): void => {
+    const root = host.shadowRoot;
+    const firstClone = root?.querySelector<HTMLElement>(".loop-clone--first");
+    const lastClone = root?.querySelector<HTMLElement>(".loop-clone--last");
+    if (!firstClone || !lastClone) return;
+
+    firstClone.replaceChildren();
+    lastClone.replaceChildren();
+    if (!isLoopSlideMode()) return;
+
+    const items = slides();
+    const first = items[0]?.cloneNode(true) as HTMLElement | undefined;
+    const last = items[items.length - 1]?.cloneNode(true) as HTMLElement | undefined;
+    if (first) {
+        stripCloneInteraction(first);
+        firstClone.append(first);
+    }
+    if (last) {
+        stripCloneInteraction(last);
+        lastClone.append(last);
+    }
+};
 
 const isCardMode = (): boolean =>
     props.type === "card" && slides().length > 0 && slides().every((child) => child.tagName === "ELF-CAROUSEL-ITEM");
@@ -122,48 +164,82 @@ const startTimer = (): void => {
     timer = setInterval(doNext, Math.max(0, Number(props.interval) || 0));
 };
 
-const setActive = (index: number): boolean => {
+const setActive = (index: number, direction?: "previous" | "next"): boolean => {
     const next = clampIndex(index);
     const previous = active.value;
     if (next === previous) return false;
-    const crossesBoundary =
-        props.loop &&
-        props.effect !== "fade" &&
-        ((previous === total.value - 1 && next === 0) || (previous === 0 && next === total.value - 1));
-    const track = crossesBoundary ? trackElement() : null;
-    if (track) {
-        track.classList.add("is-resetting");
-        void track.offsetWidth;
-    }
+
+    const wrapsForward = isLoopSlideMode() && direction === "next" && previous === total.value - 1 && next === 0;
+    const wrapsBackward = isLoopSlideMode() && direction === "previous" && previous === 0 && next === total.value - 1;
     active.set(next);
-    emit("change", next, previous);
-    if (track) {
-        requestAnimationFrame(() => {
-            // Commit the wrapped position without animating it, then restore the normal transition.
-            // Reading layout here prevents browsers from coalescing the two style updates.
-            void track.offsetWidth;
-            track.classList.remove("is-resetting");
-        });
+    if (wrapsForward) {
+        visualIndex.set(total.value + 1);
+        pendingLoopReset = 1;
+    } else if (wrapsBackward) {
+        visualIndex.set(0);
+        pendingLoopReset = total.value;
+    } else {
+        visualIndex.set(normalVisualIndex(next));
+        pendingLoopReset = null;
     }
+    emit("change", next, previous);
     return true;
 };
 
 const doPrev = (): void => {
     if (total.value <= 1) return;
     const next = active.value > 0 ? active.value - 1 : props.loop ? total.value - 1 : active.value;
-    if (setActive(next)) startTimer();
+    if (setActive(next, "previous")) startTimer();
 };
 
 const doNext = (): void => {
     if (total.value <= 1) return;
     const next = active.value < total.value - 1 ? active.value + 1 : props.loop ? 0 : active.value;
-    if (setActive(next)) startTimer();
+    if (setActive(next, "next")) startTimer();
     else clearTimer();
 };
 
 const goTo = (index: number): void => {
     if (index < 0 || index >= total.value) return;
     if (setActive(index)) startTimer();
+};
+
+const onTrackTransitionEnd = (event: TransitionEvent): void => {
+    if (event.propertyName !== "transform" || pendingLoopReset == null) return;
+    const track = trackElement();
+    if (!track) return;
+
+    const resetTo = pendingLoopReset;
+    pendingLoopReset = null;
+    track.classList.add("is-resetting");
+    visualIndex.set(resetTo);
+    requestAnimationFrame(() => {
+        void track.offsetWidth;
+        track.classList.remove("is-resetting");
+    });
+};
+
+const pointerCoordinate = (event: PointerEvent): number =>
+    props.direction === "vertical" ? event.clientY : event.clientX;
+
+const onPointerDown = (event: PointerEvent): void => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    pointerId = event.pointerId;
+    pointerStart = pointerCoordinate(event);
+    (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+};
+
+const onPointerUp = (event: PointerEvent): void => {
+    if (pointerId !== event.pointerId) return;
+    const distance = pointerCoordinate(event) - pointerStart;
+    pointerId = null;
+    if (Math.abs(distance) < 36) return;
+    if (distance > 0) doPrev();
+    else doNext();
+};
+
+const onPointerCancel = (): void => {
+    pointerId = null;
 };
 
 const setActiveItem = (item: number | string): void => {
@@ -193,6 +269,9 @@ const updateTotal = (): void => {
     } else if (active.value >= total.value) {
         active.set(clampIndex(active.value));
     }
+    visualIndex.set(normalVisualIndex(active.value));
+    pendingLoopReset = null;
+    syncLoopClones();
     syncSlides();
     applyCard();
     startTimer();
@@ -212,8 +291,8 @@ const trackTransform = (): string =>
     isCardMode()
         ? ""
         : props.direction === "vertical"
-          ? `translateY(-${active.value * 100}%)`
-          : `translateX(-${active.value * 100}%)`;
+          ? `translateY(-${visualIndex.value * 100}%)`
+          : `translateX(-${visualIndex.value * 100}%)`;
 
 const dots = useComputed(() => Array.from({ length: total.value }, (_, index) => index));
 const showArrows = useComputed(
@@ -258,6 +337,10 @@ watchEffect(() => {
     void active.value;
     void total.value;
     void props.type;
+    void props.loop;
+    void props.effect;
+    void props.direction;
+    syncLoopClones();
     applyFade();
     syncSlides();
     applyCard();
@@ -285,9 +368,18 @@ const Carousel = defineHtml(html`
         @mouseenter=${onEnter}
         @mouseleave=${onLeave}
         @keydown=${onKeydown}
+        @pointerdown=${onPointerDown}
+        @pointerup=${onPointerUp}
+        @pointercancel=${onPointerCancel}
     >
-        <div class="track" :style=${props.effect !== "fade" ? { transform: trackTransform() } : {}}>
+        <div
+            class="track"
+            :style=${props.effect !== "fade" ? { transform: trackTransform() } : {}}
+            @transitionend=${onTrackTransitionEnd}
+        >
+            <div class="loop-clone loop-clone--last" aria-hidden="true"></div>
             <slot @slotchange=${updateTotal}></slot>
+            <div class="loop-clone loop-clone--first" aria-hidden="true"></div>
         </div>
 
         <div class="arrows" v-if=${showArrows}>

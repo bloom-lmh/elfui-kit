@@ -153,4 +153,20 @@ describe("elf-card", () => {
 
     expect(el.shadowRoot!.querySelector(".footer")).toBeTruthy();
   });
+
+  it("cover 插槽接受没有文本内容的图片元素", async () => {
+    const el = document.createElement("elf-card");
+    const image = document.createElement("img");
+    image.slot = "cover";
+    image.src = "cover.jpg";
+    image.alt = "封面";
+    el.appendChild(image);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    expect(el.hasAttribute("has-cover")).toBe(true);
+    expect(el.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="cover"]')?.assignedElements())
+      .toContain(image);
+  });
 });

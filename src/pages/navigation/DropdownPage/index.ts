@@ -42,6 +42,13 @@ const itemRows = [
   { name: "icon / icon slot", type: "string / unknown", default: "''", desc: "图标或自定义图标" }
 ];
 
+itemRows.push({
+  name: "selected",
+  type: "boolean",
+  default: "false",
+  desc: "组合式菜单项的受控选中状态，父级选择后会自动同步"
+});
+
 const eventsRows = [
   { name: "command", type: "({ command, item }) => void", desc: "点击可选菜单项时触发" },
   { name: "visible-change", type: "(visible) => void", desc: "展开状态变化时触发" },

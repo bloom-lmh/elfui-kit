@@ -14,11 +14,15 @@ useComponents({
 });
 
 const PageTimeline = defineHtml(html`
-  <elf-container
-    ><h1>Timeline 时间轴</h1>
-    <p>Material Design 风格时间轴，支持自定义颜色、图标、反转顺序。</p>
-    <page-timeline-ex1 /><page-timeline-ex2 /><page-timeline-ex3 /><page-timeline-ex4 /><page-timeline-props
-  /></elf-container>
+  <elf-container>
+    <h1>Timeline 时间轴</h1>
+    <p>按时间顺序展示事件，支持语义色、交替布局、横向布局以及每项独立的卡片和节点插槽。</p>
+    <page-timeline-ex1 />
+    <page-timeline-ex2 />
+    <page-timeline-ex3 />
+    <page-timeline-ex4 />
+    <page-timeline-props />
+  </elf-container>
 `);
 
 export { PageTimeline };

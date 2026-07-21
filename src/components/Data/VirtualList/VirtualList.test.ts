@@ -49,14 +49,46 @@ describe("virtual window", () => {
     const viewport = el.shadowRoot!.querySelector(".viewport") as HTMLElement;
     expect(viewport.style.height).toBe("240px");
     Object.defineProperty(viewport, "clientHeight", { configurable: true, value: 240 });
-    expect(el.shadowRoot!.querySelectorAll(".item").length).toBeLessThan(20);
+    expect(el.shadowRoot!.querySelectorAll(".item").length).toBeLessThan(40);
     expect((el.shadowRoot!.querySelector(".spacer") as HTMLElement).style.height).toBe("400000px");
 
     viewport.scrollTop = 20000;
     viewport.dispatchEvent(new Event("scroll"));
+    viewport.scrollTop = 320000;
+    viewport.dispatchEvent(new Event("scroll"));
+    expect(el.shadowRoot!.textContent).toContain("Item 8000");
+    expect(el.shadowRoot!.querySelectorAll(".item").length).toBeLessThan(40);
     await tick();
-    expect(el.shadowRoot!.textContent).toContain("Item 500");
-    expect(el.shadowRoot!.querySelectorAll(".item").length).toBeLessThan(20);
+    expect(el.shadowRoot!.textContent).toContain("Item 8000");
+    expect(el.shadowRoot!.querySelectorAll(".item").length).toBeLessThan(40);
+    expect((el.shadowRoot!.querySelector(".window") as HTMLElement).style.transform)
+      .toBe("translate3d(0, 319760px, 0)");
+    expect((el.shadowRoot!.querySelector(".window") as HTMLElement).style.top)
+      .toBe("0px");
+  });
+
+  it("recycles visible rows synchronously across continuous thumb-drag scroll events", async () => {
+    const el = document.createElement("elf-virtual-list") as HTMLElement & Record<string, unknown>;
+    el.items = Array.from({ length: 10000 }, (_, index) => ({ id: index, name: `Task ${index}` }));
+    el.itemHeight = 40;
+    el.height = 240;
+    el.overscan = 3;
+    el.renderItem = (item: unknown) => (item as { name: string }).name;
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const viewport = el.shadowRoot!.querySelector(".viewport") as HTMLElement;
+    Object.defineProperty(viewport, "clientHeight", { configurable: true, value: 240 });
+    for (let step = 1; step <= 80; step += 1) {
+      viewport.scrollTop = step * 4800;
+      viewport.dispatchEvent(new Event("scroll"));
+      expect(el.shadowRoot!.querySelectorAll(".item").length).toBeGreaterThan(0);
+      expect(el.shadowRoot!.querySelectorAll(".item").length).toBeLessThan(40);
+      expect(el.shadowRoot!.querySelector(".item")?.textContent).not.toBe("");
+    }
+
+    expect(el.shadowRoot!.textContent).toContain("Task 9600");
   });
 
   it("uses the same bounded window for a large table", async () => {
@@ -77,13 +109,13 @@ describe("virtual window", () => {
     Object.defineProperty(wrap, "clientHeight", { configurable: true, value: 280 });
     wrap.dispatchEvent(new Event("scroll"));
     await tick();
-    expect(el.shadowRoot!.querySelectorAll("tbody tr:not(.virtual-spacer)").length).toBeLessThan(20);
-    expect(el.shadowRoot!.querySelector(".virtual-spacer")).toBeTruthy();
+    expect(el.shadowRoot!.querySelectorAll("tbody tr").length).toBeLessThan(20);
+    expect((el.shadowRoot!.querySelector("tbody") as HTMLElement).style.height).toBe("40000px");
 
     wrap.scrollTop = 20000;
     wrap.dispatchEvent(new Event("scroll"));
     await tick();
     expect(el.shadowRoot!.textContent).toContain("Row 500");
-    expect(el.shadowRoot!.querySelectorAll("tbody tr:not(.virtual-spacer)").length).toBeLessThan(20);
+    expect(el.shadowRoot!.querySelectorAll("tbody tr").length).toBeLessThan(20);
   });
 });

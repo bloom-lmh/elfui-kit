@@ -300,4 +300,17 @@ describe("elf-button", () => {
         expect(warn.mock.calls.some(([message]) => String(message).includes("[defineExpose]"))).toBe(false);
         warn.mockRestore();
     });
+
+    it.each([
+        ["small", "sm"],
+        ["default", "md"],
+        ["large", "lg"],
+    ])("normalizes the Element Plus size alias %s", async (source, expected) => {
+        const el = document.createElement("elf-button") as ButtonEl;
+        el.setAttribute("size", source);
+        document.body.appendChild(el);
+        await tick();
+
+        expect(el.getAttribute("size")).toBe(expected);
+    });
 });

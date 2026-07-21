@@ -135,11 +135,20 @@ const editingHour = (): number => Number(editingValue().slice(0, 2));
 const editingMinute = (): number => Number(editingValue().slice(3, 5));
 const period = (): "AM" | "PM" => (editingHour() >= 12 ? "PM" : "AM");
 
-const hourItems = (): Array<{ amount: number; label: number; active: boolean; style: Record<string, string> }> =>
+interface ClockItem {
+  key: string;
+  amount: number;
+  label: number | string;
+  active: boolean;
+  style: Record<string, string>;
+}
+
+const hourItems = (): ClockItem[] =>
   Array.from({ length: 12 }, (_, index) => {
     const label = index + 1;
     const normalized = label % 12;
     return {
+      key: `hour-${normalized}`,
       amount: normalized,
       label,
       active: editingHour() % 12 === normalized,
@@ -150,10 +159,11 @@ const hourItems = (): Array<{ amount: number; label: number; active: boolean; st
     };
   });
 
-const minuteItems = (): Array<{ amount: number; label: string; active: boolean; style: Record<string, string> }> =>
+const minuteItems = (): ClockItem[] =>
   Array.from({ length: 12 }, (_, index) => {
     const value = index * 5;
     return {
+      key: `minute-${value}`,
       amount: value,
       label: String(value).padStart(2, "0"),
       active: Math.round(editingMinute() / 5) * 5 % 60 === value,
@@ -364,11 +374,12 @@ const TimePicker = defineHtml(html`
         <span class="clock-center"></span>
         <button
           v-for="item in clockItems()"
-          :key="item.amount"
+          :key="item.key"
           type="button"
           :class=${["clock-number", { "is-active": item.active }]}
           :style="item.style"
           :data-clock-value="item.amount"
+          :aria-pressed="item.active ? 'true' : 'false'"
           @click=${selectClockValue}
         ><span>{{ item.label }}</span></button>
       </div>

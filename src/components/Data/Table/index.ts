@@ -10,6 +10,7 @@ import {
   onUnmount,
   useHost,
   useRef,
+  useShallowRef,
   useTemplateRef,
   watchEffect,
   defineHtml
@@ -190,25 +191,43 @@ const locale = useLocaleProvider();
 const wrapRef = useTemplateRef<HTMLElement>("wrap");
 const tooltipId = `elf-table-tooltip-${++tableTooltipSeed}`;
 
-const columnsState = useRef<TableColumnView[]>([]);
+// Large table collections are replaced as immutable snapshots. Deep proxying
+// every row/cell/key adds avoidable work to selection, pagination and virtual
+// scrolling without providing any in-place mutation semantics.
+const columnsState = useShallowRef<TableColumnView[]>([]);
 
-const rowsState = useRef<TableRowView[]>([]);
+const rowsState = useShallowRef<TableRowView[]>([]);
 
 const virtualScrollTop = useRef(0);
+let scrollEventQueued = false;
+let pendingScrollDetail: TableScrollDetail | null = null;
+let cachedVirtualKey = "";
+let cachedVirtualWindow: VirtualWindow = { start: 0, end: 0, offset: 0, totalSize: 0 };
+let cachedRenderSource: TableRowView[] | null = null;
+let cachedRenderStart = -1;
+let cachedRenderEnd = -1;
+let cachedRenderRows: TableRowView[] = [];
+let fastVirtualRangeKey = "";
 
-const allRowsState = useRef<TableRowView[]>([]);
+const allRowsState = useShallowRef<TableRowView[]>([]);
 
 const isTreeState = useRef(false);
 
-const selectedState = useRef<string[]>([]);
+const selectedState = useShallowRef<string[]>([]);
+let pendingSelectedKeys: string[] | null = null;
+let selectionCommitFrame = 0;
+let selectionCommitTimer = 0;
 
-const expandedState = useRef<string[]>([]);
+const selectedKeysSnapshot = (track = false): string[] =>
+  pendingSelectedKeys ?? (track ? selectedState.value : selectedState.peek());
 
-const lazyChildrenState = useRef<Record<string, TableRow[]>>({});
+const expandedState = useShallowRef<string[]>([]);
 
-const treeLoadingState = useRef<string[]>([]);
+const lazyChildrenState = useShallowRef<Record<string, TableRow[]>>({});
 
-const treeLoadedState = useRef<string[]>([]);
+const treeLoadingState = useShallowRef<string[]>([]);
+
+const treeLoadedState = useShallowRef<string[]>([]);
 
 const currentKey = useRef("");
 
@@ -595,6 +614,7 @@ const normalizeTreeSelection = (keys: string[]): string[] => {
 };
 
 const rebuildRows = (): void => {
+  fastVirtualRangeKey = "";
   const columns = normalizeColumns();
   syncExternalFilters(columns);
   const hasActiveFilters = activeFilterColumns(columns).length > 0;
@@ -616,7 +636,7 @@ const rebuildRows = (): void => {
   isTreeState.set(tree.isTree);
 
   const rowKeys = new Set(allRows.map((row) => row.key));
-  const nextSelected = normalizeTreeSelection(selectedState.peek());
+  const nextSelected = normalizeTreeSelection(selectedKeysSnapshot());
   if (signature(nextSelected) !== lastSelectedSig.peek()) {
     selectedState.set(nextSelected);
     lastSelectedSig.set(signature(nextSelected));
@@ -629,13 +649,41 @@ const rebuildRows = (): void => {
   if (currentKey.peek() && !rowKeys.has(currentKey.peek())) currentKey.set("");
 };
 
+const commitSelectedKeys = (next: string[]): void => {
+  pendingSelectedKeys = null;
+  selectedState.set(next);
+};
+
+const scheduleSelectedKeysCommit = (next: string[]): void => {
+  if (typeof window === "undefined" || typeof requestAnimationFrame === "undefined") {
+    commitSelectedKeys(next);
+    return;
+  }
+  if (selectionCommitFrame) cancelAnimationFrame(selectionCommitFrame);
+  if (selectionCommitTimer) window.clearTimeout(selectionCommitTimer);
+  selectionCommitFrame = requestAnimationFrame(() => {
+    selectionCommitFrame = 0;
+    // The optimistic checkbox/row state gets one paint before the more
+    // expensive declarative table reconciliation runs.
+    selectionCommitTimer = window.setTimeout(() => {
+      selectionCommitTimer = 0;
+      if (pendingSelectedKeys) commitSelectedKeys(pendingSelectedKeys);
+    }, 0);
+  });
+};
+
 const setSelectedKeys = (keys: string[], shouldEmit = true): void => {
   const next = normalizeTreeSelection(keys);
-  selectedState.set(next);
+  const changed = signature(next) !== signature(selectedKeysSnapshot());
+  if (!changed) return;
+  pendingSelectedKeys = next;
   lastSelectedSig.set(signature(next));
+  applySelectionDom(next);
+  if (shouldEmit) scheduleSelectedKeysCommit(next);
+  else commitSelectedKeys(next);
   if (shouldEmit) {
     emit("update:selectedKeys", next);
-    emit("selection-change", getSelectionRows());
+    emit("selection-change", getSelectionRows(next));
   }
 };
 
@@ -746,31 +794,49 @@ const isVirtualized = (): boolean =>
   && !isTreeState.value
   && rowsState.value.length >= Math.max(0, Number(props.virtualThreshold) || 0);
 
-const virtualWindow = (): VirtualWindow => {
+const virtualWindowAt = (scrollOffset: number): VirtualWindow => {
   const wrap = wrapRef.value;
   const viewportSize = Math.max(0, (wrap?.clientHeight || cssSizeNumber(cssSize(props.height))) - (props.showHeader ? 48 : 0));
-  return computeVirtualWindow({
-    count: rowsState.value.length,
-    itemSize: Math.max(1, Number(props.rowHeight) || 48),
+  const count = rowsState.value.length;
+  const itemSize = Math.max(1, Number(props.rowHeight) || 48);
+  const overscan = Math.max(0, Number(props.overscan) || 0);
+  const key = `${count}:${itemSize}:${viewportSize}:${scrollOffset}:${overscan}`;
+  if (key === cachedVirtualKey) return cachedVirtualWindow;
+  cachedVirtualKey = key;
+  cachedVirtualWindow = computeVirtualWindow({
+    count,
+    itemSize,
     viewportSize,
-    scrollOffset: virtualScrollTop.value,
-    overscan: props.overscan
+    scrollOffset,
+    overscan
   });
+  return cachedVirtualWindow;
 };
+
+const virtualWindow = (): VirtualWindow => virtualWindowAt(virtualScrollTop.value);
 
 const getRenderRows = (): TableRowView[] => {
   if (!isVirtualized()) return rowsState.value;
   const range = virtualWindow();
-  return rowsState.value.slice(range.start, range.end);
+  const source = rowsState.value;
+  if (source === cachedRenderSource && range.start === cachedRenderStart && range.end === cachedRenderEnd) {
+    return cachedRenderRows;
+  }
+  cachedRenderSource = source;
+  cachedRenderStart = range.start;
+  cachedRenderEnd = range.end;
+  cachedRenderRows = source.slice(range.start, range.end);
+  return cachedRenderRows;
 };
 
-const virtualTopSize = (): number => isVirtualized() ? virtualWindow().offset : 0;
-const virtualBottomSize = (): number => {
-  if (!isVirtualized()) return 0;
+const virtualBodyStyle = (): Record<string, string> => {
+  if (!isVirtualized()) return {};
   const range = virtualWindow();
-  return Math.max(0, range.totalSize - range.end * Math.max(1, Number(props.rowHeight) || 48));
+  return {
+    height: `${range.totalSize}px`,
+    paddingBlockStart: `${range.offset}px`
+  };
 };
-const virtualSpacerStyle = (height: number): Record<string, string> => ({ height: `${height}px` });
 
 const tableClass = (): Record<string, boolean> => ({
   "is-stripe": Boolean(props.stripe),
@@ -983,7 +1049,7 @@ const mergedCellStyle = (column: TableColumnView, row: TableRowView): StyleValue
 const rowClass = (row: TableRowView): ClassValue => [
   {
     "is-current": Boolean(props.highlightCurrentRow && currentKey.value === row.key),
-    "is-selected": selectedState.value.includes(row.key)
+    "is-selected": selectedKeysSnapshot(true).includes(row.key)
   },
   resolveRowClass(row)
 ];
@@ -1157,6 +1223,7 @@ const clearTooltipTimers = (): void => {
 };
 
 const closeTooltip = (): void => {
+  if (!tooltipOpenState.peek() && !tooltipAnchor && !tooltipCellKeyState.peek()) return;
   clearTooltipTimers();
   tooltipAnchor = null;
   tooltipOpenState.set(false);
@@ -1240,7 +1307,7 @@ const tooltipDescriptionId = (row: TableRowView, column: TableColumnView): strin
     ? tooltipId
     : null;
 
-const isSelected = (row: TableRowView): boolean => selectedState.value.includes(row.key);
+const isSelected = (row: TableRowView): boolean => selectedKeysSnapshot(true).includes(row.key);
 
 const isExpanded = (row: TableRowView): boolean => expandedState.value.includes(row.key);
 
@@ -1258,20 +1325,50 @@ const descendantRowsOf = (row: TableRowView, includeSelf = false): TableRowView[
 const isRowIndeterminate = (row: TableRowView): boolean => {
   if (!row.hasChildren || treeConfig().checkStrictly) return false;
   const descendants = descendantRowsOf(row).filter(isSelectable);
-  const selected = descendants.filter((item) => selectedState.value.includes(item.key)).length;
+  const keys = new Set(selectedKeysSnapshot(true));
+  const selected = descendants.filter((item) => keys.has(item.key)).length;
   return selected > 0 && selected < descendants.length;
 };
 
 const isAllSelected = (): boolean => {
   const rows = selectableRows();
-  return rows.length > 0 && rows.every((row) => selectedState.value.includes(row.key));
+  const keys = new Set(selectedKeysSnapshot(true));
+  return rows.length > 0 && rows.every((row) => keys.has(row.key));
 };
 
 const isIndeterminate = (): boolean => {
   const rows = selectableRows();
-  const count = rows.filter((row) => selectedState.value.includes(row.key)).length;
+  const keys = new Set(selectedKeysSnapshot(true));
+  const count = rows.filter((row) => keys.has(row.key)).length;
   return count > 0 && count < rows.length;
 };
+
+function applySelectionDom(keys: string[]): void {
+  const root = host.shadowRoot;
+  if (!root) return;
+  const selected = new Set(keys);
+  const rowsByKey = new Map(allRowsState.peek().map((row) => [row.key, row] as const));
+  for (const rowElement of root.querySelectorAll<HTMLTableRowElement>("tbody tr")) {
+    const key = String(rowElement.dataset.rowKey || rowElement.dataset.virtualKey || "");
+    const row = rowsByKey.get(key);
+    const checked = selected.has(key);
+    const indeterminate = row ? isRowIndeterminate(row) : false;
+    rowElement.classList.toggle("is-selected", checked);
+    const checkbox = rowElement.querySelector<HTMLButtonElement>(".table-checkbox");
+    if (!checkbox) continue;
+    checkbox.classList.toggle("is-checked", checked);
+    checkbox.classList.toggle("is-indeterminate", indeterminate);
+    checkbox.setAttribute("aria-checked", indeterminate ? "mixed" : String(checked));
+  }
+  const headerCheckbox = root.querySelector<HTMLButtonElement>("thead .table-checkbox");
+  if (headerCheckbox) {
+    const all = isAllSelected();
+    const indeterminate = isIndeterminate();
+    headerCheckbox.classList.toggle("is-checked", all);
+    headerCheckbox.classList.toggle("is-indeterminate", indeterminate);
+    headerCheckbox.setAttribute("aria-checked", indeterminate ? "mixed" : String(all));
+  }
+}
 
 const toggleRowSelection = (target: unknown, selected?: boolean, ignoreSelectable = false): void => {
   const rows = allRowsState.peek();
@@ -1281,7 +1378,7 @@ const toggleRowSelection = (target: unknown, selected?: boolean, ignoreSelectabl
       : rows.find((item) => item.raw === target);
   if (!row) return;
   if (!ignoreSelectable && !isSelectable(row)) return;
-  const set = new Set(selectedState.peek());
+  const set = new Set(selectedKeysSnapshot());
   const shouldSelect = selected == null ? !set.has(row.key) : selected;
   const affected = isTreeState.peek() && !treeConfig().checkStrictly
     ? descendantRowsOf(row, true).filter((item) => ignoreSelectable || isSelectable(item))
@@ -1296,8 +1393,9 @@ const toggleRowSelection = (target: unknown, selected?: boolean, ignoreSelectabl
 const toggleAllSelection = (): void => {
   const shouldClear = isAllSelected() || (isIndeterminate() && !props.selectOnIndeterminate);
   const visibleKeys = new Set(rowsState.peek().map((row) => row.key));
-  const retainedKeys = selectedState.peek().filter((key) => !visibleKeys.has(key));
-  const disabledKeys = selectedState.peek().filter((key) => {
+  const currentSelection = selectedKeysSnapshot();
+  const retainedKeys = currentSelection.filter((key) => !visibleKeys.has(key));
+  const disabledKeys = currentSelection.filter((key) => {
     const row = rowsState.peek().find((item) => item.key === key);
     return row ? !isSelectable(row) : false;
   });
@@ -1422,8 +1520,8 @@ const toggleRowExpansion = (target: unknown, expanded?: boolean): void => {
   else toggleDetailRowExpansion(row, expanded);
 };
 
-function getSelectionRows(): Record<string, unknown>[] {
-  const selected = new Set(selectedState.peek());
+function getSelectionRows(keys: string[] = selectedKeysSnapshot()): Record<string, unknown>[] {
+  const selected = new Set(keys);
   return allRowsState.peek().filter((row) => selected.has(row.key)).map((row) => row.raw);
 }
 
@@ -2030,15 +2128,162 @@ const summaryCells = (): string[] => {
 const getWrap = (): HTMLElement | null =>
   wrapRef.value ?? host.shadowRoot?.querySelector<HTMLElement>(".table-wrap") ?? null;
 
+interface FastVirtualRowElement extends HTMLTableRowElement {
+  __row?: TableRowView;
+}
+
+interface FastVirtualCellElement extends HTMLTableCellElement {
+  __column?: TableColumnView;
+}
+
+const classNamesOf = (value: unknown): string[] => {
+  if (!value) return [];
+  if (typeof value === "string") return value.split(/\s+/).filter(Boolean);
+  if (Array.isArray(value)) return value.flatMap(classNamesOf);
+  if (typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, enabled]) => Boolean(enabled))
+      .map(([name]) => name);
+  }
+  return [];
+};
+
+const canUseFastVirtualBody = (): boolean =>
+  isVirtualized()
+  && !props.showSummary
+  && typeof props.spanMethod !== "function"
+  && typeof props.rowClassName !== "function"
+  && typeof props.rowStyle !== "function"
+  && typeof props.cellClassName !== "function"
+  && typeof props.cellStyle !== "function"
+  && getColumns().every((column) =>
+    (column.type === "default" || column.type === "index")
+    && typeof column.raw.formatter !== "function"
+    && typeof column.raw.renderCell !== "function"
+    && !hasCellTooltip(column)
+  );
+
+const createFastVirtualCell = (): FastVirtualCellElement => {
+  const cell = document.createElement("td") as FastVirtualCellElement;
+  const content = document.createElement("span");
+  content.className = "cell-text rendered-content";
+  cell.appendChild(content);
+  cell.addEventListener("mouseenter", (event) => {
+    const row = (cell.parentElement as FastVirtualRowElement | null)?.__row;
+    if (row && cell.__column) onCellMouseEnter(row, cell.__column, event);
+  });
+  cell.addEventListener("mouseleave", (event) => {
+    const row = (cell.parentElement as FastVirtualRowElement | null)?.__row;
+    if (row && cell.__column) onCellMouseLeave(row, cell.__column, event);
+  });
+  cell.addEventListener("focusin", (event) => {
+    const row = (cell.parentElement as FastVirtualRowElement | null)?.__row;
+    if (row && cell.__column) onCellFocusIn(row, cell.__column, event);
+  });
+  cell.addEventListener("focusout", (event) => {
+    if (cell.__column) onCellFocusOut(cell.__column, event);
+  });
+  cell.addEventListener("keydown", onCellKeydown);
+  cell.addEventListener("click", (event) => {
+    const row = (cell.parentElement as FastVirtualRowElement | null)?.__row;
+    if (row && cell.__column) onCellClick(row, cell.__column, event);
+  });
+  cell.addEventListener("dblclick", (event) => {
+    const row = (cell.parentElement as FastVirtualRowElement | null)?.__row;
+    if (row && cell.__column) onCellDblClick(row, cell.__column, event);
+  });
+  cell.addEventListener("contextmenu", (event) => {
+    const row = (cell.parentElement as FastVirtualRowElement | null)?.__row;
+    if (row && cell.__column) onCellContextMenu(row, cell.__column, event);
+  });
+  return cell;
+};
+
+const createFastVirtualRow = (): FastVirtualRowElement => {
+  const rowElement = document.createElement("tr") as FastVirtualRowElement;
+  rowElement.addEventListener("click", (event) => {
+    if (rowElement.__row) onRowClick(rowElement.__row, event);
+  });
+  rowElement.addEventListener("dblclick", (event) => {
+    if (rowElement.__row) onRowDblClick(rowElement.__row, event);
+  });
+  rowElement.addEventListener("contextmenu", (event) => {
+    if (rowElement.__row) onRowContextMenu(rowElement.__row, event);
+  });
+  return rowElement;
+};
+
+const updateFastVirtualRow = (rowElement: FastVirtualRowElement, row: TableRowView): void => {
+  rowElement.__row = row;
+  rowElement.dataset.virtualKey = row.key;
+  rowElement.dataset.rowKey = row.key;
+  rowElement.className = classNamesOf(rowClass(row)).join(" ");
+  rowElement.removeAttribute("style");
+  Object.assign(rowElement.style, rowStyle(row));
+
+  const columns = getColumns();
+  while (rowElement.children.length < columns.length) rowElement.appendChild(createFastVirtualCell());
+  while (rowElement.children.length > columns.length) rowElement.lastElementChild?.remove();
+  columns.forEach((column, columnIndex) => {
+    const cell = rowElement.children[columnIndex] as FastVirtualCellElement;
+    cell.__column = column;
+    cell.dataset.columnIndex = String(columnIndex);
+    cell.className = classNamesOf(cellClass(column, row)).join(" ");
+    cell.removeAttribute("style");
+    Object.assign(cell.style, mergedCellStyle(column, row));
+    const content = cell.firstElementChild as HTMLElement;
+    content.textContent = getCell(row, column);
+  });
+};
+
+const renderFastVirtualBody = (range: VirtualWindow): void => {
+  const body = host.shadowRoot?.querySelector<HTMLTableSectionElement>("tbody");
+  if (!body) return;
+  const existing = new Map(
+    Array.from(body.querySelectorAll<FastVirtualRowElement>("tr[data-virtual-key]"))
+      .map((row) => [String(row.dataset.virtualKey), row] as const)
+  );
+  const rows = rowsState.peek().slice(range.start, range.end);
+  const nextElements = rows.map((row) => {
+    const rowElement = existing.get(row.key) ?? createFastVirtualRow();
+    updateFastVirtualRow(rowElement, row);
+    return rowElement;
+  });
+  body.style.height = `${range.totalSize}px`;
+  body.style.paddingBlockStart = `${range.offset}px`;
+  body.replaceChildren(...nextElements);
+  fastVirtualRangeKey = `${range.start}:${range.end}:${range.offset}:${range.totalSize}`;
+};
+
+const virtualRangeKey = (range: VirtualWindow): string =>
+  `${range.start}:${range.end}:${range.offset}:${range.totalSize}`;
+
+const flushScrollEvent = (): void => {
+  scrollEventQueued = false;
+  if (pendingScrollDetail) {
+    emit("scroll", pendingScrollDetail);
+    pendingScrollDetail = null;
+  }
+};
+
 const onScroll = (event: Event): void => {
   closeTooltip();
   const target = event.currentTarget as HTMLElement;
-  if (isVirtualized()) virtualScrollTop.set(target.scrollTop);
-  const detail: TableScrollDetail = {
-    scrollLeft: target.scrollLeft,
-    scrollTop: target.scrollTop
-  };
-  emit("scroll", detail);
+  if (isVirtualized()) {
+    const next = virtualWindowAt(target.scrollTop);
+    // Table and VirtualList share the same fixed-row window engine and update
+    // the visible range before the browser can paint a newly-scrolled viewport.
+    if (canUseFastVirtualBody()) {
+      if (fastVirtualRangeKey !== virtualRangeKey(next)) renderFastVirtualBody(next);
+    } else {
+      const normalizedScrollTop = Math.max(0, target.scrollTop);
+      if (virtualScrollTop.peek() !== normalizedScrollTop) virtualScrollTop.set(normalizedScrollTop);
+    }
+  }
+  pendingScrollDetail = { scrollLeft: target.scrollLeft, scrollTop: target.scrollTop };
+  if (scrollEventQueued) return;
+  scrollEventQueued = true;
+  queueMicrotask(flushScrollEvent);
 };
 
 const scrollTo = (optionsOrX: ScrollToOptions | number, y = 0): void => {
@@ -2084,6 +2329,13 @@ onUnmount(() => {
   if (filterOverlayFrame && typeof window !== "undefined") {
     window.cancelAnimationFrame(filterOverlayFrame);
   }
+  scrollEventQueued = false;
+  pendingScrollDetail = null;
+  if (selectionCommitFrame && typeof window !== "undefined") window.cancelAnimationFrame(selectionCommitFrame);
+  if (selectionCommitTimer && typeof window !== "undefined") window.clearTimeout(selectionCommitTimer);
+  selectionCommitFrame = 0;
+  selectionCommitTimer = 0;
+  pendingSelectedKeys = null;
 });
 
 // HTMLElement already defines scrollTo. The macro intentionally warns when an
@@ -2233,12 +2485,10 @@ const Table = defineHtml<TableProps>(html`
             </th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-if=${virtualTopSize() > 0} class="virtual-spacer" aria-hidden="true">
-            <td :colspan=${getColumns().length} :style=${virtualSpacerStyle(virtualTopSize())}></td>
-          </tr>
+        <tbody :style=${virtualBodyStyle()}>
           <template v-for="row in getRenderRows()" :key="row.key">
             <tr
+              :data-row-key=${row.key}
               :class="rowClass(row)"
               :style="rowStyle(row)"
               :aria-level=${isTreeState.value ? String(row.level + 1) : null}
@@ -2343,9 +2593,6 @@ const Table = defineHtml<TableProps>(html`
               </td>
             </tr>
           </template>
-          <tr v-if=${virtualBottomSize() > 0} class="virtual-spacer" aria-hidden="true">
-            <td :colspan=${getColumns().length} :style=${virtualSpacerStyle(virtualBottomSize())}></td>
-          </tr>
         </tbody>
         <tfoot v-if=${props.showSummary}>
           <tr class="summary-row">

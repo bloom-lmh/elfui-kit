@@ -1,5 +1,8 @@
 # Button Element Plus API 对标计划
 
+## 2026-07-19 尺寸兼容
+- [x] 兼容 small/default/large 并归一化为 sm/md/lg，消除案例按钮坍缩
+
 ## 本轮记录
 - [x] 第二阶段：补 `type` 语义色兼容、`native-type`、`text`、`bg`、`link`、`round`、`circle`、`icon`、`loading-icon`、`dark`、`direction` 基础行为和页面示例。
 - [x] 第三阶段：修复 handleClick 逻辑反写（disabled/loading 才阻止事件）；新增 noHover 属性禁用 hover 效果；补齐 defineExpose（size/type/disabled）；补齐 host flag（block/plain/dashed/no-hover）；补齐单测 25 条覆盖所有状态。

@@ -64,11 +64,11 @@ describe("elf-carousel", () => {
     const dots = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".dot");
     dots[2].click();
     await tick();
-    expect((el.shadowRoot!.querySelector(".track") as HTMLElement).style.transform).toBe("translateY(-200%)");
+    expect((el.shadowRoot!.querySelector(".track") as HTMLElement).style.transform).toBe("translateY(-300%)");
 
     root.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
     await tick();
-    expect((el.shadowRoot!.querySelector(".track") as HTMLElement).style.transform).toBe("translateY(-100%)");
+    expect((el.shadowRoot!.querySelector(".track") as HTMLElement).style.transform).toBe("translateY(-200%)");
   });
 
   it("hides arrows and indicators when visibility props request it", async () => {
@@ -180,5 +180,59 @@ describe("elf-carousel", () => {
     document.body.appendChild(fallback);
     await tick();
     expect((fallback.querySelector("div") as HTMLElement).style.getPropertyValue("--_card-offset")).toBe("");
+  });
+
+  it("uses inert boundary clones and resets the visual track after a loop transition", async () => {
+    const el = document.createElement("elf-carousel") as HTMLElement & {
+      activeIndex: number;
+      next: () => void;
+    };
+    el.setAttribute("autoplay", "false");
+    el.setAttribute("initial-index", "1");
+    el.innerHTML = '<a id="first" href="#first">First</a><button id="last">Last</button>';
+    document.body.appendChild(el);
+    await tick();
+
+    const track = el.shadowRoot!.querySelector<HTMLElement>(".track")!;
+    const firstClone = el.shadowRoot!.querySelector<HTMLElement>(".loop-clone--first")!;
+    expect(firstClone.querySelector("[id]")).toBeNull();
+    expect(firstClone.firstElementChild?.getAttribute("tabindex")).toBe("-1");
+
+    el.next();
+    await tick();
+    expect(el.activeIndex).toBe(0);
+    expect(track.style.transform).toBe("translateX(-300%)");
+
+    const transitionEnd = new Event("transitionend", { bubbles: true });
+    Object.defineProperty(transitionEnd, "propertyName", { value: "transform" });
+    track.dispatchEvent(transitionEnd);
+    await tick();
+    expect(track.style.transform).toBe("translateX(-100%)");
+    expect(track.classList.contains("is-resetting")).toBe(true);
+  });
+
+  it("supports horizontal pointer swipes without changing short taps", async () => {
+    const el = document.createElement("elf-carousel") as HTMLElement & { activeIndex: number };
+    el.setAttribute("autoplay", "false");
+    el.innerHTML = "<div>A</div><div>B</div><div>C</div>";
+    document.body.appendChild(el);
+    await tick();
+
+    const viewport = el.shadowRoot!.querySelector<HTMLElement>(".carousel")!;
+    viewport.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, pointerId: 1, pointerType: "touch", clientX: 180 })
+    );
+    viewport.dispatchEvent(
+      new PointerEvent("pointerup", { bubbles: true, pointerId: 1, pointerType: "touch", clientX: 160 })
+    );
+    expect(el.activeIndex).toBe(0);
+
+    viewport.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, pointerId: 2, pointerType: "touch", clientX: 180 })
+    );
+    viewport.dispatchEvent(
+      new PointerEvent("pointerup", { bubbles: true, pointerId: 2, pointerType: "touch", clientX: 80 })
+    );
+    expect(el.activeIndex).toBe(1);
   });
 });

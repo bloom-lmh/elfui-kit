@@ -18,6 +18,7 @@ import {
 } from "elfui";
 
 import styles from "./style.scss?inline";
+import { useLocaleProvider } from "../../Providers/context";
 import type {
   AnchorChangeDetail,
   AnchorClickDetail,
@@ -83,6 +84,8 @@ const props = defineProps<AnchorProps>({
     })
   }
 });
+
+const locale = useLocaleProvider();
 
 const emit = defineEmits<{
   "update:modelValue": [href: string];
@@ -233,17 +236,27 @@ const findTarget = (href: string): HTMLElement | null => {
   }
 };
 
-const getScrollTop = (container: ScrollContainer): number =>
+const usesHorizontalContentAxis = (container: ScrollContainer): boolean => {
+  if (container === window) return false;
+  const element = container as HTMLElement;
+  return direction() === "horizontal" && element.scrollWidth > element.clientWidth + 1;
+};
+
+const getScrollOffset = (container: ScrollContainer): number =>
   container === window
     ? window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0
-    : (container as HTMLElement).scrollTop;
+    : usesHorizontalContentAxis(container)
+      ? (container as HTMLElement).scrollLeft
+      : (container as HTMLElement).scrollTop;
 
-const getElementTop = (element: HTMLElement, container: ScrollContainer): number => {
+const getElementOffset = (element: HTMLElement, container: ScrollContainer): number => {
   const rect = element.getBoundingClientRect();
-  if (container === window) return getScrollTop(container) + rect.top;
+  if (container === window) return getScrollOffset(container) + rect.top;
   const parent = container as HTMLElement;
   const parentRect = parent.getBoundingClientRect();
-  return parent.scrollTop + rect.top - parentRect.top;
+  return usesHorizontalContentAxis(container)
+    ? parent.scrollLeft + rect.left - parentRect.left
+    : parent.scrollTop + rect.top - parentRect.top;
 };
 
 const setActive = (href: string): void => {
@@ -253,14 +266,58 @@ const setActive = (href: string): void => {
   emit("update:modelValue", href);
   const detail: AnchorChangeDetail = { href, oldHref };
   emit("change", detail);
+  queueMicrotask(() => ensureHorizontalItemVisible(href));
+};
+
+const ensureHorizontalItemVisible = (href: string): void => {
+  if (direction() !== "horizontal" || !href) return;
+  const list = host.shadowRoot?.querySelector<HTMLElement>(".list");
+  const item = Array.from(host.shadowRoot?.querySelectorAll<HTMLElement>(".item") || []).find(
+    (candidate) => candidate.dataset.href === href
+  );
+  if (!list || !item || list.clientWidth <= 0) return;
+
+  const viewportStart = list.scrollLeft;
+  const viewportEnd = viewportStart + list.clientWidth;
+  const itemStart = item.offsetLeft;
+  const itemEnd = itemStart + item.offsetWidth;
+  let next = viewportStart;
+  if (itemStart < viewportStart) next = itemStart;
+  else if (itemEnd > viewportEnd) next = itemEnd - list.clientWidth;
+  if (next === viewportStart) return;
+
+  if (typeof list.scrollTo === "function") {
+    list.scrollTo({ left: Math.max(0, next), behavior: props.smooth ? "smooth" : "auto" });
+  } else {
+    list.scrollLeft = Math.max(0, next);
+  }
+};
+
+const scrollHorizontal = (directionValue: -1 | 1): void => {
+  const list = host.shadowRoot?.querySelector<HTMLElement>(".list");
+  if (!list || direction() !== "horizontal") return;
+  const distance = Math.max(160, list.clientWidth * 0.75) * directionValue;
+  if (typeof list.scrollBy === "function") {
+    list.scrollBy({ left: distance, behavior: props.smooth ? "smooth" : "auto" });
+  } else {
+    list.scrollLeft += distance;
+  }
+};
+
+const onHorizontalWheel = (event: WheelEvent): void => {
+  if (direction() !== "horizontal" || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+  const list = event.currentTarget as HTMLElement;
+  if (list.scrollWidth <= list.clientWidth) return;
+  event.preventDefault();
+  list.scrollLeft += event.deltaY;
 };
 
 const updateActive = (): void => {
   if (!mounted.peek()) return;
   const target = scrollTarget || getContainer();
-  const scrollTop = getScrollTop(target) + numberProp(props.offset) + boundValue();
+  const scrollOffset = getScrollOffset(target) + numberProp(props.offset) + boundValue();
   let next = "";
-  if (props.selectScrollTop && getScrollTop(target) <= 0) {
+  if (props.selectScrollTop && getScrollOffset(target) <= 0) {
     setActive(firstEnabledHref());
     return;
   }
@@ -268,7 +325,7 @@ const updateActive = (): void => {
     if (item.disabled) continue;
     const element = findTarget(item.href);
     if (!element) continue;
-    if (getElementTop(element, target) <= scrollTop) next = item.href;
+    if (getElementOffset(element, target) <= scrollOffset) next = item.href;
   }
   if (!next) next = firstEnabledHref();
   setActive(next);
@@ -288,19 +345,23 @@ const connect = (): void => {
   updateActive();
 };
 
-const scrollContainerTo = (container: ScrollContainer, top: number): void => {
+const scrollContainerTo = (container: ScrollContainer, position: number): void => {
   const behavior = props.smooth && numberProp(props.duration, 300) > 0 ? "smooth" : "auto";
   if (container === window) {
-    window.scrollTo({ top, behavior });
+    window.scrollTo({ top: position, behavior });
     return;
   }
   const element = container as HTMLElement & {
     scrollTo?: (options: ScrollToOptions) => void;
   };
   if (typeof element.scrollTo === "function") {
-    element.scrollTo({ top, behavior });
+    element.scrollTo(usesHorizontalContentAxis(container)
+      ? { left: position, behavior }
+      : { top: position, behavior });
+  } else if (usesHorizontalContentAxis(container)) {
+    element.scrollLeft = position;
   } else {
-    element.scrollTop = top;
+    element.scrollTop = position;
   }
 };
 
@@ -308,8 +369,8 @@ const scrollTo = (href: string): void => {
   const element = findTarget(href);
   if (!element) return;
   const target = scrollTarget || getContainer();
-  const top = Math.max(0, getElementTop(element, target) - numberProp(props.offset));
-  scrollContainerTo(target, top);
+  const position = Math.max(0, getElementOffset(element, target) - numberProp(props.offset));
+  scrollContainerTo(target, position);
 };
 
 const onItemClick = (item: AnchorViewItem, event: Event): void => {
@@ -355,6 +416,7 @@ watchEffect(() => {
   void props.modelValue;
   void props.direction;
   syncLinkChildren();
+  queueMicrotask(() => ensureHorizontalItemVisible(currentHref()));
 });
 
 useEffect(() => {
@@ -396,14 +458,19 @@ const rootClass = (): Record<string, boolean> => ({
   "is-marker-hidden": !props.marker
 });
 
-defineExpose({ scrollTo, scrollToAnchor: scrollTo });
+// HTMLElement already owns `scrollTo`; exposing the same name would overwrite the
+// native method and trigger the runtime's host-collision warning.
+defineExpose({ scrollToAnchor: scrollTo });
 
 defineStyle(styles);
 
 const Anchor = defineHtml<AnchorProps, Record<string, never>, AnchorSlots>(html`
-  <nav :class=${["anchor", rootClass()]} aria-label="Anchor navigation">
+  <nav :class=${["anchor", rootClass()]} :aria-label=${locale.t("a11y.anchorNavigation")}>
     <div v-if=${props.marker} class="track" aria-hidden="true"></div>
-    <ul class="list">
+    <button v-if=${direction() === "horizontal"} type="button" class="scroll-control is-previous" :aria-label=${locale.t("common.previous")} @click=${() => scrollHorizontal(-1)}>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3.5-4.5 4.5 4.5 4.5"></path></svg>
+    </button>
+    <ul class="list" @wheel=${onHorizontalWheel}>
       <slot @slotchange=${onLinksSlotChange}></slot>
       <template v-for="item in renderedDataItems()" :key="item.href || item.title">
         <li
@@ -412,6 +479,7 @@ const Anchor = defineHtml<AnchorProps, Record<string, never>, AnchorSlots>(html`
             { 'is-active': item.href === currentHref(), 'is-disabled': item.disabled }
           ]"
           :style="renderLevelStyle(item)"
+          :data-href="item.href"
         >
           <a
             class="link"
@@ -424,6 +492,9 @@ const Anchor = defineHtml<AnchorProps, Record<string, never>, AnchorSlots>(html`
         </li>
       </template>
     </ul>
+    <button v-if=${direction() === "horizontal"} type="button" class="scroll-control is-next" :aria-label=${locale.t("common.next")} @click=${() => scrollHorizontal(1)}>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5"></path></svg>
+    </button>
   </nav>
 `);
 

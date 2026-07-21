@@ -8,6 +8,8 @@
 
 .tabs {
   --tabs-color: var(--elf-primary);
+  --tabs-slider-color: var(--tabs-color);
+  --tabs-background-color: var(--elf-bg-overlay);
   --tabs-transition-duration: 180ms;
   --tabs-panel-from-opacity: 0;
   --tabs-panel-from-transform: translateY(6px);
@@ -32,12 +34,27 @@
   flex-direction: column-reverse;
 }
 
+.tab-navigation {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  width: 100%;
+  background: var(--tabs-background-color);
+}
+
+.tabs.is-vertical .tab-navigation {
+  flex: 0 0 220px;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .tab-list {
   position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
   min-width: 0;
+  flex: 1 1 auto;
   border-bottom: 1px solid var(--elf-divider);
   overflow-x: auto;
   scrollbar-width: thin;
@@ -75,13 +92,62 @@
 }
 
 .tabs.is-vertical .tab-list {
-  flex: 0 0 220px;
+  flex: 1 1 auto;
   flex-direction: column;
   align-items: stretch;
   border-right: 1px solid var(--elf-divider);
   border-bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.tab-scroll {
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  min-width: 36px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--elf-divider);
+  background: color-mix(in srgb, var(--tabs-background-color) 88%, var(--elf-bg-paper));
+  color: var(--elf-text-secondary);
+  cursor: pointer;
+}
+
+.tab-scroll:hover,
+.tab-scroll:focus-visible {
+  color: var(--tabs-color);
+  background: color-mix(in srgb, var(--tabs-color) 9%, var(--elf-bg-paper));
+}
+
+.tab-scroll:focus-visible {
+  outline: 2px solid var(--tabs-color);
+  outline-offset: -2px;
+}
+
+.tab-scroll svg,
+.tab-scroll slot::slotted(svg) {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tabs.is-vertical .tab-scroll {
+  min-width: 0;
+  min-height: 34px;
+  flex-basis: 34px;
+  border-right: 1px solid var(--elf-divider);
+  border-bottom: 0;
+}
+
+.tabs.is-vertical .tab-scroll svg {
+  transform: rotate(90deg);
 }
 
 .tabs.is-vertical.is-closable .tab-list {
@@ -143,6 +209,11 @@
   flex: 1 1 0;
 }
 
+.tabs.is-fixed-tabs:not(.is-vertical) .tab {
+  flex: 1 0 160px;
+  max-width: 300px;
+}
+
 .tabs.is-stretch .tab {
   flex: 1 1 0;
 }
@@ -173,8 +244,12 @@
 }
 
 .tabs.is-border-card.is-vertical .tab-list {
-  flex: 0 0 196px;
   padding: 8px;
+}
+
+.tabs.is-border-card.is-vertical .tab-navigation {
+  flex-basis: 196px;
+  background: var(--elf-bg-overlay);
 }
 
 .tabs.is-border-card.is-vertical .tab {
@@ -331,7 +406,53 @@
   inset: auto 12px 0;
   height: 3px;
   border-radius: 999px 999px 0 0;
-  background: var(--tabs-color);
+  background: var(--tabs-slider-color);
+}
+
+@media (max-width: 600px) {
+  .tabs.is-vertical {
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .tabs.is-vertical .tab-navigation {
+    flex: 0 0 auto;
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .tabs.is-vertical .tab-list {
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: 0;
+    border-bottom: 1px solid var(--elf-divider);
+  }
+
+  .tabs.is-vertical .tab {
+    width: auto;
+    min-width: 112px;
+    justify-content: center;
+    border-radius: var(--elf-radius-sm) var(--elf-radius-sm) 0 0;
+  }
+
+  .tabs.is-vertical .tab-slider {
+    inset: auto 12px 0;
+    width: auto;
+    height: 3px;
+  }
+
+  .tabs.is-vertical .tab-scroll {
+    min-width: 34px;
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--elf-divider);
+  }
+
+  .tabs.is-vertical .tab-scroll svg {
+    transform: none;
+  }
 }
 
 .tabs.is-vertical .tab-slider {

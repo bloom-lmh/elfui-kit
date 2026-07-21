@@ -113,6 +113,18 @@ describe("elf-progress", () => {
     expect(circle).toBeTruthy();
   });
 
+  it("updates a circle percentage and exposes the displayed percentage to assistive technology", async () => {
+    const el = await mount({ type: "circle", percentage: 32 } as Partial<ProgressHost>);
+    const progress = el.shadowRoot!.querySelector(".progress")!;
+    expect(progress.getAttribute("aria-valuenow")).toBe("32");
+    expect(progress.getAttribute("aria-valuemax")).toBe("100");
+
+    el.percentage = 80;
+    await tick();
+    expect((el.shadowRoot!.querySelector(".circle-value") as SVGCircleElement).getAttribute("stroke-dashoffset")).toBe("20");
+    expect(progress.getAttribute("aria-valuenow")).toBe("80");
+  });
+
   it("支持单独设置数值增长过渡速度", async () => {
     const el = await mount({ transitionDuration: 1.25 });
 

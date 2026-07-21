@@ -1,5 +1,8 @@
 # Statistic / Countdown 对齐计划
 
+## 2026-07-19 案例回归
+- [x] 修复动态增长案例标题操作按钮坍缩
+
 更新时间：2026-07-13
 
 - [x] Statistic：数值、标题、前后缀、精度、分隔符、formatter、value-style 与命名 slots。

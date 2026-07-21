@@ -7,6 +7,7 @@ export type StepsSize = "sm" | "md" | "lg";
 export interface StepItem {
   title: string;
   description?: string;
+  content?: string;
   icon?: string;
   status?: StepStatus;
   disabled?: boolean;
@@ -40,6 +41,13 @@ export interface StepsProps {
   size: StepsSize;
   clickable: boolean;
   alternativeLabel: boolean;
+  altLabels: boolean;
+  editable: boolean;
+  linear: boolean;
+  showPanels: boolean;
+  hideActions: boolean;
+  previousText: string;
+  nextText: string;
 }
 
 export interface StepsChangeDetail {
@@ -49,6 +57,7 @@ export interface StepsChangeDetail {
 
 export interface StepsSlots {
   default?: unknown;
+  panel?: unknown;
 }
 
 export interface StepsExpose {

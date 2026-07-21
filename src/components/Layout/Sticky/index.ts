@@ -72,6 +72,8 @@ let cleanupListeners = (): void => {};
 let scrollParent: Window | HTMLElement | null = null;
 let targetElement: HTMLElement | null = null;
 let ticking = false;
+let animationFrame = 0;
+let mounted = false;
 
 const nextId = (): string => {
   const store = globalThis as typeof globalThis & { __elfStickyIdSeed?: number };
@@ -127,6 +129,9 @@ const portalElement = (): HTMLElement | null => {
   return appendTarget.querySelector<HTMLElement>(portalSelector) ?? queryScoped<HTMLElement>(portalSelector);
 };
 
+const portalStyle = (): Record<string, string> => portalStyleState.value;
+const portalFixed = (): string => String(fixed.value);
+
 const projection = projectLightDom(host, {
   defaultTarget: portalElement
 });
@@ -143,6 +148,24 @@ const findScrollParent = (): Window | HTMLElement => {
     parent = parent.parentElement;
   }
   return window;
+};
+
+const composedParent = (element: HTMLElement): HTMLElement | null => {
+  if (element.parentElement) return element.parentElement;
+  const root = element.getRootNode();
+  return root instanceof ShadowRoot ? root.host as HTMLElement : null;
+};
+
+const scrollAncestors = (...elements: Array<HTMLElement | null>): Array<Window | HTMLElement> => {
+  const ancestors = new Set<Window | HTMLElement>([window]);
+  for (const element of elements) {
+    let parent = element ? composedParent(element) : null;
+    while (parent && parent !== document.body && parent !== document.documentElement) {
+      if (isScrollable(parent)) ancestors.add(parent);
+      parent = composedParent(parent);
+    }
+  }
+  return [...ancestors];
 };
 
 const scrollTop = (): number =>
@@ -229,7 +252,7 @@ const update = (): void => {
 const requestUpdate = (): void => {
   if (ticking || typeof requestAnimationFrame === "undefined") return;
   ticking = true;
-  requestAnimationFrame(update);
+  animationFrame = requestAnimationFrame(update);
 };
 
 const syncProjection = (): void => {
@@ -246,12 +269,13 @@ const syncProjection = (): void => {
 const connectListeners = (): void => {
   cleanupListeners();
   scrollParent = findScrollParent();
-  scrollParent.addEventListener("scroll", requestUpdate, { passive: true });
-  if (scrollParent !== window) window.addEventListener("scroll", requestUpdate, { passive: true });
+  const ancestors = scrollAncestors(host, targetElement);
+  for (const ancestor of ancestors) {
+    ancestor.addEventListener("scroll", requestUpdate, { passive: true });
+  }
   window.addEventListener("resize", requestUpdate, { passive: true });
   cleanupListeners = () => {
-    scrollParent?.removeEventListener("scroll", requestUpdate);
-    if (scrollParent !== window) window.removeEventListener("scroll", requestUpdate);
+    for (const ancestor of ancestors) ancestor.removeEventListener("scroll", requestUpdate);
     window.removeEventListener("resize", requestUpdate);
   };
 };
@@ -272,18 +296,25 @@ useEffect(() => {
   void props.target;
   void props.appendTo;
   void props.teleported;
+  updateRoot();
+  if (mounted) connectListeners();
   syncProjection();
 });
 
 onMount(() => {
   if (typeof window === "undefined") return;
-  connectListeners();
+  mounted = true;
   updateRoot();
+  connectListeners();
   syncProjection();
 });
 
 onBeforeUnmount(() => {
+  mounted = false;
   cleanupListeners();
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  animationFrame = 0;
+  ticking = false;
   projection.restore();
   portalElement()?.remove();
 });
@@ -300,8 +331,8 @@ const Sticky = defineHtml<StickyProps, Record<string, never>, StickySlots>(html`
       v-if=${props.teleported}
       class="elf-sticky-portal"
       :data-elf-sticky=${id}
-      :data-fixed=${fixed}
-      :style=${portalStyleState}
+      :data-fixed=${portalFixed()}
+      :style=${portalStyle()}
     ></div>
   </Teleport>
 `);

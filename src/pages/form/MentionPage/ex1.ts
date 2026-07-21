@@ -10,7 +10,8 @@ const members = [
 
 const code1 = `<elf-mention
   :options.prop=\${members}
-  :modelValue=\${content}
+  :modelValue.prop=\${content}
+  variant="outlined"
   placeholder="输入 @ 选择成员"
   @update:modelValue=\${onContentUpdate}
   @select=\${onSelect}
@@ -34,7 +35,8 @@ const PageMentionEx1 = defineHtml(html`
 <elf-playground title="@ 成员" :code=${code1} :script=${script1}>
       <elf-mention
         :options.prop=${members}
-        :modelValue=${content}
+        :modelValue.prop=${content}
+        variant="outlined"
         placeholder="输入 @ 选择成员"
         @update:modelValue=${onContentUpdate}
         @select=${onSelect}

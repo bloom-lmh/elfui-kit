@@ -11,6 +11,7 @@ import {
   onUnmount,
   useHost,
   useHostAttr,
+  useHostCssVar,
   useHostFlag,
   useRef,
   useTemplateRef
@@ -73,6 +74,7 @@ const props = defineProps<InputProps>({
   tabindex: { type: null, default: undefined },
   validateEvent: { type: Boolean, default: true },
   inputStyle: { type: null, default: "" },
+  backgroundColor: { type: String, default: "" },
   label: { type: String, default: "" },
   inputmode: { type: String, default: "" },
   countGraphemes: { type: Function, default: undefined },
@@ -116,6 +118,8 @@ useHostFlag("data-dirty", () => {
   return value !== undefined && value !== null && String(value).length > 0;
 });
 useHostFlag("data-has-label", () => Boolean(props.label));
+useHostCssVar("--elf-field-bg", () => props.backgroundColor || "");
+useHostCssVar("--elf-field-hover-bg", () => props.backgroundColor || "");
 
 const touchSlots = (): void => {
   slotVersion.set(slotVersion.value + 1);

@@ -74,55 +74,6 @@ const PageHome = defineHtml(html`
       </div>
     </section>
 
-    <section class="principles" aria-labelledby="principles-title">
-      <div class="section-heading">
-        <span>${t("principlesEyebrow")}</span>
-        <h2 id="principles-title">${t("principlesTitle")}</h2>
-        <p>${t("principlesDescription")}</p>
-      </div>
-      <div class="principle-grid">
-        <article>
-          <div class="principle-icon">01</div>
-          <h3>${t("principleOneTitle")}</h3>
-          <p>${t("principleOneDescription")}</p>
-          <code>Custom Elements · Shadow DOM</code>
-        </article>
-        <article>
-          <div class="principle-icon">02</div>
-          <h3>${t("principleTwoTitle")}</h3>
-          <p>${t("principleTwoDescription")}</p>
-          <code>Provider · CSS variables</code>
-        </article>
-        <article>
-          <div class="principle-icon">03</div>
-          <h3>${t("principleThreeTitle")}</h3>
-          <p>${t("principleThreeDescription")}</p>
-          <code>Keyboard · ARIA · Form</code>
-        </article>
-      </div>
-    </section>
-
-    <section class="starter" aria-labelledby="starter-title">
-      <div class="starter-copy">
-        <span class="section-kicker">${t("starterEyebrow")}</span>
-        <h2 id="starter-title">${t("starterTitle")}</h2>
-        <p>${t("starterDescription")}</p>
-        <div class="starter-links">
-          <a href="#/form/input">${t("starterForm")}<span>→</span></a>
-          <a href="#/data/table">${t("starterData")}<span>→</span></a>
-          <a href="#/layout/grid">${t("starterLayout")}<span>→</span></a>
-        </div>
-      </div>
-      <div class="code-card">
-        <div class="code-header"><span>${t("codeTitle")}</span><small>app.html</small></div>
-        <pre><code><span class="code-muted">&lt;!-- ${t("codeComment")} --&gt;</span>
-<span class="code-key">&lt;elf-locale-provider</span> name=<span class="code-string">"en-US"</span><span class="code-key">&gt;</span>
-  <span class="code-key">&lt;elf-theme-provider</span> theme=<span class="code-string">"dark"</span><span class="code-key">&gt;</span>
-    <span class="code-key">&lt;app-shell /&gt;</span>
-  <span class="code-key">&lt;/elf-theme-provider&gt;</span>
-<span class="code-key">&lt;/elf-locale-provider&gt;</span></code></pre>
-      </div>
-    </section>
   </main>
 `);
 

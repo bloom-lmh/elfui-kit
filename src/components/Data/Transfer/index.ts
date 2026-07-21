@@ -207,7 +207,7 @@ const clearQuery = (side?: "left" | "right"): void => {
 const title = (side: "left" | "right"): string => String((props.titles as string[])[side === "left" ? 0 : 1] || (side === "left" ? "Source" : "Target"));
 const buttonText = (direction: "left" | "right"): string => {
   const texts = props.buttonTexts as string[];
-  return String(texts?.[direction === "left" ? 0 : 1] || (direction === "left" ? "←" : "→"));
+  return String(texts?.[direction === "left" ? 0 : 1] || "");
 };
 const countText = (side: "left" | "right"): string => {
   const checked = side === "left" ? leftCheckedCount.value : rightCheckedCount.value;
@@ -246,8 +246,18 @@ const Transfer = defineHtml(html`
   </section>
 
   <div class="buttons" aria-label="Transfer actions">
-    <button type="button" @click=${moveToRight} :disabled=${leftCheckedCount.value === 0} aria-label="Move selected to target">${buttonText("right")}</button>
-    <button type="button" @click=${moveToLeft} :disabled=${rightCheckedCount.value === 0} aria-label="Move selected to source">${buttonText("left")}</button>
+    <button type="button" @click=${moveToRight} :disabled=${leftCheckedCount.value === 0} aria-label="Move selected to target">
+      <span v-if=${buttonText("right")}>${buttonText("right")}</span>
+      <svg v-else class="direction-icon is-right" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+        <path d="M3.5 10h12M11 5.5l4.5 4.5-4.5 4.5"></path>
+      </svg>
+    </button>
+    <button type="button" @click=${moveToLeft} :disabled=${rightCheckedCount.value === 0} aria-label="Move selected to source">
+      <span v-if=${buttonText("left")}>${buttonText("left")}</span>
+      <svg v-else class="direction-icon is-left" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+        <path d="M3.5 10h12M11 5.5l4.5 4.5-4.5 4.5"></path>
+      </svg>
+    </button>
   </div>
 
   <section class="panel panel-right" aria-label="Target transfer panel">

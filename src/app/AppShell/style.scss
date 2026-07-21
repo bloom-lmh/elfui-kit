@@ -14,6 +14,13 @@ elf-layout {
   height: 100%;
 }
 
+.home-shell {
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--elf-bg-page);
+}
+
 .app-aside {
   min-height: 0;
   overflow: visible;
@@ -33,6 +40,17 @@ elf-layout {
   font-weight: 600;
   color: var(--elf-primary);
   line-height: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.brand:focus-visible {
+  outline: 2px solid var(--elf-primary);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 .brand-logo {
@@ -60,9 +78,61 @@ elf-layout {
   min-width: 40px;
 }
 
+elf-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+elf-docs-toc {
+  flex: 0 0 220px;
+}
+
+.nav-scrim {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .brand > span,
   .skin-action {
+    display: none;
+  }
+
+  .app-aside {
+    position: fixed;
+    z-index: 50;
+    inset: 64px auto 0 0;
+    width: min(82vw, 264px) !important;
+    transform: translateX(-102%);
+    box-shadow: var(--elf-shadow-3);
+    transition: transform var(--elf-transition-base);
+  }
+
+  .app-aside.mobile-open {
+    transform: translateX(0);
+  }
+
+  .nav-scrim {
+    position: fixed;
+    z-index: 49;
+    inset: 64px 0 0;
+    display: block;
+    padding: 0;
+    border: 0;
+    background: rgb(0 0 0 / 0.36);
+  }
+
+  elf-main {
+    width: 100%;
+    padding-inline: var(--elf-space-3);
+  }
+
+  elf-docs-toc {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  elf-docs-toc {
     display: none;
   }
 }

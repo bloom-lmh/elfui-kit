@@ -1,3 +1,5 @@
+import type { FieldVariant } from "../../../types/field";
+
 export type InputTagSize = "sm" | "md" | "lg" | "";
 
 export interface InputTagProps {
@@ -12,6 +14,7 @@ export interface InputTagProps {
   /** Number of tags kept visible while `collapseTags` is enabled. */
   maxCollapseTags: number;
   size: InputTagSize;
+  variant: FieldVariant;
   trigger: "enter" | "blur";
   tagType: string;
   tagEffect: string;

@@ -15,6 +15,10 @@ export interface TimelineItem {
   color?: TimelineColor | string;
   size?: TimelineNodeSize;
   hollow?: boolean;
+  /** Class applied to the item's body inside the timeline shadow tree. */
+  cardClass?: string;
+  /** Inline style variables or declarations applied to the item's body. */
+  cardStyle?: Record<string, string | number>;
   [key: string]: unknown;
 }
 

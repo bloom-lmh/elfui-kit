@@ -1,5 +1,24 @@
 import { defineHtml, html, useRef } from "elfui";
 
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "组合式标签面板", en: "Compositional tab panels" },
+  title: { zh: "TabPane、动态新建与关闭回退", en: "TabPane, dynamic add, and close fallback" },
+  current: { zh: "当前标签", en: "Current tab" },
+  added: { zh: "已新增并激活", en: "Added and activated" },
+  closed: { zh: "已关闭", en: "Closed" },
+  add: { zh: "＋ 新建", en: "+ New" },
+  overview: { zh: "概览", en: "Overview" },
+  overviewContent: { zh: "集中查看项目状态、成员和最近活动。", en: "Review project status, members, and recent activity." },
+  tasks: { zh: "任务", en: "Tasks" },
+  tasksContent: { zh: "该面板延迟创建，仅在首次激活后渲染。", en: "This lazy panel renders after its first activation." },
+  audit: { zh: "审计", en: "Audit" },
+  auditContent: { zh: "审计标签已禁用，不参与关闭后的激活回退。", en: "The disabled audit tab is skipped during close fallback." },
+  newTab: { zh: "新标签", en: "New tab" },
+  newContent: { zh: "动态面板", en: "Dynamic panel" }
+});
+
 interface DemoPane {
   name: string;
   label: string;
@@ -10,13 +29,21 @@ interface DemoPane {
 }
 
 const active = useRef<string | number>("overview");
-const status = useRef("当前标签：overview");
+const status = useRef("");
 const serial = useRef(1);
 const panes = useRef<DemoPane[]>([
-  { name: "overview", label: "概览", content: "集中查看项目状态、成员和最近活动。", closable: true },
-  { name: "tasks", label: "任务", content: "该面板使用 lazy，仅在首次激活后创建内容。", lazy: true, closable: true },
-  { name: "audit", label: "审计", content: "审计标签禁用，不参与关闭后的激活回退。", disabled: true }
+  { name: "overview", label: "overview", content: "overviewContent", closable: true },
+  { name: "tasks", label: "tasks", content: "tasksContent", lazy: true, closable: true },
+  { name: "audit", label: "audit", content: "auditContent", disabled: true },
 ]);
+
+const paneLabel = (pane: DemoPane): string => pane.name.startsWith("new-")
+  ? pane.label
+  : t(pane.label as "overview" | "tasks" | "audit");
+const paneContent = (pane: DemoPane): string => pane.name.startsWith("new-")
+  ? pane.content
+  : t(pane.content as "overviewContent" | "tasksContent" | "auditContent");
+const statusText = (): string => status.value || `${t("current")}: ${active.value}`;
 
 const eventValue = (event: CustomEvent): string => {
   const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
@@ -28,7 +55,7 @@ const onUpdate = (event: CustomEvent<string | number>): void => {
 };
 
 const onChange = (event: CustomEvent): void => {
-  status.set(`当前标签：${eventValue(event)}`);
+  status.set(`${t("current")}: ${eventValue(event)}`);
 };
 
 const onAdd = (): void => {
@@ -36,10 +63,10 @@ const onAdd = (): void => {
   serial.set(serial.value + 1);
   panes.set([
     ...panes.value,
-    { name: value, label: `新标签 ${serial.value - 1}`, content: `这是 ${value} 的动态面板。`, closable: true }
+    { name: value, label: `${t("newTab")} ${serial.value - 1}`, content: `${value} ${t("newContent")}`, closable: true },
   ]);
   active.set(value);
-  status.set(`已新增并激活：${value}`);
+  status.set(`${t("added")}: ${value}`);
 };
 
 const onRemove = (event: CustomEvent): void => {
@@ -57,7 +84,7 @@ const onRemove = (event: CustomEvent): void => {
       [...next].reverse().find((pane) => !pane.disabled);
     active.set(fallback?.name ?? "");
   }
-  status.set(`已关闭：${removed}`);
+  status.set(`${t("closed")}: ${removed}`);
 };
 
 const code = `<elf-tabs
@@ -103,9 +130,10 @@ const onRemove = (event) => {
 };`;
 
 const PageTabsEx7 = defineHtml(html`
-  <h2>组合式标签面板</h2>
-  <elf-playground title="TabPane、动态新建与关闭回退" :code=${code} :script=${script}>
+  <h2>${t("section")}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
     <elf-tabs
+      :key=${t("section")}
       type="border-card"
       editable
       :modelValue.prop=${active.value}
@@ -114,21 +142,21 @@ const PageTabsEx7 = defineHtml(html`
       @tab-add=${onAdd}
       @tab-remove=${onRemove}
     >
-      <span slot="add-icon">＋ 新建</span>
+      <span slot="add-icon">${t("add")}</span>
       <elf-tab-pane
-        v-for="pane in panes.value"
+        v-for="pane in panes"
         :key="pane.name"
-        :label="pane.label"
+        :label="paneLabel(pane)"
         :name="pane.name"
         :disabled="pane.disabled"
         :lazy="pane.lazy"
         :closable="pane.closable"
       >
-        <h3 style="margin:0 0 8px">{{ pane.label }}</h3>
-        <p style="margin:0">{{ pane.content }}</p>
+        <h3 style="margin:0 0 8px">{{ paneLabel(pane) }}</h3>
+        <p style="margin:0">{{ paneContent(pane) }}</p>
       </elf-tab-pane>
     </elf-tabs>
-    <span slot="status" class="demo-state">${status}</span>
+    <span slot="status" class="demo-state">${statusText()}</span>
   </elf-playground>
 `);
 

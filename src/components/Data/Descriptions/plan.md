@@ -1,5 +1,11 @@
 # Descriptions Element Plus API 对标计划
 
+## 2026-07-19 alignment and responsive layout
+
+- [x] Align horizontal data items on one shared 88px label track so values start on the same baseline.
+- [x] Collapse configured multi-column layouts to full-width items below 640px, including declarative items.
+- [x] Keep borders, long content, header extras, and themed text tokens intact.
+
 生成时间：2026-07-05
 
 ## 对标定位

@@ -6,6 +6,8 @@
 - [x] `true-value` / `false-value`, state fallback labels, border appearance, IDs, tab order, and ARIA control metadata.
 - [x] Indeterminate state, keyboard toggling, change events, and accessible disabled tab behavior.
 - [x] Examples, API documentation, and unit coverage for boolean mapping and accessibility.
+- [x] Keep the non-boolean mapping example controlled so `true-value` changes both the emitted value and visible checked state.
+- [x] Emit explicit `true` / `false` / `mixed` ARIA states and cover mouse plus keyboard state mapping.
 
 ## Follow-up
 

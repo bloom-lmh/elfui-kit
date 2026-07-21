@@ -23,9 +23,9 @@ h2 {
 .demo-stage {
   width: 100%;
   padding: 18px;
-  border: 1px dashed color-mix(in srgb, var(--elf-primary) 30%, var(--elf-border));
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--elf-primary) 3%, var(--elf-bg-paper));
+  border: 1px dashed var(--elf-border-strong);
+  border-radius: 4px;
+  background: transparent;
 }
 
 .demo-stage.is-tall {
@@ -33,28 +33,36 @@ h2 {
 }
 
 .demo-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-width: 0;
-  padding: 18px;
-  border: 1px solid var(--elf-border);
-  border-radius: 16px;
-  background: var(--elf-bg-paper);
-  box-shadow: 0 8px 22px rgb(0 0 0 / .055);
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1px dashed var(--elf-border-strong);
+  border-radius: 4px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--elf-text-primary);
+  text-align: center;
 }
 
 .demo-card.compact {
-  padding: 13px 15px;
+  min-height: 44px;
+  padding: 10px 12px;
 }
 
 .demo-card.tone-primary {
-  background: linear-gradient(145deg, color-mix(in srgb, var(--elf-primary) 12%, var(--elf-bg-paper)), var(--elf-bg-paper));
+  border-color: color-mix(in srgb, var(--elf-primary) 64%, var(--elf-border));
 }
 
 .demo-card.tone-success {
-  background: linear-gradient(145deg, color-mix(in srgb, var(--elf-success) 12%, var(--elf-bg-paper)), var(--elf-bg-paper));
+  border-color: color-mix(in srgb, var(--elf-success) 64%, var(--elf-border));
 }
 
 .demo-card.tone-warning {
-  background: linear-gradient(145deg, color-mix(in srgb, var(--elf-warning) 13%, var(--elf-bg-paper)), var(--elf-bg-paper));
+  border-color: color-mix(in srgb, var(--elf-warning) 64%, var(--elf-border));
 }
 
 .card-row {
@@ -64,12 +72,12 @@ h2 {
 }
 
 .avatar {
-  display: grid;
+  display: none;
   flex: 0 0 auto;
   width: 38px;
   height: 38px;
   place-items: center;
-  border-radius: 13px;
+  border-radius: 4px;
   background: color-mix(in srgb, var(--elf-primary) 15%, var(--elf-bg-paper));
   color: var(--elf-primary);
   font-weight: 800;
@@ -81,7 +89,7 @@ h2 {
 }
 
 .card-copy {
-  display: grid;
+  display: flex;
   min-width: 0;
   gap: 3px;
 }
@@ -95,54 +103,45 @@ h2 {
 .card-copy small,
 .demo-card > small,
 .metric-label {
-  color: var(--elf-text-secondary);
-  font-size: 11px;
-  line-height: 1.45;
+  display: none;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
   width: max-content;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--elf-primary) 11%, transparent);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--elf-primary);
   font-size: 11px;
   font-weight: 700;
 }
 
 .metric-value {
-  display: block;
-  margin-top: 7px;
+  display: inline;
+  margin: 0;
   color: var(--elf-text-primary);
-  font-size: clamp(22px, 3vw, 30px);
-  font-weight: 720;
-  line-height: 1;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .metric-trend {
-  display: inline-block;
-  margin-top: 10px;
-  color: var(--elf-success);
-  font-size: 11px;
-  font-weight: 700;
+  display: none;
 }
 
 .mini-progress {
-  overflow: hidden;
-  height: 5px;
-  margin-top: 14px;
-  border-radius: 99px;
-  background: var(--elf-bg-overlay);
+  display: none;
 }
 
 .mini-progress::after {
   display: block;
   width: var(--progress, 68%);
   height: 100%;
-  border-radius: inherit;
+  border-radius: 0;
   background: var(--elf-primary);
   content: "";
 }
@@ -156,12 +155,16 @@ h2 {
   font-size: 11px;
 }
 
+.grid-label span:last-child {
+  display: none;
+}
+
 .dashboard-card {
-  min-height: 132px;
+  min-height: 72px;
 }
 
 .bar-chart {
-  display: flex;
+  display: none;
   align-items: end;
   gap: 7px;
   height: 92px;
@@ -173,17 +176,12 @@ h2 {
 .bar-chart i {
   flex: 1;
   height: var(--height);
-  border-radius: 6px 6px 2px 2px;
-  background: linear-gradient(180deg, var(--elf-primary), color-mix(in srgb, var(--elf-primary) 26%, transparent));
+  border-radius: 2px 2px 0 0;
+  background: var(--elf-primary);
 }
 
 .donut {
-  width: 112px;
-  height: 112px;
-  margin: 18px auto 8px;
-  border-radius: 50%;
-  background: conic-gradient(var(--elf-primary) 0 46%, var(--elf-success) 46% 72%, var(--elf-warning) 72% 88%, var(--elf-divider) 88%);
-  mask: radial-gradient(circle, transparent 52%, #000 54%);
+  display: none;
 }
 
 @media (max-width: 600px) {

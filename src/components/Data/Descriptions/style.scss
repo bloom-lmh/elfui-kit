@@ -59,7 +59,9 @@
 }
 
 :host([direction="horizontal"]) .item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: start;
   gap: var(--elf-space-3);
 }
 
@@ -73,4 +75,25 @@
 
 :host([size="lg"]) .item {
   padding: var(--elf-space-4) var(--elf-space-5);
+}
+
+@media (max-width: 640px) {
+  .header {
+    align-items: flex-start;
+    gap: var(--elf-space-2);
+    flex-wrap: wrap;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .item,
+  :host ::slotted(elf-descriptions-item) {
+    grid-column: 1 / -1 !important;
+  }
+
+  :host([direction="horizontal"]) .item {
+    grid-template-columns: minmax(72px, 32%) minmax(0, 1fr);
+  }
 }

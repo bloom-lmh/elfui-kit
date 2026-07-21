@@ -68,6 +68,13 @@ const normalizedVariant = (): ButtonVariant => {
     return props.variant === "outlined" || props.variant === "text" ? props.variant : "contained";
 };
 
+const normalizedSize = (): "sm" | "md" | "lg" => {
+    if (props.size === "small") return "sm";
+    if (props.size === "large") return "lg";
+    if (props.size === "default") return "md";
+    return props.size === "sm" || props.size === "lg" ? props.size : "md";
+};
+
 const normalizedNativeType = (): ButtonType => {
     const type = String(props.type || "");
     if (nativeTypes.includes(type)) return type as ButtonType;
@@ -76,7 +83,7 @@ const normalizedNativeType = (): ButtonType => {
 
 useHostAttr("color", normalizedColor);
 useHostAttr("variant", normalizedVariant);
-useHostAttr("size", () => props.size || "md");
+useHostAttr("size", normalizedSize);
 useHostFlag("round", () => Boolean(props.round || props.shape === "round"));
 useHostFlag("circle", () => Boolean(props.circle || props.shape === "circle"));
 useHostFlag("text", () => Boolean(props.text));

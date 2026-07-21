@@ -4,6 +4,11 @@
 
 - [x] Core props, events, form registration, and standalone playground.
 
+## 2026-07-19 shared field surface
+
+- [x] Use the same outlined field variants, theme tokens, focus ring, disabled state, and responsive width as Input.
+- [x] Keep the suggestion panel below by default and verify filtered mouse/keyboard selection on narrow screens.
+
 ## Delivered in this batch
 
 - [x] Add `split`, `filter-option`, `whole`, `check-is-whole`, loading state, placement, default/loading slots, and form validation linkage.

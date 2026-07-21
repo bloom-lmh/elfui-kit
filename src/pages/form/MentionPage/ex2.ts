@@ -12,7 +12,8 @@ const code2 = `<elf-mention
   prefix="#"
   rows="4"
   :options.prop=\${topics}
-  :modelValue=\${hashContent}
+  :modelValue.prop=\${hashContent}
+  variant="outlined"
   placeholder="输入 # 选择话题"
   @update:modelValue=\${onHashUpdate}
 />`;
@@ -35,7 +36,8 @@ const PageMentionEx2 = defineHtml(html`
         prefix="#"
         rows="4"
         :options.prop=${topics}
-        :modelValue=${hashContent}
+        :modelValue.prop=${hashContent}
+        variant="outlined"
         placeholder="输入 # 选择话题"
         @update:modelValue=${onHashUpdate}
       ></elf-mention>

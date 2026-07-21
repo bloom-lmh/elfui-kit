@@ -32,7 +32,7 @@
   align-items: center;
   justify-content: space-between;
   min-height: 28px;
-  padding: var(--elf-space-2) var(--elf-space-3) 0;
+  padding: var(--elf-space-2) 44px 0 var(--elf-space-3);
   gap: var(--elf-space-2);
   color: var(--elf-text-secondary);
   font-size: var(--elf-font-size-xs);
@@ -170,6 +170,15 @@ textarea {
     background: var(--elf-border);
     color: var(--elf-text-primary);
   }
+}
+
+.clear svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
 }
 
 :host([size="sm"]) textarea {

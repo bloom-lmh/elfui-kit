@@ -1,11 +1,12 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, onMount, onUnmount, useHost } from "elfui";
 
 
-const selectedKeys = useRef<string[]>(["2"]);
-
-const selectedRows = useRef<Record<string, unknown>[]>([]);
-
-const currentRow = useRef("暂无");
+const host = useHost();
+const defaultSelectedKeys = ["2"];
+let selectedRows: Record<string, unknown>[] = [
+  { id: "2", name: "表单校验补齐", owner: "周然", progress: 94, status: "已完成" }
+];
+let currentRow = "暂无";
 
 const columns = [
   { type: "selection", width: 48, align: "center" },
@@ -28,35 +29,44 @@ const first = <T>(event: Event, fallback: T): T => {
   return (Array.isArray(detail) ? detail[0] : detail) ?? fallback;
 };
 
-const onSelectedKeys = (event: Event): void => {
-  const detail = (event as CustomEvent).detail;
-  if (Array.isArray(detail)) selectedKeys.set(detail);
+const updateStatus = (): void => {
+  const status = host.shadowRoot?.querySelector<HTMLElement>(".table-selection-status");
+  if (!status) return;
+  const selected = selectedRows.map((row) => String(row.name)).join("、") || "暂无";
+  status.textContent = `已选：${selected}；当前行：${currentRow}`;
 };
+
+let tableElement: HTMLElement | null = null;
+onMount(() => {
+  tableElement = host.shadowRoot?.querySelector("elf-table") ?? null;
+  tableElement?.addEventListener("selection-change", onSelectionChange);
+  tableElement?.addEventListener("row-click", onRowClick);
+});
+onUnmount(() => {
+  tableElement?.removeEventListener("selection-change", onSelectionChange);
+  tableElement?.removeEventListener("row-click", onRowClick);
+  tableElement = null;
+});
 
 const onSelectionChange = (event: Event): void => {
   const detail = (event as CustomEvent).detail;
-  if (Array.isArray(detail)) selectedRows.set(detail);
+  if (Array.isArray(detail)) selectedRows = detail;
+  updateStatus();
 };
 
 const onRowClick = (event: Event): void => {
   const row = first<Record<string, unknown> | null>(event, null);
-  currentRow.set(row ? String(row.name) : "暂无");
+  currentRow = row ? String(row.name) : "暂无";
+  updateStatus();
 };
-
-const selectedText = (): string =>
-  data
-    .filter((row) => selectedKeys.value.includes(row.id))
-    .map((row) => row.name)
-    .join("、") || "暂无";
 
 const code = `<elf-table
   :data.prop="data"
   :columns.prop="columns"
-  :selectedKeys.prop="selectedKeys"
+  :defaultSelectedKeys.prop="defaultSelectedKeys"
   stripe
   border
   highlight-current-row
-  @update:selectedKeys="onSelectedKeys"
   @selection-change="onSelectionChange"
   @row-click="onRowClick"
 />`;
@@ -68,15 +78,12 @@ const PageTableEx1 = defineHtml(html`
       <elf-table
         :data.prop="data"
         :columns.prop="columns"
-        :selectedKeys.prop="selectedKeys"
+        :defaultSelectedKeys.prop="defaultSelectedKeys"
         stripe
         border
         highlight-current-row
-        @update:selectedKeys="onSelectedKeys"
-        @selection-change="onSelectionChange"
-        @row-click="onRowClick"
       ></elf-table>
-      <p slot="status" class="demo-state">已选：{{ selectedText() }}；当前行：{{ currentRow }}</p>
+      <p slot="status" class="demo-state table-selection-status">已选：表单校验补齐；当前行：暂无</p>
     </div>
   </elf-playground>
 `);

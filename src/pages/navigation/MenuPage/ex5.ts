@@ -1,4 +1,11 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "多级菜单（三层嵌套）", en: "Nested menu (three levels)" },
+  title: { zh: "Platform > Web > React / Vue / Svelte", en: "Platform > Web > React / Vue / Svelte" },
+  signOut: { zh: "退出", en: "Sign out" }
+});
 
 
 const active = useRef("platform-web");
@@ -58,9 +65,25 @@ const code = `<elf-menu :items="items" :modelValue="active" :defaultOpeneds="['p
   </template>
 </elf-menu>`;
 
+const script = `const active = useRef("platform-web-react");
+const items = [
+  {
+    index: "platform",
+    label: "Platform",
+    children: [{
+      index: "platform-web",
+      label: "Web",
+      children: [
+        { index: "platform-web-react", label: "React" },
+        { index: "platform-web-vue", label: "Vue" }
+      ]
+    }]
+  }
+];`;
+
 const PageMenuEx5 = defineHtml(html`
-  <h2>多级菜单（3 层嵌套）</h2>
-  <elf-playground title="Platform > Web > React/Vue/Svelte" :code="code">
+  <h2>${t("section")}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
     <elf-menu
       bordered
       :items="items"
@@ -85,7 +108,7 @@ const PageMenuEx5 = defineHtml(html`
       </template>
       <template #footer>
         <div style="display:flex;align-items:center;justify-content:flex-end">
-          <elf-button variant="text" size="sm">退出</elf-button>
+          <elf-button variant="text" size="sm">${t("signOut")}</elf-button>
         </div>
       </template>
     </elf-menu>

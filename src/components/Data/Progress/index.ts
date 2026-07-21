@@ -97,6 +97,9 @@ const normalizedLinecap = (): "butt" | "round" | "square" => {
 
 const duration = (): string => `${Math.max(0.1, Number(props.duration) || 3)}s`;
 const transitionDuration = (): string => `${Math.max(0, Number(props.transitionDuration) || 0)}s`;
+const usesPercentage = (): boolean => props.percentage !== undefined && props.percentage !== null;
+const ariaMaximum = (): number => (usesPercentage() ? 100 : max());
+const ariaCurrent = (): number => (usesPercentage() ? percent() : value());
 
 useHostAttr("data-type", progressType);
 useHostAttr("status", normalizedStatus);
@@ -121,8 +124,8 @@ const Progress = defineHtml(html`
         class="progress"
         role="progressbar"
         :aria-valuemin=${0}
-        :aria-valuemax=${max()}
-        :aria-valuenow=${props.indeterminate ? null : value()}
+        :aria-valuemax=${ariaMaximum()}
+        :aria-valuenow=${props.indeterminate ? null : ariaCurrent()}
         :aria-valuetext=${label()}
     >
         <div v-if=${progressType() === "line"} class="line">

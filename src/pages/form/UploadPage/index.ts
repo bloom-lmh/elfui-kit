@@ -7,6 +7,7 @@ import { PageUploadEx3 } from "./ex3";
 import { PageUploadEx4 } from "./ex4";
 import { PageUploadEx5 } from "./ex5";
 import { PageUploadEx6 } from "./ex6";
+import { PageUploadEx7 } from "./ex7";
 
 const propsRows = [
   { name: "action", type: "string", default: "''", desc: "上传地址" },
@@ -84,7 +85,8 @@ useComponents({
   "page-upload-ex3": PageUploadEx3,
   "page-upload-ex4": PageUploadEx4,
   "page-upload-ex5": PageUploadEx5,
-  "page-upload-ex6": PageUploadEx6
+  "page-upload-ex6": PageUploadEx6,
+  "page-upload-ex7": PageUploadEx7
 });
 
 const PageUpload = defineHtml(html`
@@ -95,6 +97,8 @@ const PageUpload = defineHtml(html`
     <page-upload-ex1 />
 
     <page-upload-ex2 />
+
+    <page-upload-ex7 />
 
     <page-upload-ex3 />
 

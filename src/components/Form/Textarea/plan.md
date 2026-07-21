@@ -1,5 +1,9 @@
 # Textarea Element Plus API 对标计划
 
+## 2026-07-19 装饰区回归
+- [x] 清空按钮使用 SVG 并为 suffix 预留空间，避免与 Markdown 文案重叠
+- [x] 避免 defineExpose 覆盖宿主原生 focus/blur 警告
+
 生成时间：2026-07-05
 
 ## 对标定位

@@ -64,6 +64,39 @@ describe("elf-playground", () => {
     expect(demo).toBeTruthy();
   });
 
+  it("controls slot 按需启用右侧控制台并支持折叠", async () => {
+    const el = document.createElement("elf-playground") as HTMLElement & {
+      toggleControls?: () => void;
+    };
+    el.setAttribute("title", "可配置案例");
+    const controls = document.createElement("div");
+    controls.slot = "controls";
+    controls.textContent = "配置内容";
+    el.appendChild(controls);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    expect(el.shadowRoot!.querySelector(".workspace.has-controls")).toBeTruthy();
+    const controlsSlot = el.shadowRoot!.querySelector<HTMLSlotElement>('slot[name="controls"]');
+    expect(controlsSlot?.assignedElements()).toEqual([controls]);
+    expect(el.shadowRoot!.querySelector(".controls-toggle")?.getAttribute("aria-expanded")).toBe("true");
+
+    el.shadowRoot!.querySelector<HTMLButtonElement>(".controls-toggle")!.click();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".workspace.controls-collapsed")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".controls-toggle")?.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("没有 controls slot 时保持单栏且不显示折叠按钮", async () => {
+    const el = document.createElement("elf-playground");
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.shadowRoot!.querySelector(".workspace.has-controls")).toBeNull();
+    expect(el.shadowRoot!.querySelector(".controls-toggle")).toBeNull();
+  });
+
   it("支持 Template / Script 切换并规整公共缩进", async () => {
     const el = document.createElement("elf-playground") as HTMLElement & {
       code?: string;
@@ -91,6 +124,51 @@ describe("elf-playground", () => {
 
     expect(code()).toContain("const opts = [");
     expect(code()).not.toMatch(/^\s{6}/);
+  });
+
+  it("Script 高亮不会把生成的 token 标签泄漏到源码文本", async () => {
+    const source = `// 静态展示案例无需额外状态。\nconst steps = [\n  { title: "需求分析", timestamp: "Week 1", color: "primary" }\n];`;
+    const el = document.createElement("elf-playground") as HTMLElement & {
+      code?: string;
+      script?: string;
+      showScript?: () => void;
+    };
+    el.code = "<elf-timeline></elf-timeline>";
+    el.script = source;
+    document.body.appendChild(el);
+    await tick();
+
+    el.showScript?.();
+    await tick();
+
+    const code = el.shadowRoot!.querySelector("code");
+    expect(code?.textContent).toBe(source);
+    expect(code?.textContent).not.toContain('class="token');
+    expect(code?.querySelectorAll(".token.comment")).toHaveLength(1);
+    expect(code?.querySelectorAll(".token.string")).toHaveLength(3);
+    expect(code?.querySelectorAll(".token.keyword")).toHaveLength(1);
+  });
+
+  it("Script 高亮保留 HTML 特殊字符、块注释和转义字符串", async () => {
+    const source = `/* compare */\nconst label = "A < B && \\"quoted\\"";`;
+    const el = document.createElement("elf-playground") as HTMLElement & {
+      code?: string;
+      script?: string;
+      showScript?: () => void;
+    };
+    el.code = "<span>demo</span>";
+    el.script = source;
+    document.body.appendChild(el);
+    await tick();
+
+    el.showScript?.();
+    await tick();
+
+    const code = el.shadowRoot!.querySelector("code");
+    expect(code?.textContent).toBe(source);
+    expect(code?.innerHTML).toContain("&lt;");
+    expect(code?.querySelectorAll(".token.comment")).toHaveLength(1);
+    expect(code?.querySelectorAll(".token.string")).toHaveLength(1);
   });
 
   it("无 script 时禁用 Script 标签", async () => {

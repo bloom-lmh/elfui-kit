@@ -14,6 +14,7 @@
 
 .form-demo-card.is-wide {
   width: min(100%, 920px);
+  overflow: visible;
 }
 
 .form-demo-card elf-input,
@@ -49,6 +50,24 @@
   flex-wrap: wrap;
   gap: 10px;
   padding-top: 4px;
+}
+
+.inline-filter-item {
+  margin-bottom: 0;
+}
+
+.inline-filter-keyword {
+  flex: 1 1 300px;
+  min-width: 280px;
+}
+
+.inline-filter-status {
+  flex: 0 1 230px;
+  min-width: 210px;
+}
+
+.inline-filter-switch {
+  flex: 0 0 150px;
 }
 
 .login-heading {
@@ -87,5 +106,13 @@
 
   .form-demo-span-2 {
     grid-column: auto;
+  }
+
+  .inline-filter-keyword,
+  .inline-filter-status,
+  .inline-filter-switch {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
   }
 }

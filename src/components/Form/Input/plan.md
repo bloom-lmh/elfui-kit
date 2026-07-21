@@ -1,5 +1,10 @@
 # Input Element Plus API 对标计划
 
+## 2026-07-19 输入框改进
+- [x] 稳定 outlined 盒模型与浮动标签位置
+- [x] 新增 background-color 自定义字段背景
+- [x] 将外观切换收敛到首个可操作 Playground，并完成明暗主题与 360px 窄屏验收
+
 生成时间：2026-07-05
 
 ## 对标定位

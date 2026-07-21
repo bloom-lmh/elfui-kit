@@ -5,6 +5,8 @@ import {
   defineProps,
   defineStyle,
   html,
+  onMount,
+  onUnmount,
   useEffect,
   useHost,
   useHostAttr,
@@ -270,10 +272,20 @@ useEffect(() => {
   });
 });
 
+onMount(() => {
+  Object.defineProperties(host, {
+    focus: { configurable: true, value: focus },
+    blur: { configurable: true, value: blur }
+  });
+});
+
+onUnmount(() => {
+  delete (host as Partial<HTMLElement>).focus;
+  delete (host as Partial<HTMLElement>).blur;
+});
+
 defineExpose({
-  blur,
   clear,
-  focus,
   input,
   ref,
   resizeTextarea,
@@ -344,7 +356,8 @@ const Textarea = defineHtml(html`
           aria-label="clear textarea"
           @click=${clear}
         >
-          ${props.clearIcon}
+          <span v-if=${props.clearIcon && props.clearIcon !== "×"}>${props.clearIcon}</span>
+          <svg v-else viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
         </button>
         <span v-if=${showWordLimit() && !showOutsideWordLimit()} class="count" part="count">
           ${wordLimitText()}

@@ -1,36 +1,39 @@
 import { defineHtml, html, useRef } from "elfui";
 
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "面板过渡", en: "Panel transitions" },
+  title: { zh: "滑动过渡与持续时间", en: "Slide transition and duration" },
+  overview: { zh: "概览面板使用滑动过渡进入。", en: "The overview panel enters with a slide transition." },
+  metrics: { zh: "指标面板在切换时平滑滑入。", en: "The metrics panel slides in smoothly." },
+  logs: { zh: "日志面板保持相同的过渡节奏。", en: "The logs panel uses the same transition rhythm." }
+});
 
 const active = useRef("overview");
-
-const items = [
-  { label: "Overview", value: "overview", content: "概览面板使用 slide 过渡进入。" },
-  { label: "Metrics", value: "metrics", content: "指标面板会在切换时轻微滑入。" },
-  { label: "Logs", value: "logs", content: "日志面板保持同样的过渡节奏。" }
+const items = () => [
+  { label: "Overview", value: "overview", content: t("overview") },
+  { label: "Metrics", value: "metrics", content: t("metrics") },
+  { label: "Logs", value: "logs", content: t("logs") }
 ];
-
-const onChange = (event: CustomEvent): void => {
-  active.set(String(event.detail));
-};
-
-const code = `<elf-tabs
-  :items.prop=\${items}
-  :modelValue=\${active}
-  show-panels
-  transition="slide"
-  :transitionDuration=\${260}
-/>`;
+const onChange = (event: CustomEvent): void => active.set(String(event.detail));
+const code = `<elf-tabs :items.prop=\${items} :modelValue=\${active} show-panels transition="slide" :transitionDuration=\${260} />`;
+const script = `const active = useRef("overview");
+const items = [
+  { label: "Overview", value: "overview", content: "Overview panel" },
+  { label: "Metrics", value: "metrics", content: "Metrics panel" },
+  { label: "Logs", value: "logs", content: "Logs panel" }
+];`;
 
 const PageTabsEx3 = defineHtml(html`
-  <h2>面板过渡</h2>
-  <elf-playground title="transition='slide' / transition-duration" :code=${code}>
+  <h2>${t("section")}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
     <div style="width:100%;max-width:760px">
       <elf-tabs
-        :items.prop=${items}
-        :modelValue=${active}
-        show-panels
-        transition="slide"
-        :transitionDuration=${260}
+        :key=${t("section")}
+        :items.prop=${items()}
+        :modelValue.prop=${active.value}
+        show-panels transition="slide" :transitionDuration=${260}
         @update:modelValue=${onChange}
       ></elf-tabs>
     </div>

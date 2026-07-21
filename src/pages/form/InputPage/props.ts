@@ -29,6 +29,7 @@ const propsRows = [
   { name: "tabindex", type: "string | number" },
   { name: "validate-event", type: "boolean", default: "true" },
   { name: "input-style", type: "string | object" },
+  { name: "background-color", type: "string", default: "''", desc: "自定义字段背景色，悬浮与聚焦时保持一致" },
   { name: "label", type: "string", desc: "浮动标签，同时作为无 aria-label 时的可访问名称兜底" },
   { name: "inputmode", type: "string" },
   { name: "id / name", type: "string" }

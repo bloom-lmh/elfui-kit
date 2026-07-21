@@ -152,7 +152,7 @@ const placement = (): AutocompletePlacement => resolvePlacement(popperOptions().
 const modifier = (name: string): AutocompletePopperModifier | undefined =>
     popperOptions().modifiers?.find((item) => item.name === name && item.enabled !== false);
 
-const offset = (): [number, number] => modifier("offset")?.options?.offset || [0, 6];
+const offset = (): [number, number] => modifier("offset")?.options?.offset || [0, 0];
 
 const overflowPadding = (): number => Math.max(0, Number(modifier("preventOverflow")?.options?.padding) || 8);
 

@@ -52,6 +52,11 @@ interface TableEl extends HTMLElement {
     columnIndex: number;
   }) => [number, number] | { rowspan: number; colspan: number } | undefined;
   showOverflowTooltip?: boolean;
+  virtual?: boolean;
+  virtualThreshold?: number;
+  height?: string | number;
+  rowHeight?: number;
+  overscan?: number;
   tooltipOptions?: {
     placement?: string;
     offset?: number;
@@ -145,6 +150,26 @@ describe("elf-table", () => {
 
     expect(onSelection).toHaveBeenCalled();
     expect((onSelection.mock.calls[0]![0] as CustomEvent).detail[0].id).toBe("1");
+  });
+
+  it("快速连续选择会同步反馈 DOM，并在合并提交后保持最终状态", async () => {
+    const el = await mount((table) => {
+      table.data = Array.from({ length: 24 }, (_, index) => ({ id: String(index), name: `Row ${index}` }));
+      table.columns = [{ type: "selection", width: 48 }, { prop: "name", label: "Name" }];
+    });
+    const checkbox = el.shadowRoot!.querySelector<HTMLButtonElement>("tbody .table-checkbox")!;
+
+    for (let index = 0; index < 10; index += 1) {
+      checkbox.click();
+      expect(checkbox.getAttribute("aria-checked")).toBe(index % 2 === 0 ? "true" : "false");
+    }
+    expect(el.getSelectionRows()).toEqual([]);
+
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await tick();
+    expect(el.getSelectionRows()).toEqual([]);
+    expect(el.shadowRoot!.querySelector("tbody tr")?.classList.contains("is-selected")).toBe(false);
   });
 
   it("默认选中 key 可回显", async () => {
@@ -474,12 +499,60 @@ describe("elf-table", () => {
     expect(wrap.scrollTop).toBe(12);
 
     wrap.dispatchEvent(new Event("scroll"));
+    await tick();
     expect((onScroll.mock.calls[0]![0] as CustomEvent).detail).toEqual({
       scrollLeft: 7,
       scrollTop: 12
     });
     expect(el.shadowRoot!.querySelector("slot[name='empty']")).toBeTruthy();
     expect(el.shadowRoot!.querySelector("slot[name='append']")).toBeTruthy();
+  });
+
+  it("虚拟滚动同步换窗、合并公开事件并保持渲染行数有界", async () => {
+    const el = document.createElement("elf-table") as TableEl;
+    el.data = Array.from({ length: 10_000 }, (_, index) => ({
+      id: index + 1,
+      name: `任务 #${String(index + 1).padStart(5, "0")}`
+    }));
+    el.columns = [{ prop: "name", label: "任务" }];
+    el.virtual = true;
+    el.virtualThreshold = 1;
+    el.height = 396;
+    el.rowHeight = 44;
+    el.overscan = 6;
+    const onScroll = vi.fn();
+    el.addEventListener("scroll", onScroll as EventListener);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const wrap = el.shadowRoot!.querySelector<HTMLElement>(".table-wrap")!;
+    Object.defineProperty(wrap, "scrollTop", { value: 0, configurable: true, writable: true });
+    Object.defineProperty(wrap, "scrollLeft", { value: 0, configurable: true, writable: true });
+    expect(el.shadowRoot!.textContent).toContain("任务 #00001");
+    expect(el.shadowRoot!.querySelectorAll("tbody tr").length).toBeLessThanOrEqual(20);
+    expect((el.shadowRoot!.querySelector("tbody") as HTMLElement).style.height).toBe("440000px");
+
+    wrap.scrollTop = 120_000;
+    wrap.dispatchEvent(new Event("scroll"));
+    wrap.scrollTop = 240_000;
+    wrap.dispatchEvent(new Event("scroll"));
+    wrap.scrollTop = 439_604;
+    wrap.dispatchEvent(new Event("scroll"));
+    await tick();
+
+    expect(onScroll).toHaveBeenCalledTimes(1);
+    expect((onScroll.mock.calls[0]![0] as CustomEvent).detail.scrollTop).toBe(439_604);
+    expect(el.shadowRoot!.textContent).toContain("任务 #10000");
+    expect(el.shadowRoot!.querySelectorAll("tbody tr").length).toBeLessThanOrEqual(20);
+    expect(el.shadowRoot!.querySelector("tbody tr[data-virtual-key]")).toBeTruthy();
+
+    wrap.scrollTop = -160;
+    wrap.dispatchEvent(new Event("scroll"));
+    await tick();
+    expect(el.shadowRoot!.textContent).toContain("任务 #00001");
+    expect(el.shadowRoot!.textContent).not.toContain("任务 #10000");
+    expect((el.shadowRoot!.querySelector("tbody") as HTMLElement).style.paddingBlockStart).toBe("0px");
   });
 
   it("span-method 支持数组和对象结果，并隐藏被合并单元格", async () => {

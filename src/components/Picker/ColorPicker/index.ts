@@ -134,7 +134,9 @@ const ColorPicker = defineHtml(html`
                 :value.prop=${alpha}
                 @input=${onAlpha}
             />
-            <button v-if=${props.clearable} class="clear" type="button" @click=${clear}>×</button>
+            <button v-if=${props.clearable} class="clear" type="button" aria-label="Clear color" @click=${clear}>
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
+            </button>
         </label>
         <div v-if=${presetItems().length > 0} class="presets">
             <button

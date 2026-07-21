@@ -66,6 +66,8 @@ export interface InputProps {
   tabindex: string | number | undefined;
   validateEvent: boolean;
   inputStyle: string | Record<string, string | number>;
+  /** Overrides the field surface while preserving theme-aware text and focus styles. */
+  backgroundColor: string;
   label: string;
   inputmode: string;
   countGraphemes?: InputGraphemeCounter;

@@ -54,6 +54,11 @@ const checked = (): boolean => {
   return Object.is(mv, props.trueValue);
 };
 
+const ariaChecked = (): "true" | "false" | "mixed" => {
+  if (props.indeterminate) return "mixed";
+  return checked() ? "true" : "false";
+};
+
 useHostFlag("data-checked", () => checked());
 
 useHostFlag("data-indeterminate", () => Boolean(props.indeterminate));
@@ -126,7 +131,7 @@ const Checkbox = defineHtml(html`
     :id=${props.id || null}
     :tabindex=${isDisabled() ? -1 : props.tabindex}
     role="checkbox"
-    :aria-checked=${checked()}
+    :aria-checked=${ariaChecked()}
     :aria-label=${props.ariaLabel || props.label || props.trueLabel || null}
     :aria-controls=${props.ariaControls || null}
     @keydown=${onKeyDown}

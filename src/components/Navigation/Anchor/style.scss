@@ -14,8 +14,18 @@
 }
 
 .anchor.is-horizontal {
+  position: sticky;
+  top: var(--anchor-offset, 0);
+  z-index: 3;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
   min-width: 0;
-  padding: 0;
+  min-height: 52px;
+  padding: 4px;
+  border: 1px solid var(--elf-divider);
+  background: var(--elf-bg-paper);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--elf-divider) 70%, transparent);
 }
 
 .track {
@@ -38,17 +48,54 @@
 
 .anchor.is-horizontal .list {
   display: flex;
-  gap: 8px;
+  width: 100%;
+  gap: 4px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 10px;
+  padding: 0 4px;
   scrollbar-color: var(--elf-border-strong) transparent;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline proximity;
+  touch-action: pan-x;
+}
+
+.scroll-control {
+  z-index: 1;
+  display: inline-grid;
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: var(--elf-bg-paper);
+  color: var(--elf-text-secondary);
+  cursor: pointer;
+}
+
+.scroll-control:hover,
+.scroll-control:focus-visible {
+  color: var(--elf-primary);
+  background: var(--elf-bg-overlay);
+}
+
+.scroll-control:focus-visible {
+  outline: 2px solid var(--elf-primary);
+  outline-offset: -2px;
+}
+
+.scroll-control svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .anchor.is-horizontal .list::-webkit-scrollbar {
-  height: 6px;
+  display: none;
 }
 
 .anchor.is-horizontal .list::-webkit-scrollbar-track {
@@ -63,6 +110,11 @@
 .item {
   position: relative;
   min-width: 0;
+}
+
+.anchor.is-horizontal .item {
+  flex: 0 0 auto;
+  scroll-snap-align: nearest;
 }
 
 .item::before {
@@ -121,7 +173,8 @@
 }
 
 .anchor.is-horizontal .link {
-  padding: 6px 10px;
+  min-height: 42px;
+  padding: 9px 16px;
   white-space: nowrap;
 }
 

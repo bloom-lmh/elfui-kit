@@ -1,9 +1,11 @@
 @use "../../../styles/reset";
+@use "../../../styles/field-surface" as field;
 
 :host {
   position: relative;
   display: inline-flex;
-  width: 320px;
+  width: min(320px, 100%);
+  max-width: 100%;
   color: var(--elf-text-primary);
 }
 
@@ -13,21 +15,17 @@
 }
 
 textarea {
+  display: block;
+  box-sizing: border-box;
   width: 100%;
   min-height: 72px;
   padding: var(--elf-space-3);
-  border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-md);
-  outline: none;
-  background: var(--elf-bg-paper, #fff);
   color: inherit;
   font: inherit;
   resize: vertical;
 }
 
-textarea:focus {
-  border-color: var(--elf-primary);
-}
+@include field.surface("textarea");
 
 .panel {
   position: absolute;
@@ -39,6 +37,7 @@ textarea:focus {
   border: 1px solid var(--elf-border);
   border-radius: var(--elf-radius-md);
   background: var(--elf-bg-paper, #fff);
+  color: var(--elf-text-primary);
   box-shadow: var(--elf-shadow-3);
 }
 
@@ -64,7 +63,7 @@ textarea:focus {
   padding: var(--elf-space-3);
   border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--elf-text-primary);
   cursor: pointer;
   font: inherit;
   text-align: left;

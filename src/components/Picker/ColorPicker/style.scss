@@ -67,13 +67,14 @@
 }
 
 .value {
-  width: 112px;
+  width: 144px;
   min-width: 0;
   border: 0;
   outline: none;
   background: transparent;
   color: var(--elf-text-primary);
   font: inherit;
+  font-variant-numeric: tabular-nums;
 }
 
 .alpha {
@@ -93,6 +94,15 @@
   &:hover {
     background: var(--elf-bg-overlay);
   }
+}
+
+.clear svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
 }
 
 .presets {

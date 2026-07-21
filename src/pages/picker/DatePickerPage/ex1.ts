@@ -27,18 +27,6 @@ const PageDatePickerEx1 = defineHtml(html`
         <span slot="status" class="demo-state">{{ date }}</span>
       </div>
     </elf-playground>
-
-    <h2>外观变体</h2>
-    <elf-playground title="六种日期输入表面">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;width:100%">
-        <elf-date-picker variant="default" label="Default" model-value="2026-07-17"></elf-date-picker>
-        <elf-date-picker variant="outlined" label="Outlined" model-value="2026-07-17"></elf-date-picker>
-        <elf-date-picker variant="underlined" label="Underlined" model-value="2026-07-17"></elf-date-picker>
-        <elf-date-picker variant="solo" label="Solo" model-value="2026-07-17"></elf-date-picker>
-        <elf-date-picker variant="solo-filled" label="Solo filled" model-value="2026-07-17"></elf-date-picker>
-        <elf-date-picker variant="solo-inverted" label="Solo inverted" model-value="2026-07-17"></elf-date-picker>
-      </div>
-    </elf-playground>
 `);
 
 export { PageDatePickerEx1 };

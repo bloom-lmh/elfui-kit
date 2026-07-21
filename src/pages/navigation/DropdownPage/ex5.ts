@@ -4,20 +4,19 @@ interface VirtualDropdownElement extends HTMLElement {
   virtualRef?: HTMLElement | null;
 }
 
-const selected = useRef("未选择");
+const selectedLabel = useRef("未选择");
+const selectedCommand = useRef("-");
 const host = useHost();
 
 const onCommand = (event: CustomEvent): void => {
-  selected.set(String(event.detail?.command ?? ""));
+  selectedCommand.set(String(event.detail?.command ?? "-"));
+  selectedLabel.set(String(event.detail?.item?.label ?? event.detail?.command ?? "未选择"));
 };
 
 const compositionalCode = `<elf-dropdown trigger="click" @command=\${onCommand}>
-  <span>账户操作</span>
+  <span>账户操作：\${selectedLabel}</span>
   <elf-dropdown-menu slot="dropdown">
-    <elf-dropdown-item command="profile">
-      <span slot="icon">P</span>
-      个人资料
-    </elf-dropdown-item>
+    <elf-dropdown-item command="profile">个人资料</elf-dropdown-item>
     <elf-dropdown-item command="security">安全设置</elf-dropdown-item>
     <elf-dropdown-item command="locked" disabled>锁定项</elf-dropdown-item>
     <elf-dropdown-item command="logout" divided>退出登录</elf-dropdown-item>
@@ -59,13 +58,16 @@ onMount(() => {
 });
 
 const PageDropdownEx5 = defineHtml(html`
-  <elf-playground title="组合式菜单" :code=${compositionalCode}>
+  <elf-playground title="组合式菜单与选中反馈" :code=${compositionalCode}>
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
       <elf-dropdown trigger="click" @command=${onCommand}>
-        <span>账户操作</span>
+        <span>账户操作：{{ selectedLabel }}</span>
         <elf-dropdown-menu slot="dropdown">
           <elf-dropdown-item command="profile">
-            <span slot="icon">P</span>
+            <svg slot="icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.8" />
+              <path d="M4.5 16c.7-3 2.5-4.5 5.5-4.5s4.8 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
             个人资料
           </elf-dropdown-item>
           <elf-dropdown-item command="security">安全设置</elf-dropdown-item>
@@ -73,7 +75,7 @@ const PageDropdownEx5 = defineHtml(html`
           <elf-dropdown-item command="logout" divided>退出登录</elf-dropdown-item>
         </elf-dropdown-menu>
       </elf-dropdown>
-      <span slot="status" class="demo-state">当前命令：{{ selected }}</span>
+      <span class="demo-state">当前命令：<strong>{{ selectedCommand }}</strong></span>
     </div>
   </elf-playground>
 

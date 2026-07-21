@@ -14,7 +14,7 @@ import {
   useComputed,
   useRef,
   watchEffect,
-  defineHtml
+  defineHtml,
 } from "elfui";
 
 import styles from "./style.scss?inline";
@@ -46,7 +46,7 @@ const props = defineProps({
   filterPlaceholder: { type: String, default: "" },
   emptyText: { type: String, default: "" },
   indent: { type: Number, default: 20 },
-  bordered: { type: Boolean, default: false }
+  bordered: { type: Boolean, default: false },
 });
 
 const locale = useLocaleProvider();
@@ -59,7 +59,7 @@ const emit = defineEmits([
   "node-expand",
   "node-collapse",
   "check",
-  "check-change"
+  "check-change",
 ]);
 
 const allNodes = useRef<TreeViewNode[]>([]);
@@ -99,7 +99,7 @@ const fields = (): TreeFieldConfig => {
     children: custom.children || "children",
     disabled: custom.disabled || "disabled",
     isLeaf: custom.isLeaf || "isLeaf",
-    icon: custom.icon || "icon"
+    icon: custom.icon || "icon",
   };
 };
 
@@ -122,15 +122,10 @@ const findNode = (key: string): TreeViewNode | undefined => nodeMap.peek()[key];
 const isDescendantOf = (node: TreeViewNode, ancestorKey: string): boolean =>
   node.key !== ancestorKey && node.path.includes(ancestorKey);
 
-const childRowsOf = (row: TreeViewNode): TreeViewNode[] =>
-  allNodes.peek().filter((node) => node.parentKey === row.key);
+const childRowsOf = (row: TreeViewNode): TreeViewNode[] => allNodes.peek().filter((node) => node.parentKey === row.key);
 
 const descendantRowsOf = (row: TreeViewNode, includeSelf = false): TreeViewNode[] =>
-  allNodes
-    .peek()
-    .filter(
-      (node) => (includeSelf ? node.key === row.key : false) || isDescendantOf(node, row.key)
-    );
+  allNodes.peek().filter((node) => (includeSelf ? node.key === row.key : false) || isDescendantOf(node, row.key));
 
 const pruneKeys = (keys: string[]): string[] => {
   const map = nodeMap.peek();
@@ -143,11 +138,7 @@ const rebuildVisible = (): void => {
   const keyword = filterText.peek().trim().toLowerCase();
 
   if (!keyword) {
-    visibleNodes.set(
-      rows.filter(
-        (row) => row.level === 0 || row.path.slice(0, -1).every((key) => expanded.has(key))
-      )
-    );
+    visibleNodes.set(rows.filter((row) => row.level === 0 || row.path.slice(0, -1).every((key) => expanded.has(key))));
     return;
   }
 
@@ -217,7 +208,7 @@ const setCheckedKeys = (keys: string[], leafOnly = false): void => {
 const setCheckedNodes = (nodes: Record<string, unknown>[], leafOnly = false): void => {
   setCheckedKeys(
     nodes.map((node) => keyOf(node)),
-    leafOnly
+    leafOnly,
   );
 };
 
@@ -233,12 +224,7 @@ const buildNodes = (): void => {
   const rows: TreeViewNode[] = [];
   const map: Record<string, TreeViewNode> = {};
 
-  const walk = (
-    items: Record<string, unknown>[],
-    level: number,
-    parentKey: string,
-    parentPath: string[]
-  ): void => {
+  const walk = (items: Record<string, unknown>[], level: number, parentKey: string, parentPath: string[]): void => {
     items.forEach((raw, index) => {
       const fallbackKey = [...parentPath, String(index)].join("-");
       const key = String(raw[field.key] ?? fallbackKey);
@@ -253,7 +239,7 @@ const buildNodes = (): void => {
         hasChildren: children.length > 0,
         parentKey,
         path: [...parentPath, key],
-        raw
+        raw,
       };
       rows.push(row);
       map[key] = row;
@@ -279,10 +265,7 @@ const buildNodes = (): void => {
       : normalizeKeys(props.defaultCheckedKeys);
     setExpandedKeys(initialExpanded, false);
     commitCheckedKeys(initialChecked, false);
-    setSelectedKey(
-      String(props.modelValue || props.currentNodeKey || props.defaultSelectedKey || ""),
-      false
-    );
+    setSelectedKey(String(props.modelValue || props.currentNodeKey || props.defaultSelectedKey || ""), false);
   } else {
     setExpandedKeys(expandedState.peek(), false);
     commitCheckedKeys(checkedState.peek(), false);
@@ -340,20 +323,18 @@ const nodeClass = (row: TreeViewNode): Record<string, boolean> => ({
   "is-expanded": isExpanded(row.key),
   "is-disabled": row.disabled,
   "is-leaf": row.isLeaf,
-  "has-children": row.hasChildren
+  "has-children": row.hasChildren,
 });
 
 const rowStyle = (row: TreeViewNode): Record<string, string> => ({
-  paddingLeft: `${row.level * (Number(props.indent) || 20)}px`
+  paddingLeft: `${row.level * (Number(props.indent) || 20)}px`,
 });
 
 const commitExpand = (row: TreeViewNode, open: boolean): void => {
   if (!row.hasChildren) return;
   const current = expandedState.peek();
   let next = current.filter(
-    (key) =>
-      key !== row.key &&
-      !(open === false && findNode(key) && isDescendantOf(findNode(key)!, row.key))
+    (key) => key !== row.key && !(open === false && findNode(key) && isDescendantOf(findNode(key)!, row.key)),
   );
 
   if (open) {
@@ -362,7 +343,7 @@ const commitExpand = (row: TreeViewNode, open: boolean): void => {
         allNodes
           .peek()
           .filter((node) => node.parentKey === row.parentKey && node.hasChildren)
-          .map((node) => node.key)
+          .map((node) => node.key),
       );
       next = next.filter((key) => !siblings.has(key));
     }
@@ -423,10 +404,7 @@ const setChecked = (target: unknown, checked: boolean, deep = true): void => {
   if (!row || row.disabled) return;
 
   const set = new Set(checkedState.peek());
-  const affected =
-    !props.checkStrictly && deep
-      ? descendantRowsOf(row, true).filter((node) => !node.disabled)
-      : [row];
+  const affected = !props.checkStrictly && deep ? descendantRowsOf(row, true).filter((node) => !node.disabled) : [row];
 
   for (const node of affected) {
     if (checked) set.add(node.key);
@@ -462,10 +440,7 @@ const getHalfCheckedKeys = (): string[] =>
     .filter((row) => isIndeterminate(row))
     .map((row) => row.key);
 
-const getCheckedNodes = (
-  leafOnly = false,
-  includeHalfChecked = false
-): Record<string, unknown>[] => {
+const getCheckedNodes = (leafOnly = false, includeHalfChecked = false): Record<string, unknown>[] => {
   const keys = new Set(getCheckedKeys(leafOnly));
   if (includeHalfChecked) {
     for (const key of getHalfCheckedKeys()) {
@@ -567,7 +542,7 @@ defineExpose({
   getCurrentKey,
   getCurrentNode,
   getNode,
-  filter
+  filter,
 });
 
 defineStyle(styles);
@@ -586,9 +561,7 @@ const Tree = defineHtml(html`
     </div>
 
     <div class="tree-body">
-      <div v-if=${getVisibleNodes().length === 0} class="tree-empty">
-        ${props.emptyText || locale.t("table.empty")}
-      </div>
+      <div v-if=${getVisibleNodes().length === 0} class="tree-empty">${props.emptyText || locale.t("table.empty")}</div>
 
       <div
         v-for="row in getVisibleNodes()"
@@ -624,12 +597,7 @@ const Tree = defineHtml(html`
           <span class="checkbox-mark"></span>
         </button>
 
-        <div
-          class="tree-content"
-          tabindex="0"
-          @click="onNodeClick(row)"
-          @keydown="onNodeKeydown(row, $event)"
-        >
+        <div class="tree-content" tabindex="0" @click="onNodeClick(row)" @keydown="onNodeKeydown(row, $event)">
           <span v-if="row.icon" class="tree-icon">{{ row.icon }}</span>
           <span class="tree-label">{{ row.label }}</span>
         </div>

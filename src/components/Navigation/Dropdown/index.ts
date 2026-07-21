@@ -576,11 +576,20 @@ const onCompositionalCommand = (event: CustomEvent<{
     const detail = event.detail;
     selectedCommand.set(detail.command);
     selectedLabel.set(detail.label);
+    Array.from(host.querySelectorAll<HTMLElement & { command?: DropdownCommand; selected?: boolean }>("elf-dropdown-item"))
+        .forEach((item) => {
+            item.selected = item.command === detail.command;
+        });
     emit("command", { command: detail.command, item: detail.item });
     if (props.hideOnClick !== false) closeDropdown();
 };
 
-const resolveFocusedIndex = (items: HTMLElement[]): number => {
+const resolveFocusedIndex = (items: HTMLElement[], event?: KeyboardEvent): number => {
+    const path = event?.composedPath?.() ?? [];
+    const pathIndex = items.findIndex((item) =>
+        path.some((node) => node === item || (node instanceof Node && item.contains(node)))
+    );
+    if (pathIndex >= 0) return pathIndex;
     const root = host.shadowRoot;
     const current = (root?.activeElement as HTMLElement | null) || (document.activeElement as HTMLElement | null);
     if (!current) return -1;
@@ -595,10 +604,11 @@ const onMenuKeydown = (event: KeyboardEvent): void => {
     const items = getFocusableItems();
     if (items.length === 0) return;
 
-    const index = resolveFocusedIndex(items);
+    const index = resolveFocusedIndex(items, event);
 
     if (event.key === "ArrowDown") {
         event.preventDefault();
+        event.stopPropagation();
         const next = items[(index + 1 + items.length) % items.length];
         next?.focus();
         return;
@@ -606,6 +616,7 @@ const onMenuKeydown = (event: KeyboardEvent): void => {
 
     if (event.key === "ArrowUp") {
         event.preventDefault();
+        event.stopPropagation();
         const next = items[(index - 1 + items.length) % items.length];
         next?.focus();
         return;
@@ -613,21 +624,33 @@ const onMenuKeydown = (event: KeyboardEvent): void => {
 
     if (event.key === "Home") {
         event.preventDefault();
+        event.stopPropagation();
         items[0]?.focus();
         return;
     }
 
     if (event.key === "End") {
         event.preventDefault();
+        event.stopPropagation();
         items[items.length - 1]?.focus();
         return;
     }
 
     if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         closeDropdown();
     }
 };
+
+useEventListener(host, "keydown", (event) => {
+    if (!hasCompositionalMenu()) return;
+    const keyboardEvent = event as KeyboardEvent;
+    const fromItem = keyboardEvent.composedPath().some(
+        (node) => node instanceof HTMLElement && node.tagName.toLowerCase() === "elf-dropdown-item"
+    );
+    if (fromItem) onMenuKeydown(keyboardEvent);
+});
 
 const connectVirtualTrigger = (): void => {
     cleanupVirtualTrigger();

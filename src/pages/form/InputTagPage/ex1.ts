@@ -4,6 +4,7 @@ const tags = useRef(["设计", "开发"]);
 
 const code1 = `<elf-input-tag
   :modelValue.prop=\${tags}
+  variant="outlined"
   clearable
   tag-type="primary"
   tag-effect="light"
@@ -42,6 +43,7 @@ const PageInputTagEx1 = defineHtml(html`
 <elf-playground title="受控数组与清空" :code=${code1} :script=${script1}>
       <elf-input-tag
         :modelValue.prop=${tags}
+        variant="outlined"
         clearable
         tag-type="primary"
         tag-effect="light"

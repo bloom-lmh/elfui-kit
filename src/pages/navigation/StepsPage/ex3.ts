@@ -1,65 +1,44 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
 
-const active = useRef(1);
-const statusText = useRef("当前步骤：配置能力");
-const titles = ["创建项目", "配置能力", "邀请成员", "发布上线"];
+const active = useRef(0);
+const t = createDocsTranslator({
+  heading: { zh: "组合式步骤", en: "Composed steps" },
+  title: { zh: "自定义步骤内容", en: "Custom step content" },
+  status: { zh: "当前步骤", en: "Current step" },
+  create: { zh: "创建项目", en: "Create project" },
+  createDesc: { zh: "填写基础配置", en: "Enter the basics" },
+  configure: { zh: "配置能力", en: "Configure access" },
+  configureDesc: { zh: "选择权限范围", en: "Choose permissions" },
+  publish: { zh: "发布上线", en: "Publish" },
+  publishDesc: { zh: "确认并开始使用", en: "Confirm and launch" }
+});
+const onActive = (event: CustomEvent<number>): void => active.set(event.detail);
+const onChange = (event: CustomEvent<{ active: number }>): void => active.set(event.detail.active);
 
-const onUpdateActive = (event: CustomEvent<number>): void => {
-  active.set(event.detail);
-};
-
-const onChange = (event: CustomEvent<{ active: number }>): void => {
-  statusText.set(`当前步骤：${titles[event.detail.active] ?? "未知"}`);
-};
-
-const code = `<elf-steps
-  :active.prop=\${active.value}
-  @update:active=\${onUpdateActive}
-  @change=\${onChange}
->
-  <elf-step title="创建项目" description="填写名称和基础配置">
-    <span slot="icon">1</span>
-  </elf-step>
+const code = `<elf-steps :active.prop=\${active.value} @update:active=\${onActive}>
+  <elf-step title="创建项目" description="填写基础配置" />
   <elf-step title="配置能力">
-    <span slot="icon">⚙</span>
-    <strong slot="title">配置能力</strong>
-    <span slot="description">选择组件、主题和权限</span>
+    <span slot="icon">2</span>
+    <span slot="description">选择权限范围</span>
   </elf-step>
-  <elf-step title="邀请成员" description="该步骤暂不可跳转" disabled />
-  <elf-step title="发布上线" description="确认设置并开始使用" />
+  <elf-step title="发布上线" description="确认并开始使用" />
 </elf-steps>`;
-
-const script = `const active = useRef(1);
-const titles = ["创建项目", "配置能力", "邀请成员", "发布上线"];
-
-const onUpdateActive = (event) => {
-  active.set(event.detail);
-};
-
-const onChange = (event) => {
-  console.log("当前步骤", titles[event.detail.active]);
-};`;
+const script = `const active = useRef(0);
+const onActive = (event) => active.set(event.detail);`;
 
 const PageStepsEx3 = defineHtml(html`
-  <h2>组合式步骤与插槽</h2>
-  <elf-playground title="自定义步骤内容" :code=${code} :script=${script}>
-    <elf-steps
-      :active.prop=${active.value}
-      @update:active=${onUpdateActive}
-      @change=${onChange}
-    >
-      <elf-step title="创建项目" description="填写名称和基础配置">
-        <span slot="icon">1</span>
+  <h2>{{ t("heading") }}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
+    <span slot="status" class="demo-state">{{ t("status") }}：{{ active + 1 }}</span>
+    <elf-steps :active.prop=${active.value} @update:active=${onActive} @change=${onChange}>
+      <elf-step :title.prop=${t("create")} :description.prop=${t("createDesc")}></elf-step>
+      <elf-step :title.prop=${t("configure")}>
+        <span slot="icon">2</span>
+        <span slot="description">{{ t("configureDesc") }}</span>
       </elf-step>
-      <elf-step title="配置能力">
-        <span slot="icon">⚙</span>
-        <strong slot="title">配置能力</strong>
-        <span slot="description">选择组件、主题和权限</span>
-      </elf-step>
-      <elf-step title="邀请成员" description="该步骤暂不可跳转" disabled></elf-step>
-      <elf-step title="发布上线" description="确认设置并开始使用"></elf-step>
+      <elf-step :title.prop=${t("publish")} :description.prop=${t("publishDesc")}></elf-step>
     </elf-steps>
-    <span slot="status" class="demo-state">${statusText}</span>
   </elf-playground>
 `);
 

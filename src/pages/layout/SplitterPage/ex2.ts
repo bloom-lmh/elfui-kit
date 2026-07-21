@@ -20,7 +20,7 @@ const script = `const verticalSize = useRef(48);`;
 const PageSplitterEx2 = defineHtml(html`
   <h2>垂直分割</h2>
   <elf-playground title="vertical" :code=${code} :script=${script}>
-    <div style="height:260px">
+    <div style="width:100%;max-width:720px;height:260px">
       <elf-splitter vertical :modelValue.prop=${verticalSize.value} @update:modelValue=${onVerticalUpdate}>
         <div slot="first" style="padding:16px">上方面板</div>
         <div slot="second" style="padding:16px">下方面板</div>

@@ -16,10 +16,12 @@ import {
     defineProps,
     defineStyle,
     html,
+    onMount,
     useComputed,
     useHostAttr,
     useHostCssVar,
     useHostFlag,
+    useHost,
     useRef,
     defineHtml,
 } from "elfui";
@@ -51,6 +53,7 @@ const props = defineProps({
 }) as unknown as Readonly<CardProps>;
 
 const emit = defineEmits(["click"]);
+const host = useHost();
 
 const showImage = useComputed(() => !!props.image);
 const showOverlay = useComputed(() => !!props.image && !!props.overlay);
@@ -78,15 +81,28 @@ const normalizedDensity = (): CardDensity => {
     return density === "comfortable" || density === "compact" ? density : "default";
 };
 
+const slotHasContent = (slot: HTMLSlotElement): boolean =>
+    slot.assignedNodes({ flatten: true }).some((node) =>
+        node.nodeType === 1 || (node.textContent?.trim() ?? "") !== "",
+    );
+
+const updateSlotState = (target: "header" | "footer" | "cover", slot: HTMLSlotElement): void => {
+    const hasContent = slotHasContent(slot);
+    if (target === "header") hasHeaderSlot.set(hasContent);
+    if (target === "footer") hasFooterSlot.set(hasContent);
+    if (target === "cover") hasCoverSlot.set(hasContent);
+};
+
 const onSlotChange =
     (target: "header" | "footer" | "cover") =>
-    (event: Event): void => {
-        const slot = event.target as HTMLSlotElement;
-        const hasContent = slot.assignedNodes().some((node) => (node.textContent?.trim() ?? "") !== "");
-        if (target === "header") hasHeaderSlot.set(hasContent);
-        if (target === "footer") hasFooterSlot.set(hasContent);
-        if (target === "cover") hasCoverSlot.set(hasContent);
-    };
+    (event: Event): void => updateSlotState(target, event.target as HTMLSlotElement);
+
+const syncSlotStates = (): void => {
+    (["header", "footer", "cover"] as const).forEach((target) => {
+        const slot = host.shadowRoot?.querySelector<HTMLSlotElement>(`slot[name="${target}"]`);
+        if (slot) updateSlotState(target, slot);
+    });
+};
 
 const handleClick = (event: Event): void => {
     if (!props.clickable) return;
@@ -110,6 +126,8 @@ useHostFlag("has-footer", () => showFooter.value);
 useHostFlag("has-cover", () => showCover.value);
 useHostCssVar("--_image-h", () => String(props.imageHeight || "200px"));
 useHostCssVar("--_image-w", () => String(props.imageWidth || "40%"));
+
+onMount(() => queueMicrotask(syncSlotStates));
 
 defineStyle(styles);
 

@@ -5,6 +5,12 @@
 - [x] Share the circular day selection and fresh range-draft semantics with Calendar.
 - [x] Close the anchored panel on outside pointer interaction and external page motion while preserving internal scrolling.
 
+## 2026-07-19 documentation and surface polish
+
+- [x] Remove the redundant appearance gallery and keep the basic shared-field example.
+- [x] Keep multiple selections in a fixed-width, horizontally scrollable chip strip so added dates never shift the page layout.
+- [x] Flatten the embedded Calendar border/radius inside the confirmation panel and use an SVG remove icon.
+
 生成时间：2026-07-05
 
 ## 对标定位

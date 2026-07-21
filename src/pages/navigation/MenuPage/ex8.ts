@@ -1,11 +1,20 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "组合式菜单", en: "Compositional menu" }, waiting: { zh: "等待操作", en: "Waiting for action" },
+  selected: { zh: "已选择", en: "Selected" }, current: { zh: "当前", en: "Current" }, workspace: { zh: "工作台", en: "Workspace" },
+  delivery: { zh: "交付管理", en: "Delivery" }, projects: { zh: "项目", en: "Projects" }, releases: { zh: "发布", en: "Releases" },
+  archive: { zh: "归档", en: "Archive" }, settings: { zh: "设置", en: "Settings" }
+});
 
 const active = useRef("workspace/projects");
-const lastAction = useRef("等待操作");
+const lastAction = useRef("");
+const actionText = (): string => lastAction.value || t("waiting");
 
 const onSelect = (event: CustomEvent): void => {
   active.set(String(event.detail));
-  lastAction.set(`已选择 ${String(event.detail)}`);
+  lastAction.set(`${t("selected")} ${String(event.detail)}`);
 };
 
 const onItemClick = (event: CustomEvent): void => {
@@ -33,37 +42,44 @@ const code = `<elf-menu
   <elf-menu-item index="settings" title="设置" icon="S" />
 </elf-menu>`;
 
+const script = `const active = useRef("workspace/projects");
+const lastAction = useRef("等待操作");
+const onSelect = (event) => {
+  active.set(event.detail);
+  lastAction.set(\`已选择 \${event.detail}\`);
+};`;
+
 const PageMenuEx8 = defineHtml(html`
-  <h2>组合式菜单</h2>
-  <elf-playground title="SubMenu / MenuItem / MenuItemGroup" :code=${code}>
-    <span slot="status">{{ lastAction }} · 当前：{{ active }}</span>
+  <h2>${t("section")}</h2>
+  <elf-playground title="SubMenu / MenuItem / MenuItemGroup" :code=${code} :script=${script}>
+    <span slot="status" class="demo-state">${actionText()} · ${t("current")}: {{ active }}</span>
     <elf-menu
       bordered
       rounded
-      :modelValue=${active}
-      :defaultOpeneds=${["workspace"]}
+      :modelValue.prop=${active.value}
+      :defaultOpeneds.prop=${["workspace"]}
       @update:modelValue=${onSelect}
       style="height:360px"
     >
       <elf-sub-menu
         index="workspace"
-        title="工作台"
+        :title=${t("workspace")}
         icon="W"
         expand-close-icon="＋"
         expand-open-icon="−"
       >
-        <elf-menu-item-group title="交付管理">
+        <elf-menu-item-group :title=${t("delivery")}>
           <elf-menu-item
             index="workspace/projects"
-            title="项目"
+            :title=${t("projects")}
             :route=${{ path: "/projects" }}
             @click=${onItemClick}
           ></elf-menu-item>
-          <elf-menu-item index="workspace/releases" title="发布"></elf-menu-item>
+          <elf-menu-item index="workspace/releases" :title=${t("releases")}></elf-menu-item>
         </elf-menu-item-group>
-        <elf-menu-item index="workspace/archive" title="归档" disabled></elf-menu-item>
+        <elf-menu-item index="workspace/archive" :title=${t("archive")} disabled></elf-menu-item>
       </elf-sub-menu>
-      <elf-menu-item index="settings" title="设置" icon="S"></elf-menu-item>
+      <elf-menu-item index="settings" :title=${t("settings")} icon="S"></elf-menu-item>
     </elf-menu>
   </elf-playground>
 `);

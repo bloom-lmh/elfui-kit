@@ -26,17 +26,29 @@ const code = `<elf-anchor
   @click=\${onClick}
 />`;
 
+const script = `const active = useRef("#anchor-basic-intro");
+const lastClick = useRef("-");
+
+const items = [
+  { title: "Intro", href: "#anchor-basic-intro" },
+  { title: "Usage", href: "#anchor-basic-usage" },
+  { title: "API", href: "#anchor-basic-api" }
+];
+
+const onChange = (event) => active.set(event.detail.href);
+const onClick = (event) => lastClick.set(event.detail.href);`;
+
 const PageAnchorEx1 = defineHtml(html`
   <h2>Basic</h2>
-  <elf-playground title="Scroll spy and click navigation" :code=${code}>
+  <elf-playground title="Scroll spy and click navigation" :code=${code} :script=${script}>
     <div
       style="display:grid;grid-template-columns:minmax(160px,220px) 1fr;gap:20px;width:100%;max-width:860px"
     >
       <elf-anchor
-        :items=${items}
+        :items.prop=${items}
         container="#anchor-basic-scroll"
         :offset=${8}
-        :modelValue=${active}
+        :modelValue.prop=${active.value}
         @change=${onChange}
         @click=${onClick}
       ></elf-anchor>

@@ -122,6 +122,7 @@ describe("elf-sticky", () => {
 
     wrapper.dispatchEvent(new Event("scroll"));
     await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
     await tick();
 
     expect(el.hasAttribute("data-stuck")).toBe(true);
@@ -155,5 +156,88 @@ describe("elf-sticky", () => {
 
     expect(target.querySelector(".elf-sticky-portal button")?.textContent).toBe("保存");
     expect(el.hasAttribute("data-teleported")).toBe(true);
+  });
+
+  it("teleported 模式会把可见层固定在目标容器边界内", async () => {
+    const wrapper = document.createElement("section");
+    wrapper.id = "sticky-scroll-boundary";
+    wrapper.style.overflow = "auto";
+    wrapper.getBoundingClientRect = () =>
+      ({ top: 100, right: 320, bottom: 300, left: 20, width: 300, height: 200, x: 20, y: 100, toJSON: () => ({}) }) as DOMRect;
+    document.body.appendChild(wrapper);
+
+    const el = document.createElement("elf-sticky") as StickyEl;
+    el.target = "#sticky-scroll-boundary";
+    el.top = 12;
+    el.teleported = true;
+    el.innerHTML = "<strong>目标工具栏</strong>";
+    wrapper.appendChild(el);
+    await tick();
+    await tick();
+    await tick();
+
+    el.getBoundingClientRect = () =>
+      ({ top: 60, right: 300, bottom: 100, left: 30, width: 270, height: 40, x: 30, y: 60, toJSON: () => ({}) }) as DOMRect;
+    const portal = document.querySelector<HTMLElement>(".elf-sticky-portal")!;
+    portal.getBoundingClientRect = () =>
+      ({ top: 60, right: 300, bottom: 100, left: 30, width: 270, height: 40, x: 30, y: 60, toJSON: () => ({}) }) as DOMRect;
+
+    wrapper.dispatchEvent(new Event("scroll"));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+
+    expect(portal.dataset.fixed).toBe("true");
+    expect(portal.style.top).toBe("112px");
+    expect(portal.style.left).toBe("30px");
+    expect(portal.style.width).toBe("270px");
+  });
+
+  it("外层滚动容器移动目标区域时会持续重算 Teleport 边界", async () => {
+    const outer = document.createElement("main");
+    outer.style.overflow = "auto";
+    document.body.appendChild(outer);
+    const target = document.createElement("section");
+    target.id = "nested-sticky-target";
+    target.style.overflow = "auto";
+    outer.appendChild(target);
+
+    let targetTop = 180;
+    target.getBoundingClientRect = () =>
+      ({ top: targetTop, right: 420, bottom: targetTop + 240, left: 20, width: 400, height: 240, x: 20, y: targetTop, toJSON: () => ({}) }) as DOMRect;
+
+    const el = document.createElement("elf-sticky") as StickyEl;
+    el.target = "#nested-sticky-target";
+    el.offset = 12;
+    el.teleported = true;
+    el.innerHTML = "<strong>边界工具栏</strong>";
+    target.appendChild(el);
+    await tick();
+    await tick();
+    await tick();
+
+    const portal = document.querySelector<HTMLElement>(".elf-sticky-portal")!;
+    el.getBoundingClientRect = () =>
+      ({ top: targetTop - 40, right: 410, bottom: targetTop, left: 30, width: 380, height: 40, x: 30, y: targetTop - 40, toJSON: () => ({}) }) as DOMRect;
+    portal.getBoundingClientRect = () =>
+      ({ top: targetTop - 40, right: 410, bottom: targetTop, left: 30, width: 380, height: 40, x: 30, y: targetTop - 40, toJSON: () => ({}) }) as DOMRect;
+
+    target.dispatchEvent(new Event("scroll"));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+    expect(portal.style.top).toBe("192px");
+
+    targetTop = 56;
+    outer.dispatchEvent(new Event("scroll"));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+
+    expect(portal.style.top).toBe("68px");
+    expect(Number.parseFloat(portal.style.top)).toBeGreaterThanOrEqual(targetTop);
+    expect(Number.parseFloat(portal.style.top) + 40).toBeLessThanOrEqual(targetTop + 240);
+
+    const removeListener = vi.spyOn(outer, "removeEventListener");
+    el.remove();
+    await tick();
+    expect(removeListener).toHaveBeenCalledWith("scroll", expect.any(Function));
   });
 });

@@ -1,4 +1,11 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "水平菜单", en: "Horizontal menu" },
+  title: { zh: "顶部导航 / 下方面板", en: "Top navigation / submenu panel" },
+  current: { zh: "当前选中", en: "Selected" }
+});
 
 
 const active = useRef("/product/list");
@@ -63,17 +70,17 @@ const onChange = (event) => {
 };`;
 
 const PageMenuEx2 = defineHtml(html`
-  <h2>水平菜单</h2>
-  <elf-playground title="顶部导航 / 下方面板" :code=${code} :script=${script}>
+  <h2>${t("section")}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
+    <span slot="status" class="demo-state">${t("current")}: {{ active }}</span>
     <div style="width:100%;max-width:860px">
       <elf-menu
         bordered
         mode="horizontal"
         :items.prop=${items}
-        :modelValue=${active}
+        :modelValue.prop=${active.value}
         @update:modelValue=${onChange}
       ></elf-menu>
-      <div style="margin-top:16px;color:var(--elf-text-secondary)">Active: {{ active }}</div>
     </div>
   </elf-playground>
 `);

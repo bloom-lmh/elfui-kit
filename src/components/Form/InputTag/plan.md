@@ -1,5 +1,10 @@
 # InputTag Element Plus API 对标计划
 
+## 2026-07-19 字段表面
+- [x] 接入统一 FieldVariant，并以 outlined 作为标签输入默认外观
+- [x] 保持标签关闭操作和多行换行语义，案例不退化为普通文本输入框
+- [x] 输入区与标签共用自动换行容器；中间项删除使用稳定 key，360px 下无横向溢出
+
 ## 本轮记录
 
 - [x] 2026-07-16 标签渲染复用 `elf-tag`，统一 type/effect/size/round/close 视觉与事件语义，并保留拖拽排序和受控数组行为。

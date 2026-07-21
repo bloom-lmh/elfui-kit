@@ -1,4 +1,11 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "基础用法", en: "Basic usage" },
+  title: { zh: "垂直菜单 / 多级展开 / 禁用项", en: "Vertical menu / nested groups / disabled item" },
+  current: { zh: "当前选中", en: "Selected" }
+});
 
 
 const active = useRef("/workspace/projects");
@@ -39,27 +46,30 @@ const code = `<elf-menu
   unique-opened
   @update:modelValue="onChange"
 />`;
+const script = `const active = useRef("/workspace/projects");
+const openeds = ["/workspace"];
+const items = [
+  { index: "/dashboard", label: "Dashboard", icon: "D" },
+  { index: "/workspace", label: "Workspace", icon: "W", children: [
+    { index: "/workspace/projects", label: "Projects" },
+    { index: "/workspace/tasks", label: "Tasks" }
+  ] }
+];
+const onChange = (event) => active.set(event.detail);`;
 
 const PageMenuEx1 = defineHtml(html`
-  <h2>基础用法</h2>
-  <elf-playground title="垂直菜单 / 多级展开 / 禁用项" :code="code">
-    <div
-      style="display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:20px;align-items:start;width:100%;max-width:820px"
-    >
+  <h2>${t("section")}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
+    <span slot="status" class="demo-state">${t("current")}: {{ active }}</span>
+    <div style="width:100%;max-width:320px">
       <elf-menu
         bordered
-        :items="items"
-        :modelValue="active"
-        :defaultOpeneds="openeds"
+        :items.prop=${items}
+        :modelValue.prop=${active.value}
+        :defaultOpeneds.prop=${openeds}
         unique-opened
         @update:modelValue="onChange"
       ></elf-menu>
-      <div
-        style="padding:16px;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper)"
-      >
-        <div style="font-weight:600;color:var(--elf-text-primary)">当前选中</div>
-        <div style="margin-top:8px;color:var(--elf-color-primary)">{{ active }}</div>
-      </div>
     </div>
   </elf-playground>
 `);

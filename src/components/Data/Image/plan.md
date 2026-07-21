@@ -1,5 +1,17 @@
 # Image Element Plus API 对标计划
 
+## 2026-07-21 文档懒加载回归
+
+- [x] 懒加载案例改用页面自然滚动与单张真实图片，不再嵌套自建滚动容器。
+- [x] 案例补充 Script 数据来源并接入中英文说明。
+
+## 2026-07-19 lazy-loading lifecycle
+
+- [x] Keep `src` unset until IntersectionObserver reports a real intersection.
+- [x] Preserve the loading shimmer after intersection until the image `load` event, then fade the image in.
+- [x] Keep an error slot and disable shimmer/fade motion for `prefers-reduced-motion` users.
+- [x] Cover pre-intersection, loading, loaded, failure, and reduced-motion states with focused tests.
+
 ## 2026-07-17 regression completion
 
 - [x] Verify runtime fit and fixed-size updates instead of only initial CSS variables.

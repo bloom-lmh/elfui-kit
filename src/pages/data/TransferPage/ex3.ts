@@ -27,7 +27,7 @@ const PageTransferEx3 = defineHtml(html`
   <h2>长标签、Panel Footer 与窄容器</h2>
   <elf-playground title="窄容器自动切换为纵向布局" :code=${code} :script=${script}>
     <div style="width:100%;max-width:520px">
-      <elf-transfer :data=${data} :modelValue=${selected}>
+      <elf-transfer :data.prop=${data} :modelValue.prop=${selected.value}>
         <span slot="left-footer" style="display:block;padding:10px 12px;color:var(--elf-text-secondary)">
           候选成员会按权限过滤
         </span>

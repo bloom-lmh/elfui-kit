@@ -33,8 +33,7 @@ const eventsRows = [
 ];
 
 const methodsRows = [
-  { name: "scrollTo", type: "(href: string) => void", desc: "scroll to target" },
-  { name: "scrollToAnchor", type: "(href: string) => void", desc: "scroll to target" }
+  { name: "scrollToAnchor", type: "(href: string) => void", desc: "滚动到目标；避免覆盖 HTMLElement.scrollTo" }
 ];
 
 const slotsRows = [

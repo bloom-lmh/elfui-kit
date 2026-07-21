@@ -80,14 +80,18 @@ const Timeline = defineHtml(html`
       <div class="line"></div>
       <div
         class="body body-left"
+        :class="item.cardClass || ''"
+        :style="item.cardStyle || {}"
         :part="'body-' + item.__idx"
         v-if="item.__side === 'right' || item.side === 'both' || item.side === 'left'"
       >
         <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'top' && (item.timestamp2 || item.timestamp)">
           {{ item.timestamp2 || item.timestamp }}
         </div>
-        <div class="title" v-if="item.title2 || item.title">{{ item.title2 || item.title }}</div>
-        <span v-if="item.content2 || item.content" v-html="item.content2 || item.content"></span>
+        <slot :name="'item-' + item.__idx + '-secondary'">
+          <div class="title" v-if="item.title2 || item.title">{{ item.title2 || item.title }}</div>
+          <span v-if="item.content2 || item.content" v-html="item.content2 || item.content"></span>
+        </slot>
         <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'bottom' && (item.timestamp2 || item.timestamp)">
           {{ item.timestamp2 || item.timestamp }}
         </div>
@@ -95,17 +99,23 @@ const Timeline = defineHtml(html`
       </div>
 
       <div class="node" :class="nodeClass(item)" :style="nodeStyle(item)" :part="'node-' + item.__idx" aria-hidden="true">
-        <slot name="dot"><span class="node-inner">{{ item.icon || "" }}</span></slot>
+        <slot :name="'dot-' + item.__idx">
+          <slot name="dot"><span class="node-inner">{{ item.icon || "" }}</span></slot>
+        </slot>
       </div>
 
       <div
         class="body body-right"
+        :class="item.cardClass || ''"
+        :style="item.cardStyle || {}"
         :part="'body-' + item.__idx"
         v-if="item.__side === 'left' || item.side === 'both' || item.side === 'right'"
       >
         <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'top' && item.timestamp">{{ item.timestamp }}</div>
-        <div class="title" v-if="item.title">{{ item.title }}</div>
-        <span v-if="item.content" v-html="item.content"></span>
+        <slot :name="'item-' + item.__idx">
+          <div class="title" v-if="item.title">{{ item.title }}</div>
+          <span v-if="item.content" v-html="item.content"></span>
+        </slot>
         <div class="timestamp" v-if="!item.hideTimestamp && item.__placement === 'bottom' && item.timestamp">{{ item.timestamp }}</div>
         <slot></slot>
       </div>

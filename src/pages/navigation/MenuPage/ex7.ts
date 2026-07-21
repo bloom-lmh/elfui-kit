@@ -1,9 +1,19 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "唯一展开", en: "Unique opened group" },
+  title: { zh: "展开当前分组时关闭其他分组", en: "Opening one group closes the others" },
+  current: { zh: "当前选中", en: "Selected" },
+  defaultOpened: { zh: "默认展开", en: "Initially opened" },
+  opened: { zh: "当前展开", en: "Opened" }
+});
 
 
 const active = useRef("analytics/realtime");
 
-const openedText = useRef("默认展开：Analytics");
+const openedText = useRef("");
+const openedStatus = (): string => openedText.value || `${t("defaultOpened")}: Analytics`;
 
 const items = [
     {
@@ -36,7 +46,7 @@ const items = [
 ];
 
 const onOpen = (event: CustomEvent): void => {
-    openedText.set(`当前展开：${String(event.detail[0])}`);
+    openedText.set(`${t("opened")}: ${String(event.detail[0])}`);
 };
 
 const onSelect = (event: CustomEvent): void => {
@@ -51,28 +61,29 @@ const code = `<elf-menu
   @open="onOpen"
 />`;
 
+const script = `const active = useRef("analytics/realtime");
+const items = [
+  { index: "analytics", label: "Analytics", children: [
+    { index: "analytics/realtime", label: "Realtime" },
+    { index: "analytics/cohort", label: "Cohort" }
+  ] }
+];
+const onSelect = (event) => active.set(event.detail);`;
+
 const PageMenuEx7 = defineHtml(html`
-    <h2>唯一展开</h2>
-    <elf-playground title="unique-opened 展开当前分组时关闭其它分组" :code="code">
-        <div
-            style="display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:20px;align-items:start;width:100%;max-width:820px"
-        >
+    <h2>${t("section")}</h2>
+    <elf-playground :title=${t("title")} :code=${code} :script=${script}>
+        <span slot="status" class="demo-state">${openedStatus()} · ${t("current")}: {{ active }}</span>
+        <div style="width:100%;max-width:320px">
             <elf-menu
                 bordered
-                :items.prop="items"
-                :modelValue="active"
-                :defaultOpeneds.prop="['analytics']"
+                :items.prop=${items}
+                :modelValue.prop=${active.value}
+                :defaultOpeneds.prop=${["analytics"]}
                 unique-opened
                 @open="onOpen"
                 @update:modelValue="onSelect"
             ></elf-menu>
-            <div
-                style="padding:16px;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper)"
-            >
-                <strong>交互状态</strong>
-                <p style="margin:8px 0 0;color:var(--elf-text-secondary)">{{ openedText }}</p>
-                <p style="margin:4px 0 0;color:var(--elf-primary)">当前选中：{{ active }}</p>
-            </div>
         </div>
     </elf-playground>
 `);

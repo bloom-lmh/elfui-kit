@@ -1,5 +1,14 @@
 # Calendar Element Plus API 对齐计划
 
+## 2026-07-19 active and keyboard states
+
+- [x] Preserve the primary selected-day surface during hover and focus, with an explicit accessible focus ring.
+- [x] Add roving day focus with arrow, Home/End, and PageUp/PageDown navigation across month boundaries.
+- [x] Expose committed range endpoints through `aria-selected` and cover range and keyboard regressions.
+
+## 2026-07-19 范围选择回归
+- [x] 修正数组 Ref 案例绑定并验证重新选择起止日期
+
 ## 2026-07-16 range polish
 
 - [x] Keep selected days circular and clear the committed range preview as soon as a new first day is chosen.

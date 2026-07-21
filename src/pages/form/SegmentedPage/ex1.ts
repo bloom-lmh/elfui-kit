@@ -33,7 +33,7 @@ const PageSegmentedEx1 = defineHtml(html`
                 name="period"
                 aria-label="数据周期"
                 :options.prop=${periodOptions}
-                :modelValue=${period}
+                :modelValue.prop=${period}
                 @update:modelValue=${onPeriodUpdate}
             ></elf-segmented>
             <span slot="status" class="demo-state">当前：{{ period.value }}</span>

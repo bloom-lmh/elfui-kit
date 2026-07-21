@@ -62,6 +62,6 @@ export interface AnchorLinkSlots {
 }
 
 export interface AnchorElement {
-  scrollTo: (href: string) => void;
+  /** Safe Custom Element method; `scrollTo` is reserved by HTMLElement. */
   scrollToAnchor: (href: string) => void;
 }

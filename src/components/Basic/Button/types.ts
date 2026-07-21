@@ -4,7 +4,7 @@ export type ButtonVariant = "contained" | "outlined" | "text";
 
 export type ButtonColor = "primary" | "secondary" | "success" | "warning" | "danger" | "info";
 
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonSize = "sm" | "md" | "lg" | "small" | "default" | "large";
 
 export type ButtonType = "button" | "submit" | "reset";
 

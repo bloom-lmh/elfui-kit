@@ -81,6 +81,23 @@ describe("TablePage", () => {
     expect(text).toContain("ELF-2026006");
   });
 
+  it("连续点击页码时直接更新表格并以最后一次选择为准", async () => {
+    const el = document.createElement(tablePaginationTag);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const pagination = el.shadowRoot!.querySelector("elf-pagination")!;
+    const pages = Array.from(pagination.shadowRoot!.querySelectorAll<HTMLButtonElement>(".page"));
+    for (const page of [2, 3, 4]) {
+      pages.find((button) => button.textContent?.trim() === String(page))!.click();
+    }
+    await tick();
+
+    expect(collectText(el)).toContain("展示 16-20 / 37 条");
+    expect(collectText(el)).toContain("ELF-2026016");
+  });
+
   it("操作列删除按钮可以通过 Dialog 确认删除当前行", async () => {
     const el = document.createElement(tableActionTag);
     document.body.appendChild(el);

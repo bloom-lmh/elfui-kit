@@ -1,5 +1,11 @@
 # Upload Element Plus API 对标计划
 
+## 2026-07-19 multi-file documentation and recovery
+
+- [x] Center Upload demos within a responsive content width and keep file rows usable on mobile.
+- [x] Add a controlled multi-file list demo covering ready, uploading, success, and error states.
+- [x] Add an accessible SVG retry action for failed files and test the error-to-success flow.
+
 生成时间：2026-07-05
 
 ## 对标定位

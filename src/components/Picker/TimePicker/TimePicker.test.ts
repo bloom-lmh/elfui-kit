@@ -55,6 +55,61 @@ describe("elf-time-picker", () => {
     expect(el.shadowRoot!.querySelector(".field-value")?.textContent).toContain("09:30");
   });
 
+  it("switches from the hour dial to a fresh minute dial without reusing stale clock nodes", async () => {
+    const el = document.createElement("elf-time-picker") as TimePickerEl;
+    el.modelValue = "09:30";
+    document.body.appendChild(el);
+    await tick();
+
+    (el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement).click();
+    await tick();
+    const hourButtons = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".clock-number");
+    expect(Array.from(hourButtons, (button) => button.textContent?.trim())).toEqual([
+      "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"
+    ]);
+
+    hourButtons[9]!.click();
+    await tick();
+    const minuteButtons = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".clock-number");
+    expect(Array.from(minuteButtons, (button) => button.textContent?.trim())).toEqual([
+      "00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"
+    ]);
+    expect(minuteButtons[6]!.getAttribute("aria-pressed")).toBe("true");
+    expect(minuteButtons[6]!.style.getPropertyValue("--clock-angle")).toBe("180deg");
+
+    const digitalParts = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".digital-part");
+    expect(digitalParts[1]!.classList.contains("is-active")).toBe(true);
+    digitalParts[0]!.click();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".digital-part.is-active")?.textContent?.trim()).toBe("10");
+  });
+
+  it("keeps a configured label floated when an empty value also renders a placeholder", async () => {
+    const el = document.createElement("elf-time-picker") as TimePickerEl;
+    el.label = "开始时间";
+    document.body.appendChild(el);
+    await tick();
+
+    const trigger = el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement;
+    expect(trigger.classList.contains("has-label")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("开始时间");
+    expect(el.shadowRoot!.querySelector(".field-value")?.classList.contains("is-placeholder")).toBe(true);
+  });
+
+  it("supports keyboard five-minute adjustment without opening the panel", async () => {
+    const el = document.createElement("elf-time-picker") as TimePickerEl;
+    el.modelValue = "09:30";
+    const onUpdate = vi.fn();
+    el.addEventListener("update:modelValue", onUpdate as EventListener);
+    document.body.appendChild(el);
+    await tick();
+
+    const trigger = el.shadowRoot!.querySelector(".field-trigger") as HTMLButtonElement;
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
+    expect((onUpdate.mock.calls.at(-1)![0] as CustomEvent).detail).toBe("09:35");
+    expect(el.shadowRoot!.querySelector(".panel")).toBeNull();
+  });
+
   it("isRange 支持数组 v-model 并输出数组", async () => {
     const el = document.createElement("elf-time-picker") as TimePickerEl;
     el.isRange = true;

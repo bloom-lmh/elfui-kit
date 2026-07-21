@@ -1,5 +1,10 @@
 # Autocomplete Element Plus parity plan
 
+## 2026-07-19 overlay alignment
+- [x] Remove the default panel gap and join the popup to the field surface
+- [x] Give the top-layer option panel explicit theme-token text colors so dark mode cannot inherit light-page text
+- [x] Remove the redundant standalone appearance gallery and keep field variants in the shared interactive field contract
+
 ## Baseline
 
 - [x] Core props: `model-value`, `options`, `fetch-suggestions`, `placeholder`, `disabled`, `clearable`, and `trigger-on-focus`.

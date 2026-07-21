@@ -10,8 +10,8 @@ import { PageGridProps } from "./props";
 const t = createDocsTranslator({
   title: { zh: "Grid 栅格布局", en: "Grid layout" },
   description: {
-    zh: "基于原生 CSS Grid 的 12 列栅格系统，通过真实卡片和数据工作台展示列宽、偏移与响应式关系。",
-    en: "A 12-column CSS Grid system demonstrated through real cards and data workspaces, including spans, offsets, and responsive behavior."
+    zh: "基于原生 CSS Grid 的 12 列栅格系统，以纯虚线框展示列宽、偏移与响应式关系。",
+    en: "A 12-column CSS Grid system shown with plain dashed guides for spans, offsets, and responsive behavior."
   }
 });
 

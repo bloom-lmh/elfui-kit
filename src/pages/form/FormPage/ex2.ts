@@ -42,13 +42,13 @@ const PageFormEx2 = defineHtml(html`
       subtitle="紧凑条件适合放在 Card 的内容区"
     >
       <elf-form :model.prop="query" inline label-position="left" label-width="72px">
-        <elf-form-item label="关键词">
+        <elf-form-item class="inline-filter-item inline-filter-keyword" label="关键词">
           <elf-input v-model="query.keyword" placeholder="服务名 / 负责人" clearable></elf-input>
         </elf-form-item>
-        <elf-form-item label="状态">
+        <elf-form-item class="inline-filter-item inline-filter-status" label="状态">
           <elf-select v-model="query.status" :options.prop="statusOptions" clearable></elf-select>
         </elf-form-item>
-        <elf-form-item label="只看我">
+        <elf-form-item class="inline-filter-item inline-filter-switch" label="只看我">
           <elf-switch v-model="query.onlyMine"></elf-switch>
         </elf-form-item>
         <elf-button type="primary" @click="search()">筛选</elf-button>

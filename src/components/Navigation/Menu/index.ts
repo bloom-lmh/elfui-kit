@@ -296,6 +296,19 @@ const onCustomSearchInput = (event: Event): void => {
     if (input) searchText.set(input.value);
 };
 
+const onSearchInput = (event: Event): void => {
+    searchText.set((event.currentTarget as HTMLInputElement).value);
+};
+
+const clearSearch = (): void => {
+    if (!searchText.peek()) return;
+    shadow?.querySelectorAll<HTMLInputElement>(".menu-search input")
+        .forEach((input) => { input.value = ""; });
+    searchText.set("");
+    host.querySelectorAll<HTMLInputElement>('input[slot="search"], [slot="search"] input')
+        .forEach((input) => { input.value = ""; });
+};
+
 useEventListener(host, "click", onCustomToggleClick);
 useEventListener(host, "input", onCustomSearchInput);
 
@@ -682,6 +695,7 @@ const navigate = (item: MenuViewItem) => {
 
 const selectItem = (item: MenuViewItem) => {
     activeKey.set(item.index);
+    clearSearch();
     emit("update:modelValue", item.index);
     emit("select", item.index, [...item.indexPath, item.index], item.raw);
     if (item.source) {
@@ -1015,7 +1029,7 @@ const Menu = defineHtml<MenuRuntimeProps, Record<string, never>, MenuSlots>(html
 
         <div class="menu-search" v-if=${props.searchable && !isHorizontal && !isCollapsed} @input=${onCustomSearchInput}>
             <slot name="search">
-                <input class="search-input" :placeholder=${props.searchPlaceholder || locale.t("menu.search")} />
+                <input class="search-input" :value=${searchText.value} :placeholder=${props.searchPlaceholder || locale.t("menu.search")} @input=${onSearchInput} />
             </slot>
         </div>
 

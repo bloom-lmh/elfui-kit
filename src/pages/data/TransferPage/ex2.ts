@@ -34,16 +34,16 @@ const PageTransferEx2 = defineHtml(html`
   <h2>Filter, defaults, and target ordering</h2>
   <elf-playground title="Custom fields, disabled items, custom filtering, and unshift ordering" :code=${code}>
     <elf-transfer
-      :data=${users}
-      :modelValue=${selected}
+      :data.prop=${users}
+      :modelValue.prop=${selected.value}
       @update:modelValue=${onTransfer}
-      :props=${{ key: "id", label: "name", disabled: "locked" }}
+      :props.prop=${{ key: "id", label: "name", disabled: "locked" }}
       filterable
       :filterMethod=${filterUsers}
       target-order="unshift"
-      :leftDefaultChecked=${["u1"]}
-      :buttonTexts=${["Remove", "Add"]}
-      :format=${{ noChecked: noCheckedFormat, hasChecked: hasCheckedFormat }}
+      :leftDefaultChecked.prop=${["u1"]}
+      :buttonTexts.prop=${["Remove", "Add"]}
+      :format.prop=${{ noChecked: noCheckedFormat, hasChecked: hasCheckedFormat }}
     ></elf-transfer>
   </elf-playground>
 `);

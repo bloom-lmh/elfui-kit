@@ -1,4 +1,5 @@
 import { defineHtml, html, useComponents } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
 import { PageMenuEx1 } from "./ex1";
 import { PageMenuEx2 } from "./ex2";
 import { PageMenuEx3 } from "./ex3";
@@ -21,12 +22,18 @@ useComponents({
   "page-menu-props": PageMenuProps
 });
 
+const t = createDocsTranslator({
+  title: { zh: "Menu 导航菜单", en: "Menu" },
+  description: {
+    zh: "用于侧边栏、顶部导航和多级功能入口，对标 Element Plus Menu，采用 Material Design 视觉。",
+    en: "Navigation for sidebars, top bars, and nested application sections with Element Plus compatible semantics and Material styling."
+  }
+});
+
 const PageMenu = defineHtml(html`
   <elf-container>
-    <h1>Menu 导航菜单</h1>
-    <p>
-      用于侧边栏、顶部导航和多级功能入口，对标 Element Plus Menu，视觉采用 Material Design 风格。
-    </p>
+    <h1>${t("title")}</h1>
+    <p>${t("description")}</p>
     <page-menu-ex1></page-menu-ex1>
     <page-menu-ex2></page-menu-ex2>
     <page-menu-ex3></page-menu-ex3>

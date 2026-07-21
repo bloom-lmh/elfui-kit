@@ -1,4 +1,25 @@
 import { defineHtml, html, useRef } from "elfui";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  sectionFull: { zh: "分隔线、徽章、分组与头尾区域", en: "Dividers, badges, groups, header, and footer" },
+  titleFull: { zh: "完整菜单：分隔线、徽章、分组、头像、底栏", en: "Complete menu with dividers, badges, groups, avatar, and footer" },
+  sectionSearch: { zh: "搜索、分组、徽章与折叠按钮", en: "Search, groups, badges, and collapse control" },
+  titleSearch: { zh: "搜索过滤 + 分组标题 + 折叠切换", en: "Search filtering + group headings + collapse toggle" },
+  inbox: { zh: "收件箱", en: "Inbox" }, drafts: { zh: "草稿", en: "Drafts" }, starred: { zh: "星标", en: "Starred" }, archive: { zh: "归档", en: "Archive" },
+  labels: { zh: "标签", en: "Labels" }, personal: { zh: "个人", en: "Personal" }, work: { zh: "工作", en: "Work" }, travel: { zh: "旅行", en: "Travel" },
+  home: { zh: "首页", en: "Home" }, explore: { zh: "探索", en: "Explore" }, favorites: { zh: "收藏", en: "Favorites" },
+  library: { zh: "资料库", en: "Library" }, recent: { zh: "最近", en: "Recent" }, liked: { zh: "喜欢", en: "Liked" }, saved: { zh: "已保存", en: "Saved" },
+  administrator: { zh: "管理员", en: "Administrator" }, currentUser: { zh: "当前用户", en: "Current user" }, signOut: { zh: "退出", en: "Sign out" }
+});
+
+type LocalizedMenuItem = { label?: string; group?: string; children?: LocalizedMenuItem[]; [key: string]: unknown };
+const localizeItems = (source: LocalizedMenuItem[]): LocalizedMenuItem[] => source.map((item) => ({
+  ...item,
+  ...(item.label ? { label: t(item.label as Parameters<typeof t>[0]) } : {}),
+  ...(item.group ? { group: t(item.group as Parameters<typeof t>[0]) } : {}),
+  ...(item.children ? { children: localizeItems(item.children) } : {})
+}));
 
 
 const active = useRef("inbox");
@@ -6,33 +27,33 @@ const active = useRef("inbox");
 const active2 = useRef("home");
 
 const items = [
-  { index: "inbox", label: "收件箱", icon: "✉", badge: 12 },
-  { index: "drafts", label: "草稿", icon: "📝", badge: 3 },
+  { index: "inbox", label: "inbox", icon: "✉", badge: 12 },
+  { index: "drafts", label: "drafts", icon: "📝", badge: 3 },
   { divider: true },
-  { index: "starred", label: "星标", icon: "★" },
-  { index: "archive", label: "归档", icon: "📦" },
+  { index: "starred", label: "starred", icon: "★" },
+  { index: "archive", label: "archive", icon: "📦" },
   { divider: true },
   {
-    group: "标签",
+    group: "labels",
     children: [
-      { index: "personal", label: "个人" },
-      { index: "work", label: "工作", badge: 5 },
-      { index: "travel", label: "旅行" }
+      { index: "personal", label: "personal" },
+      { index: "work", label: "work", badge: 5 },
+      { index: "travel", label: "travel" }
     ]
   }
 ];
 
 const items2 = [
-  { index: "home", label: "首页", icon: "🏠" },
-  { index: "explore", label: "探索", icon: "🔍" },
+  { index: "home", label: "home", icon: "🏠" },
+  { index: "explore", label: "explore", icon: "🔍" },
   { divider: true },
-  { index: "favorites", label: "收藏", icon: "❤", badge: 8 },
+  { index: "favorites", label: "favorites", icon: "❤", badge: 8 },
   {
-    group: "资料库",
+    group: "library",
     children: [
-      { index: "recent", label: "最近" },
-      { index: "liked", label: "喜欢" },
-      { index: "saved", label: "已保存", badge: 42 }
+      { index: "recent", label: "recent" },
+      { index: "liked", label: "liked" },
+      { index: "saved", label: "saved", badge: 42 }
     ]
   }
 ];
@@ -65,15 +86,23 @@ const code2 = `<elf-menu
   <template #header>...</template>
 </elf-menu>`;
 
+const script = `const active = useRef("inbox");
+const items = [
+  { index: "inbox", label: "Inbox", icon: "✉", badge: 12 },
+  { index: "drafts", label: "Drafts", icon: "📝", badge: 3 },
+  { divider: true },
+  { group: "Labels", children: [{ index: "work", label: "Work", badge: 5 }] }
+];`;
+
 const PageMenuEx4 = defineHtml(html`
-  <h2>分隔线、徽章、分组与头尾区域</h2>
-  <elf-playground title="完整菜单：分隔线、徽章、分组、头像、底栏" :code=${code}>
-    <elf-menu :items=${items} :modelValue=${active} bordered rounded elevation style="height:540px">
+  <h2>${t("sectionFull")}</h2>
+  <elf-playground :title=${t("titleFull")} :code=${code} :script=${script}>
+    <elf-menu :key=${t("sectionFull")} :items.prop=${localizeItems(items)} :modelValue.prop=${active.value} bordered rounded elevation style="height:540px">
       <template #header>
         <div style="display:flex;align-items:center;gap:12px">
           <elf-avatar size="sm" alt="User"></elf-avatar>
           <div>
-            <strong>管理员</strong><br /><span style="font-size:12px;color:var(--elf-text-secondary)"
+            <strong>${t("administrator")}</strong><br /><span style="font-size:12px;color:var(--elf-text-secondary)"
               >admin@elfui.dev</span
             >
           </div>
@@ -82,17 +111,18 @@ const PageMenuEx4 = defineHtml(html`
       <template #footer>
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span style="font-size:12px;color:var(--elf-text-disabled)">v1.0.0</span>
-          <elf-button variant="text" size="sm">退出</elf-button>
+          <elf-button variant="text" size="sm">${t("signOut")}</elf-button>
         </div>
       </template>
     </elf-menu>
   </elf-playground>
 
-  <h2>搜索、分组、徽章与折叠按钮</h2>
-  <elf-playground title="搜索过滤 + 分组标题 + 折叠切换" :code=${code2}>
+  <h2>${t("sectionSearch")}</h2>
+  <elf-playground :title=${t("titleSearch")} :code=${code2} :script=${script}>
     <elf-menu
-      :items=${items2}
-      :modelValue=${active2}
+      :key=${t("sectionSearch")}
+      :items.prop=${localizeItems(items2)}
+      :modelValue.prop=${active2.value}
       searchable
       bordered
       rounded
@@ -104,7 +134,7 @@ const PageMenuEx4 = defineHtml(html`
       <template #header>
         <div style="display:flex;align-items:center;gap:12px;min-width:0">
           <elf-avatar size="sm" alt="User"></elf-avatar>
-          <div><strong>当前用户</strong></div>
+          <div><strong>${t("currentUser")}</strong></div>
         </div>
       </template>
     </elf-menu>

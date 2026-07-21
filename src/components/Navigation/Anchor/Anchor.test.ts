@@ -26,7 +26,6 @@ interface AnchorEl extends HTMLElement {
   duration?: number;
   smooth?: boolean;
   props?: Record<string, string>;
-  scrollTo?: (href: string) => void;
   scrollToAnchor?: (href: string) => void;
 }
 
@@ -180,7 +179,7 @@ describe("elf-anchor", () => {
     await tick();
     expect(activeText(el)).toContain("Usage");
 
-    el.scrollTo!("#usage");
+    el.scrollToAnchor!("#usage");
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 160, behavior: "auto" });
   });
 
@@ -229,5 +228,88 @@ describe("elf-anchor", () => {
 
     expect(firstRemove).toHaveBeenCalledWith("scroll", expect.any(Function));
     expect(secondAdd).toHaveBeenCalledWith("scroll", expect.any(Function), { passive: true });
+  });
+
+  it("keeps horizontal items intrinsic and scrolls the selected last item into view", async () => {
+    const el = await mount({
+      direction: "horizontal",
+      marker: false,
+      smooth: false,
+      items: [
+        { title: "Overview", href: "#intro" },
+        { title: "Install", href: "#usage" },
+        { title: "Reference", href: "#api" },
+        { title: "Release notes", href: "#release" }
+      ]
+    });
+    const list = el.shadowRoot!.querySelector<HTMLElement>(".list")!;
+    const renderedItems = el.shadowRoot!.querySelectorAll<HTMLElement>(".item");
+    Object.defineProperty(list, "clientWidth", { configurable: true, value: 220 });
+    Object.defineProperty(list, "scrollLeft", { configurable: true, value: 0, writable: true });
+    Object.defineProperty(renderedItems[3], "offsetLeft", { configurable: true, value: 430 });
+    Object.defineProperty(renderedItems[3], "offsetWidth", { configurable: true, value: 110 });
+    const scrollTo = vi.fn();
+    Object.defineProperty(list, "scrollTo", { configurable: true, value: scrollTo });
+
+    (renderedItems[3].querySelector(".link") as HTMLAnchorElement).click();
+    await tick();
+
+    expect(activeText(el)).toContain("Release notes");
+    expect(scrollTo).toHaveBeenCalledWith({ left: 320, behavior: "auto" });
+  });
+
+  it("supports horizontal wheel and button scrolling", async () => {
+    const el = await mount({ direction: "horizontal", smooth: false });
+    const list = el.shadowRoot!.querySelector<HTMLElement>(".list")!;
+    Object.defineProperty(list, "clientWidth", { configurable: true, value: 200 });
+    Object.defineProperty(list, "scrollWidth", { configurable: true, value: 600 });
+    Object.defineProperty(list, "scrollLeft", { configurable: true, value: 0, writable: true });
+    const scrollBy = vi.fn();
+    Object.defineProperty(list, "scrollBy", { configurable: true, value: scrollBy });
+
+    const wheel = new WheelEvent("wheel", { deltaY: 80, cancelable: true, bubbles: true });
+    list.dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).toBe(true);
+    expect(list.scrollLeft).toBe(80);
+
+    (el.shadowRoot!.querySelector(".scroll-control.is-next") as HTMLButtonElement).click();
+    expect(scrollBy).toHaveBeenCalledWith({ left: 160, behavior: "auto" });
+    expect(el.shadowRoot!.querySelectorAll(".scroll-control")).toHaveLength(2);
+  });
+
+  it("scrolls a horizontally overflowing content container on anchor navigation", async () => {
+    const container = document.createElement("div");
+    container.id = "horizontal-content";
+    Object.defineProperties(container, {
+      clientWidth: { configurable: true, value: 300 },
+      scrollWidth: { configurable: true, value: 900 },
+      scrollLeft: { configurable: true, value: 0, writable: true }
+    });
+    container.getBoundingClientRect = vi.fn(() => ({
+      top: 0, left: 100, right: 400, bottom: 200, width: 300, height: 200, x: 100, y: 0, toJSON: () => ({})
+    })) as unknown as Element["getBoundingClientRect"];
+    const target = document.createElement("section");
+    target.id = "horizontal-end";
+    target.getBoundingClientRect = vi.fn(() => ({
+      top: 0, left: 600, right: 820, bottom: 200, width: 220, height: 200, x: 600, y: 0, toJSON: () => ({})
+    })) as unknown as Element["getBoundingClientRect"];
+    container.appendChild(target);
+    const contentScrollTo = vi.fn();
+    Object.defineProperty(container, "scrollTo", { configurable: true, value: contentScrollTo });
+    document.body.appendChild(container);
+
+    const el = document.createElement("elf-anchor") as AnchorEl;
+    Object.assign(el, {
+      direction: "horizontal",
+      smooth: false,
+      container: "#horizontal-content",
+      items: [{ title: "Release notes", href: "#horizontal-end" }]
+    });
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    el.scrollToAnchor!("#horizontal-end");
+    expect(contentScrollTo).toHaveBeenCalledWith({ left: 500, behavior: "auto" });
   });
 });

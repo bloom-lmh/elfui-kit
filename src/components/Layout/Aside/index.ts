@@ -10,7 +10,7 @@ import type { AsideProps, AsideSlots } from "./types";
 export type { AsideProps, AsideSlots } from "./types";
 
 const props = defineProps<AsideProps>({
-  width: { type: String, default: "300px" }
+  width: { type: String, default: "300px" },
 });
 
 useHostCssVar("--_width", () => props.width);

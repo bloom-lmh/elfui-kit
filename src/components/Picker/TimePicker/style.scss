@@ -45,6 +45,12 @@
   padding-top: 14px;
 }
 
+.field-trigger.has-label .field-label {
+  top: 10px;
+  font-size: 11px;
+  transform: none;
+}
+
 .clock-icon {
   position: relative;
   width: 15px;

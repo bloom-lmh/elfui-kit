@@ -7,7 +7,7 @@
   overflow: hidden;
   border-radius: var(--elf-radius-lg);
   user-select: none;
-  background: var(--elf-bg-overlay);
+  background: transparent;
 }
 
 .carousel {
@@ -17,6 +17,12 @@
   overflow: hidden;
   border-radius: inherit;
   isolation: isolate;
+  touch-action: pan-y;
+  background: var(--elf-bg-overlay);
+}
+
+:host([direction="vertical"]) .carousel {
+  touch-action: pan-x;
 }
 
 // ───── 轨道 ──────────────────────────────────────
@@ -29,6 +35,22 @@
 
 .track.is-resetting {
   transition: none;
+}
+
+.loop-clone {
+  display: block;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.loop-clone > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 ::slotted(*) {
@@ -49,6 +71,10 @@
   height: 100%;
 }
 
+:host([direction="vertical"]) .loop-clone {
+  flex-basis: 100%;
+}
+
 ::slotted(img) {
   object-fit: cover;
 }
@@ -57,6 +83,11 @@
 :host([effect="fade"]) .track {
   display: grid;
   grid-template: 1fr / 1fr;
+}
+
+:host([effect="fade"]) .loop-clone,
+:host([type="card"]) .loop-clone {
+  display: none;
 }
 
 :host([effect="fade"]) ::slotted(*) {
@@ -68,6 +99,10 @@
   position: relative;
   display: block;
   overflow: hidden;
+}
+
+:host([type="card"]) .carousel {
+  background: transparent;
 }
 
 :host([type="card"]) ::slotted(elf-carousel-item) {
@@ -304,5 +339,13 @@
   background: transparent;
   &:hover {
     background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track,
+  :host([effect="fade"]) ::slotted(*),
+  :host([type="card"]) ::slotted(elf-carousel-item) {
+    transition-duration: 0.01ms;
   }
 }

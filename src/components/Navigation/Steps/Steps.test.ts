@@ -24,6 +24,13 @@ interface StepsEl extends HTMLElement {
   size?: string;
   clickable?: boolean;
   alternativeLabel?: boolean;
+  altLabels?: boolean;
+  editable?: boolean;
+  linear?: boolean;
+  showPanels?: boolean;
+  hideActions?: boolean;
+  previousText?: string;
+  nextText?: string;
   next?: () => void;
   prev?: () => void;
   setActive?: (index: number) => void;
@@ -182,7 +189,7 @@ describe("elf-steps", () => {
       <elf-step title="配置能力"></elf-step>
       <elf-step title="邀请成员" disabled></elf-step>
       <elf-step title="发布上线"></elf-step>
-    `);
+    `, { editable: true });
     const onUpdate = vi.fn();
     el.addEventListener("update:active", onUpdate as EventListener);
     const activeButton = el.querySelectorAll("elf-step")[1]!.shadowRoot!.querySelector("button")!;
@@ -192,6 +199,22 @@ describe("elf-steps", () => {
 
     expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(3);
     expect(el.querySelectorAll("elf-step")[3]!.hasAttribute("data-active")).toBe(true);
+  });
+
+  it("keeps linear navigation on the defined path unless steps are editable", async () => {
+    const el = await mount({ active: 0, linear: true, clickable: true });
+    const onUpdate = vi.fn();
+    el.addEventListener("update:active", onUpdate as EventListener);
+
+    (el.shadowRoot!.querySelectorAll(".step-button")[2] as HTMLButtonElement).click();
+    await tick();
+    expect(onUpdate).not.toHaveBeenCalled();
+
+    const editableEl = await mount({ active: 0, linear: true, clickable: true, editable: true });
+    editableEl.addEventListener("update:active", onUpdate as EventListener);
+    (editableEl.shadowRoot!.querySelectorAll(".step-button")[2] as HTMLButtonElement).click();
+    await tick();
+    expect((onUpdate.mock.calls[0]![0] as CustomEvent).detail).toBe(2);
   });
 
   it("keeps disabled and non-clickable compositional steps inert", async () => {
@@ -221,5 +244,37 @@ describe("elf-steps", () => {
     await tick();
     await tick();
     expect(el.shadowRoot!.querySelectorAll(".step-item")).toHaveLength(0);
+  });
+
+  it("renders an integrated stepper panel with configurable actions", async () => {
+    const el = await mount({
+      active: 1,
+      showPanels: true,
+      editable: true,
+      altLabels: true,
+      previousText: "返回",
+      nextText: "继续",
+      items: [
+        { title: "第一步", content: "填写基本资料" },
+        { title: "第二步", content: "配置访问权限" },
+        { title: "第三步", content: "确认并发布" }
+      ]
+    });
+
+    expect(el.shadowRoot!.querySelector(".stepper.has-panels")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".steps.is-alternative")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".stepper-panel")?.textContent).toContain("配置访问权限");
+    const actions = el.shadowRoot!.querySelectorAll<HTMLButtonElement>(".stepper-action");
+    expect(actions[0]!.textContent).toContain("返回");
+    expect(actions[1]!.textContent).toContain("继续");
+    actions[1]!.click();
+    await tick();
+    expect(el.shadowRoot!.querySelector(".stepper-panel")?.textContent).toContain("确认并发布");
+  });
+
+  it("can hide integrated stepper actions", async () => {
+    const el = await mount({ showPanels: true, hideActions: true });
+    expect(el.shadowRoot!.querySelector(".stepper-panel")).toBeTruthy();
+    expect(el.shadowRoot!.querySelector(".stepper-actions")).toBeNull();
   });
 });

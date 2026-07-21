@@ -127,6 +127,8 @@ export interface DropdownItemProps {
   disabled: boolean;
   divided: boolean;
   icon: string;
+  /** Parent-managed selected state for compositional menus. */
+  selected?: boolean;
 }
 
 export interface DropdownItemSlots {

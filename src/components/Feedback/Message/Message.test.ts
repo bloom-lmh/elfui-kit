@@ -39,6 +39,7 @@ describe("ElfMessage()", () => {
     expect(cssText).toContain("var(--elf-text-primary");
     expect(cssText).toContain("var(--elf-bg-paper");
     expect(cssText).toContain("var(--elf-info");
+    expect(cssText).toContain("border-radius: var(--elf-radius-sm, 6px)");
   });
 
   it("normalizes error to danger", async () => {

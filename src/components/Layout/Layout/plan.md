@@ -163,3 +163,15 @@
 - [x] 默认、显式覆盖、Aside 自动推断及动态增删有单测覆盖。
 - [x] Playground Template / Script 与复制内容完整。
 - [x] `pnpm build` 通过；Layout 9/9 测试通过，浏览器验证 `vertical/column → horizontal/row`。
+
+## 2026-07-19 组合案例扩充
+
+- [x] 新增主导航、二级导航、内容区和状态栏组成的多级应用工作区案例。
+- [x] 新增 Header、Main 与右侧详情栏组合案例，并补齐 Template / Script。
+- [x] 浏览器验证两组画布与 Main 均无意外内部滚动。
+
+## 2026-07-19 产品布局图库
+
+- [x] 全部示意统一为低圆角虚线结构，不混用实线卡片、渐变或阴影。
+- [x] 增加 Baseline、Extended Toolbar、System Bar、Inbox、Constrained、Side Navigation、Three Columns、Community Workspace 与 Store Layout 九种产品布局。
+- [x] 1200px 与 360px 真实浏览器验证通过，图库响应为三列/两列/单列且页面无横向溢出。

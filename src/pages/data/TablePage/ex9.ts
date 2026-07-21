@@ -97,9 +97,8 @@ const columns = [
 
 <elf-table :data.prop="rowsData()" :columns.prop="columns" />
 <elf-dialog v-model:open="dialogOpen" title="确认删除">
-  <template #footer>
-    <elf-button @click="confirmRemove()">确认删除</elf-button>
-  </template>
+  <elf-button slot="footer" @click="closeDialog()">取消</elf-button>
+  <elf-button slot="footer" type="primary" @click="confirmRemove()">确认删除</elf-button>
 </elf-dialog>`;
 
 const PageTableEx9 = defineHtml(html`
@@ -110,10 +109,8 @@ const PageTableEx9 = defineHtml(html`
       <p slot="status" class="demo-state">{{ message }}</p>
       <elf-dialog v-model:open="dialogOpen" title="确认删除" size="sm">
         <p>确定删除「{{ pendingName() }}」吗？这个操作会从当前表格中移除该行。</p>
-        <template #footer>
-          <elf-button size="small" @click="closeDialog()">取消</elf-button>
-          <elf-button size="small" type="primary" @click="confirmRemove()">确认删除</elf-button>
-        </template>
+        <elf-button slot="footer" size="small" @click=${closeDialog}>取消</elf-button>
+        <elf-button slot="footer" size="small" type="primary" @click=${confirmRemove}>确认删除</elf-button>
       </elf-dialog>
     </div>
   </elf-playground>

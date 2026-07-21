@@ -1,17 +1,18 @@
 import {
-    defineEmits,
-    defineHtml,
-    defineProps,
-    defineStyle,
-    html,
-    registerComponents,
-    useHostAttr,
-    useHostFlag,
-    useRef,
-    watchEffect,
+  defineEmits,
+  defineHtml,
+  defineProps,
+  defineStyle,
+  html,
+  registerComponents,
+  useHostAttr,
+  useHostFlag,
+  useRef,
+  watchEffect,
 } from "elfui";
 
 import { useFormControl } from "../../../composables";
+import { normalizeFieldVariant } from "../../../types/field";
 import { Tag } from "../../Basic/Tag";
 import styles from "./style.scss?inline";
 import type { InputTagProps, InputTagSize } from "./types";
@@ -19,27 +20,29 @@ import type { InputTagProps, InputTagSize } from "./types";
 export type { InputTagProps, InputTagSize } from "./types";
 
 interface TagItem {
-    label: string;
-    index: number;
+  key: string;
+  label: string;
+  index: number;
 }
 
 registerComponents(Tag);
 
 const props = defineProps<InputTagProps>({
-    modelValue: { type: Array, default: () => [] },
-    placeholder: { type: String, default: "" },
-    disabled: { type: Boolean, default: false },
-    readonly: { type: Boolean, default: false },
-    clearable: { type: Boolean, default: false },
-    max: { type: Number, default: undefined },
-    collapseTags: { type: Boolean, default: false },
-    maxCollapseTags: { type: Number, default: 1 },
-    size: { type: String, default: "" },
-    trigger: { type: String, default: "enter" },
-    tagType: { type: String, default: "" },
-    tagEffect: { type: String, default: "light" },
-    draggable: { type: Boolean, default: false },
-    validateEvent: { type: Boolean, default: true },
+  modelValue: { type: Array, default: () => [] },
+  placeholder: { type: String, default: "" },
+  disabled: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
+  clearable: { type: Boolean, default: false },
+  max: { type: Number, default: undefined },
+  collapseTags: { type: Boolean, default: false },
+  maxCollapseTags: { type: Number, default: 1 },
+  size: { type: String, default: "" },
+  variant: { type: String, default: "outlined" },
+  trigger: { type: String, default: "enter" },
+  tagType: { type: String, default: "" },
+  tagEffect: { type: String, default: "light" },
+  draggable: { type: Boolean, default: false },
+  validateEvent: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(["update:modelValue", "change", "input", "add-tag", "remove-tag", "clear"]);
@@ -58,7 +61,11 @@ watchEffect(() => {
     value.set(normalize(props.modelValue));
 });
 
-const tags = (): TagItem[] => value.value.map((label, index) => ({ label, index }));
+const tags = (): TagItem[] => value.value.map((label, index) => ({
+  key: `${label}:${index}`,
+  label,
+  index
+}));
 const isLimitReached = (): boolean => Number(props.max) > 0 && value.value.length >= Number(props.max);
 
 const commit = (next: string[], eventName: "change" | "input" = "change"): void => {
@@ -112,9 +119,9 @@ const onBlur = (event: Event): void => {
     ctl.dispatchBlur(event);
 };
 
-const onRemoveClick = (event: Event): void => {
-    const index = Number((event.target as HTMLElement | null)?.closest("[data-index]")?.getAttribute("data-index"));
-    if (Number.isInteger(index)) removeAt(index);
+const onTagClose = (event: Event): void => {
+  const index = Number((event.currentTarget as HTMLElement | null)?.dataset.index);
+  if (Number.isInteger(index)) removeAt(index);
 };
 
 const onDragStart = (event: DragEvent): void => {
@@ -148,17 +155,18 @@ const tagSize = (): "sm" | "md" | "lg" => normalizedSize() || "md";
 const tagColor = (): string => String(props.tagType || "primary");
 
 useHostAttr("size", normalizedSize);
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
 useHostFlag("disabled", () => Boolean(props.disabled));
 
 defineStyle(styles);
 
 const InputTag = defineHtml<InputTagProps>(html`
-    <div class="input-tag" part="wrapper" @click=${onRemoveClick}>
+    <div class="input-tag" part="wrapper">
         <slot name="prefix"></slot>
         <span class="tag-strip" part="tag-strip">
             <elf-tag
                 v-for="tag in tags()"
-                :key="tag.index"
+                :key="tag.key"
                 class="input-token"
                 :data-index="tag.index"
                 :draggable=${props.draggable}
@@ -168,24 +176,24 @@ const InputTag = defineHtml<InputTagProps>(html`
                 :closable=${!props.disabled && !props.readonly}
                 round
                 part="tag"
-                @close=${onRemoveClick}
+                @close=${onTagClose}
                 @dragstart=${onDragStart}
                 @dragover=${(event: DragEvent) => props.draggable && event.preventDefault()}
                 @drop=${onDrop}
             >
                 <span class="tag-label">{{ tag.label }}</span>
             </elf-tag>
+            <input
+                part="input"
+                :value.prop=${text.value}
+                :placeholder=${value.value.length ? "" : props.placeholder}
+                :disabled=${props.disabled || isLimitReached()}
+                :readonly=${props.readonly}
+                @input=${onInput}
+                @keydown=${onKeydown}
+                @blur=${onBlur}
+            />
         </span>
-        <input
-            part="input"
-            :value.prop=${text.value}
-            :placeholder=${value.value.length ? "" : props.placeholder}
-            :disabled=${props.disabled || isLimitReached()}
-            :readonly=${props.readonly}
-            @input=${onInput}
-            @keydown=${onKeydown}
-            @blur=${onBlur}
-        />
         <slot name="suffix"></slot>
         <button v-if=${showClear()} class="clear" type="button" aria-label="Clear tags" @click=${clear}>
             <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>

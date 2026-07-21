@@ -38,13 +38,17 @@ export type {
 const props = defineProps<PlaygroundProps>({
   title: { type: String, default: "" },
   code: { type: String, default: "" },
-  script: { type: String, default: "" }
+  script: { type: String, default: "" },
+  controlsCollapsible: { type: Boolean, default: true },
+  controlsCollapsed: { type: Boolean, default: false }
 });
 
 const emit = defineEmits<PlaygroundEmits>();
 
 const copied = useRef(false);
 const activeTab = useRef<"template" | "script">("template");
+const hasControls = useRef(false);
+const controlsCollapsed = useRef(Boolean(props.controlsCollapsed));
 const host = useHost();
 let statusObserver: MutationObserver | undefined;
 let copiedTimer: ReturnType<typeof setTimeout> | undefined;
@@ -59,16 +63,8 @@ const normalizeCode = (value: string): string => {
         .filter((l) => l.trim())
         .map((l) => l.match(/^\s*/)?.[0].length ?? 0);
     const globalMin = Math.min(...contentIndents);
-    if (globalMin === 0) {
-        // 有些行 0 缩进（紧跟反引号），只对有缩进的行 trim
-        const targets = contentIndents.filter((n) => n > 0);
-        if (targets.length === 0) return lines.join("\n");
-        const trimBy = Math.min(...targets);
-        return lines.map((line) => {
-            const indent = line.match(/^\s*/)?.[0].length ?? 0;
-            return indent >= trimBy ? line.slice(trimBy) : line;
-        }).join("\n");
-    }
+    // 首行从第 0 列开始时，后续缩进属于源码结构，不能再单独裁剪。
+    if (globalMin === 0) return lines.join("\n");
     return lines.map((line) => (line ? line.slice(globalMin) : line)).join("\n");
 };
 
@@ -129,30 +125,82 @@ const highlightTemplate = (value: string): string => {
     return html;
 };
 
+const SCRIPT_KEYWORDS = new Set([
+  "as", "async", "await", "class", "const", "default", "else", "export", "false",
+  "from", "function", "if", "import", "let", "new", "null", "return", "true", "typeof",
+  "undefined", "var"
+]);
+
+const SCRIPT_APIS = new Set([
+  "css", "defineEmits", "defineExpose", "defineHtml", "defineModel", "defineProps", "html",
+  "onMount", "onUnmount", "useComputed", "useEffect", "useReactive", "useRef", "watchEffect"
+]);
+
+const highlightScriptCode = (value: string): string => {
+  const tokenPattern = /\b(?:[A-Za-z_$][\w$]*|\d+(?:\.\d+)?)\b/g;
+  return escapeHtml(value).replace(tokenPattern, (token, offset, source: string) => {
+    if (/^\d/.test(token)) return `<span class="token number">${token}</span>`;
+    if (SCRIPT_KEYWORDS.has(token)) return `<span class="token keyword">${token}</span>`;
+    if (SCRIPT_APIS.has(token)) return `<span class="token expr">${token}</span>`;
+    if (/^\s*\(/.test(source.slice(offset + token.length))) {
+      return `<span class="token function">${token}</span>`;
+    }
+    return token;
+  });
+};
+
 const highlightScript = (value: string): string => {
-    let html = escapeHtml(value);
-    // 字符串
-    html = html.replace(
-        /(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;|'[^']*?'|`[^`]*?`)/g,
-        '<span class="token string">$1</span>'
-    );
-    // 注释
-    html = html.replace(/(\/\/[^\n]*)/g, '<span class="token comment">$1</span>');
-    // 关键字
-    html = html.replace(
-        /\b(const|let|var|return|if|else|true|false|null|undefined|import|from|export|default|as|typeof|new|class|function|async|await)\b/g,
-        '<span class="token keyword">$1</span>'
-    );
-    // 数字
-    html = html.replace(/\b(\d+\.?\d*)\b/g, '<span class="token number">$1</span>');
-    // 函数调用
-    html = html.replace(/\b(\w+)(?=\()/g, '<span class="token function">$1</span>');
-    // ElfUI API
-    html = html.replace(
-        /\b(useRef|useReactive|useComputed|defineHtml|defineProps|defineEmits|defineModel|defineExpose|html|css|onMount|onUnmount|useEffect|watchEffect)\b/g,
-        '<span class="token expr">$1</span>'
-    );
-    return html;
+  let output = "";
+  let plainStart = 0;
+  let index = 0;
+
+  const flushCode = (end: number): void => {
+    if (end > plainStart) output += highlightScriptCode(value.slice(plainStart, end));
+  };
+
+  while (index < value.length) {
+    const quote = value[index];
+    const next = value[index + 1];
+    let tokenEnd = index;
+    let tokenClass = "";
+
+    if (quote === "/" && next === "/") {
+      tokenEnd = value.indexOf("\n", index + 2);
+      if (tokenEnd < 0) tokenEnd = value.length;
+      tokenClass = "comment";
+    } else if (quote === "/" && next === "*") {
+      const closing = value.indexOf("*/", index + 2);
+      tokenEnd = closing < 0 ? value.length : closing + 2;
+      tokenClass = "comment";
+    } else if (quote === '"' || quote === "'" || quote === "`") {
+      tokenEnd = index + 1;
+      while (tokenEnd < value.length) {
+        if (value[tokenEnd] === "\\") {
+          tokenEnd += 2;
+          continue;
+        }
+        if (value[tokenEnd] === quote) {
+          tokenEnd += 1;
+          break;
+        }
+        tokenEnd += 1;
+      }
+      tokenClass = "string";
+    }
+
+    if (!tokenClass) {
+      index += 1;
+      continue;
+    }
+
+    flushCode(index);
+    output += `<span class="token ${tokenClass}">${escapeHtml(value.slice(index, tokenEnd))}</span>`;
+    index = tokenEnd;
+    plainStart = index;
+  }
+
+  flushCode(value.length);
+  return output;
 };
 
 const highlightedCode = (): string =>
@@ -164,12 +212,31 @@ const locale = useLocaleProvider();
 const copyText = (): string =>
   locale.t(copied.value ? "playground.copied" : "playground.copy");
 
+const controlsLabel = (): string => locale.t("playground.controls");
+
+const toggleControlsLabel = (): string => locale.t(
+  controlsCollapsed.value ? "playground.expandControls" : "playground.collapseControls"
+);
+
+const toggleControls = (): void => {
+  if (!hasControls.value || !props.controlsCollapsible) return;
+  controlsCollapsed.set(!controlsCollapsed.value);
+  emit("controlsToggle", controlsCollapsed.value);
+};
+
 const syncStatusSlots = (): void => {
   const states = host.querySelectorAll<HTMLElement>('.demo-state, [slot="status"]');
   states.forEach((state) => {
     state.slot = "status";
     if (state.parentElement !== host) host.appendChild(state);
   });
+
+  const controls = host.querySelectorAll<HTMLElement>('.demo-controls, [slot="controls"]');
+  controls.forEach((control) => {
+    control.slot = "controls";
+    if (control.parentElement !== host) host.appendChild(control);
+  });
+  hasControls.set(controls.length > 0);
 };
 
 const writeClipboard = async (text: string): Promise<void> => {
@@ -225,16 +292,36 @@ onUnmount(() => {
   copiedTimer = undefined;
 });
 
-defineExpose({ showTemplate: setTemplateTab, showScript: setScriptTab, copy });
+defineExpose({ showTemplate: setTemplateTab, showScript: setScriptTab, copy, toggleControls });
 defineStyle(styles);
 
 const Playground = defineHtml<PlaygroundProps, PlaygroundEmits, PlaygroundSlots>(html`
   <div class="wrap">
     <div class="header" v-if=${props.title}>
       <span class="title">${props.title}</span>
-      <slot name="status"></slot>
+      <span class="header-end">
+        <slot name="status"></slot>
+        <button
+          v-if=${hasControls.value && props.controlsCollapsible}
+              :class=${["controls-toggle", { "is-collapsed": controlsCollapsed.value }]}
+          type="button"
+          :aria-label=${toggleControlsLabel()}
+          :title=${toggleControlsLabel()}
+          :aria-expanded=${String(!controlsCollapsed.value)}
+          @click=${toggleControls}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 9.5 12 13.5 16 9.5" />
+          </svg>
+        </button>
+      </span>
     </div>
-    <div class="demo"><slot></slot></div>
+    <div :class=${{ workspace: true, "has-controls": hasControls.value, "controls-collapsed": controlsCollapsed.value }}>
+      <div class="demo"><slot></slot></div>
+      <aside v-if=${hasControls.value} v-show=${!controlsCollapsed.value} class="controls" :aria-label=${controlsLabel()}>
+        <slot name="controls"></slot>
+      </aside>
+    </div>
     <div class="source" v-if=${hasSource()}>
       <div class="source-toolbar">
         <div class="tabs" role="tablist" :aria-label=${locale.t("playground.source")} v-if=${showTabs()}>

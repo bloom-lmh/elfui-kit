@@ -1,5 +1,10 @@
 # Message Element Plus API 对标计划
 
+## 2026-07-19 surface consistency
+
+- [x] Use the compact shared small radius for all message types while preserving themed surfaces and stack spacing.
+- [x] Keep dark-theme foreground/background tokens covered by focused tests.
+
 生成时间：2026-07-05
 
 ## 对标定位

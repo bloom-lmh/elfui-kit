@@ -49,7 +49,12 @@ export interface TabsProps {
   beforeLeave?: TabsBeforeLeave;
   tabindex: number;
   color: string;
+  backgroundColor: string;
+  sliderColor: string;
   grow: boolean;
+  fixedTabs: boolean;
+  centerActive: boolean;
+  showArrows: boolean;
   stacked: boolean;
   showPanels: boolean;
   hideSlider: boolean;
@@ -75,6 +80,8 @@ export interface TabsSlots {
   default?: unknown;
   "add-icon"?: unknown;
   addIcon?: unknown;
+  "prev-icon"?: unknown;
+  "next-icon"?: unknown;
 }
 
 export interface TabsPaneContext {

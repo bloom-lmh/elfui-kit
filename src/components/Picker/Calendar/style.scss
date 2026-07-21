@@ -146,6 +146,13 @@
   box-shadow: 0 5px 14px color-mix(in srgb, var(--elf-primary) 30%, transparent);
 }
 
+.day:is(.is-current, .is-range-start, .is-range-end):is(:hover, :focus-visible):not(:disabled) {
+  outline: 2px solid color-mix(in srgb, var(--elf-primary) 38%, transparent);
+  outline-offset: 2px;
+  background: var(--elf-primary);
+  color: var(--elf-text-on-primary, #fff);
+}
+
 .day.is-muted {
   color: var(--elf-text-disabled);
   opacity: 0.58;

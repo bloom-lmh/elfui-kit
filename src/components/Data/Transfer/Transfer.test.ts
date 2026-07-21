@@ -33,6 +33,17 @@ describe("elf-transfer", () => {
     expect(el.shadowRoot!.querySelector(".panel-right")).toBeTruthy();
     expect(el.shadowRoot!.querySelectorAll(".buttons button")).toHaveLength(2);
     expect(el.shadowRoot!.querySelectorAll(".panel-left .panel-item")).toHaveLength(4);
+    expect(el.shadowRoot!.querySelector(".direction-icon.is-right")).not.toBeNull();
+    expect(el.shadowRoot!.querySelector(".direction-icon.is-left")).not.toBeNull();
+    expect(Array.from(el.shadowRoot!.querySelectorAll(".buttons button"), (button) => button.textContent?.trim())).toEqual(["", ""]);
+  });
+
+  it("keeps custom button texts instead of rendering default direction icons", async () => {
+    const el = await mount((transfer) => {
+      transfer.buttonTexts = ["移除", "添加"];
+    });
+    expect(Array.from(el.shadowRoot!.querySelectorAll(".buttons button"), (button) => button.textContent?.trim())).toEqual(["添加", "移除"]);
+    expect(el.shadowRoot!.querySelector(".direction-icon")).toBeNull();
   });
 
   it("renders selected model keys in the target panel", async () => {

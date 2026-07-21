@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, defineStyle, html } from "elfui";
 
 const code1 = `<elf-layout>
   <elf-header height="40px">顶栏</elf-header>
@@ -11,29 +11,28 @@ const code1 = `<elf-layout>
 
 const script = `// 组合布局为静态结构，无需额外状态。`;
 
+defineStyle(`
+  :host { display:block; }
+  * { box-sizing:border-box; }
+  .layout-frame { width:100%; height:280px; overflow:hidden; border:1px dashed var(--elf-border-strong); border-radius:4px; background:transparent; }
+  .layout-part { border-color:var(--elf-border-strong); background:transparent !important; }
+  .layout-header { justify-content:space-between; border-bottom:1px dashed var(--elf-border-strong); }
+  .layout-aside { padding:12px; border-right:1px dashed var(--elf-border-strong); }
+  .layout-main { padding:16px; }
+  .layout-footer { border-top:1px dashed var(--elf-border-strong); font-size:12px; }
+`);
+
 const PageLayoutShellEx1 = defineHtml(html`
   <h2>经典后台布局</h2>
   <elf-playground title="顶栏 + 侧栏 + 主内容 + 底栏" :code=${code1} :script=${script}>
-    <div
-      style="width: 100%; height: 280px; border-radius: var(--elf-radius-md); overflow: hidden; background: var(--elf-bg-paper); box-shadow: var(--elf-shadow-1)"
-    >
+    <div class="layout-frame">
       <elf-layout style="height: 100%">
-        <elf-header
-          height="40px"
-          style="background: rgba(25,118,210,0.12); justify-content: space-between"
-          ><span>顶栏</span><elf-tag size="sm">Header</elf-tag></elf-header
-        >
+        <elf-header class="layout-part layout-header" height="40px"><span>顶栏</span><span>Header</span></elf-header>
         <elf-layout direction="horizontal">
-          <elf-aside width="120px" style="background: rgba(0,0,0,0.04); padding: 12px"
-            ><elf-tag size="sm">Aside</elf-tag></elf-aside
-          >
-          <elf-main style="background: rgba(0,0,0,0.02); padding: 16px"
-            ><elf-tag size="sm">Main 内容区</elf-tag></elf-main
-          >
+          <elf-aside class="layout-part layout-aside" width="120px">Aside</elf-aside>
+          <elf-main class="layout-part layout-main">Main 内容区</elf-main>
         </elf-layout>
-        <elf-footer height="32px" style="background: rgba(25,118,210,0.05); font-size: 12px"
-          >底栏 © Footer</elf-footer
-        >
+        <elf-footer class="layout-part layout-footer" height="32px">Footer</elf-footer>
       </elf-layout>
     </div>
   </elf-playground>

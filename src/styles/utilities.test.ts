@@ -54,13 +54,12 @@ describe("ElfUI utility classes", () => {
   });
 
   it("keeps the utilities menu and routes in sync", () => {
-    const utilityNav = navItems.filter((item) => item.group === "Utilities 工具类");
+    const utilityNav = navItems.filter((item) => item.to === "/utilities");
     const routePaths = new Set(routes.map((route) => route.path));
 
-    expect(utilityNav).toHaveLength(14);
+    expect(navItems[0]).toEqual({ to: "/utilities", text: "工具类", group: "样式和动画" });
+    expect(utilityNav).toEqual([{ to: "/utilities", text: "工具类", group: "样式和动画" }]);
     expect(utilityNav.every((item) => routePaths.has(item.to))).toBe(true);
-    expect(utilityNav.map((item) => item.to)).toEqual(
-      catalogEntries.map(([key]) => `/utilities/${key}`)
-    );
+    expect(catalogEntries.every(([key]) => routePaths.has(`/utilities/${key}`))).toBe(true);
   });
 });

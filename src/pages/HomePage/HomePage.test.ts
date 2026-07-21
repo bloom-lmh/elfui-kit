@@ -89,7 +89,8 @@ describe("HomePage localization", () => {
 
     const page = provider.querySelector(homeTag());
     const links = page?.shadowRoot?.querySelectorAll<HTMLAnchorElement>("a[href]") ?? [];
-    expect(links.length).toBeGreaterThanOrEqual(5);
+    expect(links).toHaveLength(2);
     expect(links[0]?.getAttribute("href")).toBe("#/basic/button");
+    expect(page?.shadowRoot?.querySelector(".principles, .starter")).toBeNull();
   });
 });

@@ -15,6 +15,7 @@ import {
   onMount,
   provide,
   useHost,
+  useHostAttr,
   useRef,
   defineHtml
 } from "elfui";
@@ -190,6 +191,8 @@ const isInline = (): boolean => {
 };
 
 const showStatusIcon = (): boolean => Boolean(form?.statusIcon && resolvedState());
+
+useHostAttr("data-state", resolvedState);
 
 const labelSuffix = (): string => form?.labelSuffix ?? "";
 

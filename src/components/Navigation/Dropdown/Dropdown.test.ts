@@ -486,7 +486,46 @@ describe("elf-dropdown", () => {
       command: "profile",
       item: expect.objectContaining({ label: "Profile", command: "profile" })
     });
+    expect(items[0]!.hasAttribute("data-selected")).toBe(true);
+    expect(items[0]!.shadowRoot!.querySelector(".dropdown-item")?.getAttribute("aria-current")).toBe("true");
+    expect(items[2]!.hasAttribute("data-selected")).toBe(false);
     expect(el.hasAttribute("data-open")).toBe(false);
+  });
+
+  it("keeps compositional selection after reopening and skips disabled items with the keyboard", async () => {
+    const el = document.createElement("elf-dropdown") as DropdownElement;
+    el.trigger = "click";
+    el.innerHTML = `
+      <span>Account actions</span>
+      <elf-dropdown-menu slot="dropdown">
+        <elf-dropdown-item command="profile">Profile</elf-dropdown-item>
+        <elf-dropdown-item command="locked" disabled>Locked</elf-dropdown-item>
+        <elf-dropdown-item command="logout">Logout</elf-dropdown-item>
+      </elf-dropdown-menu>
+    `;
+    document.body.appendChild(el);
+    await flush();
+    await openByClick(el);
+
+    const composedItems = Array.from(el.querySelectorAll("elf-dropdown-item"));
+    const profileButton = composedItems[0]!.shadowRoot!.querySelector<HTMLButtonElement>(".dropdown-item")!;
+    const logoutButton = composedItems[2]!.shadowRoot!.querySelector<HTMLButtonElement>(".dropdown-item")!;
+    const focusLogout = vi.spyOn(logoutButton, "focus");
+    profileButton.focus();
+    profileButton.dispatchEvent(new KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      bubbles: true,
+      composed: true,
+      cancelable: true
+    }));
+    expect(focusLogout).toHaveBeenCalled();
+    logoutButton.click();
+    await flush();
+
+    await openByClick(el);
+    expect(composedItems[2]!.hasAttribute("data-selected")).toBe(true);
+    expect(logoutButton.getAttribute("aria-current")).toBe("true");
+    expect(composedItems[1]!.hasAttribute("disabled")).toBe(true);
   });
 
   it("preserves non-string commands from compositional items", async () => {

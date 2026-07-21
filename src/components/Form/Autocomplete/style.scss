@@ -63,13 +63,14 @@ input {
 .panel {
   position: absolute;
   z-index: 20;
-  top: calc(100% + 6px);
+  top: calc(100% - 1px);
   right: 0;
   left: 0;
   overflow: hidden;
   border: 1px solid var(--elf-border);
-  border-radius: var(--elf-radius-md);
+  border-radius: 0 0 var(--elf-radius-md) var(--elf-radius-md);
   background: var(--elf-bg-paper, #fff);
+  color: var(--elf-text-primary);
   box-shadow: var(--elf-shadow-3);
 }
 
@@ -96,7 +97,8 @@ input {
 .placement-top-end {
   .panel {
     top: auto;
-    bottom: calc(100% + 6px);
+    bottom: calc(100% - 1px);
+    border-radius: var(--elf-radius-md) var(--elf-radius-md) 0 0;
   }
 }
 
@@ -121,7 +123,7 @@ input {
   padding: var(--elf-space-3);
   border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--elf-text-primary);
   cursor: pointer;
   font: inherit;
   text-align: left;
