@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const groupCode = `<elf-avatar-group collapse-avatars max-collapse-avatars="3">
   <elf-avatar alt="Ada Lovelace"></elf-avatar>

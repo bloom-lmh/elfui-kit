@@ -1,4 +1,4 @@
-import { defineHtml, html, inject } from "elfui";
+import { defineHtml, html, inject } from "@elfui/core";
 
 import { DEFAULT_LOCALE_CONTEXT, LOCALE_PROVIDER_KEY } from "../../../components/Providers/context";
 

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code2 = `<elf-page-header content="自定义插槽">
   <span slot="breadcrumb">Home / Product / Detail</span>

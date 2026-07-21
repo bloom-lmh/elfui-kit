@@ -13,7 +13,7 @@ import {
   useHostFlag,
   useRef,
   useTemplateRef
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";
@@ -94,7 +94,9 @@ const emit = defineEmits<{
 }>();
 
 const ctl = useFormControl<string>(props, emit, {
-  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+  ...(props.validateEvent === false
+    ? { triggers: { input: false, change: false, blur: false } }
+    : {})
 });
 const formItem = useFormItem(() => normalizeSize(props.size));
 const isDisabled = useDisabled(() => Boolean(props.disabled));
@@ -134,7 +136,9 @@ const autosizeOptions = (): { minRows: number; maxRows?: number } => {
   if (typeof value !== "object" || value === null) return { minRows: 1 };
   const minRows = Math.max(1, Number(value.minRows) || 1);
   const maxRows = value.maxRows === undefined ? undefined : Math.max(minRows, Number(value.maxRows));
-  return { minRows, maxRows: Number.isFinite(maxRows) ? maxRows : undefined };
+  const options: { minRows: number; maxRows?: number } = { minRows };
+  if (maxRows !== undefined && Number.isFinite(maxRows)) options.maxRows = maxRows;
+  return options;
 };
 
 const resizeTextarea = (): void => {
@@ -185,18 +189,26 @@ const onFocus = (event: FocusEvent): void => ctl.dispatchFocus(event);
 
 const onBlur = (event: FocusEvent): void => ctl.dispatchBlur(event);
 
-const onKeydown = (event: KeyboardEvent): void => emit("keydown", event);
+const onKeydown = (event: KeyboardEvent): void => {
+  emit("keydown", event);
+};
 
-const onMouseenter = (event: MouseEvent): void => emit("mouseenter", event);
+const onMouseenter = (event: MouseEvent): void => {
+  emit("mouseenter", event);
+};
 
-const onMouseleave = (event: MouseEvent): void => emit("mouseleave", event);
+const onMouseleave = (event: MouseEvent): void => {
+  emit("mouseleave", event);
+};
 
 const onCompositionStart = (event: CompositionEvent): void => {
   isComposing.set(true);
   emit("compositionstart", event);
 };
 
-const onCompositionUpdate = (event: CompositionEvent): void => emit("compositionupdate", event);
+const onCompositionUpdate = (event: CompositionEvent): void => {
+  emit("compositionupdate", event);
+};
 
 const onCompositionEnd = (event: CompositionEvent): void => {
   const value = (event.target as HTMLTextAreaElement).value;

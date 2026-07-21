@@ -1,5 +1,5 @@
-import { registerComponents } from "elfui";
-import type { DirectiveBinding, DirectiveHooks } from "@elfui/runtime";
+import { registerComponents } from "@elfui/core";
+import type { DirectiveBinding, DirectiveHooks } from "@elfui/core";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { Loading } from "./index";

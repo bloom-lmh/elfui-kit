@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "size", type: "sm | md | lg | xl", default: "md" },

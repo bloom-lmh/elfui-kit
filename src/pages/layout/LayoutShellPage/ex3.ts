@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html } from "elfui";
+import { defineHtml, defineStyle, html } from "@elfui/core";
 
 const nestedCode = `<elf-layout direction="horizontal">
   <elf-aside width="72px">主导航</elf-aside>

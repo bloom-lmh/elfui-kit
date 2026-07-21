@@ -2,7 +2,7 @@
 //
 //   <elf-aside width="220px">导航</elf-aside>
 
-import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { AsideProps, AsideSlots } from "./types";

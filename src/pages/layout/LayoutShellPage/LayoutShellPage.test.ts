@@ -5,7 +5,7 @@ let galleryTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
-  const { ensureCustomElement } = await import("elfui");
+  const { ensureCustomElement } = await import("@elfui/core");
   const { PageLayoutShellEx3 } = await import("./ex3");
   const { PageLayoutShellEx4 } = await import("./ex4");
   exampleTag = ensureCustomElement(PageLayoutShellEx3);
@@ -32,15 +32,15 @@ describe("LayoutShellPage examples", () => {
     expect(page.shadowRoot!.textContent).toContain("多级应用工作区");
   });
 
-  it("使用九个低圆角虚线预览覆盖非后台产品布局", async () => {
+  it("将九种响应式骨架拆分为独立案例", async () => {
     const page = document.createElement(galleryTag);
     document.body.appendChild(page);
     await tick();
     await tick();
 
-    expect(page.shadowRoot!.querySelectorAll("figure")).toHaveLength(9);
-    expect(page.shadowRoot!.querySelectorAll(".preview")).toHaveLength(9);
-    expect(page.shadowRoot!.textContent).toContain("收件箱");
-    expect(page.shadowRoot!.textContent).toContain("商店布局");
+    expect(page.shadowRoot!.querySelectorAll("elf-playground")).toHaveLength(9);
+    expect(page.shadowRoot!.querySelectorAll(".shell-preview")).toHaveLength(9);
+    expect(page.shadowRoot!.textContent).toContain("Inbox toolbar");
+    expect(page.shadowRoot!.textContent).toContain("Store status");
   });
 });

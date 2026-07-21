@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 import { APP_SKINS } from "../../../app/skins";
 

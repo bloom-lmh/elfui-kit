@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const sizeCode = `<elf-icon name="A" size="16" />
 <elf-icon name="B" size="24" />

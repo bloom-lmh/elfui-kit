@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageTagEx1 } from "./ex1";
 import { PageTagEx2 } from "./ex2";
 import { PageTagProps } from "./props";

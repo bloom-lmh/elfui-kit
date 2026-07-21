@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const selectedRange = useRef<[string, string]>(["2026-07-08", "2026-07-12"]);
 

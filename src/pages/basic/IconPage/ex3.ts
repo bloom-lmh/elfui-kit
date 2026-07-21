@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const slotCode = `<elf-icon size="28" color="var(--elf-primary)" aria-label="star">
   ★

@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { MasonryGap, MasonryProps, MasonrySlots } from "./types";

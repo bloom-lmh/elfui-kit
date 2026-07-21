@@ -1,12 +1,13 @@
-// elf-props-table — 组件 prop / event / part 表格
-
-import { defineProps, defineStyle, html, defineHtml } from "elfui";
-
+import { defineHtml, defineProps, defineStyle, html, useComponents } from "@elfui/core";
+import { Table } from "../../Data/Table";
+import type { TableColumn } from "../../Data/Table/types";
+import { useLocaleProvider } from "../../Providers/context";
 import styles from "./style.scss?inline";
 import type { PropsTableProps, PropsTableSlots, TableRow } from "./types";
-import { useLocaleProvider } from "../../Providers/context";
 
 export type { PropsTableProps, PropsTableSlots, TableCellValue, TableRow } from "./types";
+
+useComponents({ "props-table-data": Table });
 
 const props = defineProps<PropsTableProps>({
   title: { type: String, default: "Props" },
@@ -15,38 +16,30 @@ const props = defineProps<PropsTableProps>({
 });
 
 const locale = useLocaleProvider();
-
 const rows = (): TableRow[] => Array.isArray(props.rows) ? props.rows : [];
+const columns = (): TableColumn[] => [
+  { prop: "name", label: locale.t("playground.name"), minWidth: 150 },
+  { prop: "type", label: locale.t("playground.type"), minWidth: 210 },
+  { prop: "default", label: locale.t("playground.default"), minWidth: 120 },
+  { prop: "desc", label: locale.t("playground.description"), minWidth: 320 }
+];
 
 defineStyle(styles);
 
 const PropsTable = defineHtml<PropsTableProps, Record<string, never>, PropsTableSlots>(html`
-  <div>
-    <h4 part="title">${props.title}</h4>
-    <div class="table-scroll">
-      <table part="table" :aria-label=${props.title}>
-        <thead part="header">
-          <tr>
-            <th>${locale.t("playground.name")}</th>
-            <th>${locale.t("playground.type")}</th>
-            <th>${locale.t("playground.default")}</th>
-            <th>${locale.t("playground.description")}</th>
-          </tr>
-        </thead>
-        <tbody part="body">
-          <tr v-for="row in rows()" :key="row.name" part="row">
-            <td><code>{{ row.name }}</code></td>
-            <td><code>{{ row.type ?? "-" }}</code></td>
-            <td><code>{{ row.default ?? "-" }}</code></td>
-            <td>{{ row.desc ?? "" }}</td>
-          </tr>
-          <tr v-if=${rows().length === 0} class="empty-row">
-            <td colspan="4"><slot name="empty">${props.emptyText || locale.t("table.empty")}</slot></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <props-table-data
+    :title=${props.title}
+    title-variant="muted"
+    :data.prop=${rows()}
+    :columns.prop=${columns()}
+    row-key="name"
+    table-layout="auto"
+    size="small"
+    border
+    :empty-text=${props.emptyText || locale.t("table.empty")}
+  >
+    <slot slot="empty" name="empty">${props.emptyText || locale.t("table.empty")}</slot>
+  </props-table-data>
 `);
 
 export { PropsTable };

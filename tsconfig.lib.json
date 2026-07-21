@@ -2,6 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
+    // Declaration emission runs after the macro-aware strict type gate.
+    // Raw tsc cannot model v-for/$event template locals.
     "noCheck": true,
     "declaration": true,
     "declarationMap": false,

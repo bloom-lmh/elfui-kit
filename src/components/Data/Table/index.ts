@@ -14,8 +14,8 @@ import {
   useTemplateRef,
   watchEffect,
   defineHtml
-} from "elfui";
-import { directive, type DirectiveBinding } from "@elfui/runtime";
+} from "@elfui/core";
+import { directive, type DirectiveBinding } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { computeAnchoredPosition } from "../../Common/anchored-overlay";
@@ -68,6 +68,7 @@ export type {
   TableTreeProps,
   TableTooltipOptions,
   TableTooltipPlacement,
+  TableTitleVariant,
   TableSpanMethod,
   TableSpanResult,
   TableSortOrder
@@ -102,6 +103,8 @@ directive(
 );
 
 const props = defineProps<TableProps>({
+  title: { type: String, default: "" },
+  titleVariant: { type: String, default: "default" },
   data: { type: Array, default: () => [] },
   columns: { type: Array, default: () => [] },
   rowKey: { type: [String, Function], default: "id" },
@@ -839,6 +842,9 @@ const virtualBodyStyle = (): Record<string, string> => {
 };
 
 const tableClass = (): Record<string, boolean> => ({
+  "has-title": Boolean(props.title),
+  "title-primary": props.titleVariant === "primary",
+  "title-muted": props.titleVariant === "muted",
   "is-stripe": Boolean(props.stripe),
   "is-border": Boolean(props.border),
   "is-hover": Boolean(props.hover),
@@ -894,7 +900,8 @@ const baseCellClass = (
   "is-fixed-last": column.fixedLast
 });
 
-const columnIndexOf = (column: TableColumnView): number => getColumns().indexOf(column);
+const columnIndexOf = (column: TableColumnView): number =>
+  getColumns().findIndex((item) => item.id === column.id);
 
 const resolveColumnClass = (
   value: unknown,
@@ -1548,11 +1555,13 @@ const onRowClick = (row: TableRowView, event: MouseEvent): void => {
   emit("row-click", row.raw, columnFromEvent(event)?.raw, event);
 };
 
-const onRowDblClick = (row: TableRowView, event: MouseEvent): void =>
+const onRowDblClick = (row: TableRowView, event: MouseEvent): void => {
   emit("row-dblclick", row.raw, columnFromEvent(event)?.raw, event);
+};
 
-const onRowContextMenu = (row: TableRowView, event: MouseEvent): void =>
+const onRowContextMenu = (row: TableRowView, event: MouseEvent): void => {
   emit("row-contextmenu", row.raw, columnFromEvent(event)?.raw, event);
+};
 
 const onCellMouseEnter = (
   row: TableRowView,
@@ -1576,12 +1585,14 @@ const onCellMouseLeave = (
 const onCellFocusIn = (
   row: TableRowView,
   column: TableColumnView,
-  event: FocusEvent
+  event: Event
 ): void => {
+  if (!(event instanceof FocusEvent)) return;
   if (hasCellTooltip(column)) openCellTooltip(row, column, event.currentTarget as HTMLElement);
 };
 
-const onCellFocusOut = (column: TableColumnView, event: FocusEvent): void => {
+const onCellFocusOut = (column: TableColumnView, event: Event): void => {
+  if (!(event instanceof FocusEvent)) return;
   if (!hasCellTooltip(column)) return;
   const cell = event.currentTarget as HTMLElement;
   if (event.relatedTarget instanceof Node && cell.contains(event.relatedTarget)) return;
@@ -1594,23 +1605,29 @@ const onCellKeydown = (event: KeyboardEvent): void => {
   closeTooltip();
 };
 
-const onCellClick = (row: TableRowView, column: TableColumnView, event: MouseEvent): void =>
+const onCellClick = (row: TableRowView, column: TableColumnView, event: MouseEvent): void => {
   emit("cell-click", row.raw, column.raw, event.currentTarget, event);
+};
 
-const onCellDblClick = (row: TableRowView, column: TableColumnView, event: MouseEvent): void =>
+const onCellDblClick = (row: TableRowView, column: TableColumnView, event: MouseEvent): void => {
   emit("cell-dblclick", row.raw, column.raw, event.currentTarget, event);
+};
 
 const onCellContextMenu = (
   row: TableRowView,
   column: TableColumnView,
   event: MouseEvent
-): void => emit("cell-contextmenu", row.raw, column.raw, event.currentTarget, event);
+): void => {
+  emit("cell-contextmenu", row.raw, column.raw, event.currentTarget, event);
+};
 
-const onHeaderClick = (column: TableColumnView, event: MouseEvent): void =>
+const onHeaderClick = (column: TableColumnView, event: MouseEvent): void => {
   emit("header-click", column.raw, event);
+};
 
-const onHeaderContextMenu = (column: TableColumnView, event: MouseEvent): void =>
+const onHeaderContextMenu = (column: TableColumnView, event: MouseEvent): void => {
   emit("header-contextmenu", column.raw, event);
+};
 
 const getExpandContent = (row: TableRowView): TableRenderValue => {
   const expandColumn = getColumns().find((column) => column.type === "expand");
@@ -1769,7 +1786,8 @@ const onResizePointerCancel = (event: PointerEvent): void => {
   resizeState.set(null);
 };
 
-const onResizePointerDown = (column: TableColumnView, event: PointerEvent): void => {
+const onResizePointerDown = (column: TableColumnView, event: Event): void => {
+  if (!(event instanceof PointerEvent)) return;
   if (!isColumnResizable(column) || (event.button !== 0 && event.button !== -1)) return;
   event.preventDefault();
   event.stopPropagation();
@@ -2125,6 +2143,16 @@ const summaryCells = (): string[] => {
   });
 };
 
+const summaryCellClass = (index: number): Record<string, boolean> => {
+  const column = getColumns()[index];
+  return column ? baseCellClass(column) : {};
+};
+
+const summaryCellStyle = (index: number): StyleValue => {
+  const column = getColumns()[index];
+  return column ? headerCellStyle(column) : {};
+};
+
 const getWrap = (): HTMLElement | null =>
   wrapRef.value ?? host.shadowRoot?.querySelector<HTMLElement>(".table-wrap") ?? null;
 
@@ -2365,12 +2393,13 @@ defineStyle(styles);
 
 const Table = defineHtml<TableProps>(html`
   <div class="table-root" :class=${tableClass()}>
+    <div v-if=${props.title} class="table-title" part="title">${props.title}</div>
     <div ref="wrap" class="table-wrap" :style=${wrapStyle()} @scroll=${onScroll}>
-      <table :style=${tableStyle()} :role=${isTreeState.value ? "treegrid" : null}>
+      <table part="table" :style=${tableStyle()} :role=${isTreeState ? "treegrid" : null} :aria-label=${props.title || null}>
         <colgroup>
           <col v-for="column in getColumns()" :key="column.id" :style="colStyle(column)" />
         </colgroup>
-        <thead v-if=${props.showHeader}>
+        <thead v-if=${props.showHeader} part="header">
           <tr :class=${headerRowClass()} :style=${headerRowStyle()}>
             <th
               v-for="column in getColumns()"
@@ -2419,7 +2448,7 @@ const Table = defineHtml<TableProps>(html`
                   data-filter-trigger
                   :data-filter-key=${filterKeyOf(column)}
                   aria-haspopup="listbox"
-                  :aria-expanded=${String(filterOpenKey.value === filterKeyOf(column))}
+                  :aria-expanded=${String(filterOpenKey === filterKeyOf(column))}
                   :aria-label=${filterLabel(column)}
                   @click.stop=${toggleFilterPanel(column)}
                   @keydown=${onFilterTriggerKeydown(column, $event)}
@@ -2431,7 +2460,7 @@ const Table = defineHtml<TableProps>(html`
                   ></span>
                 </button>
                 <div
-                  v-if=${filterOpenKey.value === filterKeyOf(column)}
+                  v-if=${filterOpenKey === filterKeyOf(column)}
                   popover="manual"
                   :class=${filterPanelClass(column)}
                   :style=${filterOverlayStyle.value}
@@ -2485,13 +2514,13 @@ const Table = defineHtml<TableProps>(html`
             </th>
           </tr>
         </thead>
-        <tbody :style=${virtualBodyStyle()}>
+        <tbody part="body" :style=${virtualBodyStyle()}>
           <template v-for="row in getRenderRows()" :key="row.key">
             <tr
               :data-row-key=${row.key}
               :class="rowClass(row)"
               :style="rowStyle(row)"
-              :aria-level=${isTreeState.value ? String(row.level + 1) : null}
+              :aria-level=${isTreeState ? String(row.level + 1) : null}
               :aria-expanded=${row.hasChildren ? String(isExpanded(row)) : null}
               @click=${onRowClick(row, $event)}
               @dblclick=${onRowDblClick(row, $event)}
@@ -2594,13 +2623,13 @@ const Table = defineHtml<TableProps>(html`
             </tr>
           </template>
         </tbody>
-        <tfoot v-if=${props.showSummary}>
+        <tfoot v-if=${props.showSummary} part="footer">
           <tr class="summary-row">
             <td
               v-for="(value, index) in summaryCells()"
               :key=${index}
-              :class=${baseCellClass(getColumns()[index])}
-              :style=${headerCellStyle(getColumns()[index])}
+              :class=${summaryCellClass(index)}
+              :style=${summaryCellStyle(index)}
             >
               <span class="summary-text">{{ value }}</span>
             </td>
@@ -2613,10 +2642,10 @@ const Table = defineHtml<TableProps>(html`
       <div class="append"><slot name="append"></slot></div>
     </div>
     <div
-      v-if=${tooltipOpenState.value}
+      v-if=${tooltipOpenState}
       :id=${tooltipId}
       class="table-tooltip"
-      :data-placement=${tooltipPlacementState.value}
+      :data-placement=${tooltipPlacementState}
       :style=${tooltipStyleState.value}
       role="tooltip"
     >{{ tooltipTextState }}</div>

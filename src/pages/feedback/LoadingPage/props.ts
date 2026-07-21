@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "loading", type: "boolean", default: "false", desc: "是否显示加载遮罩" },

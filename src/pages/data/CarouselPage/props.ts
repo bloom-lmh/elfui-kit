@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "effect", type: "slide | fade", default: "slide", desc: "Transition effect" },

@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 import { Countdown } from "./index";
 
 beforeAll(() => registerComponents(Countdown));

@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 
 const d = useRef(false);
@@ -7,7 +7,7 @@ const beforeClose = (): boolean => confirm("确认关闭？未提交数据将丢
 
 const code1 = `<elf-dialog :before-close="fn" v-model:open="open">...</elf-dialog>`;
 
-const script1 = `import { useRef } from "elfui";
+const script1 = `import { useRef } from "@elfui/core";
 
 const open = useRef(false);
 

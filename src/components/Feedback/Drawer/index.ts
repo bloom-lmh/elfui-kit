@@ -17,7 +17,7 @@ import {
     useRef,
     useScrollLock,
     defineHtml,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";

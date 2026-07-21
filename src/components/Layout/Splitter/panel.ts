@@ -6,7 +6,7 @@ import {
   useEffect,
   useHostFlag,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import type { SplitterPanelProps, SplitterPanelSlots } from "./types";
 

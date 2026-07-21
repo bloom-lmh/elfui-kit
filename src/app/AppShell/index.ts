@@ -8,7 +8,7 @@ import {
   useComputed,
   useEffect,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import type { LocaleMessages } from "../../components/Providers/context";
 import { navItems } from "../../routes";
@@ -292,8 +292,12 @@ const App = defineHtml(html`
             @click=${closeMobileMenu}
           ></button>
 
-          <elf-main><elf-router-view></elf-router-view></elf-main>
-          <elf-docs-toc :routeKey=${active.value + ":" + localeName.value}></elf-docs-toc>
+          <div class="docs-scroll">
+            <div class="docs-layout">
+              <elf-main><elf-router-view></elf-router-view></elf-main>
+              <elf-docs-toc :routeKey=${active.value + ":" + localeName.value}></elf-docs-toc>
+            </div>
+          </div>
         </elf-layout>
 
         <elf-footer height="40px">© 2026 ElfUI · ${appMessage("footer")}</elf-footer>

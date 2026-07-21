@@ -10,7 +10,7 @@ import {
   useEffect,
   useHost,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import { useLocaleProvider } from "../../Providers/context";
 import styles from "./style.scss?inline";
@@ -44,6 +44,7 @@ let refreshTimers: Array<ReturnType<typeof setTimeout>> = [];
 let intersectionObserver: IntersectionObserver | undefined;
 let frame = 0;
 let removeRootClickListener = (): void => {};
+let scrollContainer: HTMLElement | null = null;
 
 const tocLabel = (): string => locale.name.toLowerCase().startsWith("en") ? "On this page" : "本页目录";
 const tocItems = (): readonly TocItem[] => items.value;
@@ -58,11 +59,10 @@ const ariaCurrent = (item: TocItem): "location" | undefined =>
 
 const normalizeLevel = (tagName: string): number => Number(tagName.slice(1)) || 2;
 const itemLevel = (element: HTMLElement): number =>
-  element.tagName === "ELF-PLAYGROUND" ? Math.max(3, props.minLevel) : normalizeLevel(element.tagName);
+  element.tagName === "ELF-PLAYGROUND" ? 3 : normalizeLevel(element.tagName);
 const itemLabel = (element: HTMLElement): string =>
-  element.tagName === "ELF-PLAYGROUND"
-    ? String((element as HTMLElement & { title?: string }).title || element.getAttribute("title") || "").trim()
-    : (element.textContent || "").replace(/\s+/g, " ").trim();
+  (element.tagName === "ELF-PLAYGROUND" ? element.getAttribute("title") : element.textContent || "")
+    ?.replace(/\s+/g, " ").trim() || "";
 
 const slugify = (label: string, index: number): string => {
   const slug = label
@@ -91,6 +91,8 @@ const queryAcrossRoots = (
 const disconnect = (): void => {
   observedRoots.forEach((root) => root.removeEventListener("scroll", scheduleActive, true));
   observedRoots = [];
+  scrollContainer?.removeEventListener("scroll", scheduleActive);
+  scrollContainer = null;
   observers.forEach((observer) => observer.disconnect());
   observers = [];
   intersectionObserver?.disconnect();
@@ -123,10 +125,12 @@ const collectRootsAndHeadings = (root: Document | ShadowRoot | HTMLElement): HTM
 
   const elements = Array.from(root.querySelectorAll<HTMLElement>("*"));
   for (const element of elements) {
-    const insidePlayground = Boolean(element.parentElement?.closest("elf-playground"));
-    if (element.tagName === "ELF-PLAYGROUND" && !insidePlayground && itemLabel(element)) {
-      headings.push(element);
+    const isPlayground = element.tagName === "ELF-PLAYGROUND";
+    if (isPlayground) {
+      if (element.getAttribute("title")?.trim()) headings.push(element);
+      continue;
     }
+    const insidePlayground = Boolean(element.parentElement?.closest("elf-playground"));
     if (/^H[1-6]$/.test(element.tagName)) {
       const level = normalizeLevel(element.tagName);
       if (
@@ -138,8 +142,8 @@ const collectRootsAndHeadings = (root: Document | ShadowRoot | HTMLElement): HTM
         headings.push(element);
       }
     }
-    // Demo internals may contain headings (for example a step panel title), but
-    // they are not documentation sections and must never pollute the page TOC.
+    // Playground contributes its own title as a level-3 item. Its shadow tree is
+    // intentionally skipped so runtime component headings cannot pollute the TOC.
     if (element.shadowRoot && element !== host && !insidePlayground) {
       headings.push(...collectRootsAndHeadings(element.shadowRoot));
     }
@@ -157,6 +161,7 @@ const refresh = (): void => {
   if (!target) {
     items.set([]);
     headingElements = new Map();
+    host.toggleAttribute("hidden", true);
     return;
   }
 
@@ -175,6 +180,10 @@ const refresh = (): void => {
   items.set(nextItems);
   headingElements = nextElements;
   activeId.set(nextItems[0]?.id || "");
+  host.toggleAttribute("hidden", nextItems.length === 0);
+
+  scrollContainer = findScrollContainer(headings[0] || target);
+  scrollContainer?.addEventListener("scroll", scheduleActive, { passive: true });
 
   if (typeof IntersectionObserver !== "undefined") {
     intersectionObserver = new IntersectionObserver(scheduleActive, {

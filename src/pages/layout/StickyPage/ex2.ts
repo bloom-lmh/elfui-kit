@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const rows = Array.from({ length: 10 }, (_, index) => `审批记录 ${index + 1}`);
 

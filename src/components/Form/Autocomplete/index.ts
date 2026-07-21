@@ -12,7 +12,7 @@ import {
     useHostAttr,
     useHostFlag,
     useRef,
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import { computeAnchoredPosition, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
@@ -85,7 +85,9 @@ const emit = defineEmits<{
 }>();
 
 const ctl = useFormControl<string>(props, emit, {
-    triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined,
+    ...(props.validateEvent === false
+      ? { triggers: { input: false, change: false, blur: false } }
+      : {})
 });
 const fi = useFormItem(() => "");
 const isDisabled = useDisabled(() => Boolean(props.disabled));
@@ -290,7 +292,8 @@ const moveActive = (step: 1 | -1): void => {
     let index = activeIndex.value;
     for (let attempt = 0; attempt < items.length; attempt += 1) {
         index = (index + step + items.length) % items.length;
-        if (!items[index].disabled) {
+        const item = items[index];
+        if (item && !item.disabled) {
             activeIndex.set(index);
             return;
         }
@@ -489,9 +492,9 @@ const Autocomplete = defineHtml<AutocompleteProps>(html`
             :aria-label=${props.ariaLabel || null}
             role="combobox"
             aria-autocomplete="list"
-            :aria-expanded=${open.value ? "true" : "false"}
+            :aria-expanded=${open ? "true" : "false"}
             :aria-controls=${listboxId}
-            :aria-activedescendant=${activeIndex.value >= 0 ? `${listboxId}-option-${activeIndex.value}` : null}
+            :aria-activedescendant=${activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : null}
             @input=${onInput}
             @focus=${onFocus}
             @blur=${onBlur}
@@ -522,8 +525,8 @@ const Autocomplete = defineHtml<AutocompleteProps>(html`
                     :data-index="item.index"
                     :disabled="item.disabled"
                     role="option"
-                    :aria-selected="activeIndex.value === item.index ? 'true' : 'false'"
-                    :class="{ active: activeIndex.value === item.index }"
+                    :aria-selected="activeIndex === item.index ? 'true' : 'false'"
+                    :class="{ active: activeIndex === item.index }"
                     @mousedown=${onOptionClick}
                     @mouseenter=${onOptionMouseenter}
                 >

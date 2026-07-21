@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useRef } from "@elfui/core";
 import { createDocsTranslator } from "../../docsLocale";
 import styles from "./demo.scss?inline";
 

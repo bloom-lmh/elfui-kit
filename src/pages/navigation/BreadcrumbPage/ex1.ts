@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 
 const lastClick = useRef("尚未点击");

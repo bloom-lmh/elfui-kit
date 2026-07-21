@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const columns = [
   { prop: "date", label: "日期", width: 120 },

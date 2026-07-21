@@ -1,4 +1,4 @@
-import { defineProps, defineStyle, html, useHostAttr, useHostCssVar, useHostFlag, defineHtml } from "elfui";
+import { defineProps, defineStyle, html, useHostAttr, useHostCssVar, useHostFlag, defineHtml } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { ProgressProps, ProgressStatus, ProgressType, ProgressVariant } from "./types";

@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageBadgeEx1 } from "./ex1";
 import { PageBadgeEx2 } from "./ex2";
 import { PageBadgeProps } from "./props";

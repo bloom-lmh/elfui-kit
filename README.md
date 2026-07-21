@@ -32,7 +32,7 @@ ELFUI-KIT includes TypeScript declarations for its Custom Elements, component se
 ## Requirements
 
 - Modern browsers with Custom Elements and Shadow DOM support.
-- `@elfui/core` and the ElfUI runtime packages are installed automatically as dependencies.
+- `@elfui/core` is the single direct ElfUI runtime dependency. Internal runtime and reactivity packages are resolved transitively; applications do not install or import them directly.
 
 ## License
 

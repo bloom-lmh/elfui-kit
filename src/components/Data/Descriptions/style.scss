@@ -9,7 +9,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--elf-space-3);
+  min-height: 44px;
+  margin-bottom: var(--elf-space-2);
+  padding-inline: var(--elf-space-4);
+  border-bottom: 1px solid var(--elf-divider);
 }
 
 .title {
@@ -23,7 +26,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(var(--_column), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--_column), minmax(220px, 1fr));
+  gap: 0;
   overflow: hidden;
   border-radius: var(--elf-radius-md);
 }
@@ -33,6 +37,10 @@
 }
 
 .item {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--elf-space-3);
   min-width: 0;
   padding: var(--elf-space-3) var(--elf-space-4);
 }
@@ -50,23 +58,29 @@
 .label {
   color: var(--elf-text-secondary);
   font-size: var(--elf-font-size-sm);
+  line-height: 1.5;
 }
 
 .content {
-  margin-top: var(--elf-space-1);
+  min-width: 0;
+  margin-top: 0;
   color: var(--elf-text-primary);
   font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 :host([direction="horizontal"]) .item {
-  display: grid;
   grid-template-columns: 88px minmax(0, 1fr);
-  align-items: start;
-  gap: var(--elf-space-3);
 }
 
 :host([direction="horizontal"]) .content {
   margin-top: 0;
+}
+
+:host([direction="vertical"]) .item {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--elf-space-1);
 }
 
 :host([size="sm"]) .item {

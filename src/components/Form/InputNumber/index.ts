@@ -1,21 +1,24 @@
 import {
   defineEmits,
+  defineExpose,
   defineHtml,
   defineProps,
   defineStyle,
   html,
   useHost,
   useHostAttr,
+  useHostCssVar,
   useHostFlag,
   useRef,
   watchEffect
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useFormControl } from "../../../composables";
-import type { InputNumberControlsPosition, InputNumberProps, InputNumberSize } from "./types";
+import { normalizeFieldVariant } from "../../../types/field";
+import type { InputNumberControlsPosition, InputNumberControlVariant, InputNumberProps, InputNumberSize } from "./types";
 
-export type { InputNumberControlsPosition, InputNumberProps, InputNumberSize } from "./types";
+export type { InputNumberControlsPosition, InputNumberControlVariant, InputNumberProps, InputNumberSize } from "./types";
 
 const props = defineProps<InputNumberProps>({
   modelValue: { type: Number, default: undefined },
@@ -28,7 +31,14 @@ const props = defineProps<InputNumberProps>({
   readonly: { type: Boolean, default: false },
   controls: { type: Boolean, default: true },
   controlsPosition: { type: String, default: "" },
+  controlVariant: { type: String, default: "default" },
+  reverse: { type: Boolean, default: false },
+  inset: { type: Boolean, default: false },
+  hideInput: { type: Boolean, default: false },
   size: { type: String, default: "" },
+  variant: { type: String, default: "filled" },
+  label: { type: String, default: "" },
+  backgroundColor: { type: String, default: "" },
   placeholder: { type: String, default: "" },
   name: { type: String, default: "" },
   valueOnClear: { type: Number, default: null },
@@ -38,7 +48,9 @@ const props = defineProps<InputNumberProps>({
 const emit = defineEmits(["update:modelValue", "change", "input", "focus", "blur"]);
 const host = useHost();
 const ctl = useFormControl<number | null>(props, emit, {
-  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+  ...(props.validateEvent === false
+    ? { triggers: { input: false, change: false, blur: false } }
+    : {})
 });
 
 const current = useRef<number | null>(null);
@@ -154,16 +166,43 @@ const normalizedSize = (): InputNumberSize => {
 const normalizedControlsPosition = (): InputNumberControlsPosition =>
   props.controlsPosition === "right" ? "right" : "";
 
+const normalizedControlVariant = (): InputNumberControlVariant => {
+  if (!props.controls) return "hidden";
+  if (props.controlsPosition === "right") return "stacked";
+  const value = String(props.controlVariant || "default") as InputNumberControlVariant;
+  return ["default", "stacked", "split", "hidden"].includes(value) ? value : "default";
+};
+
+const wrapperClass = (): Array<string | Record<string, boolean>> => [
+  "input-number",
+  `controls-${normalizedControlVariant()}`,
+  { "is-reverse": props.reverse, "is-inset": props.inset, "hide-input": props.hideInput }
+];
+
+const showControls = (): boolean => normalizedControlVariant() !== "hidden";
+
 useHostAttr("size", normalizedSize);
 useHostAttr("controls-position", normalizedControlsPosition);
+useHostAttr("variant", () => normalizeFieldVariant(props.variant));
+useHostAttr("control-variant", normalizedControlVariant);
 useHostFlag("disabled", () => Boolean(props.disabled));
+useHostFlag("data-dirty", () => current.value !== null);
+useHostFlag("data-has-label", () => Boolean(props.label));
+useHostCssVar("--elf-field-bg", () => props.backgroundColor || "");
+useHostCssVar("--elf-field-hover-bg", () => props.backgroundColor || "");
+
+// HTMLElement already provides focus/blur. Exposing those names would replace
+// native host methods and produce a collision warning for every instance.
+defineExpose({ decrease, increase });
 
 defineStyle(styles);
 
 const InputNumber = defineHtml<InputNumberProps>(html`
-  <div :class=${["input-number", { "has-controls": props.controls }]} part="wrapper">
+  <div :class=${wrapperClass()} part="wrapper">
+    <fieldset v-if=${props.label} class="outline" aria-hidden="true"><legend><span>${props.label}</span></legend></fieldset>
+    <span v-if=${props.label} class="label" part="label">${props.label}</span>
     <button
-      v-if=${props.controls}
+      v-if=${showControls()}
       class="control decrease"
       part="decrease"
       type="button"
@@ -171,13 +210,14 @@ const InputNumber = defineHtml<InputNumberProps>(html`
       aria-label="Decrease"
       @click=${decrease}
     >
-      -
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"></path></svg>
     </button>
     <input
       part="input"
       type="number"
       :name=${props.name || null}
       :placeholder=${props.placeholder}
+      :aria-label=${props.label || props.placeholder || null}
       :disabled=${props.disabled}
       :readonly=${props.readonly}
       :min=${Number.isFinite(min()) ? min() : null}
@@ -187,14 +227,14 @@ const InputNumber = defineHtml<InputNumberProps>(html`
       role="spinbutton"
       :aria-valuemin=${Number.isFinite(min()) ? String(min()) : null}
       :aria-valuemax=${Number.isFinite(max()) ? String(max()) : null}
-      :aria-valuenow=${current.value === null ? null : String(current.value)}
+      :aria-valuenow=${current === null ? null : String(current)}
       @input=${onInput}
       @change=${onChange}
       @focus=${(event: Event) => ctl.dispatchFocus(event)}
       @blur=${(event: Event) => ctl.dispatchBlur(event)}
     />
     <button
-      v-if=${props.controls}
+      v-if=${showControls()}
       class="control increase"
       part="increase"
       type="button"
@@ -202,7 +242,7 @@ const InputNumber = defineHtml<InputNumberProps>(html`
       aria-label="Increase"
       @click=${increase}
     >
-      +
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10"></path></svg>
     </button>
   </div>
 `);

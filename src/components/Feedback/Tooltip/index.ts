@@ -15,7 +15,7 @@ import {
   useHost,
   useRef,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { TooltipProps } from "./types";

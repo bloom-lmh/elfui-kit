@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useRef } from "@elfui/core";
 
 import utilityStyles from "../../../styles/utilities.scss?inline";
 import pageStyles from "./style.scss?inline";

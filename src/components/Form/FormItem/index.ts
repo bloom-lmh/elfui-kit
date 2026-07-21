@@ -18,7 +18,7 @@ import {
   useHostAttr,
   useRef,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import { FORM_ITEM_KEY, FORM_KEY, type FormItemContext } from "../context";
 import type { FormRule, RuleTrigger } from "../Form/types";

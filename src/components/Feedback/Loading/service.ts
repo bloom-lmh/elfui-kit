@@ -1,4 +1,4 @@
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Loading } from "./index";
 import type { LoadingInstance, LoadingOptions, LoadingTarget } from "./types";

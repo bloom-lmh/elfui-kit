@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const dates = useRef<string[]>(["2026-06-10", "2026-06-14"]);
 

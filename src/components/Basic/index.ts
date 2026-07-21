@@ -1,5 +1,5 @@
 // 基础组件
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Avatar } from "./Avatar/index";
 import { AvatarGroup } from "./AvatarGroup/index";

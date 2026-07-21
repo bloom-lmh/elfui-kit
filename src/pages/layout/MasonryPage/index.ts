@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html } from "elfui";
+import { defineHtml, defineStyle, html } from "@elfui/core";
 
 const cards = [
   { title: "Mist over Dolomites", meta: "意大利 · 山地", image: "https://picsum.photos/seed/elf-mountain/640/440", imageHeight: 220 },

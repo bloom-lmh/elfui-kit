@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "variant / label", type: "FieldVariant / string", default: "filled / ''", desc: "六种字段表面与浮动标签；filled 兼容旧用法" },

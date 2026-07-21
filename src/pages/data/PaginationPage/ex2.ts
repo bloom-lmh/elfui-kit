@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const compactPage = useRef(3);
 const simplePage = useRef(1);

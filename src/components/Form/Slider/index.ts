@@ -12,7 +12,7 @@ import {
   useHostFlag,
   useRef,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormItem } from "../../../composables";
 import { FORM_ITEM_KEY } from "../context";

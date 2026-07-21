@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code3 = `<elf-descriptions title="Account" border direction="horizontal" :column=\${2}>
   <elf-descriptions-item label="Name" label-width="88" :span=\${1}>Elf</elf-descriptions-item>

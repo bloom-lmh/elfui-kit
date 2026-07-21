@@ -10,6 +10,10 @@ export interface VirtualListProps<T = unknown> {
   bordered: boolean;
   divided: boolean;
   emptyText: string;
+  /** Class applied to every recycled row. */
+  listItemClass: string;
+  /** Inline style applied to every recycled row. */
+  listItemStyle: string | Record<string, string | number>;
 }
 
 export interface VirtualListExpose {

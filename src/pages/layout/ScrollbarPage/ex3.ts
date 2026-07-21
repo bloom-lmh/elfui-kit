@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useHost, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useHost, useRef } from "@elfui/core";
 import type { ScrollbarExpose } from "../../../components/Layout/Scrollbar/types";
 import styles from "./style.scss?inline";
 const mail = Array.from({ length: 10 }, (_, index) => ({

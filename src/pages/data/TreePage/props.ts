@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "data", type: "TreeNode[]", default: "[]", desc: "树形数据源" },

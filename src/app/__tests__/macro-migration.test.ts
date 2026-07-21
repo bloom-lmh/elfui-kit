@@ -94,7 +94,7 @@ describe("ui-kit macro migration", () => {
   it("type-checks real ui-kit local component props and events through useComponents", () => {
     const result = compileMacroComponent(
       `
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { Button } from "../../components/Basic/Button/index";
 import { Badge } from "../../components/Basic/Badge/index";
 

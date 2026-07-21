@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { Descriptions } from "./index";

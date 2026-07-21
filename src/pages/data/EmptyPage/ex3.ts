@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const imageCode = `<elf-empty image="/empty-illustration.svg" image-size="120" description="还没有上传图片" />`;
 

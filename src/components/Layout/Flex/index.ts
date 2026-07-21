@@ -7,7 +7,7 @@
 //
 // 样式见 ./style.scss；运行时通过 Vite 的 ?inline 加载为字符串注入 Shadow DOM。
 
-import { defineHtml, defineProps, defineStyle, html, useHostAttr, useHostCssVar, useHostFlag } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostAttr, useHostCssVar, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { FlexAlign, FlexProps, FlexSize, FlexSlots } from "./types";

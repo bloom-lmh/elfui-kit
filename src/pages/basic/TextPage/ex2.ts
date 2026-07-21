@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const styleCode = `<elf-text strong>加粗</elf-text>
 <elf-text italic>斜体</elf-text>

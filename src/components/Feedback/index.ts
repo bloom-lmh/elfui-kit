@@ -1,5 +1,5 @@
 // 反馈类组件
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Alert } from "./Alert/index";
 import { Dialog } from "./Dialog/index";

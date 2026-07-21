@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code = `<elf-splitter disabled :modelValue.prop=\${40}>
   <div slot="first">禁用拖拽</div>

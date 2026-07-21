@@ -86,6 +86,27 @@ describe("elf-playground", () => {
     await tick();
     expect(el.shadowRoot!.querySelector(".workspace.controls-collapsed")).toBeTruthy();
     expect(el.shadowRoot!.querySelector(".controls-toggle")?.getAttribute("aria-expanded")).toBe("false");
+    expect(el.shadowRoot!.querySelector(".controls")?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("normalizes control fields and choice groups", async () => {
+    const el = document.createElement("elf-playground");
+    const controls = document.createElement("div");
+    controls.slot = "controls";
+    const select = document.createElement("elf-select");
+    const input = document.createElement("elf-input");
+    const radios = document.createElement("elf-radio-group");
+    const checks = document.createElement("elf-checkbox-group");
+    controls.append(select, input, radios, checks);
+    el.appendChild(controls);
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    expect(select.getAttribute("variant")).toBe("underlined");
+    expect(input.getAttribute("variant")).toBe("underlined");
+    expect(radios.getAttribute("variant")).toBe("button");
+    expect(checks.getAttribute("variant")).toBe("button");
   });
 
   it("没有 controls slot 时保持单栏且不显示折叠按钮", async () => {

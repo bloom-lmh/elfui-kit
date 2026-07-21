@@ -20,7 +20,7 @@ import {
   useHost,
   useHostFlag,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import { FORM_KEY, type FormContext, type FormItemContext } from "../context";
 import styles from "./style.scss?inline";
@@ -53,6 +53,9 @@ const emit = defineEmits(["validate", "submit"]);
 
 const host = useHost();
 
+const isScrollIntoViewOptions = (value: unknown): value is ScrollIntoViewOptions =>
+  typeof value === "object" && value !== null;
+
 const items: FormItemContext[] = [];
 
 const findItems = (propPath?: string | string[]): FormItemContext[] => {
@@ -71,7 +74,9 @@ const validate = async (): Promise<boolean> => {
       if (firstErr) {
         const el = host.querySelector(`[prop="${firstErr.prop}"]`);
         const options = props.scrollIntoViewOptions;
-        el?.scrollIntoView(options === false ? { block: "nearest" } : options);
+        if (options === false) el?.scrollIntoView({ block: "nearest" });
+        else if (isScrollIntoViewOptions(options)) el?.scrollIntoView(options);
+        else el?.scrollIntoView();
       }
     });
   }

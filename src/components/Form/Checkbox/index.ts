@@ -11,7 +11,7 @@ import {
   useHostAttr,
   useHostFlag,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import { CHECKBOX_GROUP_KEY } from "../context";
 import { useDisabled } from "../../../composables";

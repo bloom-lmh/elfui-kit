@@ -6,7 +6,7 @@ import {
   html,
   useHost,
   useHostAttr
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useFormControl } from "../../../composables";
@@ -37,7 +37,9 @@ const props = defineProps<InputOtpProps>({
 const emit = defineEmits(["update:modelValue", "input", "change", "focus", "blur"]);
 const host = useHost();
 const ctl = useFormControl<string>(props, emit, {
-  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+  ...(props.validateEvent === false
+    ? { triggers: { input: false, change: false, blur: false } }
+    : {})
 });
 
 const length = (): number => Math.min(12, Math.max(1, Number(props.length) || 6));

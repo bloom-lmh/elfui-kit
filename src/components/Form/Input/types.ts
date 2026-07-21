@@ -56,6 +56,8 @@ export interface InputProps {
   showPassword: boolean;
   prefixIcon: string;
   suffixIcon: string;
+  prependIcon: string;
+  appendIcon: string;
   autocomplete: string;
   max: string | number | undefined;
   min: string | number | undefined;

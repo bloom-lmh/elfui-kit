@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const imageCode = `<elf-avatar src="https://i.pravatar.cc/80?img=1" alt="Jane Doe"></elf-avatar>
 <elf-avatar src="https://i.pravatar.cc/80?img=2" alt="John Smith"></elf-avatar>

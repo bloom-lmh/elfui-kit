@@ -4,7 +4,7 @@ let breadcrumbExampleTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
-  const { ensureCustomElement } = await import("elfui");
+  const { ensureCustomElement } = await import("@elfui/core");
   const { PageBreadcrumbEx2 } = await import("./ex2");
   breadcrumbExampleTag = ensureCustomElement(PageBreadcrumbEx2);
 });

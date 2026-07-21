@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const typeCode = `<elf-text>默认文本</elf-text>
 <elf-text type="primary">主要文本</elf-text>

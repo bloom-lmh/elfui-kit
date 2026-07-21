@@ -7,7 +7,7 @@ import {
   useHost,
   useHostAttr,
   useHostFlag
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { StepProps, StepSlots, StepStatus, StepsDirection, StepsSize } from "../Steps/types";

@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useReactive } from "elfui";
+import { defineHtml, defineStyle, html, useReactive } from "@elfui/core";
 
 import type { FormRules } from "../../../components/Form";
 import demoStyles from "./demo.scss?inline";

@@ -22,7 +22,7 @@ import {
     useHostAttr,
     useRef,
     defineHtml,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { AvatarEmits, AvatarFit, AvatarProps } from "./types";

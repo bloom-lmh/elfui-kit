@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 import type { TableColumn, TableRow } from "../../../components/Data/Table";
 
 const data: TableRow[] = Array.from({ length: 10000 }, (_, index) => ({ id: index + 1, task: `流水线任务 #${String(index + 1).padStart(5, "0")}`, owner: ["林舒", "许宁", "周然"][index % 3], duration: `${18 + (index % 73)}s`, status: index % 4 === 0 ? "运行中" : "已完成" }));

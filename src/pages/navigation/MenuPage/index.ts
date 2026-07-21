@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { createDocsTranslator } from "../../docsLocale";
 import { PageMenuEx1 } from "./ex1";
 import { PageMenuEx2 } from "./ex2";

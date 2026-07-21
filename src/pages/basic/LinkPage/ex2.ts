@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const stateCode = `<elf-link type="primary" .underline=\${false} href="#">无下划线</elf-link>
 <elf-link disabled href="#">禁用链接</elf-link>

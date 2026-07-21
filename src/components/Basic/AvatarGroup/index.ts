@@ -11,7 +11,7 @@ import {
     useHost,
     useRef,
     watchEffect,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { AvatarGroupEffect, AvatarGroupPlacement, AvatarGroupProps, AvatarGroupSlots } from "./types";
@@ -19,7 +19,7 @@ import type { AvatarGroupEffect, AvatarGroupPlacement, AvatarGroupProps, AvatarG
 export type { AvatarGroupEffect, AvatarGroupPlacement, AvatarGroupProps, AvatarGroupSlots } from "./types";
 
 interface ManagedAvatarState {
-    hidden: boolean;
+    hidden: HTMLElement["hidden"];
     ariaHidden: string | null;
     size: string | null;
     shape: string | null;

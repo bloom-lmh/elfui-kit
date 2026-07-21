@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageWatermarkProps } from "./props";
 import { PageWatermarkEx1 } from "./ex1";
 import { PageWatermarkEx2 } from "./ex2";

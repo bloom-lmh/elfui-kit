@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 import { createDocsTranslator } from "../../docsLocale";
 
@@ -10,14 +10,14 @@ const t = createDocsTranslator({
   security: { zh: "安全", en: "Security" },
   securityContent: { zh: "密码、双因素认证和访问密钥。", en: "Passwords, two-factor authentication, and access keys." },
   billing: { zh: "账单", en: "Billing" },
-  billingContent: { zh: "账单周期、发票和套餐。", en: "Billing cycles, invoices, and plans." }
+  billingContent: { zh: "账单周期、发票和套餐。", en: "Billing cycles, invoices, and plans." },
 });
 
 const active = useRef("security");
 const items = () => [
   { label: t("profile"), value: "profile", icon: "P", content: t("profileContent") },
   { label: t("security"), value: "security", icon: "S", content: t("securityContent") },
-  { label: t("billing"), value: "billing", icon: "B", content: t("billingContent") }
+  { label: t("billing"), value: "billing", icon: "B", content: t("billingContent") },
 ];
 const onChange = (event: CustomEvent): void => active.set(String(event.detail));
 const code = `<elf-tabs :items.prop=\${items} :modelValue=\${active} direction="vertical" density="comfortable" show-panels color="#006a6a" />`;
@@ -36,7 +36,10 @@ const PageTabsEx5 = defineHtml(html`
         :key=${t("section")}
         :items.prop=${items()}
         :modelValue.prop=${active.value}
-        direction="vertical" density="comfortable" show-panels color="#006a6a"
+        direction="vertical"
+        density="comfortable"
+        show-panels
+        color="#006a6a"
         @update:modelValue=${onChange}
       ></elf-tabs>
     </div>

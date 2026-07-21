@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code4 = `<elf-tooltip content="延迟 1 秒显示" :show-after="1000">
   <elf-button>延迟 1s 显示</elf-button>

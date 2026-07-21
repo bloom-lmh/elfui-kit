@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const code1 = `<elf-pop-confirm placement="right" title="确认退出？">
   <elf-button>右侧弹出</elf-button>

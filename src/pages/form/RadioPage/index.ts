@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageRadioEx1 } from "./ex1";
 import { PageRadioEx2 } from "./ex2";
 import { PageRadioEx3 } from "./ex3";

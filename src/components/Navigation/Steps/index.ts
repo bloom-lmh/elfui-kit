@@ -16,7 +16,7 @@ import {
     useEffect,
     useRef,
     useResizeObserver,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
@@ -48,7 +48,6 @@ interface StepViewItem extends StepItem {
 }
 
 interface StepElement extends HTMLElement {
-    title?: string;
     description?: string;
     icon?: string;
     status?: StepStatus | "";
@@ -115,7 +114,7 @@ const childItems = (): StepItem[] =>
         title: child.title || `Step ${index + 1}`,
         description: child.description || "",
         icon: child.icon || "",
-        status: child.status || undefined,
+        ...(child.status ? { status: child.status } : {}),
         disabled: Boolean(child.disabled),
         value: child.value ?? index,
     }));

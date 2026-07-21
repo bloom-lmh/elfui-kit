@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageMentionProps } from "./props";
 import { PageMentionEx1 } from "./ex1";
 import { PageMentionEx2 } from "./ex2";

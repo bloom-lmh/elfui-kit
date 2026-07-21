@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageTextareaEx1 } from "./ex1";
 import { PageTextareaEx2 } from "./ex2";
 import { PageTextareaEx3 } from "./ex3";

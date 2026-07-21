@@ -1,5 +1,8 @@
 # Input Element Plus API 对标计划
 
+- [x] 对齐 Material outlined / filled / underlined / solo / solo-filled / solo-inverted 表面与浮动标签。
+- [x] 补齐 prefix/suffix 与 prepend/append 内外图标 props/slots，默认清空按钮改为线性 SVG。
+
 ## 2026-07-19 输入框改进
 - [x] 稳定 outlined 盒模型与浮动标签位置
 - [x] 新增 background-color 自定义字段背景

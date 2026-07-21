@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 import { ElfNotification } from "../../../components/Feedback";
 
 const showNormal = () => {

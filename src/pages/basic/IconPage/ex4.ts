@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const svgCode = `<elf-icon size="18" color="var(--elf-primary)" aria-label="search">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

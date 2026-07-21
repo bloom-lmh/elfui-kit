@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 import type { TableColumn, TableLoad, TableRow } from "../../../components/Data/Table";
 
 const treeState = useRef("默认折叠 · 支持键盘与按需加载");

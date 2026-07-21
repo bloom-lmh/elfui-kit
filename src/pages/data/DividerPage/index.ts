@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageDividerEx1 } from "./ex1";
 import { PageDividerEx2 } from "./ex2";
 import { PageDividerProps } from "./props";

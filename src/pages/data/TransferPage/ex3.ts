@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const data = [
   { key: "design", label: "设计系统与跨产品主题规范维护负责人" },

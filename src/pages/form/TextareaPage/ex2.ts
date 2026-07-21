@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<div style="width:100%;max-width:480px">
   <elf-textarea autosize placeholder="键入更多内容会自动撑高" />

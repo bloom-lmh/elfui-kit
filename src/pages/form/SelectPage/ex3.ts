@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 import { opts } from "./shared";
 
 const multi = useRef<string[]>([]);

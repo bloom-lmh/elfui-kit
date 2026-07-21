@@ -1,12 +1,7 @@
-import { defineHtml, defineProps, defineStyle, html, useHost, useHostFlag } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHost, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
-import type {
-  DropdownCommand,
-  DropdownItem,
-  DropdownItemProps,
-  DropdownItemSlots
-} from "../Dropdown/types";
+import type { DropdownCommand, DropdownItem, DropdownItemProps, DropdownItemSlots } from "../Dropdown/types";
 
 export type { DropdownItemProps, DropdownItemSlots } from "../Dropdown/types";
 
@@ -15,7 +10,7 @@ const props = defineProps<DropdownItemProps>({
   disabled: { type: Boolean, default: false },
   divided: { type: Boolean, default: false },
   icon: { type: String, default: "" },
-  selected: { type: Boolean, default: false }
+  selected: { type: Boolean, default: false },
 });
 
 const host = useHost();
@@ -38,13 +33,15 @@ const onClick = (event: MouseEvent): void => {
     command: props.command as DropdownCommand,
     disabled: false,
     divided: Boolean(props.divided),
-    icon: String(props.icon || "")
+    icon: String(props.icon || ""),
   };
-  host.dispatchEvent(new CustomEvent("elf-dropdown-item-command", {
-    bubbles: true,
-    composed: true,
-    detail: { command: props.command, label: item.label, item }
-  }));
+  host.dispatchEvent(
+    new CustomEvent("elf-dropdown-item-command", {
+      bubbles: true,
+      composed: true,
+      detail: { command: props.command, label: item.label, item },
+    }),
+  );
 };
 
 useHostFlag("disabled", () => Boolean(props.disabled));

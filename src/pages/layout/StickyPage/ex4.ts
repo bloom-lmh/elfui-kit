@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const scrollState = useRef("scrollTop: 0 / fixed: false");
 const rows = Array.from({ length: 14 }, (_, index) => `目标容器内容 ${index + 1}`);

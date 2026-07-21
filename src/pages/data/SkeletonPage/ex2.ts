@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<elf-card style="max-width:480px;width:100%">
   <elf-skeleton loading variant="image" width="100%" height="180px" />

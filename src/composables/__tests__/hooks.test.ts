@@ -1,4 +1,4 @@
-﻿// useFormControl / useDisabled / useSize 单测
+// useFormControl / useDisabled / useSize 单测
 
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
@@ -14,8 +14,8 @@ const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
 
 describe("useFormControl", () => {
   it("dispatchInput 写入 model + emit + form-item input trigger", async () => {
-    const { useReactive } = await import("@elfui/reactivity");
-    const { defineComponent } = await import("elfui");
+    const { useReactive } = await import("@elfui/core");
+    const { defineComponent } = await import("@elfui/core");
     const { useFormControl } = await import("../form");
 
     const tag = `elf-test-fc-${Date.now()}`;
@@ -62,8 +62,8 @@ describe("useFormControl", () => {
 
 describe("useDisabled", () => {
   it("自身 disabled 或父级 form disabled 自动 true", async () => {
-    const { useReactive } = await import("@elfui/reactivity");
-    const { defineComponent } = await import("elfui");
+    const { useReactive } = await import("@elfui/core");
+    const { defineComponent } = await import("@elfui/core");
     const { useDisabled } = await import("../form");
 
     const tag = `elf-test-dis-${Date.now()}`;
@@ -99,8 +99,8 @@ describe("useDisabled", () => {
 
 describe("useSize", () => {
   it("自身 size 优先 + 否则继承 form", async () => {
-    const { useReactive } = await import("@elfui/reactivity");
-    const { defineComponent } = await import("elfui");
+    const { useReactive } = await import("@elfui/core");
+    const { defineComponent } = await import("@elfui/core");
     const { useSize } = await import("../form");
 
     const tag = `elf-test-sz-${Date.now()}`;

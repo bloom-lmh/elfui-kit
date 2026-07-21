@@ -1,4 +1,5 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
+import { createDocsTranslator } from "../../docsLocale";
 import { PageInputNumberProps } from "./props";
 import { PageInputNumberEx1 } from "./ex1";
 import { PageInputNumberEx2 } from "./ex2";
@@ -11,17 +12,19 @@ useComponents({
   "page-input-number-props": PageInputNumberProps
 });
 
+const t = createDocsTranslator({
+  title: { zh: "InputNumber 数字输入框", en: "InputNumber" },
+  description: { zh: "统一的 Material 数字字段，支持精度、范围以及 default、stacked、split、hidden 四种控制器布局。", en: "A Material number field with precision, range constraints, and default, stacked, split, and hidden controls." }
+});
+
 const PageInputNumber = defineHtml(html`
   <elf-container>
-    <h1>InputNumber 数字输入框</h1>
-    <p>用于数值输入，支持最大最小值、步进、精度、严格步进和控制按钮位置。</p>
-
+    <h1>${t("title")}</h1>
+    <p>${t("description")}</p>
     <page-input-number-ex1 />
-
     <page-input-number-ex2 />
-
     <page-input-number-ex3 />
-    <page-input-number-props></page-input-number-props>
+    <page-input-number-props />
   </elf-container>
 `);
 

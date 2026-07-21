@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html, useHostAttr } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostAttr } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { MenuItemGroupProps, MenuItemGroupSlots } from "../Menu/types";

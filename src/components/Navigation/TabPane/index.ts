@@ -5,7 +5,7 @@ import {
   html,
   useHostAttr,
   useHostFlag
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { TabPaneName, TabPaneProps, TabPaneSlots } from "../Tabs/types";

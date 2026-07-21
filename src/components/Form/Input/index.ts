@@ -15,7 +15,7 @@ import {
   useHostFlag,
   useRef,
   useTemplateRef
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import { normalizeFieldVariant } from "../../../types/field";
@@ -59,9 +59,11 @@ const props = defineProps<InputProps>({
   minlength: { type: Number, default: undefined },
   showWordLimit: { type: Boolean, default: false },
   wordLimitPosition: { type: String, default: "inside" },
-  clearIcon: { type: String, default: "x" },
+  clearIcon: { type: String, default: "" },
   prefixIcon: { type: String, default: "" },
   suffixIcon: { type: String, default: "" },
+  prependIcon: { type: String, default: "" },
+  appendIcon: { type: String, default: "" },
   formatter: { type: Function, default: undefined },
   parser: { type: Function, default: undefined },
   autocomplete: { type: String, default: "off" },
@@ -98,7 +100,9 @@ const emit = defineEmits<{
 }>();
 
 const ctl = useFormControl<InputNativeValue>(props, emit, {
-  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+  ...(props.validateEvent === false
+    ? { triggers: { input: false, change: false, blur: false } }
+    : {})
 });
 
 const fi = useFormItem(() => normalizeSize(props.size as InputSize));
@@ -195,11 +199,17 @@ const onFocus = (e: FocusEvent): void => ctl.dispatchFocus(e);
 
 const onBlur = (e: FocusEvent): void => ctl.dispatchBlur(e);
 
-const onKeydown = (e: KeyboardEvent): void => emit("keydown", e);
+const onKeydown = (e: KeyboardEvent): void => {
+  emit("keydown", e);
+};
 
-const onMouseenter = (e: MouseEvent): void => emit("mouseenter", e);
+const onMouseenter = (e: MouseEvent): void => {
+  emit("mouseenter", e);
+};
 
-const onMouseleave = (e: MouseEvent): void => emit("mouseleave", e);
+const onMouseleave = (e: MouseEvent): void => {
+  emit("mouseleave", e);
+};
 
 const onLabelClick = (): void => focus();
 
@@ -208,7 +218,9 @@ const onCompositionStart = (e: CompositionEvent): void => {
   emit("compositionstart", e);
 };
 
-const onCompositionUpdate = (e: CompositionEvent): void => emit("compositionupdate", e);
+const onCompositionUpdate = (e: CompositionEvent): void => {
+  emit("compositionupdate", e);
+};
 
 const onCompositionEnd = (e: CompositionEvent): void => {
   const value = getValue(e as unknown as Event);
@@ -279,9 +291,9 @@ const hasSuffix = (): boolean =>
     showInsideWordLimit()
   );
 
-const hasPrepend = (): boolean => hasNamedSlot("prepend");
+const hasPrepend = (): boolean => Boolean(props.prependIcon || hasNamedSlot("prepend"));
 
-const hasAppend = (): boolean => hasNamedSlot("append");
+const hasAppend = (): boolean => Boolean(props.appendIcon || hasNamedSlot("append"));
 
 const countValue = (): number => {
   const counter = props.countGraphemes;
@@ -330,10 +342,13 @@ const Input = defineHtml(html`
     @mouseleave=${onMouseleave}
   >
     <span v-if=${hasPrepend()} class="prepend" part="prepend">
-      <slot name="prepend" @slotchange=${touchSlots}></slot>
+      <slot name="prepend" @slotchange=${touchSlots}>${props.prependIcon}</slot>
     </span>
 
     <div class="wrapper" part="wrapper">
+      <fieldset v-if=${props.label} class="outline" aria-hidden="true">
+        <legend><span>${props.label}</span></legend>
+      </fieldset>
       <span v-if=${props.label} class="label" part="label" @click=${onLabelClick}>
         ${props.label}
       </span>
@@ -391,14 +406,15 @@ const Input = defineHtml(html`
           @click=${clear}
           aria-label="clear input"
         >
-          ${props.clearIcon}
+          <span v-if=${props.clearIcon}>${props.clearIcon}</span>
+          <svg v-else viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 4l8 8M12 4l-8 8"></path></svg>
         </button>
         <slot name="suffix" @slotchange=${touchSlots}>${props.suffixIcon}</slot>
       </span>
     </div>
 
     <span v-if=${hasAppend()} class="append" part="append">
-      <slot name="append" @slotchange=${touchSlots}></slot>
+      <slot name="append" @slotchange=${touchSlots}>${props.appendIcon}</slot>
     </span>
     <span v-if=${showOutsideWordLimit()} class="count outside" part="count">
       ${wordLimitText()}

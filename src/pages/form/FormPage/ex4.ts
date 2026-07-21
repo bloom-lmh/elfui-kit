@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useReactive, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useReactive, useRef } from "@elfui/core";
 
 import demoStyles from "./demo.scss?inline";
 

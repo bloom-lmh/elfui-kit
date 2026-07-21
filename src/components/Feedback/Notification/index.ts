@@ -1,4 +1,4 @@
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Notification as NotificationElement } from "./component";
 import type {

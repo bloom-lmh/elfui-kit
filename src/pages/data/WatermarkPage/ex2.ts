@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code2 = `<elf-watermark :content.prop="lines" :font.prop="font" :rotate="-18">
   <div class="demo-paper">多行文字水印</div>

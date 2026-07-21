@@ -1,5 +1,5 @@
 // Data 展示组件
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Card } from "./Card/index";
 import { Carousel } from "./Carousel/index";
@@ -14,6 +14,7 @@ import { Empty } from "./Empty/index";
 import { Image } from "./Image/index";
 import { InfiniteScroll } from "./InfiniteScroll/index";
 import { List } from "./List/index";
+import { ListItem } from "./ListItem/index";
 import { registerInfiniteScrollDirective } from "./InfiniteScroll/directive";
 import { Pagination } from "./Pagination/index";
 import { Progress } from "./Progress/index";
@@ -41,6 +42,7 @@ registerComponents(
   Image,
   InfiniteScroll,
   List,
+  ListItem,
   Pagination,
   Progress,
   Result,
@@ -68,6 +70,8 @@ export type {
 
 export { List } from "./List/index";
 export type { ListItemKey, ListItemRenderer, ListProps } from "./List/types";
+export { ListItem } from "./ListItem/index";
+export type { ListItemEmits, ListItemProps } from "./ListItem/types";
 export { VirtualList } from "./VirtualList/index";
 export type { VirtualListExpose, VirtualListProps } from "./VirtualList/types";
 export { computeVirtualWindow } from "./virtual-window";

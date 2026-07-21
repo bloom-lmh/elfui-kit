@@ -15,7 +15,7 @@ import {
     useHost,
     useTemplateRef,
     defineHtml,
-} from "elfui";
+} from "@elfui/core";
 
 import {
     DEFAULTS_PROVIDER_KEY,

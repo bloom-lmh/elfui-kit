@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<elf-avatar alt="张三"></elf-avatar>
 <elf-avatar alt="李四"></elf-avatar>

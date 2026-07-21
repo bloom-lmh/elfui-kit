@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const scrollbarRows = [
   { name: "height", type: "number | string", desc: "容器固定高度" },

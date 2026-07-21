@@ -38,7 +38,12 @@ describe("elf-docs-toc", () => {
 
     expect(section.dataset.docsTocId).toBeTruthy();
     const buttons = toc.shadowRoot!.querySelectorAll<HTMLButtonElement>(".item");
-    expect(Array.from(buttons, (button) => button.textContent?.trim())).toEqual(["基础用法", "可配置案例", "交互案例"]);
+    expect(Array.from(buttons, (button) => button.textContent?.trim())).toEqual([
+      "基础用法",
+      "可配置案例",
+      "交互案例"
+    ]);
+    expect(buttons[2]!.classList.contains("level-3")).toBe(true);
     buttons[0]!.click();
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
   });

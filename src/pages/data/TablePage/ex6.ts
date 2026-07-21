@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const columns = [
   { prop: "orderNo", label: "订单号", minWidth: 150 },

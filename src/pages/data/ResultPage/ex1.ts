@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const statusCode = `<elf-result icon="success" title="提交成功" sub-title="配置已保存" />
 <elf-result icon="warning" title="需要确认" sub-title="请检查风险项" />

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const tagCode = `<elf-text tag="p">段落文本</elf-text>
 <elf-text tag="strong">strong 标签</elf-text>

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const clampCode = `<div style="width:260px">
   <elf-text truncated>单行截断：很长的文本超出容器时自动省略号。</elf-text>

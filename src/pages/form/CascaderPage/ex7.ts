@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const modelValue = useRef<unknown[]>([
   ["engineering", "frontend"],

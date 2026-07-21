@@ -1,4 +1,4 @@
-import { defineHtml, html, onMount, useHost, useRef } from "elfui";
+import { defineHtml, html, onMount, useHost, useRef } from "@elfui/core";
 
 interface VirtualDropdownElement extends HTMLElement {
   virtualRef?: HTMLElement | null;

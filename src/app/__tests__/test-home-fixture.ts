@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const TestHome = defineHtml(html`<div>HOME</div>`);
 

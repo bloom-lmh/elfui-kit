@@ -1,4 +1,4 @@
-import { defineHtml, html, useHost, useRef, useTemplateRef } from "elfui";
+import { defineHtml, html, useHost, useRef, useTemplateRef } from "@elfui/core";
 
 interface TableElement extends HTMLElement {
   setScrollTop(value: number): void;

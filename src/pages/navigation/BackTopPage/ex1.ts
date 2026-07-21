@@ -1,63 +1,51 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "基础用法", en: "Basic usage" },
+  title: { zh: "容器阈值与平滑返回顶部", en: "Container threshold and smooth return" },
+  visible: { zh: "按钮", en: "Button" },
+  shown: { zh: "已显示", en: "visible" },
+  hidden: { zh: "未显示", en: "hidden" },
+  clicks: { zh: "点击", en: "Clicks" },
+  top: { zh: "顶部", en: "Top" },
+  topBody: { zh: "向下滚动此内容区，超过阈值后会出现返回顶部按钮。", en: "Scroll this panel until the BackTop button appears." },
+  content: { zh: "内容区", en: "Content" },
+  contentBody: { zh: "组件监听的是目标容器，不会干扰整页滚动。", en: "The component observes this target without affecting page scrolling." },
+  bottom: { zh: "底部", en: "Bottom" },
+  bottomBody: { zh: "点击按钮会派发 click，并将目标容器平滑滚动至零。", en: "Clicking emits click and smoothly returns the target to zero." }
+});
 
 const visible = useRef(false);
-
-const clickState = useRef("not clicked");
-
-const onVisible = (event: CustomEvent): void => {
-  visible.set(Boolean(event.detail));
-};
-
+const clickCount = useRef(0);
+const onVisible = (event: CustomEvent): void => visible.set(Boolean(event.detail));
 const onClick = (event: CustomEvent): void => {
-  clickState.set(event.detail instanceof MouseEvent ? "MouseEvent received" : "clicked");
+  if (event.detail instanceof MouseEvent) clickCount.set(clickCount.value + 1);
 };
 
 const code = `<elf-back-top
   target="#backtop-basic-scroll"
-  :visibility-height=\${120}
+  :visibility-height="120"
   bottom="72px"
   right="72px"
-  @visible-change=\${onVisible}
-  @click=\${onClick}
+  @visible-change="onVisible"
+  @click="onClick"
 />`;
-
 const script = `const visible = useRef(false);
 const onVisible = (event) => visible.set(Boolean(event.detail));
-const onClick = (event) => console.log(event.detail); // MouseEvent`;
+const onClick = (event) => console.log(event.detail);`;
 
 const PageBacktopEx1 = defineHtml(html`
-  <h2>Basic</h2>
-  <elf-playground title="Scroll threshold / smooth back to top" :code=${code} :script=${script}>
+  <h2>${t("section")}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
+    <span slot="status" class="demo-state">${t("visible")}: ${visible.value ? t("shown") : t("hidden")} · ${t("clicks")}: ${clickCount.value}</span>
     <div style="display:grid;gap:12px;width:100%;max-width:760px">
-      <div style="display:flex;gap:16px;color:var(--elf-text-secondary);flex-wrap:wrap">
-        <span>Visible: <strong>{{ visible ? 'yes' : 'no' }}</strong></span>
-        <span>Click event: <strong>{{ clickState }}</strong></span>
+      <div id="backtop-basic-scroll" style="height:280px;overflow:auto;border:1px solid var(--elf-divider);background:var(--elf-bg-paper)">
+        <section style="min-height:260px;padding:24px;background:color-mix(in srgb,var(--elf-primary) 8%,var(--elf-bg-paper))"><h3>${t("top")}</h3><p>${t("topBody")}</p></section>
+        <section style="min-height:260px;padding:24px;background:color-mix(in srgb,var(--elf-success) 8%,var(--elf-bg-paper))"><h3>${t("content")}</h3><p>${t("contentBody")}</p></section>
+        <section style="min-height:260px;padding:24px;background:color-mix(in srgb,var(--elf-warning) 9%,var(--elf-bg-paper))"><h3>${t("bottom")}</h3><p>${t("bottomBody")}</p></section>
       </div>
-      <div
-        id="backtop-basic-scroll"
-        style="height:280px;overflow:auto;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper)"
-      >
-        <section style="min-height:260px;padding:20px">
-          <h3>Top</h3>
-          <p>Scroll this panel down until the BackTop button appears.</p>
-        </section>
-        <section style="min-height:260px;padding:20px;border-top:1px solid var(--elf-border)">
-          <h3>Content</h3>
-          <p>The button listens to the target container instead of the whole page.</p>
-        </section>
-        <section style="min-height:260px;padding:20px;border-top:1px solid var(--elf-border)">
-          <h3>Bottom</h3>
-          <p>Clicking it emits the current scrollTop and scrolls back to zero.</p>
-        </section>
-      </div>
-      <elf-back-top
-        target="#backtop-basic-scroll"
-        :visibility-height=${120}
-        bottom="72px"
-        right="72px"
-        @visible-change=${onVisible}
-        @click=${onClick}
-      ></elf-back-top>
+      <elf-back-top target="#backtop-basic-scroll" :visibility-height=${120} bottom="72px" right="72px" @visible-change=${onVisible} @click=${onClick}></elf-back-top>
     </div>
   </elf-playground>
 `);

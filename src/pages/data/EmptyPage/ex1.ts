@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const basicCode = `<elf-empty description="暂无数据" />`;
 

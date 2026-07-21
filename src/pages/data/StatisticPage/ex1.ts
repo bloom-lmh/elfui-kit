@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<elf-statistic title="活跃用户" :value="128430" suffix="人" />
 <elf-statistic title="转化率" :value="0.8732" :precision="2" suffix="%" />`;

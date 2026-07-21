@@ -1,5 +1,7 @@
 # Carousel alignment plan
 
+- [x] 隔离箭头与轮播拖拽手势，确保左右箭头的 pointer/click 事件稳定切换。
+
 ## 2026-07-21 image fill regression
 
 - [x] Keep the host transparent when indicators are outside the viewport so the reserved area does not render as a gray band.

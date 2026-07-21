@@ -8,7 +8,7 @@ import {
     onUnmount,
     useHost,
     watchEffect,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { InfiniteScrollEmits, InfiniteScrollProps, InfiniteScrollSlots } from "./types";

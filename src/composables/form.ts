@@ -5,8 +5,8 @@
 // useSize        — 自身 > form-item > form 的 size 继承链
 // useFormItem    — 统一的 form + form-item 上下文读取
 
-import { inject } from "elfui";
-import { useModel, type ModelRef } from "@elfui/runtime";
+import { inject } from "@elfui/core";
+import { useModel, type ModelRef } from "@elfui/core";
 
 import { FORM_ITEM_KEY, FORM_KEY } from "../components/Form/context";
 import type { RuleTrigger } from "../components/Form/Form/types";

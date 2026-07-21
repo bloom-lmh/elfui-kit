@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const profileItems = [
   { label: "用户名", value: "elf-admin" },

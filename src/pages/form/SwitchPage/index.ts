@@ -3,7 +3,7 @@ import { PageSwitchEx2 } from "./ex2";
 import { PageSwitchEx3 } from "./ex3";
 import { PageSwitchProps } from "./props";
 
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 
 useComponents({
   "page-switch-ex1": PageSwitchEx1,

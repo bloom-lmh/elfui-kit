@@ -8,7 +8,7 @@ import {
   useHostAttr,
   useHostFlag,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";

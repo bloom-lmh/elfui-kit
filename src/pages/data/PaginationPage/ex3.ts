@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code = `<div style="width:100%;max-width:360px">
   <elf-pagination

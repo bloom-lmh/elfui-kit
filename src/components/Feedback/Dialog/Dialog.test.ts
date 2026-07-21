@@ -1,12 +1,11 @@
 // elf-dialog 测试
 
 import { compile } from "@elfui/compiler";
-import { defineComponent, setTemplateCompiler, useRef, type RenderFn } from "@elfui/chain";
+import { defineComponent, useRef, type RenderFn } from "@elfui/core";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 beforeAll(async () => {
-  setTemplateCompiler((template) => compile(template) as unknown as RenderFn);
   await import("../../../components");
 });
 
@@ -228,12 +227,12 @@ describe("elf-dialog", () => {
           open: () => visible.set(true)
         };
       },
-      template: `
+      render: compile(`
         <elf-button @click="open">打开</elf-button>
         <elf-dialog v-model:open="visible" title="真实页面弹窗">
           <p>内容</p>
         </elf-dialog>
-      `
+      `) as unknown as RenderFn
     });
 
     const page = document.createElement("test-dialog-page-open");
@@ -260,11 +259,11 @@ describe("elf-dialog", () => {
           guard: () => false
         };
       },
-      template: `
+      render: compile(`
         <elf-dialog v-model:open="visible" :before-close="guard" title="拦截">
           <p>内容</p>
         </elf-dialog>
-      `
+      `) as unknown as RenderFn
     });
 
     const page = document.createElement("test-dialog-before-close-binding");

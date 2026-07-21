@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 import type { LoadingVariant } from "../../../components/Feedback/Loading/types";
 

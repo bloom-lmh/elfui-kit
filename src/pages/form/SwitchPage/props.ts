@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const rows = [
   { name: "model-value / active-value / inactive-value", type: "string | number | boolean", default: "false / true / false" },

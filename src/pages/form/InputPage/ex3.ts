@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef, useTemplateRef } from "elfui";
+import { defineHtml, html, useRef, useTemplateRef } from "@elfui/core";
 
 const amount = useRef("1200");
 const nickname = useRef("ElfUI");

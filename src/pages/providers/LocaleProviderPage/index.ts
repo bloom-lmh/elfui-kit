@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageLocaleProviderEx1 } from "./ex1";
 
 const propsRows = [

@@ -4,7 +4,7 @@ let pageTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
-  const { ensureCustomElement } = await import("elfui");
+  const { ensureCustomElement } = await import("@elfui/core");
   const { PageMasonry } = await import("./index");
   pageTag = ensureCustomElement(PageMasonry);
 });

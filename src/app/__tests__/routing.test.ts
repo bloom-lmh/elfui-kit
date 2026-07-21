@@ -14,7 +14,7 @@ beforeAll(async () => {
   await import("../../components");
   const { App } = await import("../AppShell/index");
   const { createRouter } = await import("@elfui/router");
-  const { registerComponents } = await import("elfui");
+  const { registerComponents } = await import("@elfui/core");
   createRouterForTest = createRouter;
   registerComponents(App, TestHome, TestButton);
 }, 30000);

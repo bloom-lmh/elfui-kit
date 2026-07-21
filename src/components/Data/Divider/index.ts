@@ -4,7 +4,7 @@
 //   <elf-divider dashed>OR</elf-divider>
 //   <elf-divider direction="vertical"></elf-divider>
 
-import { defineProps, defineStyle, html, useHostAttr, useHostCssVar, useRef, defineHtml } from "elfui";
+import { defineProps, defineStyle, html, useHostAttr, useHostCssVar, useRef, defineHtml } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 

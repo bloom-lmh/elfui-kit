@@ -1,4 +1,4 @@
-import { defineHtml, html, useReactive } from "elfui";
+import { defineHtml, html, useReactive } from "@elfui/core";
 
 
 const myId = (() => {

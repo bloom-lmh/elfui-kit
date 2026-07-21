@@ -1,4 +1,4 @@
-import { defineProps, defineStyle, html, onUnmount, useComputed, useEffect, useHostFlag, useRef, defineHtml } from "elfui";
+import { defineProps, defineStyle, html, onUnmount, useComputed, useEffect, useHostFlag, useRef, defineHtml } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { SkeletonProps, SkeletonThrottle } from "./types";

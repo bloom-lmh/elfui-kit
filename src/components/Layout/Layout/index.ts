@@ -12,7 +12,7 @@
 //
 // 未显式设置方向时，直接包含 elf-aside 会自动切换为 horizontal。
 
-import { defineHtml, defineProps, defineStyle, html, onMount, useHost, useHostAttr, useRef } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, onMount, useHost, useHostAttr, useRef } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { LayoutDirection, LayoutProps, LayoutSlots } from "./types";

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "steps", type: "TourStep[]", default: "[]", desc: "引导步骤" },

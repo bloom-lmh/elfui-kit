@@ -40,8 +40,8 @@ export const normalizeTableTreeProps = (value: TableTreeProps | undefined): Tabl
 export const buildTableTree = (
   options: BuildTableTreeOptions
 ): { all: TableTreeRow[]; visible: TableTreeRow[]; isTree: boolean } => {
-  const all: TableTreeRow[] = [];
-  const visible: TableTreeRow[] = [];
+  const all: BuiltNode[] = [];
+  const visible: BuiltNode[] = [];
   let sourceIndex = 0;
   let isTree = false;
 

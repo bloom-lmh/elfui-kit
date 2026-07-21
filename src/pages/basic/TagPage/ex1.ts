@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<elf-tag>默认</elf-tag>
 <elf-tag color="success">成功</elf-tag>

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "max-width", type: "xs|sm|md|lg|xl|full", default: "lg", desc: "最大宽度档位" },

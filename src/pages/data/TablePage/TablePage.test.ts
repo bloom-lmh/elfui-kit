@@ -13,7 +13,7 @@ let tableTooltipTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
-  const { ensureCustomElement } = await import("elfui");
+  const { ensureCustomElement } = await import("@elfui/core");
   const { PageTableEx2 } = await import("./ex2");
   const { PageTableEx9 } = await import("./ex9");
   const { PageTableEx13 } = await import("./ex13");
@@ -56,7 +56,7 @@ const collectText = (root: Node): string => {
   };
 
   visit(root);
-  return text;
+  return text.replace(/\s+/g, " ").trim();
 };
 
 describe("TablePage", () => {
@@ -66,7 +66,7 @@ describe("TablePage", () => {
     await tick();
     await tick();
 
-    expect(collectText(el)).toContain("展示 1-5 / 37 条");
+    expect(collectText(el)).toContain("显示 1-5 / 37 条");
 
     const pagination = el.shadowRoot!.querySelector("elf-pagination")!;
     const next = pagination.shadowRoot!.querySelector<HTMLButtonElement>(
@@ -77,7 +77,7 @@ describe("TablePage", () => {
     await tick();
 
     const text = collectText(el);
-    expect(text).toContain("展示 6-10 / 37 条");
+    expect(text).toContain("显示 6-10 / 37 条");
     expect(text).toContain("ELF-2026006");
   });
 
@@ -94,7 +94,7 @@ describe("TablePage", () => {
     }
     await tick();
 
-    expect(collectText(el)).toContain("展示 16-20 / 37 条");
+    expect(collectText(el)).toContain("显示 16-20 / 37 条");
     expect(collectText(el)).toContain("ELF-2026016");
   });
 

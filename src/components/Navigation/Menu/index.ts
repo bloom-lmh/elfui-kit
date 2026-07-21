@@ -16,7 +16,7 @@ import {
     useShadowRoot,
     watchEffect,
     defineHtml,
-} from "elfui";
+} from "@elfui/core";
 
 import baseStyles from "./style-base.scss?inline";
 import modeStyles from "./style-mode.scss?inline";
@@ -71,9 +71,9 @@ interface MenuViewItem {
     popperClass: string;
     popperStyle: MenuPopperStyle;
     teleported: boolean;
-    popperOffset?: number;
-    showTimeout?: number;
-    hideTimeout?: number;
+    popperOffset?: number | undefined;
+    showTimeout?: number | undefined;
+    hideTimeout?: number | undefined;
     expandCloseIcon: string;
     expandOpenIcon: string;
     collapseCloseIcon: string;
@@ -693,6 +693,9 @@ const navigate = (item: MenuViewItem) => {
     if (props.router && typeof window !== "undefined" && target.startsWith("/")) window.location.hash = target;
 };
 
+const isMenuRoute = (value: unknown): value is NonNullable<MenuItemClickDetail["route"]> =>
+    typeof value === "string" || (typeof value === "object" && value !== null);
+
 const selectItem = (item: MenuViewItem) => {
     activeKey.set(item.index);
     clearSearch();
@@ -702,7 +705,9 @@ const selectItem = (item: MenuViewItem) => {
         const detail: MenuItemClickDetail = {
             index: item.index,
             indexPath: [...item.indexPath, item.index],
-            route: item.route as MenuItemClickDetail["route"],
+            ...(isMenuRoute(item.route)
+                ? { route: item.route }
+                : {}),
         };
         item.source.dispatchEvent(new CustomEvent("click", { detail, bubbles: true, composed: true }));
     }
@@ -1029,7 +1034,7 @@ const Menu = defineHtml<MenuRuntimeProps, Record<string, never>, MenuSlots>(html
 
         <div class="menu-search" v-if=${props.searchable && !isHorizontal && !isCollapsed} @input=${onCustomSearchInput}>
             <slot name="search">
-                <input class="search-input" :value=${searchText.value} :placeholder=${props.searchPlaceholder || locale.t("menu.search")} @input=${onSearchInput} />
+                <input class="search-input" :value=${searchText} :placeholder=${props.searchPlaceholder || locale.t("menu.search")} @input=${onSearchInput} />
             </slot>
         </div>
 
@@ -1137,10 +1142,10 @@ const Menu = defineHtml<MenuRuntimeProps, Record<string, never>, MenuSlots>(html
                     v-if=${isCollapsed && getHoveredChildren().length > 0}
                     :class=${[
                         ...popperClass("collapse-popup", collapsePopupRoot()),
-                        { "is-hidden": !hoveredIndex.value },
+                        { "is-hidden": !hoveredIndex },
                     ]}
                     role="menu"
-                    :aria-hidden=${String(!hoveredIndex.value)}
+                    :aria-hidden=${String(!hoveredIndex)}
                     :style=${collapsePopupStyle()}
                     @mouseenter=${onPopupEnter}
                     @mouseleave=${onPopupLeave}

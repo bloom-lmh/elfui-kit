@@ -1,6 +1,6 @@
 // elf-locale-provider — 为子树提供本地化文案与方向
 
-import { defineProps, defineStyle, html, provide, useEffect, useHost, defineHtml } from "elfui";
+import { defineProps, defineStyle, html, provide, useEffect, useHost, defineHtml } from "@elfui/core";
 
 import {
     LOCALE_PROVIDER_KEY,

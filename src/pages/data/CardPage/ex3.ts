@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useRef } from "@elfui/core";
 
 const favorite = useRef(false);
 

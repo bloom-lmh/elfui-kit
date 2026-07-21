@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const layoutRows = [
   { name: "<elf-layout> direction", type: "vertical|horizontal", default: "auto", desc: "直接包含 Aside 时自动横向" },

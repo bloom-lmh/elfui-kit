@@ -1,4 +1,4 @@
-import { defineExpose, defineHtml, defineProps, defineStyle, html, onUnmount, useRef, useTemplateRef, watchEffect } from "elfui";
+import { defineExpose, defineHtml, defineProps, defineStyle, html, onUnmount, useRef, useTemplateRef, watchEffect } from "@elfui/core";
 import "../list-content";
 import { computeVirtualWindow } from "../virtual-window";
 import styles from "./style.scss?inline";
@@ -17,7 +17,9 @@ const props = defineProps<VirtualListProps>({
   overscan: { type: Number, default: 10 },
   bordered: { type: Boolean, default: false },
   divided: { type: Boolean, default: true },
-  emptyText: { type: String, default: "" }
+  emptyText: { type: String, default: "" },
+  listItemClass: { type: String, default: "" },
+  listItemStyle: { type: null, default: "" }
 });
 
 const locale = useLocaleProvider();
@@ -82,6 +84,10 @@ const render = (item: unknown, index: number): unknown => {
   if (typeof props.renderItem === "function") return (props.renderItem as ListItemRenderer)(item, index);
   return item && typeof item === "object" ? JSON.stringify(item) : String(item ?? "");
 };
+const itemStyle = (): string | Record<string, string | number> =>
+  typeof props.listItemStyle === "string"
+    ? `${props.listItemStyle};height:${itemHeight()}px`
+    : { ...(props.listItemStyle || {}), height: `${itemHeight()}px` };
 const mountContent = (element: HTMLElement, value: unknown): void => {
   element.replaceChildren();
   if (value == null) return;
@@ -104,12 +110,19 @@ const renderWindowImmediately = (
     const item = source[index];
     const key = keyOf(item, index);
     const element = existing.get(key) ?? document.createElement("div");
-    if (!element.classList.contains("item")) element.className = "item";
-    element.setAttribute("part", "item");
+    element.className = `item ${String(props.listItemClass || "")}`.trim();
+    element.setAttribute("part", "item list-item");
     element.setAttribute("role", "listitem");
     element.dataset.virtualKey = key;
     element.dataset.virtualIndex = String(index);
     mountContent(element, render(item, index));
+    element.style.cssText = typeof props.listItemStyle === "string" ? props.listItemStyle : "";
+    if (props.listItemStyle && typeof props.listItemStyle === "object") {
+      Object.entries(props.listItemStyle).forEach(([name, value]) => {
+        const cssName = name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+        element.style.setProperty(cssName, String(value));
+      });
+    }
     element.style.height = `${itemHeight()}px`;
     nextElements.push(element);
   }
@@ -177,11 +190,11 @@ const VirtualList = defineHtml<VirtualListProps>(html`
         <div
           v-for="entry in visibleItems()"
           :key="entry.key"
-          class="item"
-          part="item"
+          :class=${["item", props.listItemClass]}
+          part="item list-item"
           :data-virtual-key=${entry.key}
           :data-virtual-index=${entry.index}
-          :style=${{ height: `${itemHeight()}px` }}
+          :style=${itemStyle()}
           role="listitem"
           v-elf-list-content=${render(entry.item, entry.index)}
         ></div>

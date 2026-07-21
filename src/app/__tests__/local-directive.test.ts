@@ -1,7 +1,7 @@
 // 组件级（局部）自定义指令验证
 
-import { directive, type DirectiveDefinition } from "@elfui/runtime";
-import { resolveDirective } from "@elfui/runtime/internal";
+import { directive, type DirectiveDefinition } from "@elfui/core";
+import { resolveDirective } from "@elfui/core/internal";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { localDualCalls, TestDualDirective } from "./dual-directive-fixture";

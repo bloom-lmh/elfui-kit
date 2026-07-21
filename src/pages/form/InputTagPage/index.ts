@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageInputTagProps } from "./props";
 import { PageInputTagEx1 } from "./ex1";
 import { PageInputTagEx2 } from "./ex2";

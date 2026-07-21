@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const slotCode = `<elf-link type="primary" href="#">
   <span slot="icon">#</span>

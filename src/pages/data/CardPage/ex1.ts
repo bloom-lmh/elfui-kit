@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const code1 = `<elf-card title="卡片标题" subtitle="副标题说明">
   <p>这是一张 elevated 变体卡片，默认带阴影。</p>

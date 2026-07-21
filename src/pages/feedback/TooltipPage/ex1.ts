@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<elf-tooltip content="Tooltip 在上方" placement="top">
   <elf-button>Top</elf-button>

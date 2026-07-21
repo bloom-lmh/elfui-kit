@@ -1,4 +1,4 @@
-import { defineHtml, html, useHost, useRef, useTemplateRef } from "elfui";
+import { defineHtml, html, useHost, useRef, useTemplateRef } from "@elfui/core";
 import type { TableColumn } from "../../../components/Data/Table";
 
 interface TableElement extends HTMLElement {

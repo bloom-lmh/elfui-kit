@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "modelValue", type: "string | number", desc: "v-model 绑定值" },
@@ -10,7 +10,7 @@ const propsRows = [
   { name: "disabled", type: "boolean" },
   { name: "readonly", type: "boolean" },
   { name: "clearable", type: "boolean", desc: "可清空" },
-  { name: "clear-icon", type: "string", default: "x" },
+  { name: "clear-icon", type: "string", default: "''", desc: "自定义清空图标文本；默认使用线性 SVG 图标" },
   { name: "show-password", type: "boolean", desc: "密码可见切换" },
   { name: "formatter", type: "(value: string) => string", desc: "展示值格式化" },
   { name: "parser", type: "(value: string) => string", desc: "输入值反解析" },
@@ -21,6 +21,8 @@ const propsRows = [
   { name: "count-graphemes", type: "(value: string) => number" },
   { name: "prefix-icon", type: "string" },
   { name: "suffix-icon", type: "string" },
+  { name: "prepend-icon", type: "string", desc: "输入框外部前置图标" },
+  { name: "append-icon", type: "string", desc: "输入框外部后置图标" },
   { name: "autocomplete", type: "string", default: "off" },
   { name: "min / max / step", type: "string | number", desc: "透传给原生 input" },
   { name: "autofocus", type: "boolean" },

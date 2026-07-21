@@ -4,7 +4,7 @@ let commandExampleTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
-  const { ensureCustomElement } = await import("elfui");
+  const { ensureCustomElement } = await import("@elfui/core");
   const { PageScrollbarEx3 } = await import("./ex3");
   commandExampleTag = ensureCustomElement(PageScrollbarEx3);
 });

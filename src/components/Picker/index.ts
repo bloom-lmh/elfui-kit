@@ -1,5 +1,5 @@
 // Picker 选择器组件
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Calendar } from "./Calendar/index";
 import { ColorPicker } from "./ColorPicker/index";

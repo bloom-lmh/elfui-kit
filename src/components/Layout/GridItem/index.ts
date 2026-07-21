@@ -7,7 +7,7 @@ import {
   html,
   useHostAttr,
   useHostCssVar
-} from "elfui";
+} from "@elfui/core";
 
 import itemStyles from "../Grid/item.scss?inline";
 import type {

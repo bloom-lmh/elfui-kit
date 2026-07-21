@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const sizeCode = `<elf-switch size="sm" />
 <elf-switch size="md" />

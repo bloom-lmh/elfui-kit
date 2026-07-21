@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html } from "elfui";
+import { defineHtml, defineStyle, html } from "@elfui/core";
 
 const code1 = `<elf-layout>
   <elf-header height="48px">顶栏</elf-header>

@@ -7,7 +7,7 @@
 // - 自定义 validator
 // - rules 合并（form.rules[prop] + item.rules）
 
-import { useReactive } from "@elfui/reactivity";
+import { useReactive } from "@elfui/core";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 beforeAll(async () => {

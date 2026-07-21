@@ -1,5 +1,5 @@
 // 公共展示组件
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Playground } from "./Playground/index";
 import { PropsTable } from "./PropsTable/index";

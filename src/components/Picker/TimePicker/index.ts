@@ -12,20 +12,20 @@ import {
   useHostFlag,
   useRef,
   watchEffect
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { normalizeFieldVariant } from "../../../types/field";
 import { isEventInside, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
 import { useLocaleProvider } from "../../Providers/context";
-import type { TimePickerModelValue, TimeShortcut } from "./types";
+import type { TimePickerModelValue, TimePickerProps, TimeShortcut } from "./types";
 
 export type { TimePickerModelValue, TimePickerProps, TimePickerSize, TimePickerVariant, TimeShortcut } from "./types";
 
 type EditingTarget = "start" | "end";
 type ClockUnit = "hour" | "minute";
 
-const props = defineProps({
+const props = defineProps<TimePickerProps>({
   modelValue: { type: null, default: "" },
   endValue: { type: String, default: "" },
   range: { type: Boolean, default: false },
@@ -92,7 +92,9 @@ const rangeMode = (): boolean => Boolean(props.range || props.isRange || Array.i
 const currentValue = (): TimePickerModelValue =>
   rangeMode() ? [start.value, end.value] : start.value;
 
-const emitChange = (value: TimePickerModelValue = currentValue()): void => emit("change", value);
+const emitChange = (value: TimePickerModelValue = currentValue()): void => {
+  emit("change", value);
+};
 
 const normalizeTime = (value: string): string => {
   const match = /^(\d{1,2}):(\d{1,2})/.exec(String(value || ""));
@@ -176,6 +178,14 @@ const minuteItems = (): ClockItem[] =>
 
 const clockItems = () => (activeUnit.value === "hour" ? hourItems() : minuteItems());
 
+const syncClockSelection = (value: number): void => {
+  host.shadowRoot?.querySelectorAll<HTMLButtonElement>(".clock-number").forEach((button) => {
+    const selected = Number(button.dataset.clockValue) === value;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+};
+
 const selectClockValue = (event: Event): void => {
   const value = Number((event.currentTarget as HTMLElement).dataset.clockValue);
   if (!Number.isFinite(value)) return;
@@ -186,6 +196,8 @@ const selectClockValue = (event: Event): void => {
     return;
   }
   setEditingValue(`${String(editingHour()).padStart(2, "0")}:${String(value).padStart(2, "0")}`);
+  syncClockSelection(value);
+  queueMicrotask(() => syncClockSelection(value));
 };
 
 const setPeriod = (next: "AM" | "PM"): void => {
@@ -200,7 +212,7 @@ const applyShortcut = (shortcut: TimeShortcut): void => {
   const nextEnd = shortcut.endValue || shortcut.value;
   start.set(nextStart);
   end.set(nextEnd);
-  const next = rangeMode() ? [nextStart, nextEnd] : nextStart;
+  const next: TimePickerModelValue = rangeMode() ? [nextStart, nextEnd] : nextStart;
   emit("update:modelValue", next);
   if (rangeMode()) emit("update:endValue", nextEnd);
   emitChange(next);
@@ -221,7 +233,7 @@ const onShortcutClick = (event: Event): void => {
 const clear = (): void => {
   if (props.disabled) return;
   const configured = props.valueOnClear;
-  const next =
+  const next: TimePickerModelValue =
     typeof configured === "function"
       ? configured()
       : configured !== undefined
@@ -275,8 +287,12 @@ const onTriggerClick = (event: Event): void => {
   else handleOpen(target);
 };
 
-const onFocus = (event: FocusEvent): void => emit("focus", event);
-const onBlur = (event: FocusEvent): void => emit("blur", event);
+const onFocus = (event: FocusEvent): void => {
+  emit("focus", event);
+};
+const onBlur = (event: FocusEvent): void => {
+  emit("blur", event);
+};
 
 const adjustByKeyboard = (event: KeyboardEvent): void => {
   if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
@@ -307,16 +323,16 @@ defineExpose({ handleOpen, handleClose });
 defineStyle(styles);
 
 const TimePicker = defineHtml(html`
-  <div :class=${["time-picker", { "is-disabled": props.disabled, "is-open": open.value }]}>
+  <div :class=${["time-picker", { "is-disabled": props.disabled, "is-open": open }]}>
     <div class="fields">
       <button
         type="button"
         class="field-trigger"
-        :class=${{ "is-active": open.value && editingTarget.value === "start", "has-label": Boolean(props.label) }}
+        :class=${{ "is-active": open && editingTarget === "start", "has-label": Boolean(props.label) }}
         data-target="start"
         :tabindex=${props.tabindex}
         :disabled=${props.disabled}
-        :aria-expanded=${open.value && editingTarget.value === "start" ? "true" : "false"}
+        :aria-expanded=${open && editingTarget === "start" ? "true" : "false"}
         @click=${onTriggerClick}
         @focus=${onFocus}
         @blur=${onBlur}
@@ -324,8 +340,8 @@ const TimePicker = defineHtml(html`
       >
         <span v-if=${props.label} class="field-label">${props.label}</span>
         <span class="clock-icon" aria-hidden="true"></span>
-        <span :class=${["field-value", { "is-placeholder": !start.value }]}>
-          ${start.value || (rangeMode() ? startPlaceholderText() : placeholderText())}
+        <span :class=${["field-value", { "is-placeholder": !start }]}>
+          ${start || (rangeMode() ? startPlaceholderText() : placeholderText())}
         </span>
       </button>
       <span v-if=${rangeMode()} class="separator">${rangeSeparatorText()}</span>
@@ -333,35 +349,35 @@ const TimePicker = defineHtml(html`
         v-if=${rangeMode()}
         type="button"
         class="field-trigger"
-        :class=${{ "is-active": open.value && editingTarget.value === "end" }}
+        :class=${{ "is-active": open && editingTarget === "end" }}
         data-target="end"
         :tabindex=${props.tabindex}
         :disabled=${props.disabled}
-        :aria-expanded=${open.value && editingTarget.value === "end" ? "true" : "false"}
+        :aria-expanded=${open && editingTarget === "end" ? "true" : "false"}
         @click=${onTriggerClick}
         @focus=${onFocus}
         @blur=${onBlur}
         @keydown=${adjustByKeyboard}
       >
         <span class="clock-icon" aria-hidden="true"></span>
-        <span :class=${["field-value", { "is-placeholder": !end.value }]}>
-          ${end.value || endPlaceholderText()}
+        <span :class=${["field-value", { "is-placeholder": !end }]}>
+          ${end || endPlaceholderText()}
         </span>
       </button>
       <button v-if=${props.clearable && hasValue()} type="button" class="clear" @click=${clear}>${locale.t("common.clear")}</button>
     </div>
 
-    <div v-if=${open.value} class="panel">
+    <div v-if=${open} class="panel">
       <div class="digital-header">
         <button
           type="button"
-          :class=${["digital-part", { "is-active": activeUnit.value === "hour" }]}
+          :class=${["digital-part", { "is-active": activeUnit === "hour" }]}
           @click=${() => activeUnit.set("hour")}
         >{{ String(editingHour()).padStart(2, "0") }}</button>
         <span>:</span>
         <button
           type="button"
-          :class=${["digital-part", { "is-active": activeUnit.value === "minute" }]}
+          :class=${["digital-part", { "is-active": activeUnit === "minute" }]}
           @click=${() => activeUnit.set("minute")}
         >{{ String(editingMinute()).padStart(2, "0") }}</button>
         <div class="period-switch">
@@ -370,7 +386,7 @@ const TimePicker = defineHtml(html`
         </div>
       </div>
 
-      <div class="clock-face" :aria-label=${activeUnit.value === "hour" ? locale.t("timePicker.selectHour") : locale.t("timePicker.selectMinute")}>
+      <div class="clock-face" :aria-label=${activeUnit === "hour" ? locale.t("timePicker.selectHour") : locale.t("timePicker.selectMinute")}>
         <span class="clock-center"></span>
         <button
           v-for="item in clockItems()"
@@ -396,7 +412,7 @@ const TimePicker = defineHtml(html`
       </div>
 
       <div class="panel-actions">
-        <span>${editingTarget.value === "start" ? startPlaceholderText() : endPlaceholderText()}</span>
+        <span>${editingTarget === "start" ? startPlaceholderText() : endPlaceholderText()}</span>
         <button type="button" @click=${handleClose}>${locale.t("common.done")}</button>
       </div>
     </div>

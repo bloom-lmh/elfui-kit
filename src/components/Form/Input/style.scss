@@ -56,12 +56,98 @@
   white-space: nowrap;
 }
 
+:host([variant="outlined"]) .label {
+  left: var(--elf-space-3);
+}
+
 :host([data-dirty]) .label,
 .wrapper:focus-within .label {
   top: 8px;
-  color: var(--elf-primary);
   font-size: 11px;
   transform: none;
+}
+
+.wrapper:focus-within .label {
+  color: var(--elf-primary);
+}
+
+:host([variant="outlined"][data-dirty]) .label,
+:host([variant="outlined"]) .wrapper:focus-within .label {
+  top: 0;
+  font-size: 11px;
+  transform: translateY(-50%);
+}
+
+.outline {
+  display: none;
+}
+
+:host([variant="outlined"]) .wrapper {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:host([variant="outlined"]) .wrapper:hover,
+:host([variant="outlined"]) .wrapper:focus-within {
+  background: transparent;
+}
+
+:host([variant="outlined"]) .outline {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--elf-border);
+  border-radius: inherit;
+  color: var(--elf-border);
+  pointer-events: none;
+  transition: border-color var(--elf-transition-fast), border-width var(--elf-transition-fast);
+}
+
+:host([variant="outlined"]) .outline legend {
+  width: 0;
+  max-width: 0;
+  height: 0;
+  margin-left: calc(var(--elf-space-3) - 4px);
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width var(--elf-transition-fast);
+}
+
+:host([variant="outlined"]) .outline legend span {
+  display: inline-block;
+  padding-inline: 4px;
+  font-size: 11px;
+  line-height: 0;
+  opacity: 0;
+}
+
+:host([variant="outlined"][data-dirty]) .outline legend,
+:host([variant="outlined"]) .wrapper:focus-within .outline legend {
+  width: auto;
+  max-width: calc(100% - 24px);
+}
+
+:host([variant="outlined"]) .wrapper:hover .outline {
+  border-color: var(--elf-border-strong);
+}
+
+:host([variant="outlined"]) .wrapper:focus-within .outline {
+  border-width: 2px;
+  border-color: var(--elf-primary);
+}
+
+:host([variant="solo"]) .label,
+:host([variant="solo-filled"]) .label,
+:host([variant="solo-inverted"]) .label {
+  left: var(--elf-space-4);
 }
 
 :host([data-state="error"]) .label {
@@ -129,22 +215,20 @@ input {
   align-items: center;
   flex: 0 0 auto;
   min-width: 0;
-  padding: 0 var(--elf-space-3);
-  border: 1px solid var(--elf-border);
-  background: var(--elf-bg-muted);
+  padding: 0 var(--elf-space-2);
+  border: 0;
+  background: transparent;
   color: var(--elf-text-secondary);
   font-size: var(--elf-font-size-sm);
   white-space: nowrap;
 }
 
 .prepend {
-  border-right: 0;
-  border-radius: var(--elf-radius-sm) 0 0 var(--elf-radius-sm);
+  padding-left: 0;
 }
 
 .append {
-  border-left: 0;
-  border-radius: 0 var(--elf-radius-sm) var(--elf-radius-sm) 0;
+  padding-right: 0;
 }
 
 .clear,
@@ -169,6 +253,15 @@ input {
     background: var(--elf-bg-muted);
     color: var(--elf-text-secondary);
   }
+}
+
+.clear svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
 }
 
 .count {

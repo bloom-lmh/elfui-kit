@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html } from "elfui";
+import { defineHtml, defineStyle, html } from "@elfui/core";
 
 import { useLocaleProvider } from "../../components/Providers/context";
 import styles from "./style.scss?inline";

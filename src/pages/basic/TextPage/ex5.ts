@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const semanticCode = `<elf-text tag="h2" size="large" strong>账户概览</elf-text>
 <elf-text tag="p" size="default">使用语义标签构建标题与段落，不需要额外的 Typography 包装组件。</elf-text>

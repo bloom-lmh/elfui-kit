@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const items = [
   { label: "编辑资料", command: "edit", icon: "✎", shortcut: "E" },

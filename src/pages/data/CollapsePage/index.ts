@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageCollapseProps } from "./props";
 import { PageCollapseEx1 } from "./ex1";
 import { PageCollapseEx2 } from "./ex2";

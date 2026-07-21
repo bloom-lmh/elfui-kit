@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const slotCode = `<elf-result title="自定义图标" sub-title="icon slot 可替换默认状态图形">
   <span slot="icon">★</span>

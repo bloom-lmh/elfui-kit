@@ -1,14 +1,14 @@
 import { defineConfig } from "vitest/config";
 
-import { elfuiMacroPlugin } from "@elfui/vite-plugin";
+import { loadElfuiWorkspace } from "./scripts/elfui-workspace";
+
+const { aliases, elfuiMacroPlugin } = await loadElfuiWorkspace();
 
 export default defineConfig({
     plugins: [elfuiMacroPlugin()],
     resolve: {
-        alias: {
-            elfui: "@elfui/core",
-        },
-        dedupe: ["elfui", "@elfui/core", "@elfui/router"],
+        alias: aliases,
+        dedupe: ["@elfui/core", "@elfui/router"],
     },
     test: {
         environment: "happy-dom",

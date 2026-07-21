@@ -1,6 +1,6 @@
 // elf-theme-provider — 通过 CSS variables 为一段子树提供局部主题
 
-import { defineProps, defineStyle, html, provide, useEffect, useHost, defineHtml } from "elfui";
+import { defineProps, defineStyle, html, provide, useEffect, useHost, defineHtml } from "@elfui/core";
 
 import { THEME_PROVIDER_KEY, type ThemeProviderContext, type ThemeTokens } from "../context";
 import styles from "./style.scss?inline";

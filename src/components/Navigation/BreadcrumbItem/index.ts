@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html, useHost, useHostFlag } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHost, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { normalizeBreadcrumbSeparatorIcon } from "../Breadcrumb/separator";
@@ -12,7 +12,7 @@ const props = defineProps<BreadcrumbItemProps>({
   current: { type: Boolean, default: false },
   last: { type: Boolean, default: false },
   separator: { type: String, default: "/" },
-  separatorIcon: { type: String, default: "" }
+  separatorIcon: { type: String, default: "" },
 });
 
 const host = useHost();
@@ -27,11 +27,13 @@ const onClick = (event: MouseEvent): void => {
   event.preventDefault();
   event.stopPropagation();
   if (props.current || !hasTarget()) return;
-  host.dispatchEvent(new CustomEvent("elf-breadcrumb-item-click", {
-    bubbles: true,
-    composed: true,
-    detail: { to: props.to, replace: Boolean(props.replace) }
-  }));
+  host.dispatchEvent(
+    new CustomEvent("elf-breadcrumb-item-click", {
+      bubbles: true,
+      composed: true,
+      detail: { to: props.to, replace: Boolean(props.replace) },
+    }),
+  );
 };
 
 useHostFlag("data-current", () => props.current);
@@ -46,7 +48,11 @@ const BreadcrumbItem = defineHtml<BreadcrumbItemProps, Record<string, never>, Br
     </button>
     <span v-else class="breadcrumb-text" :aria-current=${props.current ? "page" : null}><slot></slot></span>
     <span v-if=${!props.last} class="breadcrumb-separator" part="separator" aria-hidden="true">
-      <elf-icon v-if=${props.separatorIcon} class="breadcrumb-separator-icon" :name=${normalizeBreadcrumbSeparatorIcon(props.separatorIcon)}></elf-icon>
+      <elf-icon
+        v-if=${props.separatorIcon}
+        class="breadcrumb-separator-icon"
+        :name=${normalizeBreadcrumbSeparatorIcon(props.separatorIcon)}
+      ></elf-icon>
       <span v-else>${props.separator || "/"}</span>
     </span>
   </span>

@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const code = `<elf-button @click="startTour">开始引导</elf-button>
 <elf-tour

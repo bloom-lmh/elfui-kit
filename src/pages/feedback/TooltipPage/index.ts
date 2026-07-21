@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageTooltipEx1 } from "./ex1";
 import { PageTooltipEx2 } from "./ex2";
 import { PageTooltipEx3 } from "./ex3";

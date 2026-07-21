@@ -21,7 +21,7 @@ import {
   onUnmount,
   useHost,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
@@ -235,6 +235,20 @@ const syncStatusSlots = (): void => {
   controls.forEach((control) => {
     control.slot = "controls";
     if (control.parentElement !== host) host.appendChild(control);
+    const fields = [
+      ...(control.matches("elf-select, elf-autocomplete, elf-input, elf-input-number, elf-textarea, elf-cascader")
+        ? [control]
+        : []),
+      ...Array.from(control.querySelectorAll<HTMLElement>(
+        "elf-select, elf-autocomplete, elf-input, elf-input-number, elf-textarea, elf-cascader"
+      ))
+    ];
+    fields.forEach((field) => {
+      if (!field.hasAttribute("data-playground-variant")) field.setAttribute("variant", "underlined");
+    });
+    control.querySelectorAll<HTMLElement>("elf-radio-group, elf-checkbox-group").forEach((group) => {
+      if (!group.hasAttribute("data-playground-variant")) group.setAttribute("variant", "button");
+    });
   });
   hasControls.set(controls.length > 0);
 };
@@ -302,12 +316,12 @@ const Playground = defineHtml<PlaygroundProps, PlaygroundEmits, PlaygroundSlots>
       <span class="header-end">
         <slot name="status"></slot>
         <button
-          v-if=${hasControls.value && props.controlsCollapsible}
-              :class=${["controls-toggle", { "is-collapsed": controlsCollapsed.value }]}
+          v-if=${hasControls && props.controlsCollapsible}
+              :class=${["controls-toggle", { "is-collapsed": controlsCollapsed }]}
           type="button"
           :aria-label=${toggleControlsLabel()}
           :title=${toggleControlsLabel()}
-          :aria-expanded=${String(!controlsCollapsed.value)}
+          :aria-expanded=${String(!controlsCollapsed)}
           @click=${toggleControls}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -316,9 +330,14 @@ const Playground = defineHtml<PlaygroundProps, PlaygroundEmits, PlaygroundSlots>
         </button>
       </span>
     </div>
-    <div :class=${{ workspace: true, "has-controls": hasControls.value, "controls-collapsed": controlsCollapsed.value }}>
+    <div :class=${{ workspace: true, "has-controls": hasControls, "controls-collapsed": controlsCollapsed }}>
       <div class="demo"><slot></slot></div>
-      <aside v-if=${hasControls.value} v-show=${!controlsCollapsed.value} class="controls" :aria-label=${controlsLabel()}>
+      <aside
+        v-if=${hasControls}
+        class="controls"
+        :aria-label=${controlsLabel()}
+        :aria-hidden=${String(controlsCollapsed)}
+      >
         <slot name="controls"></slot>
       </aside>
     </div>

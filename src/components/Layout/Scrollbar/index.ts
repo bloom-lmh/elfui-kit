@@ -16,7 +16,7 @@ import {
     useHost,
     useHostFlag,
     useTemplateRef,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { ScrollbarProps, ScrollbarScrollDetail } from "./types";

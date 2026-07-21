@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const formRows = [
   { name: "model", type: "object", desc: "useReactive 对象" },

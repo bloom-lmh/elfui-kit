@@ -17,7 +17,7 @@ import {
   useHostAttr,
   useHostFlag,
   useRef,
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormItem } from "../../../composables";
 import { computeAnchoredPosition, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
@@ -985,7 +985,9 @@ const togglePopperVisible = (visible?: boolean): void => {
   else openDropdown();
 };
 
-const onTriggerFocus = (event: FocusEvent): void => emit("focus", event);
+const onTriggerFocus = (event: FocusEvent): void => {
+  emit("focus", event);
+};
 
 const onTriggerBlur = (event: FocusEvent): void => {
   emit("blur", event);
@@ -1184,7 +1186,7 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
     part="trigger"
     :tabindex=${props.filterable ? undefined : 0}
     role="combobox"
-    :aria-expanded=${open.value ? "true" : "false"}
+    :aria-expanded=${open ? "true" : "false"}
     @click=${toggleOpen}
     @focus=${onTriggerFocus}
     @blur=${onTriggerBlur}
@@ -1197,7 +1199,7 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
       class="filter-input"
       type="text"
       autocomplete="off"
-      :value=${query.value}
+      :value=${query}
       :placeholder=${hasValue() ? displayLabel() : props.placeholder}
       :aria-label=${placeholderText()}
       @click=${stopClick}
@@ -1243,16 +1245,16 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
     :popover=${props.teleported ? "manual" : undefined}
     :data-append-to=${typeof props.appendTo === "string" ? props.appendTo : "element"}
     role="menu"
-    :aria-hidden=${open.value ? "false" : "true"}
+    :aria-hidden=${open ? "false" : "true"}
     @click=${stopClick}
     @keydown=${onDropdownKeydown}
   >
     <slot name="header"></slot>
     <div v-if=${isSearchMode()} class="filter-results" role="listbox" @click=${onFilterResultsClick}>
-      <div v-if=${filtering.value} class="empty" aria-live="polite">${locale.t("table.loading")}</div>
+      <div v-if=${filtering} class="empty" aria-live="polite">${locale.t("table.loading")}</div>
       <template v-else>
         <button
-          v-for="path in filteredPaths.value"
+          v-for="path in filteredPaths"
           :key="valuePathKey(pathValues(path))"
           class="filter-option"
           type="button"
@@ -1264,7 +1266,7 @@ const Cascader = defineHtml<CascaderProps, CascaderEmits, CascaderSlots>(html`
             {{ displayPathLabel(path) }}
           </slot>
         </button>
-        <slot v-if="filteredPaths.value.length === 0" name="empty">
+        <slot v-if="filteredPaths.length === 0" name="empty">
           <div class="empty">${locale.t("field.noMatch")}</div>
         </slot>
       </template>

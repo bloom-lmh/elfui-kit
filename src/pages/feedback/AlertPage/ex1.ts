@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<elf-alert type="info" title="信息提示"></elf-alert>
 <elf-alert type="success" title="操作成功"></elf-alert>

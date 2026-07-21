@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const descriptionsProps = [
   { name: "title", type: "string", default: "''" },

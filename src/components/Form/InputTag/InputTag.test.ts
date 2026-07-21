@@ -1,4 +1,4 @@
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { InputTag } from "./index";

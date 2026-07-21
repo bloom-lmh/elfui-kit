@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 import type { UploadFileItem } from "../../../components/Form";
 
 const fileList = useRef<UploadFileItem[]>([

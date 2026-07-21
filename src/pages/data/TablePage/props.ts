@@ -1,6 +1,8 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
+  { name: "title", type: "string", default: "''", desc: "可选表格标题栏" },
+  { name: "title-variant", type: "default | primary | muted", default: "default", desc: "标题栏视觉样式" },
   { name: "data", type: "TableRow[]", default: "[]", desc: "表格数据" },
   { name: "columns", type: "TableColumn[]", default: "[]", desc: "列配置；为空时按首行推导" },
   { name: "row-key", type: "string | (row) => Key", default: "id", desc: "行唯一标识，字符串支持点路径" },

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code2 = `<elf-alert type="success" title="保存成功" description="你的更改已经保存到服务器"></elf-alert>
 <elf-alert type="warning" title="网络不稳定" description="检测到网络延迟，部分功能可能受影响"></elf-alert>`;

@@ -10,7 +10,7 @@ import {
   useRef,
   useTemplateRef,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type {
@@ -525,7 +525,7 @@ const Upload = defineHtml(html`
 
     <div v-if=${props.showFileList} :class=${["list", "is-" + listType()]} part="list">
       <div
-        v-for="file in files.value"
+        v-for="file in files"
         :key="file.uid"
         :class="['file', 'is-' + file.status]"
         part="file"

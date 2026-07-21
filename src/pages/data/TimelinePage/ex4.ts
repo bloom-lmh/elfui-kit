@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const items = [
   { timestamp: "2026-07-02 09:30", color: "primary", cardClass: "release-card" },

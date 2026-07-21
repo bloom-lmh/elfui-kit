@@ -3,6 +3,7 @@ export type TableAlign = "left" | "center" | "right";
 export type TableSortOrder = "" | "ascending" | "descending";
 export type TableSize = "small" | "default" | "large";
 export type TableLayout = "fixed" | "auto";
+export type TableTitleVariant = "default" | "primary" | "muted";
 export type TableRow = Record<string, unknown>;
 export type TableStyle = Record<string, string | number>;
 export type TableSortBy =
@@ -181,6 +182,8 @@ export interface TableScrollDetail {
 }
 
 export interface TableProps {
+  title: string;
+  titleVariant: TableTitleVariant;
   data: TableRow[];
   columns: TableColumn[];
   rowKey: TableRowKey;

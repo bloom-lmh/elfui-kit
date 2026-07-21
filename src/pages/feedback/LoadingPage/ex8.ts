@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const svgPath = "M25 5 A20 20 0 0 1 45 25";
 

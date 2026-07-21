@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 import { createDocsTranslator } from "../../docsLocale";
 
 const frameStyle = "width:min(100%,1000px);margin-inline:auto";

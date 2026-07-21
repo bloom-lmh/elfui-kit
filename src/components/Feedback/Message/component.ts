@@ -8,7 +8,7 @@ import {
   useHostAttr,
   useHostFlag,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
@@ -41,7 +41,9 @@ const close = (): void => {
   emit("close");
 };
 
-const triggerAction = (): void => emit("action");
+const triggerAction = (): void => {
+  emit("action");
+};
 const icon = (): string => ICONS[String(props.type)] ?? "i";
 
 defineExpose({ close, closing });

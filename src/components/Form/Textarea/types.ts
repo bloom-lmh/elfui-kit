@@ -44,7 +44,7 @@ export interface TextareaProps {
   prefixIcon: string;
   suffixIcon: string;
   rows: number;
-  autosize: boolean | TextareaAutosizeOptions;
+  autosize: boolean | "" | TextareaAutosizeOptions;
   resize: TextareaResize;
   autocomplete: string;
   autofocus: boolean;

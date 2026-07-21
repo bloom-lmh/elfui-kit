@@ -1,5 +1,10 @@
 # DatePicker Element Plus API 对标计划
 
+## 2026-07-21 草稿同步与多选宽度
+
+- [x] 仅当外部受控值签名变化时重建选择草稿，避免选择后旧高亮短暂回闪。
+- [x] 多日期输入保持固定宽度，日期标签横向滚动且不撑开页面布局。
+
 ## 2026-07-16 interaction polish
 
 - [x] Share the circular day selection and fresh range-draft semantics with Calendar.

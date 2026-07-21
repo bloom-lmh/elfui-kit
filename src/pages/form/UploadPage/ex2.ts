@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const dragCode = `<elf-upload drag accept="image/*" list-type="picture-card" />`;
 

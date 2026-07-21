@@ -8,7 +8,7 @@ import {
   useHostFlag,
   useRef,
   useTemplateRef
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import { normalizeFieldVariant } from "../../../types/field";
@@ -70,7 +70,9 @@ const emit = defineEmits<{
 }>();
 
 const ctl = useFormControl<string>(props, emit, {
-  triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined
+  ...(props.validateEvent === false
+    ? { triggers: { input: false, change: false, blur: false } }
+    : {})
 });
 const fi = useFormItem(() => "");
 const isDisabled = useDisabled(() => Boolean(props.disabled));
@@ -118,7 +120,7 @@ const isBoundary = (value: string, index: number, prefix: string): boolean => {
   if (typeof check === "function") return check(value.slice(0, index), prefix);
   if (index === 0) return true;
   const split = String(props.split || " ");
-  return split.includes(value[index - 1]);
+  return split.includes(value[index - 1] ?? "");
 };
 
 const parseQuery = (value: string, caret: number): void => {
@@ -181,7 +183,8 @@ const moveActive = (step: 1 | -1): void => {
   let index = activeIndex.value;
   for (let attempt = 0; attempt < items.length; attempt += 1) {
     index = (index + step + items.length) % items.length;
-    if (!items[index].disabled) {
+    const item = items[index];
+    if (item && !item.disabled) {
       activeIndex.set(index);
       return;
     }
@@ -227,16 +230,16 @@ const Mention = defineHtml<MentionProps>(html`
       :aria-label=${props.ariaLabel || null}
       role="combobox"
       aria-autocomplete="list"
-      :aria-expanded=${open.value ? "true" : "false"}
+      :aria-expanded=${open ? "true" : "false"}
       :aria-controls=${listboxId}
-      :aria-activedescendant=${activeIndex.value >= 0 ? `${listboxId}-option-${activeIndex.value}` : null}
+      :aria-activedescendant=${activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : null}
       @input=${onInput}
       @keydown=${onKeydown}
       @focus=${(event: FocusEvent) => ctl.dispatchFocus(event)}
       @blur=${(event: FocusEvent) => { ctl.dispatchBlur(event); setTimeout(() => open.set(false), 120); }}
     ></textarea>
-    <div v-if=${open.value && props.loading} class="panel status" role="status"><slot name="loading">${props.loadingText}</slot></div>
-    <div v-else-if=${open.value && options().length} :id=${listboxId} class="panel" role="listbox">
+    <div v-if=${open && props.loading} class="panel status" role="status"><slot name="loading">${props.loadingText}</slot></div>
+    <div v-else-if=${open && options().length} :id=${listboxId} class="panel" role="listbox">
       <button
         v-for="item in options()"
         :key="item.key"
@@ -246,8 +249,8 @@ const Mention = defineHtml<MentionProps>(html`
         :data-index="item.index"
         :disabled="item.disabled"
         role="option"
-        :aria-selected="activeIndex.value === item.index ? 'true' : 'false'"
-        :class="{ active: activeIndex.value === item.index }"
+        :aria-selected="activeIndex === item.index ? 'true' : 'false'"
+        :class="{ active: activeIndex === item.index }"
         @mousedown=${onOptionClick}
         @mouseenter=${onOptionMouseenter}
       ><slot :item="item">{{ item.label }}</slot></button>

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<elf-container padding="0" max-width="md">padding=0</elf-container>
 <elf-container padding="sm" max-width="md">padding=sm</elf-container>

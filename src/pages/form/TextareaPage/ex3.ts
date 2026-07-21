@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const biography = useRef("ElfUI 让 Web Components 保持简洁。 ");
 

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code2 = `<elf-tooltip content="悬浮触发的提示" trigger="hover">
   <elf-button>Hover 我（默认）</elf-button>

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const palette = ["#ef4444", "#f59e0b", "#22c55e"];
 

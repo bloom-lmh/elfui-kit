@@ -1,5 +1,7 @@
 # Table Element Plus API 对标计划
 
+- [x] 增加 `title` / `title-variant` 标题栏样式，API 文档表格统一复用 `elf-table` 渲染。
+
 ## 2026-07-19 表格质量回归
 - [x] 修复 Dialog 操作按钮尺寸、sticky header 透底与边框表格多余横向滚动
 - [x] 合并高频滚动更新，保持 10,000 行窗口化 DOM 有界

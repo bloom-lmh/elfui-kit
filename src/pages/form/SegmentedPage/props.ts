@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 const rows = [
   { name: "model-value", type: "string | number | boolean", default: "undefined", desc: "当前选中值" },
   { name: "options", type: "SegmentedOption[]", default: "[]", desc: "字符串或含 label/value/disabled 的对象" },

@@ -11,7 +11,7 @@ import {
   useHostCssVar,
   useRef,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import { CHECKBOX_GROUP_KEY, FORM_KEY } from "../context";
 import type { CheckboxGroupContext } from "../context";

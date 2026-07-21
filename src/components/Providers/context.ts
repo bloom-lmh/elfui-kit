@@ -1,4 +1,4 @@
-import { createInjectionKey, inject } from "elfui";
+import { createInjectionKey, inject } from "@elfui/core";
 
 export type ProviderDefaults = Record<string, Record<string, unknown>>;
 export type DefaultsStrategy = "missing" | "overwrite";

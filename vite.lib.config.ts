@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 
-import { elfuiMacroPlugin } from "@elfui/vite-plugin";
+import { loadElfuiWorkspace } from "./scripts/elfui-workspace";
+
+const { aliases, elfuiMacroPlugin } = await loadElfuiWorkspace();
 
 export default defineConfig({
   publicDir: false,
@@ -9,10 +11,8 @@ export default defineConfig({
     __DEV__: "false"
   },
   resolve: {
-    alias: {
-      elfui: "@elfui/core"
-    },
-    dedupe: ["elfui", "@elfui/core"]
+    alias: aliases,
+    dedupe: ["@elfui/core"]
   },
   build: {
     target: "es2022",
@@ -25,7 +25,7 @@ export default defineConfig({
       cssFileName: "utilities"
     },
     rollupOptions: {
-      external: (id) => id === "elfui" || id.startsWith("@elfui/")
+      external: (id) => id.startsWith("@elfui/")
     }
   }
 });

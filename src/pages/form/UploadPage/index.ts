@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import type { UploadChunkRequestOptions, UploadRequestOptions } from "../../../components/Form";
 
 import { PageUploadEx1 } from "./ex1";

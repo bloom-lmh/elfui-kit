@@ -1,5 +1,7 @@
 # Tabs Element Plus API 对标计划
 
+- [x] Material 默认导航表面使用 paper 背景，修复 grow 宽度与 start/center/end 对齐，并让操作台预览占满可用宽度。
+
 ## 2026-07-21 Playground 与变体回归
 
 - [x] 修复 `grow` 铺满和 start/center/end 整体对齐，默认标签导航使用主题表面背景。

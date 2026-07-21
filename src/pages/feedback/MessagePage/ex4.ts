@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 import { ElfMessage } from "../../../components/Feedback";
 
 const lastEvent = useRef("等待交互");

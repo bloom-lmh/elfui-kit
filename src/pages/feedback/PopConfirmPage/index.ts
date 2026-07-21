@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PagePopConfirmEx1 } from "./ex1";
 import { PagePopConfirmEx2 } from "./ex2";
 import { PagePopConfirmProps } from "./props";

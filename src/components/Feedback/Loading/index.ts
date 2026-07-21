@@ -7,7 +7,7 @@ import {
   useHostAttr,
   useHostCssVar,
   useScrollLock
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { LoadingEmits, LoadingProps, LoadingSlots, LoadingVariant } from "./types";

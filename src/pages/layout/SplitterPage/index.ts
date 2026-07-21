@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageSplitterEx1 } from "./ex1";
 import { PageSplitterEx2 } from "./ex2";
 import { PageSplitterEx3 } from "./ex3";

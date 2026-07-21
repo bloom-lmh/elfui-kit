@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const darkCode = `<elf-theme-provider theme="dark" primary="#80cbc4" surface="#172525">
   <elf-button>继承局部主题</elf-button>

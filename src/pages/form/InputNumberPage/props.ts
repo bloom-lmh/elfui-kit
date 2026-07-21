@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "model-value", type: "number | null", default: "undefined" },
@@ -6,6 +6,10 @@ const propsRows = [
   { name: "step-strictly / precision", type: "boolean / number", default: "false / auto" },
   { name: "value-on-clear", type: "number | null", default: "null" },
   { name: "controls / controls-position", type: "boolean / right", default: "true / ''" },
+  { name: "control-variant", type: "default | stacked | split | hidden", default: "default" },
+  { name: "reverse / inset / hide-input", type: "boolean", default: "false" },
+  { name: "variant", type: "FieldVariant", default: "filled" },
+  { name: "label / background-color", type: "string", default: "''" },
   { name: "disabled / readonly", type: "boolean", default: "false" },
   { name: "validate-event", type: "boolean", default: "true" }
 ];

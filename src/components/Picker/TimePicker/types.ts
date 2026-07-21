@@ -32,7 +32,7 @@ export interface TimePickerProps {
   id: string | [string, string];
   name: string;
   tabindex: string | number;
-  valueOnClear: string | [string, string] | (() => string | [string, string]);
+  valueOnClear: string | [string, string] | (() => string | [string, string]) | undefined;
   emptyValues: unknown[];
   saveOnBlur: boolean;
   shortcuts: TimeShortcut[];

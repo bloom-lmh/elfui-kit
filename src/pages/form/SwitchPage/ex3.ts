@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const variantCode = `<elf-switch variant="default" label="Default" />
 <elf-switch variant="inset" color="success" label="Inset" />

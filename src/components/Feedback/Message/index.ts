@@ -5,7 +5,7 @@
 //   ElfMessage.success("...")
 //   ElfMessage({ message: "...", type: "warning", duration: 3000 })
 
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Message as MessageElement } from "./component";
 

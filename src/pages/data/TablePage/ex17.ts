@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 import type { TableColumn } from "../../../components/Data/Table";
 
 const resizeState = useRef("拖动表头分隔线，或聚焦后按方向键");

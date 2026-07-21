@@ -1,4 +1,4 @@
-import { directive, type DirectiveBinding } from "@elfui/runtime";
+import { directive, type DirectiveBinding } from "@elfui/core";
 
 export type ListRenderValue = Node | string | number | boolean | null | undefined;
 

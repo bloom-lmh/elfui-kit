@@ -19,10 +19,10 @@
   justify-content: center;
   width: var(--backtop-size, 40px);
   height: var(--backtop-size, 40px);
-  border: 1px solid color-mix(in srgb, var(--elf-primary) 24%, var(--elf-border));
+  border: 1px solid color-mix(in srgb, var(--elf-primary) 18%, var(--elf-border));
   border-radius: 999px;
   background: var(--elf-bg-paper);
-  box-shadow: var(--elf-shadow-2);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
   color: var(--elf-primary);
   cursor: pointer;
   font: inherit;
@@ -64,4 +64,9 @@
   font-size: 20px;
   font-weight: 700;
   line-height: 1;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }

@@ -9,7 +9,7 @@ import {
     useHost,
     useRef,
     watchEffect,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { CollapseFieldNames, CollapseItem, CollapseItemProps, CollapseModelValue, CollapseProps } from "./types";

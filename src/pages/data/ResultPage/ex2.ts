@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const extraCode = `<elf-result icon="success" title="发布成功" sub-title="页面已经上线">
   <div slot="extra" style="display:flex;gap:8px;justify-content:center">

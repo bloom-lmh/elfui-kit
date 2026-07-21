@@ -7,7 +7,7 @@ import {
   useComputed,
   useEffect,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { StatisticEasing, StatisticProps, StatisticSlots } from "./types";

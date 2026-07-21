@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
     { name: "type", type: "info | success | warning | danger", default: "info", desc: "类型" },

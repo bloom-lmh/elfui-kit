@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const limitedTags = useRef(["Alpha", "Design system", "Responsive layout"]);
 

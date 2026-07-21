@@ -12,7 +12,7 @@ import {
   useRef,
   useTemplateRef,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormControl, useFormItem } from "../../../composables";
 import styles from "./style.scss?inline";

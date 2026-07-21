@@ -14,8 +14,8 @@ import {
   useHostFlag,
   useRef,
   watchEffect,
-  defineHtml
-} from "elfui";
+  defineHtml,
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
@@ -25,7 +25,7 @@ import type {
   AnchorFieldNames,
   AnchorItem,
   AnchorProps,
-  AnchorSlots
+  AnchorSlots,
 } from "./types";
 
 export type {
@@ -36,7 +36,7 @@ export type {
   AnchorLinkProps,
   AnchorLinkSlots,
   AnchorProps,
-  AnchorSlots
+  AnchorSlots,
 } from "./types";
 
 type RawItem = Record<string, unknown>;
@@ -54,7 +54,6 @@ type ScrollContainer = Window | HTMLElement;
 
 interface AnchorLinkElement extends HTMLElement {
   href?: string;
-  title?: string;
   active?: boolean;
   level?: number;
   direction?: "vertical" | "horizontal";
@@ -80,9 +79,9 @@ const props = defineProps<AnchorProps>({
       title: "title",
       href: "href",
       disabled: "disabled",
-      children: "children"
-    })
-  }
+      children: "children",
+    }),
+  },
 });
 
 const locale = useLocaleProvider();
@@ -110,7 +109,7 @@ const fieldNames = (): Required<AnchorFieldNames> => {
     title: field.title || "title",
     href: field.href || "href",
     disabled: field.disabled || "disabled",
-    children: field.children || "children"
+    children: field.children || "children",
   };
 };
 
@@ -128,7 +127,7 @@ const normalizeItems = (source: unknown, level = 0): AnchorViewItem[] => {
       href,
       disabled: Boolean(item[field.disabled]) || !href,
       level,
-      children
+      children,
     };
   });
 };
@@ -164,11 +163,11 @@ const compositionalItems = (): AnchorViewItem[] =>
     href: child.href || "",
     disabled: !child.href,
     level: linkLevel(child),
-    children: []
+    children: [],
   }));
 
-const flatItems = (): AnchorViewItem[] => hasLinkChildren.value ? compositionalItems() : flatten();
-const renderedDataItems = (): AnchorViewItem[] => hasLinkChildren.value ? [] : flatten();
+const flatItems = (): AnchorViewItem[] => (hasLinkChildren.value ? compositionalItems() : flatten());
+const renderedDataItems = (): AnchorViewItem[] => (hasLinkChildren.value ? [] : flatten());
 
 const firstEnabledHref = (): string => flatItems().find((item) => !item.disabled)?.href || "";
 
@@ -195,11 +194,9 @@ const boundValue = (): number => {
   return Number.isFinite(bound) ? bound : numberProp(props.bounds, 15);
 };
 
-const direction = (): "vertical" | "horizontal" =>
-  props.direction === "horizontal" ? "horizontal" : "vertical";
+const direction = (): "vertical" | "horizontal" => (props.direction === "horizontal" ? "horizontal" : "vertical");
 
-const type = (): "default" | "underline" =>
-  props.type === "underline" ? "underline" : "default";
+const type = (): "default" | "underline" => (props.type === "underline" ? "underline" : "default");
 
 const isScrollContainer = (value: unknown): value is ScrollContainer =>
   typeof value === "object" && value !== null && "addEventListener" in value;
@@ -227,10 +224,7 @@ const findTarget = (href: string): HTMLElement | null => {
   if (!href || typeof document === "undefined") return null;
   const root = host.getRootNode() as Document | ShadowRoot;
   try {
-    return (
-      (root.querySelector(href) as HTMLElement | null) ||
-      (document.querySelector(href) as HTMLElement | null)
-    );
+    return (root.querySelector(href) as HTMLElement | null) || (document.querySelector(href) as HTMLElement | null);
   } catch {
     return null;
   }
@@ -273,7 +267,7 @@ const ensureHorizontalItemVisible = (href: string): void => {
   if (direction() !== "horizontal" || !href) return;
   const list = host.shadowRoot?.querySelector<HTMLElement>(".list");
   const item = Array.from(host.shadowRoot?.querySelectorAll<HTMLElement>(".item") || []).find(
-    (candidate) => candidate.dataset.href === href
+    (candidate) => candidate.dataset.href === href,
   );
   if (!list || !item || list.clientWidth <= 0) return;
 
@@ -355,9 +349,7 @@ const scrollContainerTo = (container: ScrollContainer, position: number): void =
     scrollTo?: (options: ScrollToOptions) => void;
   };
   if (typeof element.scrollTo === "function") {
-    element.scrollTo(usesHorizontalContentAxis(container)
-      ? { left: position, behavior }
-      : { top: position, behavior });
+    element.scrollTo(usesHorizontalContentAxis(container) ? { left: position, behavior } : { top: position, behavior });
   } else if (usesHorizontalContentAxis(container)) {
     element.scrollLeft = position;
   } else {
@@ -406,7 +398,7 @@ useEventListener(host, "elf-anchor-link-click", (event) => {
     href: customEvent.detail.href,
     disabled: false,
     level: child.level || 0,
-    children: []
+    children: [],
   };
   onItemClick(item, customEvent.detail.event);
 });
@@ -433,7 +425,7 @@ useEffect(() => {
 });
 
 const renderLevelStyle = (item: AnchorViewItem): Record<string, string> => ({
-  "--anchor-level": String(item.level)
+  "--anchor-level": String(item.level),
 });
 
 onMount(() => {
@@ -455,7 +447,7 @@ useHostFlag("data-mounted", () => mounted.value);
 const rootClass = (): Record<string, boolean> => ({
   [`is-${direction()}`]: true,
   [`is-${type()}`]: true,
-  "is-marker-hidden": !props.marker
+  "is-marker-hidden": !props.marker,
 });
 
 // HTMLElement already owns `scrollTo`; exposing the same name would overwrite the
@@ -467,7 +459,13 @@ defineStyle(styles);
 const Anchor = defineHtml<AnchorProps, Record<string, never>, AnchorSlots>(html`
   <nav :class=${["anchor", rootClass()]} :aria-label=${locale.t("a11y.anchorNavigation")}>
     <div v-if=${props.marker} class="track" aria-hidden="true"></div>
-    <button v-if=${direction() === "horizontal"} type="button" class="scroll-control is-previous" :aria-label=${locale.t("common.previous")} @click=${() => scrollHorizontal(-1)}>
+    <button
+      v-if=${direction() === "horizontal"}
+      type="button"
+      class="scroll-control is-previous"
+      :aria-label=${locale.t("common.previous")}
+      @click=${() => scrollHorizontal(-1)}
+    >
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3.5-4.5 4.5 4.5 4.5"></path></svg>
     </button>
     <ul class="list" @wheel=${onHorizontalWheel}>
@@ -492,7 +490,13 @@ const Anchor = defineHtml<AnchorProps, Record<string, never>, AnchorSlots>(html`
         </li>
       </template>
     </ul>
-    <button v-if=${direction() === "horizontal"} type="button" class="scroll-control is-next" :aria-label=${locale.t("common.next")} @click=${() => scrollHorizontal(1)}>
+    <button
+      v-if=${direction() === "horizontal"}
+      type="button"
+      class="scroll-control is-next"
+      :aria-label=${locale.t("common.next")}
+      @click=${() => scrollHorizontal(1)}
+    >
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5"></path></svg>
     </button>
   </nav>

@@ -1,6 +1,9 @@
 @use "../../../styles/reset";
 
 :host {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
   display: block;
   width: 220px;
   min-width: 0;
@@ -8,9 +11,12 @@
   color: var(--elf-text-primary);
 }
 
+:host([hidden]) {
+  display: none;
+}
+
 .toc {
-  position: sticky;
-  top: var(--elf-space-4);
+  position: relative;
   max-height: calc(100vh - 64px - 40px - var(--elf-space-8));
   overflow: auto;
   padding-left: var(--elf-space-4);

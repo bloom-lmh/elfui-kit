@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code4 = `<elf-alert type="info" closable title="点 × 关闭我"></elf-alert>`;
 

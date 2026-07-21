@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "modelValue", type: "number | [number, number]", default: "0", desc: "当前值" },

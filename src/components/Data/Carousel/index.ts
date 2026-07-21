@@ -11,7 +11,7 @@ import {
     useHost,
     useRef,
     watchEffect,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
@@ -199,6 +199,20 @@ const doNext = (): void => {
     else clearTimer();
 };
 
+const stopPointerEvent = (event: Event): void => event.stopPropagation();
+
+const onPreviousClick = (event: Event): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    doPrev();
+};
+
+const onNextClick = (event: Event): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    doNext();
+};
+
 const goTo = (index: number): void => {
     if (index < 0 || index >= total.value) return;
     if (setActive(index)) startTimer();
@@ -296,7 +310,7 @@ const trackTransform = (): string =>
 
 const dots = useComputed(() => Array.from({ length: total.value }, (_, index) => index));
 const showArrows = useComputed(
-    () => props.arrow !== "never" && props.showArrow !== false && props.showArrow !== "false" && props.showArrow !== "",
+    () => props.arrow !== "never" && props.showArrow !== "false" && props.showArrow !== "",
 );
 const showIndicators = useComputed(() => props.showIndicator && props.indicatorPosition !== "none" && total.value > 1);
 
@@ -383,10 +397,10 @@ const Carousel = defineHtml(html`
         </div>
 
         <div class="arrows" v-if=${showArrows}>
-            <button class="arrow arrow-left" type="button" :aria-label=${locale.t("carousel.previous")} @click=${doPrev}>
+            <button class="arrow arrow-left" type="button" :aria-label=${locale.t("carousel.previous")} @pointerdown.stop=${stopPointerEvent} @pointerup.stop=${stopPointerEvent} @click=${onPreviousClick}>
                 <span aria-hidden="true"></span>
             </button>
-            <button class="arrow arrow-right" type="button" :aria-label=${locale.t("carousel.next")} @click=${doNext}>
+            <button class="arrow arrow-right" type="button" :aria-label=${locale.t("carousel.next")} @pointerdown.stop=${stopPointerEvent} @pointerup.stop=${stopPointerEvent} @click=${onNextClick}>
                 <span aria-hidden="true"></span>
             </button>
         </div>

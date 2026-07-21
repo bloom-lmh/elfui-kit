@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const rangeValue = useRef<[string, string]>(["09:00", "18:00"]);
 

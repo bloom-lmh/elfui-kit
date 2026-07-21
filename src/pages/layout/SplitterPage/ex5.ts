@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code = `<elf-splitter>
   <elf-splitter-panel slot="first" :size=\${40} :resizable=\${false}>

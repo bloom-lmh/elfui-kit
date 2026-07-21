@@ -1,4 +1,4 @@
-import { directive, type DirectiveDefinition } from "@elfui/runtime";
+import { directive, type DirectiveDefinition } from "@elfui/core";
 
 import { ElfLoading } from "./service";
 import type { LoadingDirectiveValue, LoadingInstance, LoadingOptions } from "./types";

@@ -10,7 +10,7 @@ import {
   useHost,
   useRef,
   watchEffect
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { computeAnchoredPosition, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
@@ -484,8 +484,8 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
         part="size-trigger"
         type="button"
         aria-haspopup="listbox"
-        :aria-expanded=${String(sizeOpen.value)}
-        :aria-activedescendant=${sizeOpen.value && sizeActiveIndex.value >= 0 ? sizeOptionId(sizeActiveIndex.value) : null}
+        :aria-expanded=${String(sizeOpen)}
+        :aria-activedescendant=${sizeOpen && sizeActiveIndex >= 0 ? sizeOptionId(sizeActiveIndex) : null}
         :disabled=${props.disabled}
         @click=${toggleSizeMenu}
         @keydown=${onSizeTriggerKeydown}
@@ -494,7 +494,7 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
         <span class="size-chevron" aria-hidden="true"></span>
       </button>
       <div
-        v-if=${sizeOpen.value}
+        v-if=${sizeOpen}
         :popover=${props.teleported ? "manual" : undefined}
         :class=${sizePanelClass()}
         :style=${sizePanelStyle()}
@@ -511,7 +511,7 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
           type="button"
           role="option"
           :aria-selected="isSizeSelected(item) ? 'true' : 'false'"
-          :class="{ 'is-selected': isSizeSelected(item), 'is-active': index === sizeActiveIndex.value }"
+          :class="{ 'is-selected': isSizeSelected(item), 'is-active': index === sizeActiveIndex }"
           @mouseenter="setSizeActive(index)"
           @click="selectPageSize(item)"
         >
@@ -569,7 +569,7 @@ const Pagination = defineHtml<PaginationProps, PaginationEmits, PaginationSlots>
     <label v-if=${hasPart("jumper")} class="jumper">
       <span>${locale.t("pagination.goTo")}</span>
       <input
-        :value=${jumpValue.value}
+        :value=${jumpValue}
         :disabled=${props.disabled}
         type="number"
         min="1"

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "model-value", type: "string | string[]", default: "''", desc: "当前展开项；accordion 时为单个 name" },

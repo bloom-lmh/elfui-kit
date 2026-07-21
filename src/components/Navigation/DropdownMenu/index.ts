@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html } from "elfui";
+import { defineHtml, defineProps, defineStyle, html } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { DropdownMenuProps, DropdownMenuSlots } from "../Dropdown/types";

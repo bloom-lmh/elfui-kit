@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const dotCode = `<elf-badge is-dot>
   <elf-button>通知</elf-button>

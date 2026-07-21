@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "content", type: "string | string[]", default: "''", desc: "水印文字；数组会按行显示" },

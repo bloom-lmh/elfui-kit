@@ -1,5 +1,9 @@
 # TimePicker Element Plus API 对标计划
 
+## 2026-07-21 分钟激活态
+
+- [x] 分钟点击后同步更新钟面 active 与 `aria-pressed`，声明式刷新后再次校准。
+
 ## 2026-07-19 interaction and field fixes
 
 - [x] Keep the floating label above an empty placeholder so the clock icon, label, and placeholder never overlap.

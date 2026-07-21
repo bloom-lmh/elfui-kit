@@ -1,6 +1,6 @@
 // elf-timeline — Material Design 时间轴
 
-import { defineProps, defineStyle, html, useComputed, useHostAttr, defineHtml } from "elfui";
+import { defineProps, defineStyle, html, useComputed, useHostAttr, defineHtml } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { TimelineItem, TimelineMode, TimelineProps } from "./types";

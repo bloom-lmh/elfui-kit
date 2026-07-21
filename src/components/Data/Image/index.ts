@@ -13,7 +13,7 @@ import {
     useHost,
     useHostCssVar,
     useRef,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import previewStyles from "./preview.scss?inline";
@@ -168,14 +168,19 @@ globalStyle(previewStyles);
 
 const Image = defineHtml<ImageProps>(html`
     <div class="image" :class=${{ "is-previewable": previewable }} part="image" @click=${openPreview}>
-        <slot v-if=${error.value} name="error">
+        <slot v-if=${error} name="error">
             <div class="error">Load failed</div>
         </slot>
-        <div v-if=${!error.value && (!resolvedSrc.value || !loaded.value)} class="pending" part="placeholder" role="status" aria-live="polite">${locale.t("a11y.imagePending")}</div>
+        <slot v-if=${!error && (!resolvedSrc || !loaded)} name="loading">
+            <div class="pending" part="placeholder" role="status" aria-live="polite">
+                <span class="pending-indicator" aria-hidden="true"></span>
+                <span class="visually-hidden">${locale.t("a11y.imagePending")}</span>
+            </div>
+        </slot>
         <img
-            v-if=${!error.value && resolvedSrc.value}
+            v-if=${!error && resolvedSrc}
             part="img"
-            :class=${[imageClass, { "is-loaded": loaded.value }]}
+            :class=${[imageClass, { "is-loaded": loaded }]}
             :src=${resolvedSrc}
             :alt=${props.alt}
             :loading=${props.lazy ? "lazy" : null}

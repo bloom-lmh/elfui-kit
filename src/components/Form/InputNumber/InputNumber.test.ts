@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { InputNumber } from "./index";
 
@@ -20,6 +20,12 @@ interface InputNumberEl extends HTMLElement {
   step?: number;
   precision?: number;
   controls?: boolean;
+  controlVariant?: "default" | "stacked" | "split" | "hidden";
+  reverse?: boolean;
+  inset?: boolean;
+  hideInput?: boolean;
+  label?: string;
+  variant?: string;
   disabled?: boolean;
   valueOnClear?: number | null;
 }
@@ -101,6 +107,24 @@ describe("elf-input-number", () => {
 
     expect(el.shadowRoot!.querySelectorAll(".control")).toHaveLength(0);
     expect((el.shadowRoot!.querySelector("input") as HTMLInputElement).value).toBe("8");
-    expect(el.shadowRoot!.querySelector(".input-number")?.classList.contains("has-controls")).toBe(false);
+    expect(el.shadowRoot!.querySelector(".input-number")?.classList.contains("controls-hidden")).toBe(true);
+  });
+
+  it.each(["default", "stacked", "split", "hidden"] as const)(
+    "renders %s control variant",
+    async (controlVariant) => {
+      const el = await mount({ controlVariant });
+      expect(el.getAttribute("control-variant")).toBe(controlVariant);
+      expect(el.shadowRoot!.querySelector(".input-number")?.classList.contains(`controls-${controlVariant}`)).toBe(true);
+      expect(el.shadowRoot!.querySelectorAll(".control")).toHaveLength(controlVariant === "hidden" ? 0 : 2);
+    }
+  );
+
+  it("renders the shared outlined floating-label structure", async () => {
+    const el = await mount({ modelValue: 8, label: "Quantity", variant: "outlined" });
+    expect(el.getAttribute("variant")).toBe("outlined");
+    expect(el.hasAttribute("data-dirty")).toBe(true);
+    expect(el.shadowRoot!.querySelector(".outline legend")?.textContent).toBe("Quantity");
+    expect(el.shadowRoot!.querySelector('[part="label"]')?.textContent).toBe("Quantity");
   });
 });

@@ -1,4 +1,4 @@
-import { defineExpose, defineHtml, defineProps, defineStyle, html, useHost, useHostFlag } from "elfui";
+import { defineExpose, defineHtml, defineProps, defineStyle, html, useHost, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { CollapseItemProps, CollapseItemSlots } from "../Collapse/types";

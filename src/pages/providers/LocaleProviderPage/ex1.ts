@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents, useRef } from "elfui";
+import { defineHtml, html, useComponents, useRef } from "@elfui/core";
 
 import { PageLocaleProviderPreview } from "./preview";
 

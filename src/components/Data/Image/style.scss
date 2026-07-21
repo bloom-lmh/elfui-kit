@@ -55,8 +55,31 @@ img.fit-scale-down { object-fit: scale-down; }
   animation: image-pending 1.25s linear infinite;
 }
 
+.pending-indicator {
+  width: 28px;
+  height: 28px;
+  border: 2px solid color-mix(in srgb, var(--elf-primary) 22%, transparent);
+  border-top-color: var(--elf-primary);
+  border-radius: 50%;
+  animation: image-spinner 720ms linear infinite;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 @keyframes image-pending {
   to { background-position-x: -200%; }
+}
+
+@keyframes image-spinner {
+  to { transform: rotate(360deg); }
 }
 
 .error {
@@ -72,5 +95,6 @@ img.fit-scale-down { object-fit: scale-down; }
 
 @media (prefers-reduced-motion: reduce) {
   img { transition: none; }
-  .pending { animation: none; }
+  .pending,
+  .pending-indicator { animation: none; }
 }

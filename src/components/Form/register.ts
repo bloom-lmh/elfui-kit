@@ -1,6 +1,6 @@
 // 表单族组件集中注册入口
 
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Checkbox } from "./Checkbox/index";
 import { CheckboxGroup } from "./CheckboxGroup/index";

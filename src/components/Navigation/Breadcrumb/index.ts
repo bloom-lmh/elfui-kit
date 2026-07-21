@@ -9,18 +9,13 @@ import {
   useEventListener,
   useHost,
   useRef,
-  watchEffect
-} from "elfui";
+  watchEffect,
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
 import { normalizeBreadcrumbSeparatorIcon } from "./separator";
-import type {
-  BreadcrumbFieldNames,
-  BreadcrumbProps,
-  BreadcrumbRouteLocation,
-  BreadcrumbSlots
-} from "./types";
+import type { BreadcrumbFieldNames, BreadcrumbProps, BreadcrumbRouteLocation, BreadcrumbSlots } from "./types";
 
 export type {
   BreadcrumbFieldNames,
@@ -29,7 +24,7 @@ export type {
   BreadcrumbItemSlots,
   BreadcrumbProps,
   BreadcrumbRouteLocation,
-  BreadcrumbSlots
+  BreadcrumbSlots,
 } from "./types";
 
 type BreadcrumbRawItem = Record<string, unknown>;
@@ -69,8 +64,8 @@ const props = defineProps<BreadcrumbProps>({
   maxItems: { type: Number, default: 0 },
   props: {
     type: Object,
-    default: () => ({ label: "label", to: "to", disabled: "disabled", replace: "replace" })
-  }
+    default: () => ({ label: "label", to: "to", disabled: "disabled", replace: "replace" }),
+  },
 });
 
 const locale = useLocaleProvider();
@@ -97,7 +92,7 @@ const fieldNames = (): Required<BreadcrumbFieldNames> => {
     label: value.label || "label",
     to: value.to || "to",
     disabled: value.disabled || "disabled",
-    replace: value.replace || "replace"
+    replace: value.replace || "replace",
   };
 };
 
@@ -131,7 +126,7 @@ const normalizeItems = (): BreadcrumbViewItem[] => {
       disabled: Boolean(item[fields.disabled]),
       current: currentPath ? to === currentPath : index === source.length - 1,
       ellipsis: false,
-      last: false
+      last: false,
     };
   });
 };
@@ -143,14 +138,24 @@ const visibleItems = (): BreadcrumbViewItem[] => {
   const limit = Math.max(3, maxItems);
   return markLast([
     source[0]!,
-    { raw: {}, key: "__ellipsis", label: "...", to: "", replace: false, disabled: true, current: false, ellipsis: true, last: false },
-    ...source.slice(-Math.max(1, limit - 2))
+    {
+      raw: {},
+      key: "__ellipsis",
+      label: "...",
+      to: "",
+      replace: false,
+      disabled: true,
+      current: false,
+      ellipsis: true,
+      last: false,
+    },
+    ...source.slice(-Math.max(1, limit - 2)),
   ]);
 };
 
 const itemChildren = (): BreadcrumbItemElement[] =>
   Array.from(host.children).filter(
-    (child): child is BreadcrumbItemElement => child.tagName.toLowerCase() === "elf-breadcrumb-item"
+    (child): child is BreadcrumbItemElement => child.tagName.toLowerCase() === "elf-breadcrumb-item",
   );
 
 const syncItemChildren = (): void => {
@@ -233,10 +238,16 @@ const Breadcrumb = defineHtml<BreadcrumbProps, Record<string, never>, Breadcrumb
             class="breadcrumb-link"
             :disabled="item.disabled"
             @click="onItemClick(item, $event)"
-          >{{ item.label }}</button>
+          >
+            {{ item.label }}
+          </button>
           <span v-else class="breadcrumb-text" :aria-current="item.current ? 'page' : ''">{{ item.label }}</span>
           <span v-if="!item.last" class="breadcrumb-separator" aria-hidden="true">
-            <elf-icon v-if=${props.separatorIcon} class="breadcrumb-separator-icon" :name=${normalizeBreadcrumbSeparatorIcon(props.separatorIcon)}></elf-icon>
+            <elf-icon
+              v-if=${props.separatorIcon}
+              class="breadcrumb-separator-icon"
+              :name=${normalizeBreadcrumbSeparatorIcon(props.separatorIcon)}
+            ></elf-icon>
             <span v-else>${props.separator || "/"}</span>
           </span>
         </li>

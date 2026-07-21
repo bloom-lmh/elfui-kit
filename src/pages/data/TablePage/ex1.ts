@@ -1,4 +1,4 @@
-import { defineHtml, html, onMount, onUnmount, useHost } from "elfui";
+import { defineHtml, html, onMount, onUnmount, useHost } from "@elfui/core";
 
 
 const host = useHost();

@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const directiveRows = useRef(Array.from({ length: 8 }, (_, index) => index + 1));
 const directiveLoading = useRef(false);

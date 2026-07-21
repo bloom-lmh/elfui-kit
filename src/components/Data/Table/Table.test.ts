@@ -13,6 +13,8 @@ const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolv
 interface TableEl extends HTMLElement {
   data?: unknown[];
   columns?: unknown[];
+  title?: string;
+  titleVariant?: "default" | "primary" | "muted";
   rowKey?: string;
   stripe?: boolean;
   border?: boolean;
@@ -119,6 +121,19 @@ describe("elf-table", () => {
     const root = el.shadowRoot!.querySelector(".table-root")!;
     expect(root.classList.contains("is-stripe")).toBe(true);
     expect(root.classList.contains("is-border")).toBe(true);
+  });
+
+  it("renders the optional title surface and variant", async () => {
+    const el = await mount((table) => {
+      table.title = "Component API";
+      table.titleVariant = "primary";
+    });
+
+    const root = el.shadowRoot!.querySelector(".table-root")!;
+    expect(root.classList.contains("has-title")).toBe(true);
+    expect(root.classList.contains("title-primary")).toBe(true);
+    expect(el.shadowRoot!.querySelector('[part="title"]')?.textContent).toBe("Component API");
+    expect(el.shadowRoot!.querySelector("table")?.getAttribute("aria-label")).toBe("Component API");
   });
 
   it("点击排序列触发 sort-change 并重排行", async () => {

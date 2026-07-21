@@ -8,7 +8,7 @@ import {
     useHostFlag,
     useRef,
     watchEffect,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { normalizeFieldVariant } from "../../../types/field";

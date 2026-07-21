@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { Image } from "./index";
@@ -130,7 +130,32 @@ describe("elf-image", () => {
     expect(cssText).toContain("img.is-loaded { opacity: 1; }");
     expect(cssText).toContain("animation: image-pending");
     expect(cssText).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(cssText).toContain(".pending { animation: none; }");
+    expect(cssText).toContain(".pending-indicator { animation: none; }");
+  });
+
+  it("allows the lazy-loading indicator to be replaced through the loading slot", async () => {
+    class HiddenIntersectionObserver {
+      observe = vi.fn();
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+      takeRecords = (): IntersectionObserverEntry[] => [];
+    }
+    vi.stubGlobal("IntersectionObserver", HiddenIntersectionObserver);
+
+    const el = document.createElement("elf-image") as ImageEl;
+    el.src = "lazy.png";
+    el.lazy = true;
+    const custom = document.createElement("span");
+    custom.slot = "loading";
+    custom.className = "custom-loading";
+    custom.textContent = "Loading illustration";
+    el.appendChild(custom);
+    document.body.appendChild(el);
+    await tick();
+
+    expect(el.querySelector(".custom-loading")).toBe(custom);
+    const slot = el.shadowRoot!.querySelector('slot[name="loading"]') as HTMLSlotElement;
+    expect(slot.assignedElements()).toEqual([custom]);
   });
 
   it("emits semantic load and error events", async () => {

@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html, useHost, useHostAttr, useHostCssVar, useHostFlag } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHost, useHostAttr, useHostCssVar, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { TextProps, TextSize, TextSlots, TextTag, TextType } from "./types";

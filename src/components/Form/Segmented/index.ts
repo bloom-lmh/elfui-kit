@@ -6,7 +6,7 @@ import {
   html,
   useHostAttr,
   useHostFlag
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useFormControl } from "../../../composables";

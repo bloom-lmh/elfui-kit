@@ -1,57 +1,35 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
+import { createDocsTranslator } from "../../docsLocale";
+
+const t = createDocsTranslator({
+  section: { zh: "自定义外观", en: "Custom appearance" },
+  title: { zh: "方形按钮、自定义内容与点击状态", en: "Square action, custom content and click state" },
+  clicks: { zh: "点击次数", en: "Clicks" },
+  intro: { zh: "方形返回按钮", en: "Square BackTop" },
+  introBody: { zh: "通过 shape、size 和默认插槽定制浮动操作按钮。", en: "Customize the floating action with shape, size and the default slot." },
+  more: { zh: "更多内容", en: "More content" },
+  moreBody: { zh: "使用 right、bottom 和 z-index 避开其它浮层。", en: "Use right, bottom and z-index to avoid other floating surfaces." },
+  end: { zh: "结束", en: "End" },
+  endBody: { zh: "同一个组件既可监听内容容器，也可监听整个窗口。", en: "The same component can observe a content container or the window." }
+});
 
 const times = useRef(0);
-
-const onClick = (): void => {
-  times.set(times.value + 1);
-};
-
-const code = `<elf-back-top
-  target="#backtop-custom-scroll"
-  shape="square"
-  size="48px"
-  icon="Top"
-  bottom="136px"
-  right="72px"
-  @click=\${onClick}
-/>`;
-
+const onClick = (): void => times.set(times.value + 1);
+const code = `<elf-back-top target="#backtop-custom-scroll" shape="square" size="48px" bottom="136px" right="72px">Top</elf-back-top>`;
 const script = `const times = useRef(0);
 const onClick = () => times.set(times.value + 1);`;
 
 const PageBacktopEx2 = defineHtml(html`
-  <h2>Custom style</h2>
-  <elf-playground title="Square shape / custom icon / exposed click state" :code=${code} :script=${script}>
+  <h2>${t("section")}</h2>
+  <elf-playground :title=${t("title")} :code=${code} :script=${script}>
+    <span slot="status" class="demo-state">${t("clicks")}: ${times.value}</span>
     <div style="display:grid;gap:12px;width:100%;max-width:760px">
-      <div style="color:var(--elf-text-secondary)">
-        Click count: <strong style="color:var(--elf-primary)">{{ times }}</strong>
+      <div id="backtop-custom-scroll" style="height:260px;overflow:auto;border:1px solid var(--elf-divider);background:var(--elf-bg-paper)">
+        <section style="min-height:220px;padding:24px;background:color-mix(in srgb,var(--elf-info) 8%,var(--elf-bg-paper))"><h3>${t("intro")}</h3><p>${t("introBody")}</p></section>
+        <section style="min-height:220px;padding:24px;background:color-mix(in srgb,var(--elf-success) 8%,var(--elf-bg-paper))"><h3>${t("more")}</h3><p>${t("moreBody")}</p></section>
+        <section style="min-height:220px;padding:24px;background:color-mix(in srgb,var(--elf-warning) 9%,var(--elf-bg-paper))"><h3>${t("end")}</h3><p>${t("endBody")}</p></section>
       </div>
-      <div
-        id="backtop-custom-scroll"
-        style="height:260px;overflow:auto;border:1px solid var(--elf-border);border-radius:8px;background:var(--elf-bg-paper)"
-      >
-        <section style="min-height:220px;padding:20px">
-          <h3>Square BackTop</h3>
-          <p>This example uses a square Material button and custom text icon.</p>
-        </section>
-        <section style="min-height:220px;padding:20px;border-top:1px solid var(--elf-border)">
-          <h3>More content</h3>
-          <p>Use right, bottom, size and zIndex to avoid colliding with floating panels.</p>
-        </section>
-        <section style="min-height:220px;padding:20px;border-top:1px solid var(--elf-border)">
-          <h3>End</h3>
-          <p>The same component can be driven by a scroll container or by the window.</p>
-        </section>
-      </div>
-      <elf-back-top
-        target="#backtop-custom-scroll"
-        shape="square"
-        size="48px"
-        icon="Top"
-        bottom="136px"
-        right="72px"
-        @click=${onClick}
-      ></elf-back-top>
+      <elf-back-top target="#backtop-custom-scroll" shape="square" size="48px" bottom="136px" right="72px" @click=${onClick}>Top</elf-back-top>
     </div>
   </elf-playground>
 `);

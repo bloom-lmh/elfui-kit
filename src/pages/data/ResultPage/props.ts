@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "icon", type: "success | warning | error | info", default: "info", desc: "结果状态及默认图形" },

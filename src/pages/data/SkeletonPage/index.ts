@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { PageSkeletonEx1 } from "./ex1";
 import { PageSkeletonEx2 } from "./ex2";
 import { PageSkeletonProps } from "./props";

@@ -1,4 +1,4 @@
-import { defineDirective, defineHtml, html } from "elfui";
+import { defineDirective, defineHtml, html } from "@elfui/core";
 
 export const localDualCalls: string[] = [];
 

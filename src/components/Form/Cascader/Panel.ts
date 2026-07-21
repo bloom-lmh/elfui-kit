@@ -10,7 +10,7 @@ import {
   useHostCssVar,
   useRef,
   watchEffect
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";

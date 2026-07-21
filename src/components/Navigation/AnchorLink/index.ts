@@ -9,7 +9,7 @@ import {
   useHostCssVar,
   useHostFlag,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { AnchorLinkProps, AnchorLinkSlots } from "../Anchor/types";

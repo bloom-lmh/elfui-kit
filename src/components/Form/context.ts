@@ -1,6 +1,6 @@
 // Form 上下文注入键
 
-import { createInjectionKey } from "elfui";
+import { createInjectionKey } from "@elfui/core";
 
 import type {
   CheckboxGroupContext,

@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html, useHostFlag } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { CarouselItemProps } from "../Carousel/types";

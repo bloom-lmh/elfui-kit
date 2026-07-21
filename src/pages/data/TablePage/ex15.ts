@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 const priorityRank: Record<string, number> = { 紧急: 3, 高: 2, 普通: 1 };
 

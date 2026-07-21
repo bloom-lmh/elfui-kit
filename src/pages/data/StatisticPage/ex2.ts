@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code2 = `<elf-statistic title="本月收入" :value="932845.6" prefix="¥" suffix="CNY" :precision="2" />
 <elf-statistic :value="1234567.89" group-separator=" " decimal-separator="," :precision="2" />`;

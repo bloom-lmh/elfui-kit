@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code2 = `<elf-infinite-scroll disabled immediate height="160px" @load=\${loadMore}>
   <div>禁用状态不会触发 load</div>

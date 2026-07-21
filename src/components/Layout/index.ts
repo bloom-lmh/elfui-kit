@@ -1,6 +1,6 @@
 // 布局组件统一注册入口
 
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Aside } from "./Aside/index";
 import { Container } from "./Container/index";

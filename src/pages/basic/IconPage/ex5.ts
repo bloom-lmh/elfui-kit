@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const loadingCode = `<elf-icon loading size="24" color="var(--elf-primary)" aria-label="加载中">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

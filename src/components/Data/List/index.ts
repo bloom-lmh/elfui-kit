@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html } from "elfui";
+import { defineHtml, defineProps, defineStyle, html } from "@elfui/core";
 import "../list-content";
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
@@ -32,8 +32,10 @@ defineStyle(styles);
 
 const List = defineHtml<ListProps>(html`
   <ul class="list" :class=${{ "is-bordered": props.bordered, "is-divided": props.divided }} role="list">
-    <li v-for="(item, index) in items()" :key=${keyOf(item, index)} class="item" part="item" v-elf-list-content=${render(item, index)}></li>
-    <li v-if=${items().length === 0} class="empty">${props.emptyText || locale.t("table.empty")}</li>
+    <template v-if=${items().length > 0}>
+      <li v-for="(item, index) in items()" :key=${keyOf(item, index)} class="item" part="item" v-elf-list-content=${render(item, index)}></li>
+    </template>
+    <slot v-else><li class="empty">${props.emptyText || locale.t("table.empty")}</li></slot>
   </ul>
 `);
 

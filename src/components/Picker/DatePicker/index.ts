@@ -12,7 +12,7 @@ import {
   useHostFlag,
   useRef,
   watchEffect
-} from "elfui";
+} from "@elfui/core";
 
 import { Calendar } from "../Calendar";
 import { isEventInside, listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
@@ -81,7 +81,23 @@ const toValues = (value: DatePickerValue): string[] => {
     .filter(Boolean);
 };
 
-const resetDraft = (): void => {
+let externalDraftSignature = "";
+let expectedDraftSignature = "";
+let expectedDraftToken = 0;
+
+const draftSignature = (): string => JSON.stringify([
+  props.modelValue,
+  props.endValue,
+  Boolean(props.multiple),
+  Boolean(props.range)
+]);
+
+const resetDraft = (force = false): void => {
+  const signature = draftSignature();
+  if (!force && expectedDraftSignature && signature !== expectedDraftSignature) return;
+  if (signature === expectedDraftSignature) expectedDraftSignature = "";
+  if (!force && signature === externalDraftSignature) return;
+  externalDraftSignature = signature;
   const value = readModelValue();
   if (props.multiple) {
     const values = toValues(value);
@@ -96,7 +112,7 @@ const resetDraft = (): void => {
   if (Number.isFinite(year) && year > 0) monthYear.set(year);
 };
 
-watchEffect(resetDraft);
+watchEffect(() => resetDraft());
 
 const inputType = (): DatePickerType => {
   const type = props.type as DatePickerType;
@@ -126,6 +142,16 @@ const currentValue = (): DatePickerValue => {
 
 const emitCurrent = (): DatePickerValue => {
   const value = currentValue();
+  expectedDraftSignature = JSON.stringify([
+    props.multiple ? value : start.value,
+    props.range ? end.value : props.endValue,
+    Boolean(props.multiple),
+    Boolean(props.range)
+  ]);
+  const token = ++expectedDraftToken;
+  window.setTimeout(() => {
+    if (token === expectedDraftToken) expectedDraftSignature = "";
+  }, 80);
   emit("update:modelValue", props.multiple ? value : start.value);
   if (props.range) emit("update:endValue", end.value);
   emit("change", value);
@@ -184,8 +210,8 @@ const onNativeStart = (event: Event): void => {
 
 const onNativeEnd = (event: Event): void => setEnd((event.target as HTMLInputElement).value);
 
-const calendarValue = (): DatePickerValue => {
-  if (props.range) return [start.value, end.value].filter(Boolean);
+const calendarValue = (): string | [string, string] => {
+  if (props.range) return [start.value, end.value];
   return start.value;
 };
 
@@ -266,7 +292,7 @@ const confirm = (): void => {
 
 const cancel = (): void => {
   if (props.disabled) return;
-  resetDraft();
+  resetDraft(true);
   emit("cancel");
   closePanel();
 };
@@ -320,7 +346,7 @@ const DatePicker = defineHtml(html`
       "date-picker",
       {
         "is-disabled": props.disabled,
-        "is-open": open.value,
+        "is-open": open,
         "is-range": props.range && !props.multiple,
         "is-multiple": props.multiple,
         "has-actions": props.actions
@@ -362,7 +388,7 @@ const DatePicker = defineHtml(html`
         type="button"
         class="field-trigger"
         role="combobox"
-        :aria-expanded=${open.value ? "true" : "false"}
+        :aria-expanded=${open ? "true" : "false"}
         :disabled=${props.disabled}
         @click=${toggleOpen}
       >
@@ -378,7 +404,7 @@ const DatePicker = defineHtml(html`
 
     <div v-if=${props.multiple} class="chips" aria-live="polite">
       <button
-        v-for="value in selected.value"
+        v-for="value in selected"
         :key="value"
         type="button"
         class="chip"
@@ -388,11 +414,11 @@ const DatePicker = defineHtml(html`
       </button>
     </div>
 
-    <div v-if=${open.value} class="panel">
+    <div v-if=${open} class="panel">
       <div v-if=${inputType() === "month"} class="month-panel">
         <div class="month-nav">
           <button type="button" @click=${() => shiftMonthYear(-1)}>‹</button>
-          <strong>${locale.t("datePicker.yearSuffix", { year: monthYear.value })}</strong>
+          <strong>${locale.t("datePicker.yearSuffix", { year: monthYear })}</strong>
           <button type="button" @click=${() => shiftMonthYear(1)}>›</button>
         </div>
         <div class="month-grid">

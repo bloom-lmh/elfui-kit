@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 import { customOptions, optionFields, opts, remoteSource } from "./shared";
 
 const remoteOptions = useRef(remoteSource.slice(0, 2));

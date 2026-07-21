@@ -16,7 +16,7 @@ import {
     useHostFlag,
     useRef,
     useTemplateRef,
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { PopConfirmPlacement, PopConfirmProps, PopConfirmTrigger } from "./types";

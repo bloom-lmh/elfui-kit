@@ -9,7 +9,7 @@ import {
   useHostFlag,
   useRef,
   watchEffect,
-} from "elfui";
+} from "@elfui/core";
 
 import { useFormControl } from "../../../composables";
 import { normalizeFieldVariant } from "../../../types/field";
@@ -51,7 +51,9 @@ const value = useRef<string[]>([]);
 const text = useRef("");
 const dragIndex = useRef<number | null>(null);
 const ctl = useFormControl<string[]>(props, emit, {
-    triggers: props.validateEvent === false ? { input: false, change: false, blur: false } : undefined,
+    ...(props.validateEvent === false
+      ? { triggers: { input: false, change: false, blur: false } }
+      : {})
 });
 
 const normalize = (source: unknown): string[] =>
@@ -185,8 +187,8 @@ const InputTag = defineHtml<InputTagProps>(html`
             </elf-tag>
             <input
                 part="input"
-                :value.prop=${text.value}
-                :placeholder=${value.value.length ? "" : props.placeholder}
+                :value.prop=${text}
+                :placeholder=${value.length ? "" : props.placeholder}
                 :disabled=${props.disabled || isLimitReached()}
                 :readonly=${props.readonly}
                 @input=${onInput}

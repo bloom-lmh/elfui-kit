@@ -9,7 +9,7 @@
 .tabs {
   --tabs-color: var(--elf-primary);
   --tabs-slider-color: var(--tabs-color);
-  --tabs-background-color: var(--elf-bg-overlay);
+  --tabs-background-color: var(--elf-bg-paper);
   --tabs-transition-duration: 180ms;
   --tabs-panel-from-opacity: 0;
   --tabs-panel-from-transform: translateY(6px);
@@ -163,6 +163,18 @@
   justify-content: flex-end;
 }
 
+.tabs.is-grow.align-start .tab {
+  justify-content: flex-start;
+}
+
+.tabs.is-grow.align-center .tab {
+  justify-content: center;
+}
+
+.tabs.is-grow.align-end .tab {
+  justify-content: flex-end;
+}
+
 .tabs.align-title .tab-list {
   padding-left: 52px;
 }
@@ -207,6 +219,7 @@
 
 .tabs.is-grow .tab {
   flex: 1 1 0;
+  min-width: 0;
 }
 
 .tabs.is-fixed-tabs:not(.is-vertical) .tab {

@@ -1,58 +1,12 @@
-// elf-props-table 样式
 @use "../../../styles/reset";
 
 :host {
   display: block;
-  margin-block: var(--elf-space-4);
-  --elf-props-table-cell-padding: var(--elf-space-2) var(--elf-space-3);
-  --elf-props-table-header-bg: rgba(0, 0, 0, 0.02);
-  --elf-props-table-min-width: 640px;
+  min-width: 0;
+  margin-block: var(--elf-space-5);
 }
 
-h4 {
-  margin: 0 0 var(--elf-space-2);
-  font-size: var(--elf-font-size-md);
-  font-weight: 500;
-  color: var(--elf-text-primary);
-}
-
-table {
+props-table-data {
+  display: block;
   width: 100%;
-  min-width: var(--elf-props-table-min-width);
-  border-collapse: collapse;
-  font-size: var(--elf-font-size-sm);
-}
-
-.table-scroll {
-  max-width: 100%;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--elf-border) transparent;
-}
-
-th,
-td {
-  padding: var(--elf-props-table-cell-padding);
-  text-align: left;
-  border-bottom: 1px solid var(--elf-divider);
-}
-
-th {
-  font-weight: 500;
-  color: var(--elf-text-secondary);
-  background: var(--elf-props-table-header-bg);
-}
-
-.empty-row td {
-  padding-block: var(--elf-space-6);
-  color: var(--elf-text-disabled);
-  text-align: center;
-}
-
-td code {
-  font-family: "JetBrains Mono", Menlo, monospace;
-  font-size: var(--elf-font-size-xs);
-  background: var(--elf-bg-overlay);
-  padding: 2px 6px;
-  border-radius: var(--elf-radius-sm);
 }

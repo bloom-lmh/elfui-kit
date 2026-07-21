@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Empty } from "./index";
 

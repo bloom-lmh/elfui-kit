@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "items", type: "AnchorItem[]", default: "[]", desc: "anchor item tree" },

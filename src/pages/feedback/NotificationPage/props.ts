@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const apiRows = [
   { name: "ElfNotification(options | string)", type: "Function", desc: "Create a notification and return a close handle" },

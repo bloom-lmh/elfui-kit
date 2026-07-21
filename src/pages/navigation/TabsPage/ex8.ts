@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html, useRef } from "elfui";
+import { defineHtml, defineStyle, html, useRef } from "@elfui/core";
 import { createDocsTranslator } from "../../docsLocale";
 import styles from "./demo.scss?inline";
 
@@ -6,9 +6,9 @@ const active = useRef("one");
 const direction = useRef("horizontal");
 const alignment = useRef("start");
 const color = useRef("#2563eb");
-const background = useRef("var(--elf-bg-overlay)");
+const background = useRef("var(--elf-bg-paper)");
 const slider = useRef("#2563eb");
-const grow = useRef(false);
+const grow = useRef(true);
 const hideSlider = useRef(false);
 
 const t = createDocsTranslator({
@@ -62,7 +62,7 @@ const colorOptions = () => [
   { label: t("purple"), value: "#7c3aed" }
 ];
 const backgroundOptions = () => [
-  { label: t("surface"), value: "var(--elf-bg-overlay)" },
+  { label: t("surface"), value: "var(--elf-bg-paper)" },
   { label: t("softBlue"), value: "color-mix(in srgb, var(--elf-primary) 8%, var(--elf-bg-paper))" }
 ];
 const sliderOptions = () => [
@@ -98,7 +98,7 @@ const code = `<elf-tabs
 const script = `const active = useRef("one");
 const direction = useRef("horizontal");
 const alignment = useRef("start");
-const grow = useRef(false);
+const grow = useRef(true);
 const hideSlider = useRef(false);
 const onActive = (event) => active.set(event.detail);`;
 

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const apiRows = [
   { name: "ElfMessage(options | string)", type: "Function", desc: "通用入口" },

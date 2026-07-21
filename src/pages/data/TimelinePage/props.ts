@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "items", type: "TimelineItem[]", default: "[]", desc: "时间轴数据" },

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const statisticRows = [
   { name: "value", type: "number", default: "0", desc: "统计值" },

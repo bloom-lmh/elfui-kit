@@ -1,4 +1,4 @@
-import { defineHtml, defineProps, defineStyle, html, useHostAttr, useHostFlag } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostAttr, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { MenuItemProps, MenuItemSlots } from "../Menu/types";
@@ -11,7 +11,7 @@ const props = defineProps<MenuItemProps>({
   icon: { type: String, default: "" },
   badge: { type: [String, Number], default: "" },
   route: { type: [String, Object], default: "" },
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
 });
 
 useHostAttr("role", () => "none");

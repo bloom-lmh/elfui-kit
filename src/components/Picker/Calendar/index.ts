@@ -1,4 +1,4 @@
-import { defineEmits, defineHtml, defineProps, defineStyle, html, useHost, useRef, watchEffect } from "elfui";
+import { defineEmits, defineHtml, defineProps, defineStyle, html, useHost, useRef, watchEffect } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
@@ -51,9 +51,22 @@ const viewedDate = useRef(selectedDate());
 const selectedIso = useRef(toIso(selectedDate()));
 const focusedIso = useRef(toIso(selectedDate()));
 const rangeStart = useRef<string | null>(null);
+const committedRange = useRef<string[]>(
+    Array.isArray(props.modelValue) ? props.modelValue.map(String).filter(Boolean).sort() : [],
+);
 const view = useRef<CalendarView>("days");
 const yearPageStart = useRef(Math.floor(selectedDate().getFullYear() / 12) * 12);
 let syncedModelValue = "__elf-calendar-unset__";
+let pendingModelValue = "";
+let pendingModelToken = 0;
+
+const expectModelValue = (value: string | string[]): void => {
+    pendingModelValue = JSON.stringify(value);
+    const token = ++pendingModelToken;
+    window.setTimeout(() => {
+        if (token === pendingModelToken) pendingModelValue = "";
+    }, 80);
+};
 
 const resolvedLocale = (): string => props.locale || locale.name;
 
@@ -76,10 +89,14 @@ const syncRangeDraftDom = (iso: string): void => {
 
 watchEffect(() => {
     const signature = JSON.stringify(props.modelValue ?? "");
+    if (pendingModelValue && signature !== pendingModelValue) return;
+    if (signature === pendingModelValue) pendingModelValue = "";
     if (signature === syncedModelValue) return;
     syncedModelValue = signature;
     const selected = selectedDate();
     selectedIso.set(toIso(selected));
+    committedRange.set(Array.isArray(props.modelValue) ? props.modelValue.map(String).filter(Boolean).sort() : []);
+    rangeStart.set(null);
     focusedIso.set(toIso(selected));
     viewedDate.set(selected);
     yearPageStart.set(Math.floor(selected.getFullYear() / 12) * 12);
@@ -139,7 +156,7 @@ const days = (): DayCell[] => {
         const date = new Date(start);
         date.setDate(start.getDate() + index);
         const iso = toIso(date);
-        const value = Array.isArray(props.modelValue) ? [...props.modelValue].sort() : [];
+        const value = committedRange.value;
         const pendingRangeStart = rangeStart.value;
         const rangeStartValue = pendingRangeStart || value[0] || "";
         // A new first click starts a fresh draft. Keeping the committed end here
@@ -172,12 +189,15 @@ const select = (event: Event): void => {
         }
         const value = start < iso ? [start, iso] : [iso, start];
         rangeStart.set(null);
+        committedRange.set(value);
+        expectModelValue(value);
         emit("update:modelValue", value);
         emit("change", value);
         return;
     }
     selectedIso.set(iso);
     syncSelectedDom(iso);
+    expectModelValue(iso);
     emit("update:modelValue", iso);
     emit("change", iso);
 };
@@ -270,7 +290,7 @@ const Calendar = defineHtml<CalendarProps>(html`
         <header class="header">
             <button class="nav" type="button" :aria-label=${locale.t("calendar.previousPeriod")} @click=${() => shiftPeriod(-1)}>‹</button>
             <div class="header-title">
-                <template v-if=${view.value === "years"}>
+                <template v-if=${view === "years"}>
                     <span class="period-label">${yearRangeTitle()}</span>
                 </template>
                 <template v-else>
@@ -280,7 +300,7 @@ const Calendar = defineHtml<CalendarProps>(html`
             </div>
             <button class="nav" type="button" :aria-label=${locale.t("calendar.nextPeriod")} @click=${() => shiftPeriod(1)}>›</button>
         </header>
-        <div v-if=${view.value === "days"} class="calendar-body">
+        <div v-if=${view === "days"} class="calendar-body">
             <div class="week">
                 <span v-for="name in weekDays()" :key="name">{{ name }}</span>
             </div>
@@ -294,7 +314,7 @@ const Calendar = defineHtml<CalendarProps>(html`
                     :disabled="day.disabled"
                     :aria-label="day.iso"
                     :aria-selected="day.current || day.rangeStart || day.rangeEnd ? 'true' : 'false'"
-                    :tabindex="day.iso === focusedIso.value ? 0 : -1"
+                    :tabindex="day.iso === focusedIso ? 0 : -1"
                     @click=${select}
                     @focus=${onDayFocus}
                     @keydown=${onDayKeydown}
@@ -303,7 +323,7 @@ const Calendar = defineHtml<CalendarProps>(html`
                 </button>
             </div>
         </div>
-        <div v-if=${view.value === "months"} class="choice-grid month-grid" :aria-label=${locale.t("calendar.selectMonth")}>
+        <div v-if=${view === "months"} class="choice-grid month-grid" :aria-label=${locale.t("calendar.selectMonth")}>
             <button
                 v-for="option in monthItems()"
                 :key="option.id"
@@ -313,7 +333,7 @@ const Calendar = defineHtml<CalendarProps>(html`
                 @click=${selectMonth}
             >{{ option.label }}</button>
         </div>
-        <div v-if=${view.value === "years"} class="choice-grid year-grid" :aria-label=${locale.t("calendar.selectYear")}>
+        <div v-if=${view === "years"} class="choice-grid year-grid" :aria-label=${locale.t("calendar.selectYear")}>
             <button
                 v-for="option in yearItems()"
                 :key="option.id"

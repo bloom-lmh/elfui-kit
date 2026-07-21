@@ -4,7 +4,7 @@ let stepsExampleTag = "";
 
 beforeAll(async () => {
   await import("../../../components");
-  const { ensureCustomElement } = await import("elfui");
+  const { ensureCustomElement } = await import("@elfui/core");
   const { PageStepsEx1 } = await import("./ex1");
   stepsExampleTag = ensureCustomElement(PageStepsEx1);
 });

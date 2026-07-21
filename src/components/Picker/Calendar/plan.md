@@ -1,5 +1,10 @@
 # Calendar Element Plus API 对齐计划
 
+## 2026-07-21 本地提交范围
+
+- [x] 使用本地已提交范围渲染端点与区间，等待父级受控值回写时不再回闪旧日期。
+- [x] 新范围选择维护独立起点草稿，第二次点击后立即按日期顺序提交完整范围。
+
 ## 2026-07-19 active and keyboard states
 
 - [x] Preserve the primary selected-day surface during hover and focus, with an explicit accessible focus ring.

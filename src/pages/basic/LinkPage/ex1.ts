@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const typeCode = `<elf-link href="#">默认链接</elf-link>
 <elf-link type="primary" href="#">主要链接</elf-link>

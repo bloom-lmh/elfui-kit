@@ -1,4 +1,4 @@
-import { defineHtml, defineStyle, html } from "elfui";
+import { defineHtml, defineStyle, html } from "@elfui/core";
 import styles from "./style.scss?inline";
 const inbox = Array.from({ length: 12 }, (_, index) => {
   const names = ["Ali Connors", "Sandra Adams", "Trevor Hansen", "Britta Holt"];

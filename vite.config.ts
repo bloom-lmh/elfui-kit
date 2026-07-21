@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 
-import { elfuiMacroPlugin } from "@elfui/vite-plugin";
+import { loadElfuiWorkspace } from "./scripts/elfui-workspace";
+
+const { aliases, elfuiMacroPlugin } = await loadElfuiWorkspace();
 
 export default defineConfig(({ command }) => ({
   plugins: [elfuiMacroPlugin()],
@@ -10,9 +12,7 @@ export default defineConfig(({ command }) => ({
   server: { host: "127.0.0.1", port: 5174, open: true },
   build: { target: "es2022" },
   resolve: {
-    alias: {
-      elfui: "@elfui/core"
-    },
-    dedupe: ["elfui", "@elfui/core", "@elfui/router"]
+    alias: aliases,
+    dedupe: ["@elfui/core", "@elfui/router"]
   }
 }));

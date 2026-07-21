@@ -3,7 +3,7 @@ import { PageAnchorEx2 } from "./ex2";
 import { PageAnchorEx3 } from "./ex3";
 import { PageAnchorProps } from "./props";
 
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 import { createDocsTranslator } from "../../docsLocale";
 
 useComponents({

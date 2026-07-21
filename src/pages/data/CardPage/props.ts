@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const propsRows = [
   { name: "header", type: "string", default: "''", desc: "卡片头部文本（header slot 优先）" },

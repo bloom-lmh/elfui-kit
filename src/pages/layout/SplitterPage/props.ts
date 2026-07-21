@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const splitterRows = [
   { name: "modelValue", type: "number", default: "50", desc: "第一个面板所占百分比" },

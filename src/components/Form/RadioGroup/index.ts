@@ -8,7 +8,7 @@ import {
   useEventListener,
   useHost,
   useHostCssVar
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormControl } from "../../../composables";
 import { RADIO_GROUP_KEY } from "../context";
@@ -95,7 +95,7 @@ provide<RadioGroupContext>(RADIO_GROUP_KEY, {
   get modelValue() { return ctl.model.value; },
   get disabled() { return isDisabled(); },
   get size() { return props.size as "sm" | "md" | "lg"; },
-  get name() { return props.name || undefined; },
+  get name() { return props.name || ""; },
   get variant() { return props.variant; },
   resolveValue,
   changeEvent
@@ -109,6 +109,7 @@ const focusRadio = (offset: number): void => {
   if (!radios.length) return;
   const selected = radios.findIndex((radio) => radio.hasAttribute("data-checked"));
   const next = radios[(selected + offset + radios.length) % radios.length];
+  if (!next) return;
   const control = next.shadowRoot?.querySelector<HTMLButtonElement>(".control");
   control?.focus();
   control?.click();

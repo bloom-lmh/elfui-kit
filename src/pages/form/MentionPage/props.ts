@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const rows = [
   { name: "model-value / options", type: "string / MentionOption[]", default: "'' / []" },

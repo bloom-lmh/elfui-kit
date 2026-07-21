@@ -12,6 +12,21 @@ beforeEach(() => {
 const tick = (): Promise<void> => new Promise((resolve) => queueMicrotask(resolve));
 
 describe("virtual window", () => {
+  it("exposes list-item styling hooks on declarative rows", async () => {
+    const el = document.createElement("elf-virtual-list") as HTMLElement & Record<string, unknown>;
+    el.items = [{ id: 1, name: "Alpha" }];
+    el.listItemClass = "custom-row";
+    el.listItemStyle = { color: "rgb(1, 2, 3)", paddingInline: "18px" };
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    const row = el.shadowRoot!.querySelector<HTMLElement>(".item")!;
+    expect(row.getAttribute("part")).toContain("list-item");
+    expect(row.classList.contains("custom-row")).toBe(true);
+    expect(row.style.color).toBe("rgb(1, 2, 3)");
+    expect(row.style.getPropertyValue("padding-inline")).toBe("18px");
+  });
   it("clamps and overscans a fixed-size range", () => {
     expect(computeVirtualWindow({ count: 1000, itemSize: 40, viewportSize: 200, scrollOffset: 400, overscan: 2 }))
       .toEqual({ start: 8, end: 17, offset: 320, totalSize: 40000 });

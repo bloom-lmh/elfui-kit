@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code = `<elf-slider model-value="35" placement="top" />
 <elf-slider model-value="35" placement="bottom" />

@@ -2,7 +2,7 @@
 //
 //   <elf-footer height="40px">© 2026 ElfUI</elf-footer>
 
-import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { FooterProps, FooterSlots } from "./types";

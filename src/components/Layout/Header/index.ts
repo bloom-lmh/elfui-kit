@@ -2,7 +2,7 @@
 //
 //   <elf-header height="56px">brand + nav</elf-header>
 
-import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "elfui";
+import { defineHtml, defineProps, defineStyle, html, useHostCssVar } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { HeaderProps, HeaderSlots } from "./types";

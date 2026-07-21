@@ -1,4 +1,4 @@
-import { defineHtml, html, useComponents } from "elfui";
+import { defineHtml, html, useComponents } from "@elfui/core";
 
 import { PageTimePickerEx1 } from "./ex1";
 import { PageTimePickerEx2 } from "./ex2";

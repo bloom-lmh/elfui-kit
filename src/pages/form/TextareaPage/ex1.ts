@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const code1 = `<div style="width:100%;max-width:480px">
   <elf-textarea rows="4" label="描述" placeholder="请输入多行内容..." />

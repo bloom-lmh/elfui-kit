@@ -11,7 +11,7 @@ import "./styles/utilities.scss";
 /* import "./elements.generated"; */
 
 import { createRouter } from "@elfui/router";
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { App } from "./app/AppShell/index";
 import { routes } from "./routes";

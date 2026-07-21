@@ -1,4 +1,4 @@
-import { defineHtml, html, useRef } from "elfui";
+import { defineHtml, html, useRef } from "@elfui/core";
 
 
 const validateLog = useRef("只允许 report-*.pdf，且单文件不超过 1MB");

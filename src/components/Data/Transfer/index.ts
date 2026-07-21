@@ -9,9 +9,10 @@ import {
   useReactive,
   useRef,
   watchEffect
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
+import type { TransferDirection } from "./types";
 
 export type {
   TransferDataItem,
@@ -165,6 +166,11 @@ const setChecked = (side: "left" | "right", item: TransferViewItem, checked: boo
   emitCheck(side, [item.__key]);
 };
 
+const onItemChecked = (side: "left" | "right", item: TransferViewItem, event: Event): void => {
+  if (!(event.currentTarget instanceof HTMLInputElement)) return;
+  setChecked(side, item, event.currentTarget.checked);
+};
+
 const toggleAll = (side: "left" | "right", event: Event): void => {
   const bucket = side === "left" ? leftChecked : rightChecked;
   const items = side === "left" ? leftSelectable() : rightSelectable();
@@ -233,12 +239,12 @@ const Transfer = defineHtml(html`
       <span class="count">${countText("left")}</span>
     </div>
     <div class="panel-filter" v-if=${props.filterable}>
-      <input :value=${leftFilter.value} :placeholder=${props.filterPlaceholder} aria-label="Filter source items" @input="onFilterInput('left', $event)" />
+      <input :value=${leftFilter} :placeholder=${props.filterPlaceholder} aria-label="Filter source items" @input="onFilterInput('left', $event)" />
     </div>
     <div class="panel-body" role="list">
       <div v-if=${sourceItems().length === 0} class="panel-empty"><slot name="left-empty">No data</slot></div>
       <label v-for="item in sourceItems()" :key="item.__key" class="panel-item" :class="{ 'is-disabled': item.__disabled }">
-        <input type="checkbox" :checked.prop="leftChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('left', item, $event.target.checked)" />
+        <input type="checkbox" :checked.prop="leftChecked[item.__key] || false" :disabled="item.__disabled" @change="onItemChecked('left', item, $event)" />
         <span>{{ item.__label }}</span>
       </label>
     </div>
@@ -246,13 +252,13 @@ const Transfer = defineHtml(html`
   </section>
 
   <div class="buttons" aria-label="Transfer actions">
-    <button type="button" @click=${moveToRight} :disabled=${leftCheckedCount.value === 0} aria-label="Move selected to target">
+    <button type="button" @click=${moveToRight} :disabled=${leftCheckedCount === 0} aria-label="Move selected to target">
       <span v-if=${buttonText("right")}>${buttonText("right")}</span>
       <svg v-else class="direction-icon is-right" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
         <path d="M3.5 10h12M11 5.5l4.5 4.5-4.5 4.5"></path>
       </svg>
     </button>
-    <button type="button" @click=${moveToLeft} :disabled=${rightCheckedCount.value === 0} aria-label="Move selected to source">
+    <button type="button" @click=${moveToLeft} :disabled=${rightCheckedCount === 0} aria-label="Move selected to source">
       <span v-if=${buttonText("left")}>${buttonText("left")}</span>
       <svg v-else class="direction-icon is-left" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
         <path d="M3.5 10h12M11 5.5l4.5 4.5-4.5 4.5"></path>
@@ -267,12 +273,12 @@ const Transfer = defineHtml(html`
       <span class="count">${countText("right")}</span>
     </div>
     <div class="panel-filter" v-if=${props.filterable}>
-      <input :value=${rightFilter.value} :placeholder=${props.filterPlaceholder} aria-label="Filter target items" @input="onFilterInput('right', $event)" />
+      <input :value=${rightFilter} :placeholder=${props.filterPlaceholder} aria-label="Filter target items" @input="onFilterInput('right', $event)" />
     </div>
     <div class="panel-body" role="list">
       <div v-if=${targetItems().length === 0} class="panel-empty"><slot name="right-empty">No data</slot></div>
       <label v-for="item in targetItems()" :key="item.__key" class="panel-item" :class="{ 'is-disabled': item.__disabled }">
-        <input type="checkbox" :checked.prop="rightChecked[item.__key] || false" :disabled="item.__disabled" @change="setChecked('right', item, $event.target.checked)" />
+        <input type="checkbox" :checked.prop="rightChecked[item.__key] || false" :disabled="item.__disabled" @change="onItemChecked('right', item, $event)" />
         <span>{{ item.__label }}</span>
       </label>
     </div>

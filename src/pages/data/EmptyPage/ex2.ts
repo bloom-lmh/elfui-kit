@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const customCode = `<elf-empty description="筛选条件没有命中" image-size="96">
   <span slot="image">⌕</span>

@@ -17,7 +17,7 @@ import {
     useHostCssVar,
     useHostFlag,
     useRef,
-} from "elfui";
+} from "@elfui/core";
 
 import { useDisabled, useFormItem } from "../../../composables";
 import { listenForExternalOverlayMotion } from "../../Common/anchored-overlay";
@@ -536,7 +536,7 @@ const Select = defineHtml(html`
         part="trigger"
         :tabindex=${props.tabindex}
         role="combobox"
-        :aria-expanded=${open.value ? "true" : "false"}
+        :aria-expanded=${open ? "true" : "false"}
         @click=${toggleOpen}
         @focus=${onTriggerFocus}
         @blur=${onTriggerBlur}
@@ -576,7 +576,7 @@ const Select = defineHtml(html`
             class="filter-input"
             :id=${props.id || null}
             :name=${props.name || null}
-            :value=${filterText.value}
+            :value=${filterText}
             @input=${onFilterInput}
             @click=${stopClick}
         />
@@ -593,12 +593,12 @@ const Select = defineHtml(html`
         </span>
     </div>
     <div
-        v-if=${rendered.value && !isDisabled()}
+        v-if=${rendered && !isDisabled()}
         :class=${[
             "dropdown",
             {
-                active: open.value && !closing.value,
-                closing: closing.value,
+                active: open && !closing,
+                closing: closing,
                 "fit-input-width": props.fitInputWidth,
             },
         ]}
@@ -611,7 +611,7 @@ const Select = defineHtml(html`
         </div>
         <div v-else-if=${viewOptions().length === 0} class="status">
             <slot name="empty"
-                >${filterText.value
+                >${filterText
                     ? noMatchText()
                     : noDataText()}</slot
             >

@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const radioRows = [
   { name: "model-value / value", type: "string | number | boolean", default: "'' / ''" },

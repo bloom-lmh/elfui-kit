@@ -9,6 +9,24 @@
   width: min(420px, 100%);
 }
 
+.input-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  width: min(860px, 100%);
+}
+
+.input-lab-preview svg[slot],
+elf-input svg[slot] {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .input-lab-config {
   display: grid;
   align-content: start;
@@ -37,5 +55,9 @@
 @media (max-width: 760px) {
   .input-lab-preview {
     width: 100%;
+  }
+
+  .input-icon-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

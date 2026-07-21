@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const items = [
   { name: "design", title: "设计原则", content: "保持反馈清晰，减少用户等待感。" },

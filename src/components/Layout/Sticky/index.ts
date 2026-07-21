@@ -17,7 +17,7 @@ import {
   useHostCssVar,
   useHostFlag,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type {
@@ -168,15 +168,18 @@ const scrollAncestors = (...elements: Array<HTMLElement | null>): Array<Window |
   return [...ancestors];
 };
 
-const scrollTop = (): number =>
-  scrollParent === window || !scrollParent
-    ? window.scrollY || document.documentElement.scrollTop
-    : scrollParent.scrollTop;
+const scrollTop = (): number => {
+  const parent = scrollParent;
+  return parent instanceof HTMLElement
+    ? parent.scrollTop
+    : window.scrollY || document.documentElement.scrollTop;
+};
 
 const viewportBounds = (): { top: number; bottom: number } => {
-  if (scrollParent === window || !scrollParent) return { top: 0, bottom: window.innerHeight };
-  const rect = scrollParent.getBoundingClientRect();
-  return { top: rect.top + scrollParent.clientTop, bottom: rect.bottom - scrollParent.clientTop };
+  const parent = scrollParent;
+  if (!(parent instanceof HTMLElement)) return { top: 0, bottom: window.innerHeight };
+  const rect = parent.getBoundingClientRect();
+  return { top: rect.top + parent.clientTop, bottom: rect.bottom - parent.clientTop };
 };
 
 const readGeometry = (): StickyGeometry => {

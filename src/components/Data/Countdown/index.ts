@@ -8,7 +8,7 @@ import {
   onUnmount,
   useRef,
   watchEffect
-} from "elfui";
+} from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { CountdownProps, CountdownSlots, CountdownValue } from "./types";

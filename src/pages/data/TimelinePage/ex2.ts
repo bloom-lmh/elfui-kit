@@ -1,4 +1,4 @@
-import { defineHtml, html } from "elfui";
+import { defineHtml, html } from "@elfui/core";
 
 const steps = [
   { title: "需求分析", timestamp: "Week 1", color: "primary", icon: "📋" },

@@ -1,6 +1,6 @@
 // elf-button — Material Design + Element Plus 风格按钮
 
-import { defineEmits, defineHtml, defineProps, defineStyle, html, useHostAttr, useHostFlag } from "elfui";
+import { defineEmits, defineHtml, defineProps, defineStyle, html, useHostAttr, useHostFlag } from "@elfui/core";
 
 import styles from "./style.scss?inline";
 import type { ButtonEmits, ButtonProps, ButtonSlots, ButtonType, ButtonVariant } from "./types";

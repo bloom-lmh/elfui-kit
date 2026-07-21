@@ -1,5 +1,5 @@
 // Navigation components
-import { registerComponents } from "elfui";
+import { registerComponents } from "@elfui/core";
 
 import { Anchor } from "./Anchor/index";
 import { AnchorLink } from "./AnchorLink/index";

@@ -263,10 +263,22 @@ elf-calendar::part(calendar) {
   width: 100%;
   max-width: 100%;
   min-height: 28px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
+  max-height: 76px;
+  flex-wrap: wrap;
+  overflow-x: hidden;
+  overflow-y: auto;
   scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--elf-text-secondary) 35%, transparent) transparent;
+  padding-bottom: 3px;
+}
+
+.chips::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chips::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--elf-text-secondary) 35%, transparent);
 }
 
 .chip svg {

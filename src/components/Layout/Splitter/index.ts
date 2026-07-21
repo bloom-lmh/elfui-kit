@@ -11,7 +11,7 @@ import {
   useHostCssVar,
   useHostFlag,
   useRef
-} from "elfui";
+} from "@elfui/core";
 
 import { SplitterPanel } from "./panel";
 import styles from "./style.scss?inline";
@@ -223,6 +223,7 @@ const stopCollapsePointerDown = (event: PointerEvent): void => {
 
 // Reactive synchronization and lifecycle
 useEffect(() => {
+  if (firstPanel.value && !host.hasAttribute("model-value") && !hasPersistedSize()) return;
   const next = clamp(numberOr(props.modelValue, 50));
   if (!dragging.peek() && !collapsed.peek() && size.peek() !== next) {
     size.set(next);
@@ -269,7 +270,7 @@ const Splitter = defineHtml<SplitterProps, SplitterEmits, SplitterSlots>(html`
       :aria-valuenow=${currentSize()}
       :aria-valuemin=${panelMin()}
       :aria-valuemax=${panelMax()}
-      :aria-valuetext=${collapsed.value
+      :aria-valuetext=${collapsed
         ? locale.t("a11y.collapsed")
         : locale.t("splitter.size", { size: Math.round(currentSize()) })}
       :aria-orientation=${props.vertical ? "vertical" : "horizontal"}
@@ -285,12 +286,12 @@ const Splitter = defineHtml<SplitterProps, SplitterEmits, SplitterSlots>(html`
         class="collapse-button"
         type="button"
         :aria-label=${locale.t(
-          collapsed.value ? "a11y.expandFirstPanel" : "a11y.collapseFirstPanel"
+          collapsed ? "a11y.expandFirstPanel" : "a11y.collapseFirstPanel"
         )}
         @pointerdown=${stopCollapsePointerDown}
         @click.stop=${toggleCollapse}
       >
-        ${props.vertical ? (collapsed.value ? "⌄" : "⌃") : collapsed.value ? "›" : "‹"}
+        ${props.vertical ? (collapsed ? "⌄" : "⌃") : collapsed ? "›" : "‹"}
       </button>
     </div>
     <section class="pane second" part="second"><slot name="second"></slot></section>

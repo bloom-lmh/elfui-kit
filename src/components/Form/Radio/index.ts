@@ -10,7 +10,7 @@ import {
   useHostAttr,
   useHostFlag,
   defineHtml
-} from "elfui";
+} from "@elfui/core";
 
 import { FORM_ITEM_KEY, RADIO_GROUP_KEY } from "../context";
 import { useDisabled } from "../../../composables";

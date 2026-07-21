@@ -1,4 +1,4 @@
-import { directive, type DirectiveBinding, type DirectiveDefinition } from "@elfui/runtime";
+import { directive, type DirectiveBinding, type DirectiveDefinition } from "@elfui/core";
 
 import type {
   InfiniteScrollDirectiveOptions,
@@ -45,7 +45,7 @@ const optionsOf = (el: HTMLElement, value: InfiniteScrollDirectiveValue): Infini
 
 const clearTimer = (state: InfiniteScrollDirectiveState): void => {
   if (state.timer) clearTimeout(state.timer);
-  state.timer = undefined;
+  delete state.timer;
 };
 
 const nearBottom = (el: HTMLElement, distance: number): boolean => {
@@ -60,7 +60,7 @@ const schedule = (el: HTMLElement, state: InfiniteScrollDirectiveState): void =>
     return;
   }
   state.timer = setTimeout(() => {
-    state.timer = undefined;
+    delete state.timer;
     const latest = optionsOf(el, state.value);
     if (!latest.disabled && nearBottom(el, latest.distance ?? 0)) latest.handler();
   }, options.delay);
