@@ -92,6 +92,7 @@ export type {
   TableSpanMethod,
   TableSpanResult,
   TableSortOrder,
+  TableStyle,
 } from "./types";
 
 const TABLE_CELL_KEY_SEPARATOR = "::elf-table::";

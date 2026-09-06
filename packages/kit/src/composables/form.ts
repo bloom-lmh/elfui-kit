@@ -12,6 +12,7 @@ import { FORM_ITEM_KEY, FORM_KEY } from "./form-context";
 import type { RuleTrigger } from "../types/form";
 import {
   useNativeFormControl,
+  useResolvedDisabled,
   type NativeFormControlBehavior,
   type NativeFormControlBridge,
 } from "./native-form";
@@ -117,11 +118,7 @@ export function useFormControl<T = unknown>(
 
 export const useDisabled = (selfGetter: () => boolean): (() => boolean) => {
   const form = inject(FORM_KEY);
-  return () => {
-    if (selfGetter()) return true;
-    if (form?.disabled) return true;
-    return false;
-  };
+  return useResolvedDisabled(selfGetter, () => Boolean(form?.disabled));
 };
 
 // ── useSize（自身 > form-item > form → "md"） ─────────────

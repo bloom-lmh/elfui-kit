@@ -1,5 +1,6 @@
 // elf-menu — Material Design 3 导航菜单
 
+import { getActiveRouter, type RouteLocationRaw } from "@elfui/router";
 import {
   defineEmits,
   defineExpose,
@@ -456,14 +457,21 @@ const toggleOpen = (item: MenuViewItem) => {
   else openBranch(item);
 };
 
-const navigate = (item: MenuViewItem) => {
-  const target = resolveMenuRoutePath(item);
-  if (props.router && typeof window !== "undefined" && target.startsWith("/"))
-    window.location.hash = target;
-};
-
 const isMenuRoute = (value: unknown): value is NonNullable<MenuItemClickDetail["route"]> =>
   typeof value === "string" || (typeof value === "object" && value !== null);
+
+const navigate = (item: MenuViewItem) => {
+  if (!props.router) return;
+  const target = isMenuRoute(item.route) ? item.route : resolveMenuRoutePath(item);
+  const router = getActiveRouter();
+  if (router) {
+    void router.push(target as RouteLocationRaw);
+    return;
+  }
+  if (typeof window !== "undefined" && typeof target === "string" && target.startsWith("/")) {
+    window.location.hash = target;
+  }
+};
 
 const selectItem = (item: MenuViewItem) => {
   activeKey.set(item.index);

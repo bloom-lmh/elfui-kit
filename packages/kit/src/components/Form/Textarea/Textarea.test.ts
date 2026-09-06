@@ -70,6 +70,8 @@ describe("elf-textarea", () => {
     await flush();
 
     expect(el.shadowRoot!.querySelector(".field-outline")).toBeTruthy();
+    expect(el.hasAttribute("data-has-label")).toBe(false);
+    expect(el.shadowRoot!.querySelector(".field-outline legend")).toBeNull();
   });
 
   it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { mdiViewDashboardOutline } from "@mdi/js";
+import { setActiveRouter, type Router } from "@elfui/router";
 import { createOverlayInteractionController } from "../../Common/overlay/overlay-interaction-controller";
 
 beforeAll(async () => {
@@ -10,6 +11,7 @@ beforeAll(async () => {
 });
 
 afterEach(() => {
+  setActiveRouter(null);
   document.body.innerHTML = "";
   history.replaceState(null, "", "/");
   vi.useRealTimers();
@@ -521,6 +523,25 @@ describe("elf-menu", () => {
     expect(window.location.hash).toBe("#/home");
 
     el.handleResize!();
+  });
+
+  it("navigates route objects through the active ElfUI Router", async () => {
+    const push = vi.fn().mockResolvedValue(undefined);
+    setActiveRouter({ push } as unknown as Router);
+    const route = { name: "dashboard", query: { tab: "new" } };
+    const el = document.createElement("elf-menu") as MenuEl;
+    el.items = [{ index: "dashboard", label: "Dashboard", route }];
+    el.router = true;
+    document.body.appendChild(el);
+    await tick();
+    await tick();
+
+    (el.shadowRoot!.querySelector(".menu-item") as HTMLElement).click();
+    await tick();
+
+    expect(push).toHaveBeenCalledOnce();
+    expect(push).toHaveBeenCalledWith(route);
+    expect(window.location.hash).toBe("");
   });
 
   it("supports elf-sub-menu, elf-menu-item-group and elf-menu-item composition", async () => {

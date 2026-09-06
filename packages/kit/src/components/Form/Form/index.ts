@@ -21,6 +21,8 @@ import {
   useHost,
   useHostAttr,
   useHostFlag,
+  useRef,
+  useTemplateRef,
   defineHtml,
 } from "@elfui/core";
 
@@ -70,6 +72,8 @@ const props = defineProps<FormProps>({
 const emit = defineEmits<FormEmits>();
 
 const host = useHost();
+const nativeFormRef = useTemplateRef<HTMLFormElement>("nativeForm");
+const disabledState = useRef(Boolean(props.disabled));
 
 const items: FormItemContext[] = [];
 let rulesReady = false;
@@ -154,7 +158,7 @@ const formCtx: FormContext = {
     return props.size as FormContext["size"];
   },
   get disabled(): boolean {
-    return Boolean(props.disabled);
+    return disabledState.value;
   },
   get labelPosition() {
     return props.labelPosition as FormContext["labelPosition"];
@@ -216,11 +220,17 @@ useEffect(() => {
   queueMicrotask(() => void validate());
 });
 
+useEffect(() => {
+  disabledState.set(Boolean(props.disabled));
+});
+
 useHostAttr("size", () => String(props.size || "md"));
-useHostFlag("disabled", () => Boolean(props.disabled));
+useHostFlag("disabled", () => disabledState.value);
 useHostFlag("inline", () => Boolean(props.inline));
 
 defineExpose({
+  requestSubmit: () => nativeFormRef.value?.requestSubmit(),
+  reset: () => nativeFormRef.value?.reset(),
   validate,
   validateField,
   resetFields,
@@ -235,6 +245,6 @@ defineExpose({
 
 defineStyle(styles);
 
-const Form = defineHtml(`<form @submit=${onSubmit}><slot></slot></form>`);
+const Form = defineHtml(`<form ref="nativeForm" @submit=${onSubmit}><slot></slot></form>`);
 
 export { Form };

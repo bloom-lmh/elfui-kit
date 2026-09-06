@@ -50,6 +50,35 @@ export interface NativeFormControlBridge<T> {
   restore(state: FormControlValue): void;
 }
 
+/** Keeps an inherited disabled reflection from becoming a sticky explicit prop. */
+export const useResolvedDisabled = (
+  ownGetter: () => boolean,
+  inheritedGetter: () => boolean = () => false,
+): (() => boolean) => {
+  const ownDisabled = useRef(Boolean(ownGetter()));
+  let inheritingDisabled = false;
+
+  useEffect(() => {
+    const inheritedDisabled = Boolean(inheritedGetter());
+    const currentOwnDisabled = Boolean(ownGetter());
+
+    if (inheritedDisabled) {
+      if (!inheritingDisabled) ownDisabled.set(currentOwnDisabled);
+      inheritingDisabled = true;
+      return;
+    }
+
+    if (inheritingDisabled) {
+      inheritingDisabled = false;
+      return;
+    }
+
+    ownDisabled.set(currentOwnDisabled);
+  });
+
+  return () => ownDisabled.value || Boolean(inheritedGetter());
+};
+
 const isFile = (value: unknown): value is File =>
   typeof File !== "undefined" && value instanceof File;
 
@@ -170,8 +199,12 @@ export const useNativeFormControl = <T>(
 
   const name = (): string => String(options.props.name ?? "");
   const enabled = (): boolean => options.enabled?.() ?? true;
-  const disabled = (): boolean => Boolean(options.props.disabled) || Boolean(form?.disabled);
+  const disabled = useResolvedDisabled(
+    () => Boolean(options.props.disabled),
+    () => Boolean(form?.disabled),
+  );
   const required = (): boolean => Boolean(options.props.required);
+  const coreSetDisabled = core.setDisabled.bind(core);
 
   useHostAttr("name", () => name() || null);
   useHostAttr("form", () => String(options.props.form ?? "") || null);
@@ -195,10 +228,10 @@ export const useNativeFormControl = <T>(
     return "";
   };
   const synchronize = (value: T): void => {
-    const nextDisabled = disabled();
+    const nextDisabled = disabled() || platformDisabled.value;
     if (nextDisabled !== explicitDisabled) {
       explicitDisabled = nextDisabled;
-      core.setDisabled(nextDisabled);
+      coreSetDisabled(nextDisabled);
     }
     core.setValue(serialize(value));
     core.rules([
@@ -209,10 +242,11 @@ export const useNativeFormControl = <T>(
     void core.validate();
   };
 
-  const coreSetDisabled = core.setDisabled.bind(core);
   core.setDisabled = (next): void => {
-    coreSetDisabled(next);
     platformDisabled.set(next);
+    const resolvedDisabled = disabled() || next;
+    explicitDisabled = resolvedDisabled;
+    coreSetDisabled(resolvedDisabled);
   };
 
   const coreReset = core.reset.bind(core);

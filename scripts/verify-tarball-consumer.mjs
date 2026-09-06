@@ -89,12 +89,14 @@ console.log("Tarball root import is SSR-safe and exposes the documented API");
   const typeConfig = join(consumerRoot, "tsconfig.json");
   await writeFile(
     typeConsumer,
-    `import { Button, Input, registerAllComponents, type ButtonProps } from "@elfui/kit";
+    `import { Button, Input, registerAllComponents, type ButtonProps, type TableStyle } from "@elfui/kit";
 
 const components: CustomElementConstructor[] = [Button, Input];
 const props = { color: "primary" } satisfies Partial<ButtonProps>;
+const tableStyle = { height: "58px", padding: "14px 18px" } satisfies TableStyle;
 void components;
 void props;
+void tableStyle;
 void registerAllComponents;
 `,
     "utf8",

@@ -54,8 +54,8 @@ const propsRows = () => [
     "router",
     "boolean",
     "false",
-    "将路径索引同步到 location.hash。",
-    "Sync path indexes to location.hash.",
+    "使用已激活的 ElfUI Router 导航；未配置 Router 时回退到 location.hash。",
+    "Navigate with the active ElfUI Router, falling back to location.hash when none is configured.",
   ),
   row(
     "props",

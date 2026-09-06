@@ -23,6 +23,8 @@ afterEach(() => {
 const tick = (): Promise<void> => new Promise((r) => queueMicrotask(r));
 
 interface FormHost extends HTMLElement {
+  requestSubmit(): void;
+  reset(): void;
   validate(): Promise<boolean>;
   resetFields(prop?: string | string[]): void;
   clearValidate(prop?: string | string[]): void;
@@ -89,6 +91,21 @@ describe("Form 联动", () => {
     expect(form.shadowRoot!.querySelector("form")).toBeTruthy();
     expect(item.shadowRoot!.querySelector("label")?.textContent?.trim()).toBe("姓名");
     expect(input.shadowRoot!.querySelector("input")).toBe(inputEl);
+  });
+
+  it("reactively enables descendants again after form disabled is cleared", async () => {
+    const { form, inputEl } = await buildSimpleForm();
+    const mutableForm = form as FormHost & { disabled: boolean };
+
+    mutableForm.disabled = true;
+    await tick();
+    await tick();
+    expect(inputEl.disabled).toBe(true);
+
+    mutableForm.disabled = false;
+    await tick();
+    await tick();
+    expect(inputEl.disabled).toBe(false);
   });
 
   it("validate() 失败：返回 false 且 form-item state=error", async () => {

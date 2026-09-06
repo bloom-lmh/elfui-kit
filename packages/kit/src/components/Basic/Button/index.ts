@@ -104,16 +104,26 @@ const normalizedNativeType = (): ButtonType => {
     : "button";
 };
 
-const resolveFormOwner = (button: HTMLButtonElement): HTMLFormElement | null => {
+interface FormOwner {
+  requestSubmit(): void;
+  reset(): void;
+}
+
+const isFormOwner = (value: Element | null): value is Element & FormOwner =>
+  value !== null &&
+  typeof (value as Partial<FormOwner>).requestSubmit === "function" &&
+  typeof (value as Partial<FormOwner>).reset === "function";
+
+const resolveFormOwner = (button: HTMLButtonElement): FormOwner | null => {
   if (button.form) return null;
 
   if (props.form) {
     const explicitForm = host.ownerDocument.getElementById(props.form);
-    if (explicitForm instanceof HTMLFormElement) return explicitForm;
+    if (isFormOwner(explicitForm)) return explicitForm;
   }
 
-  const closestForm = host.closest("form");
-  return closestForm instanceof HTMLFormElement ? closestForm : null;
+  const closestForm = host.closest("form, elf-form");
+  return isFormOwner(closestForm) ? closestForm : null;
 };
 
 /** Bridges the internal native click across the component's Shadow DOM boundary. */

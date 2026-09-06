@@ -329,7 +329,7 @@ const Textarea = defineHtml(`
     <div class="field">
       <div class="wrapper" part="wrapper">
         <fieldset class="field-outline" aria-hidden="true">
-          <legend><span>${props.label}</span></legend>
+          <legend v-if=${props.label}><span>${props.label}</span></legend>
         </fieldset>
         <span v-if=${props.label} class="field-label">${props.label}</span>
         <div v-if=${hasPrefix() || hasSuffix()} class="decorations" part="decorations">

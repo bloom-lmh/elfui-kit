@@ -395,6 +395,23 @@ describe("elf-button", () => {
     expect(submitCount).toBe(1);
   });
 
+  it("submits the closest elf-form across its shadow boundary", async () => {
+    const form = document.createElement("elf-form");
+    const el = document.createElement("elf-button") as ButtonEl;
+    el.setAttribute("type", "submit");
+    form.appendChild(el);
+    document.body.appendChild(form);
+    await tick();
+
+    const submit = vi.fn((event: Event) => event.preventDefault());
+    form.addEventListener("submit", submit);
+
+    el.click();
+    await tick();
+
+    expect(submit).toHaveBeenCalledOnce();
+  });
+
   it("honors the explicit form attribute across the shadow boundary", async () => {
     const form = document.createElement("form");
     form.id = "profile-form";

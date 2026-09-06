@@ -12,6 +12,7 @@
   --input-filled-bg: var(--elf-field-filled-bg);
   --input-filled-focus-bg: var(--elf-field-filled-focus-bg);
   --input-icon-size: 20px;
+  --input-content-offset-y: 1px;
   // One semantic gap keeps the caret aligned across filled, outlined,
   // underlined and solo surfaces.
   --input-icon-gap: 14px;
@@ -197,8 +198,12 @@
   line-height: 11px;
 }
 
-:host([variant="outlined"][data-dirty]) .outline legend,
-:host([variant="outlined"]) .wrapper:focus-within .outline legend {
+:host([variant="outlined"]:not([data-has-label])) .outline legend {
+  display: none;
+}
+
+:host([variant="outlined"][data-has-label][data-dirty]) .outline legend,
+:host([variant="outlined"][data-has-label]) .wrapper:focus-within .outline legend {
   max-width: calc(100% - 24px);
 }
 
@@ -318,6 +323,26 @@ input {
 
 :host([variant="outlined"][data-has-label]) input {
   padding-top: 8px;
+}
+
+:host([variant="outlined"]:not([data-has-label])) input {
+  padding-block: calc(16px + var(--input-content-offset-y))
+    calc(16px - var(--input-content-offset-y));
+}
+
+:host([variant="outlined"][size="sm"]:not([data-has-label])) input,
+:host([variant="outlined"][density="compact"]:not([data-has-label])) input {
+  padding-block: calc(8px + var(--input-content-offset-y)) calc(8px - var(--input-content-offset-y));
+}
+
+:host([variant="outlined"][size="lg"]:not([data-has-label])) input {
+  padding-block: calc(20px + var(--input-content-offset-y))
+    calc(20px - var(--input-content-offset-y));
+}
+
+:host([variant="outlined"][density="comfortable"]:not([data-has-label])) input {
+  padding-block: calc(12px + var(--input-content-offset-y))
+    calc(12px - var(--input-content-offset-y));
 }
 
 :host([variant="underlined"]) input {

@@ -116,10 +116,15 @@
     line-height: 11px;
   }
 
-  :host([variant="outlined"][data-dirty]) #{$outline} legend,
-  :host([variant="outlined"][data-open]) #{$outline} legend,
-  :host([variant="outlined"]) #{$selector}:focus-within #{$outline} legend,
-  :host([variant="outlined"]) #{$selector}:focus-visible #{$outline} legend {
+  :host([variant="outlined"]) #{$outline} legend:empty,
+  :host([variant="outlined"]:not([data-has-label])) #{$outline} legend {
+    display: none;
+  }
+
+  :host([variant="outlined"][data-has-label][data-dirty]) #{$outline} legend,
+  :host([variant="outlined"][data-has-label][data-open]) #{$outline} legend,
+  :host([variant="outlined"][data-has-label]) #{$selector}:focus-within #{$outline} legend,
+  :host([variant="outlined"][data-has-label]) #{$selector}:focus-visible #{$outline} legend {
     max-width: calc(100% - 24px);
   }
 
