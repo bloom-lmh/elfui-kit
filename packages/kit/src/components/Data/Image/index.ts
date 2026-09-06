@@ -4,7 +4,6 @@ import {
   defineHtml,
   defineProps,
   defineStyle,
-  globalStyle,
   onMounted,
   useComputed,
   useEffect,
@@ -17,6 +16,7 @@ import {
 } from "@elfui/core";
 
 import { collectFocusable, deepActiveElement } from "../../Common/focus/focus-scope";
+import { useDocumentStyle } from "../../Common/document-style";
 import { useLocaleProvider } from "../../Providers/context";
 import previewStyles from "./preview.scss?inline";
 import styles from "./style.scss?inline";
@@ -344,7 +344,7 @@ onMounted(() => {
 defineExpose<ImageExposes>({ openPreview, closePreview, retry });
 
 defineStyle(styles, previewStyles);
-globalStyle(previewStyles);
+useDocumentStyle("kit-image-preview", previewStyles);
 
 const Image = defineHtml<ImageProps, ImageEmits, ImageSlots>(`
   <div

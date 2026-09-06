@@ -5,8 +5,7 @@
 // useSize        — 自身 > form-item > form 的 size 继承链
 // useFormItem    — 统一的 form + form-item 上下文读取
 
-import { inject } from "@elfui/core";
-import { useModel, type ModelRef } from "@elfui/core";
+import { inject, useEffect, useModel, useRef, type ModelRef } from "@elfui/core";
 
 import { FORM_ITEM_KEY, FORM_KEY } from "../components/Form/context";
 import type { RuleTrigger } from "../components/Form/Form/types";
@@ -100,11 +99,30 @@ export function useFormControl<T = unknown>(
 
 export const useDisabled = (selfGetter: () => boolean): (() => boolean) => {
   const form = inject(FORM_KEY);
-  return () => {
-    if (selfGetter()) return true;
-    if (form?.disabled) return true;
-    return false;
-  };
+  const ownDisabled = useRef(Boolean(selfGetter()));
+  let inheritingFormDisabled = false;
+
+  useEffect(() => {
+    const formDisabled = Boolean(form?.disabled);
+    const currentSelfDisabled = Boolean(selfGetter());
+
+    if (formDisabled) {
+      if (!inheritingFormDisabled) ownDisabled.set(currentSelfDisabled);
+      inheritingFormDisabled = true;
+      return;
+    }
+
+    if (inheritingFormDisabled) {
+      // Components reflect the resolved disabled state back to their host attribute.
+      // Ignore that inherited reflection once so it cannot become a sticky own prop.
+      inheritingFormDisabled = false;
+      return;
+    }
+
+    ownDisabled.set(currentSelfDisabled);
+  });
+
+  return () => ownDisabled.value || Boolean(form?.disabled);
 };
 
 // ── useSize（自身 > form-item > form → "md"） ─────────────

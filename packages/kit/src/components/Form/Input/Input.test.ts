@@ -1,6 +1,7 @@
 // @ts-nocheck -- Legacy custom-element fixture requires runtime-only properties.
 // elf-input 单元测试
 
+import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 beforeAll(async () => {
@@ -133,6 +134,28 @@ describe("elf-input", () => {
     await flush();
 
     expect(el.shadowRoot!.querySelector(".outline")).toBeTruthy();
+    expect(el.hasAttribute("data-has-label")).toBe(false);
+    expect(el.shadowRoot!.querySelector(".outline legend")).toBeNull();
+  });
+
+  it("keeps a label-less compact outlined value vertically centered", async () => {
+    const el = mount((node) => {
+      node.variant = "outlined";
+      node.density = "compact";
+      node.placeholder = "Course name";
+    });
+    await flush();
+
+    expect(el.getAttribute("density")).toBe("compact");
+    expect(el.hasAttribute("data-has-label")).toBe(false);
+
+    const source = readFileSync("packages/kit/src/components/Form/Input/style.scss", "utf8");
+    expect(source).toContain(
+      ':host([variant="outlined"][density="compact"]:not([data-has-label])) input',
+    );
+    expect(source).toContain("--input-content-offset-y: 1px");
+    expect(source).toContain("calc(8px + var(--input-content-offset-y))");
+    expect(source).toContain("calc(8px - var(--input-content-offset-y))");
   });
 
   it.each(["default", "outlined", "underlined", "solo", "solo-filled", "solo-inverted"])(

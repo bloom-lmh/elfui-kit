@@ -1,5 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import { isAbsolute, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { rollup } from "rollup";
 
@@ -43,6 +44,22 @@ if (!builtUtilityStyles.includes(".d-flex")) {
 const virtualEntry = "\0elfui-kit-consumer";
 const builtPackageId = "virtual:built-elfui-kit";
 const builtEntry = join(distRoot, "elfui-kit.js");
+const builtRootTypes = await readFile(join(distRoot, "library.d.ts"), "utf8");
+const builtTableTypes = await readFile(join(distRoot, "components/Data/Table/index.d.ts"), "utf8");
+if (
+  !builtRootTypes.includes('export * from "./components/index"') ||
+  !/\bTableStyle\b/u.test(builtTableTypes)
+) {
+  throw new Error("Built package declarations do not export TableStyle");
+}
+
+const serverImportedPackage = await import(
+  `${pathToFileURL(builtEntry).href}?verify=${Date.now()}`
+);
+if (!serverImportedPackage.Button || !serverImportedPackage.Table) {
+  throw new Error("Built package root import is missing expected component exports");
+}
+
 const bundle = await rollup({
   input: virtualEntry,
   external(id) {

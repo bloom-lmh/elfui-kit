@@ -1,6 +1,6 @@
 {
   "name": "@elfui/kit",
-  "version": "0.0.2-beta.5",
+  "version": "0.0.2-beta.6",
   "private": false,
   "type": "module",
   "description": "Official ElfUI component library built with macro components.",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@elfui/core": "0.1.0-beta.21",
-    "@elfui/router": "0.1.0-beta.11",
+    "@elfui/router": "0.1.0-beta.12",
     "@mdi/js": "^7.4.47",
     "dompurify": "^3.2.4",
     "markdown-it": "^14.1.0",

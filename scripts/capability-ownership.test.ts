@@ -52,6 +52,7 @@ const directiveSources = [
 const commonControllers = [
   ...collectFiles(join(kitSourceRoot, "components", "Common", "focus")),
   ...collectFiles(join(kitSourceRoot, "components", "Common", "overlay")),
+  join(kitSourceRoot, "components", "Common", "document-style.ts"),
   join(kitSourceRoot, "components", "Common", "index.ts"),
 ]
   .filter(isNonTestTypeScript)
@@ -149,7 +150,7 @@ describe("capability ownership inventory", () => {
     ];
     const missing = [...new Set(trackedSources)].filter((path) => !inventory.includes(path));
 
-    expect(macroComponents).toHaveLength(119);
+    expect(macroComponents).toHaveLength(141);
     expect(missing).toEqual([]);
   });
 

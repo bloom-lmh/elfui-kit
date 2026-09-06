@@ -7,7 +7,6 @@ import {
   defineModel,
   defineProps,
   defineStyle,
-  globalStyle,
   onBeforeUnmount,
   projectLightDom,
   useHost,
@@ -17,6 +16,7 @@ import {
 
 import styles from "./style.scss?inline";
 import { useLocaleProvider } from "../../Providers/context";
+import { useDocumentStyle } from "../../Common/document-style";
 import { useModalOverlay } from "../../../composables/useModalOverlay";
 import type { OverlayCloseReason } from "../../Common/overlay/overlay-protocol";
 import type {
@@ -38,7 +38,7 @@ export type {
   DrawerSlots,
 } from "./types";
 
-globalStyle(styles);
+useDocumentStyle("kit-drawer", styles);
 
 const props = defineProps<DrawerProps>({
   title: { type: String, default: "" },

@@ -116,10 +116,22 @@
     line-height: 11px;
   }
 
-  :host([variant="outlined"][data-dirty]) #{$outline} legend,
-  :host([variant="outlined"][data-open]) #{$outline} legend,
-  :host([variant="outlined"]) #{$selector}:focus-within #{$outline} legend,
-  :host([variant="outlined"]) #{$selector}:focus-visible #{$outline} legend {
+  // Defensive fallback for custom/legacy templates that still emit an empty
+  // legend. A zero-content legend otherwise lowers the fieldset's top border.
+  :host([variant="outlined"]) #{$outline} legend:empty {
+    display: none;
+  }
+
+  // A label-less outlined field still needs its fieldset border, but not a
+  // padded legend: expanding an empty legend creates a visible top-edge gap.
+  :host([variant="outlined"]:not([data-has-label])) #{$outline} legend {
+    display: none;
+  }
+
+  :host([variant="outlined"][data-has-label][data-dirty]) #{$outline} legend,
+  :host([variant="outlined"][data-has-label][data-open]) #{$outline} legend,
+  :host([variant="outlined"][data-has-label]) #{$selector}:focus-within #{$outline} legend,
+  :host([variant="outlined"][data-has-label]) #{$selector}:focus-visible #{$outline} legend {
     max-width: calc(100% - 24px);
   }
 

@@ -1,6 +1,7 @@
 // @ts-nocheck -- Legacy custom-element fixture requires runtime-only properties.
 // elf-textarea 单元测试
 
+import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 beforeAll(async () => {
@@ -70,6 +71,12 @@ describe("elf-textarea", () => {
     await flush();
 
     expect(el.shadowRoot!.querySelector(".field-outline")).toBeTruthy();
+    expect(el.hasAttribute("data-has-label")).toBe(false);
+    expect(el.shadowRoot!.querySelector(".field-outline legend")).toBeNull();
+
+    const source = readFileSync("packages/kit/src/styles/_field-surface.scss", "utf8");
+    expect(source).toContain("legend:empty");
+    expect(source).toContain("display: none");
   });
 
   it.each(["default", "underlined", "solo", "solo-filled", "solo-inverted"])(

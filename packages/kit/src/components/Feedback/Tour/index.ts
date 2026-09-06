@@ -6,7 +6,6 @@ import {
   defineHtml,
   defineProps,
   defineStyle,
-  globalStyle,
   onBeforeUnmount,
   useEffect,
   useEventListener,
@@ -26,6 +25,7 @@ import { findScrollContainer } from "../../../composables/scroll";
 import type { GoToTask } from "../../../composables/goTo";
 import { useModalOverlay } from "../../../composables/useModalOverlay";
 import { createMutateController } from "../../../directives/observers";
+import { useDocumentStyle } from "../../Common/document-style";
 
 export type {
   TourChangeDetail,
@@ -42,7 +42,7 @@ let tourLayerId = 0;
 
 // Tour 内容通过 Teleport 挂到 body，必须同时提供全局样式；仅注入 Shadow DOM
 // 会让遮罩和步骤面板失去布局，这也是页面上“引导无效果”的根因。
-globalStyle(styles);
+useDocumentStyle("kit-tour", styles);
 
 interface TargetBox {
   left: number;

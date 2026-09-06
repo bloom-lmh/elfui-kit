@@ -91,6 +91,21 @@ describe("Form 联动", () => {
     expect(input.shadowRoot!.querySelector("input")).toBe(inputEl);
   });
 
+  it("reactively enables descendants again after form disabled is cleared", async () => {
+    const { form, inputEl } = await buildSimpleForm();
+    const mutableForm = form as FormHost & { disabled: boolean };
+
+    mutableForm.disabled = true;
+    await tick();
+    await tick();
+    expect(inputEl.disabled).toBe(true);
+
+    mutableForm.disabled = false;
+    await tick();
+    await tick();
+    expect(inputEl.disabled).toBe(false);
+  });
+
   it("validate() 失败：返回 false 且 form-item state=error", async () => {
     const { form, item } = await buildSimpleForm();
 

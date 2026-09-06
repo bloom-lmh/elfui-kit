@@ -57,6 +57,8 @@ export interface FormField {
 }
 
 export interface FormExpose {
+  requestSubmit(): void;
+  reset(): void;
   validate(): Promise<boolean>;
   validateField: ValidateField;
   resetFields(prop?: string | string[]): void;

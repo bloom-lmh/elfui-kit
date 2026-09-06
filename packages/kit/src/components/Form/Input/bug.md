@@ -1,5 +1,12 @@
 # Input 单行输入框组件 Bug 记录与修改情况
 
+## 2026-09-05 outlined 空标签缺口
+
+- 无 `label` 的 outlined 输入框聚焦时仍展开空 `legend`，其内层 padding 导致顶边出现缺口。
+- 空标签现在不渲染 `legend`；共享 field surface 也只会为带标签组件展开 notch。
+- 共享 field surface 增加 `legend:empty` 防御规则，兼容仍会输出空 legend 的旧模板，避免顶边下沉。
+- 无 label 的 outlined 输入框先按实际 control height 设置块轴 padding，再通过可覆写的 `--input-content-offset-y: 1px` 将 placeholder、输入文字与光标整体向下做光学校准；compact 密度保持总 padding 不变。
+
 ## 2026-07-22 Vuetify 字段视觉对齐
 
 - 已重写 filled、outlined、underlined、solo、solo-filled、solo-inverted 六种表面。

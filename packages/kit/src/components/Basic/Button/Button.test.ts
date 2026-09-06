@@ -173,6 +173,23 @@ describe("elf-button", () => {
     expect(btn.type).toBe("reset");
   });
 
+  it("nativeType=submit submits the closest elf-form across shadow roots", async () => {
+    const form = document.createElement("elf-form");
+    const button = document.createElement("elf-button") as ButtonEl;
+    button.setAttribute("native-type", "submit");
+    button.textContent = "Submit";
+    form.appendChild(button);
+    document.body.appendChild(form);
+    await tick();
+
+    const submit = vi.fn();
+    form.addEventListener("submit", submit);
+    button.shadowRoot!.querySelector("button")!.click();
+    await tick();
+
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+
   it("part 属性可被 ::part(button) 选中", async () => {
     const el = document.createElement("elf-button") as ButtonEl;
     document.body.appendChild(el);
