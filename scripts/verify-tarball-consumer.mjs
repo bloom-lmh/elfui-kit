@@ -31,7 +31,7 @@ try {
   const deployPath = relative(repositoryRoot, consumerRoot).replaceAll("\\", "/");
   runPnpm(
     [
-      "--offline",
+      "--prefer-offline",
       "--ignore-scripts",
       "--filter",
       "@elfui/kit",
