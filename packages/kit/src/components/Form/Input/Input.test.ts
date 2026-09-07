@@ -148,6 +148,7 @@ describe("elf-input", () => {
 
     const source = readFileSync("packages/kit/src/components/Form/Input/style.scss", "utf8");
     expect(el.getAttribute("density")).toBe("compact");
+    expect(source).toContain("inset: -5px 0 0;");
     expect(source).toContain("--input-content-offset-y: 1px");
     expect(source).toContain('density="compact"]:not([data-has-label])');
   });

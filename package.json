@@ -12,6 +12,7 @@
     "baseline:collect": "pnpm build:lib && pnpm build:website && playwright test --config playwright.baseline.config.ts && node scripts/collect-repository-baseline.mjs",
     "baseline:critical-pages": "pnpm build:website && playwright test --config playwright.baseline.config.ts",
     "baseline:report": "node scripts/collect-repository-baseline.mjs",
+    "changelog:check": "node scripts/check-changelog.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm spellcheck && pnpm typecheck",
     "commit": "cz",
     "docs:locale-audit": "pnpm docs:locale-audit:strict",

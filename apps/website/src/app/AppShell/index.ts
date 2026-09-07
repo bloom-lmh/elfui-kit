@@ -536,12 +536,7 @@ const App = defineHtml(`
             @click=${closeMobileMenu}
           ></button>
 
-          <elf-loading
-            class="route-loading"
-            :loading=${routeLoading.value}
-            :text=${text("正在加载页面", "Loading page")}
-            background="var(--elf-bg-page, var(--elf-bg-paper))"
-          >
+          <div class="route-content">
             <div class="docs-scroll">
               <div class="docs-layout">
                 <elf-main>
@@ -553,6 +548,15 @@ const App = defineHtml(`
                 ></elf-docs-toc>
               </div>
             </div>
+          </div>
+
+          <elf-loading
+            class="route-loading"
+            :loading=${routeLoading.value}
+            :text=${text("正在加载页面", "Loading page")}
+            background="var(--elf-bg-page, var(--elf-bg-paper))"
+            fullscreen
+          >
           </elf-loading>
         </elf-layout>
 

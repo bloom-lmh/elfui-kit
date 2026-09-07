@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { registerComponents } from "@elfui/core";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -468,6 +469,18 @@ describe("elf-autocomplete", () => {
     expect(el.hasAttribute("data-has-label")).toBe(true);
     expect(el.shadowRoot!.querySelector(".field-label")?.textContent).toBe("Framework");
     expect(el.shadowRoot!.querySelector(".field-outline legend")?.textContent).toBe("Framework");
+  });
+
+  it("keeps outlined text, resting labels, and the clear icon vertically aligned", () => {
+    const source = readFileSync("packages/kit/src/components/Form/Autocomplete/style.scss", "utf8");
+    const surfaceSource = readFileSync("packages/kit/src/styles/_field-surface.scss", "utf8");
+
+    expect(source).toContain(':host([variant="outlined"][data-has-label]) input');
+    expect(source).toContain("padding-top: 0;");
+    expect(source).toContain("top: calc(50% + 2px);");
+    expect(source).toMatch(/\.clear\s*\{[^}]*display:\s*inline-flex;/su);
+    expect(source).toMatch(/\.clear\s*\{[^}]*align-items:\s*center;/su);
+    expect(surfaceSource).toContain("inset: -5px 0 0;");
   });
 
   it("uses the filled field surface by default", async () => {

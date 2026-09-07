@@ -209,12 +209,15 @@ describe("路由跳转", () => {
     await tick();
 
     const progress = app.shadowRoot?.querySelector<HTMLElement>("elf-progress.route-progress");
-    const loading = app.shadowRoot?.querySelector<HTMLElement & { loading?: boolean }>(
-      "elf-loading.route-loading",
-    );
+    const loading = app.shadowRoot?.querySelector<
+      HTMLElement & { loading?: boolean; fullscreen?: boolean }
+    >("elf-loading.route-loading");
     expect(progress).toBeTruthy();
     expect(progress?.getAttribute("color")).toBe("#1976d2");
     expect(loading?.loading).toBe(true);
+    expect(loading?.fullscreen).toBe(true);
+    expect(loading?.querySelector(".docs-scroll")).toBeNull();
+    expect(app.shadowRoot?.querySelector(".route-content .docs-scroll")).toBeTruthy();
     expect(loading?.shadowRoot?.querySelector(".spinner")).toBeTruthy();
 
     resolveLazyRoute({ TestButton });

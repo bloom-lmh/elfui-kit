@@ -26,11 +26,6 @@
 @include field.floating-label(".trigger");
 @include field.reduced-motion(".trigger");
 
-:host([variant="outlined"]) .trigger {
-  padding-top: 7px;
-  padding-bottom: 1px;
-}
-
 .trigger > :not(.field-outline):not(.field-label) {
   position: relative;
   z-index: 1;

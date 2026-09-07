@@ -55,6 +55,18 @@ input {
   padding-top: 16px;
 }
 
+/* An outlined label already leaves the content area when it floats into the
+ * notch, so the input can stay centred instead of keeping filled-field space. */
+:host([variant="outlined"][data-has-label]) input {
+  padding-top: 0;
+}
+
+/* CJK glyph ink sits slightly above its line box even when the box itself is
+ * mathematically centred. Apply the optical correction only while resting. */
+:host([data-has-label]:not([data-dirty])) .field:not(:focus-within) .field-label {
+  top: calc(50% + 2px);
+}
+
 :host([variant="underlined"]) input {
   padding-inline: 0;
 }
@@ -68,6 +80,9 @@ input {
   top: 50%;
   z-index: 2;
   right: var(--elf-space-3, 12px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 20px;
   padding: 0;
@@ -76,10 +91,13 @@ input {
   background: transparent;
   color: var(--elf-text-secondary, rgba(0, 0, 0, 0.6));
   cursor: pointer;
+  line-height: 1;
   transform: translateY(-50%);
 }
 
 .clear svg {
+  display: block;
+  flex: 0 0 auto;
   width: 12px;
   height: 12px;
   fill: none;

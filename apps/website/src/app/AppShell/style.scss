@@ -37,19 +37,12 @@ elf-layout {
   min-height: 100vh;
 }
 
-.route-loading {
-  position: relative;
-  display: block;
+.route-content {
+  display: flex;
   flex: 1 1 auto;
-  height: 100%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-}
-
-.route-loading::part(loading) {
-  height: 100%;
-  min-height: 0;
 }
 
 .app-aside {
@@ -155,7 +148,7 @@ elf-layout {
   scrollbar-color: color-mix(in srgb, var(--elf-text-secondary) 38%, transparent) transparent;
 }
 
-.route-loading .docs-scroll {
+.route-content .docs-scroll {
   flex: 1 1 auto;
   height: 100%;
   min-height: 0;

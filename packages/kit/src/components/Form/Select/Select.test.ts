@@ -563,6 +563,16 @@ describe("elf-select", () => {
     expect(source).toContain(":not(:focus-within)) .placeholder");
   });
 
+  it("keeps outlined values, clear actions, and arrows on the control centre line", () => {
+    const source = readFileSync("packages/kit/src/components/Form/Select/style.scss", "utf8");
+    expect(source).not.toMatch(
+      /:host\(\[variant="outlined"\]\) \.trigger\s*\{[^}]*(?:padding-top|padding-bottom)/su,
+    );
+    expect(source).toMatch(/\.suffix\s*\{[^}]*align-items:\s*center;/su);
+    expect(source).toMatch(/\.clear\s*\{[^}]*align-items:\s*center;/su);
+    expect(source).toMatch(/\.arrow\s*\{[^}]*align-items:\s*center;/su);
+  });
+
   // ═══ 多实例隔离 ═══
 
   it("两个 Select 实例不互相干扰", async () => {

@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 const repositoryRoot = resolve(import.meta.dirname, "..");
 
 export const RELEASE_STEPS = Object.freeze([
+  { label: "Release changelog", script: "changelog:check" },
   { label: "Prettier ratchet", script: "format:check" },
   { label: "ESLint", script: "lint" },
   { label: "CSpell", script: "spellcheck" },

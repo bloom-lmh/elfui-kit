@@ -9,6 +9,7 @@ const readJson = (path: string): Record<string, unknown> =>
 describe("release contract", () => {
   it("has one ordered release gate containing every required check", () => {
     expect(RELEASE_STEPS.map((step) => step.script)).toEqual([
+      "changelog:check",
       "format:check",
       "lint",
       "spellcheck",
@@ -31,6 +32,7 @@ describe("release contract", () => {
     const kitScripts = kit.scripts as Record<string, string>;
 
     expect(workspaceScripts.release).toBeUndefined();
+    expect(workspaceScripts["changelog:check"]).toBe("node scripts/check-changelog.mjs");
     expect(workspaceScripts["release:check"]).toBe("node scripts/release-check.mjs");
     expect(workspaceScripts.prepublishOnly).toBe("pnpm release:check");
     expect(kitScripts.prepublishOnly).toBe("pnpm --dir ../.. release:check");
